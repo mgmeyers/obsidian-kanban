@@ -9,6 +9,8 @@
     "noImplicitAny": true,
     "moduleResolution": "node",
     "importHelpers": true,
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true,
     "lib": [
       "dom",
       "es5",
