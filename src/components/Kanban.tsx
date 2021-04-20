@@ -1,3 +1,4 @@
+import update from "immutability-helper";
 import React from "react";
 import { DataBridge } from "../DataBridge";
 import {
@@ -8,22 +9,32 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 import { Board, Item, Lane } from "./types";
-import { c, baseClassName, reorderList } from "./helpers";
-import { draggableLaneFactory } from "./Lane";
-import { LaneForm } from './LaneForm';
+import {
+  c,
+  baseClassName,
+  BoardDropMutationParams,
+  swapLanes,
+  swapItems,
+  moveItem,
+} from "./helpers";
+import { draggableLaneFactory } from "./Lane/Lane";
+import { LaneForm } from "./Lane/LaneForm";
 
 interface KanbanProps {
   dataBridge: DataBridge;
 }
 
-interface CreateOnDragEndParams {
+interface CreateBoardDragHandlerParams {
   boardData: Board;
   setBoardData: React.Dispatch<Board>;
 }
 
-function createOnDragEnd({ boardData, setBoardData }: CreateOnDragEndParams) {
-  return (data: DropResult) => {
-    const { source, destination } = data;
+export function createBoardDragHandler({
+  boardData,
+  setBoardData,
+}: CreateBoardDragHandlerParams) {
+  return (dropResult: DropResult) => {
+    const { source, destination } = dropResult;
 
     // Bail out early if we're not dropping anywhere
     if (
@@ -34,77 +45,25 @@ function createOnDragEnd({ boardData, setBoardData }: CreateOnDragEndParams) {
       return;
     }
 
+    const mutationParams: BoardDropMutationParams = {
+      boardData,
+      dropResult,
+    };
+
     // Swap lanes
-    if (data.type === "LANE") {
-      return setBoardData({
-        ...boardData,
-        lanes: reorderList<Lane>(
-          boardData.lanes,
-          source.index,
-          destination.index
-        ),
-      });
+    if (dropResult.type === "LANE") {
+      setBoardData(swapLanes(mutationParams));
+      return;
     }
 
     // Swap items within a lane
     if (source.droppableId === destination.droppableId) {
-      const lanes = [...boardData.lanes];
-      const laneIndex = lanes.findIndex(
-        (lane) => lane.id === source.droppableId
-      );
-
-      lanes[laneIndex] = {
-        ...lanes[laneIndex],
-        items: reorderList<Item>(
-          lanes[laneIndex].items,
-          source.index,
-          destination.index
-        ),
-      };
-
-      return setBoardData({
-        ...boardData,
-        lanes,
-      });
+      setBoardData(swapItems(mutationParams));
+      return;
     }
 
-    // Move items from one lane to another
-    const lanes = boardData.lanes.slice();
-    const sourceLaneIndex = lanes.findIndex(
-      (lane) => lane.id === source.droppableId
-    );
-    const destinationLaneIndex = lanes.findIndex(
-      (lane) => lane.id === destination.droppableId
-    );
-    
-    const sourceItems = lanes[sourceLaneIndex].items.slice();
-    const destinationItems = lanes[destinationLaneIndex].items.slice();
-
-    const item: Item = { 
-      ...lanes[sourceLaneIndex].items[source.index],
-      data: {
-        ...lanes[sourceLaneIndex].items[source.index].data,
-        isComplete: !!lanes[destinationLaneIndex].data.shouldMarkItemsComplete
-      }
-    };
-
-    sourceItems.splice(source.index, 1);
-    destinationItems.splice(destination.index, 0, item);
-
-    lanes[sourceLaneIndex] = {
-      ...lanes[sourceLaneIndex],
-      items: sourceItems,
-    };
-
-    lanes[destinationLaneIndex] = {
-      ...lanes[destinationLaneIndex],
-      items: destinationItems,
-    };
-
-    setBoardData({
-      ...boardData,
-      lanes,
-    });
+    // Move item from one lane to another
+    setBoardData(moveItem(mutationParams));
   };
 }
 
@@ -127,45 +86,69 @@ export const Kanban = (props: KanbanProps) => {
 
   if (boardData === null) return null;
 
-  const addItemToLane = (item: Item, laneId: string) => {
-    const lanes = boardData.lanes.slice();
-    const laneIndex = lanes.findIndex((lane) => lane.id === laneId);
-
-    lanes[laneIndex] = {
-      ...lanes[laneIndex],
-      items: [...lanes[laneIndex].items, item],
-    };
-
-    setBoardData({
-      ...boardData,
-      lanes,
-    });
+  const addItemToLane = (laneIndex: number, item: Item) => {
+    setBoardData(
+      update(boardData, {
+        lanes: {
+          [laneIndex]: {
+            items: {
+              $push: [item],
+            },
+          },
+        },
+      })
+    );
   };
 
   const addLane = (lane: Lane) => {
-    setBoardData({
-      ...boardData,
-      lanes: [...boardData.lanes, lane],
-    });
+    setBoardData(
+      update(boardData, {
+        lanes: {
+          $push: [lane],
+        },
+      })
+    );
+  };
+
+  const updateLane = (laneIndex: number, lane: Lane) => {
+    setBoardData(
+      update(boardData, {
+        lanes: {
+          [laneIndex]: {
+            $set: lane,
+          },
+        },
+      })
+    );
   };
 
   const deleteItem = () => {
     console.log("todo");
   };
 
-  const deleteLane = () => {
-    console.log("todo");
+  const deleteLane = (laneIndex: number) => {
+    setBoardData(
+      update(boardData, {
+        lanes: {
+          $splice: [[laneIndex, 1]],
+        },
+      })
+    );
   };
 
-  const onDragEnd = createOnDragEnd({ boardData, setBoardData });
+  const onDragEnd = createBoardDragHandler({ boardData, setBoardData });
   const renderLane = draggableLaneFactory({
     lanes: boardData.lanes,
     addItemToLane,
+    updateLane,
+    deleteLane,
   });
   const renderLaneGhost = draggableLaneFactory({
     lanes: boardData.lanes,
     isGhost: true,
     addItemToLane,
+    updateLane,
+    deleteLane,
   });
 
   const renderLanes = (provided: DroppableProvided) => (
@@ -184,7 +167,7 @@ export const Kanban = (props: KanbanProps) => {
       {provided.placeholder}
       <LaneForm addLane={addLane} />
     </div>
-  )
+  );
 
   return (
     <div className={baseClassName}>

@@ -4,8 +4,8 @@ import {
   DraggableStateSnapshot,
   DraggableRubric,
 } from "react-beautiful-dnd";
-import { Item } from "./types";
-import { c } from "./helpers";
+import { Item } from "../types";
+import { c } from "../helpers";
 
 export interface ItemContentProps {
   item: Item;

@@ -1,4 +1,4 @@
-import { generateTempId } from "./components/helpers";
+import { generateInstanceId } from "./components/helpers";
 import { Board, Item, Lane } from "./components/types";
 
 const newLineRegex = /[\r\n]+/g;
@@ -15,7 +15,9 @@ const laneRegex = /^#+\s+(.+)$/;
  * 4. content
  */
 const taskRegex = /^([\s\t]*)([-+*])\s+\[([^\]]+)]\s+(.+)$/;
-const completeRegex = /^Complete:$/i;
+
+const completeString = "**Complete**"
+const completeRegex = /^\*\*Complete\*\*$/i;
 
 function itemToMd(item: Item) {
   return `- [${item.data.isComplete ? "x" : " "}] ${item.title}`;
@@ -25,7 +27,7 @@ function mdToItem(itemMd: string): Item {
   const match = itemMd.match(taskRegex);
 
   return {
-    id: generateTempId(),
+    id: generateInstanceId(),
     title: match[4],
     data: {
       isComplete: match[3] !== " ",
@@ -41,7 +43,7 @@ function laneToMd(lane: Lane) {
   lines.push("");
 
   if (lane.data.shouldMarkItemsComplete) {
-    lines.push("Complete:");
+    lines.push(completeString);
   }
 
   lane.items.forEach((item) => {
@@ -77,7 +79,7 @@ export function mdToBoard(boardMd: string): Board {
       const match = line.match(laneRegex);
 
       currentLane = {
-        id: generateTempId(),
+        id: generateInstanceId(),
         items: [],
         title: match[1],
         data: {},

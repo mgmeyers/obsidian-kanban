@@ -1,6 +1,6 @@
 import React from "react";
-import { Item } from "./types";
-import { c, generateTempId } from "./helpers";
+import { Item } from "../types";
+import { c, generateInstanceId } from "../helpers";
 
 interface ItemFormProps {
   addItem: (item: Item) => void;
@@ -18,7 +18,7 @@ export function ItemForm({ addItem }: ItemFormProps) {
 
   const createItem = () => {
     const newItem: Item = {
-      id: generateTempId(),
+      id: generateInstanceId(),
       title: itemTitle,
       data: {},
     };

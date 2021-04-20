@@ -1,6 +1,7 @@
 import React from "react";
-import { Lane } from "./types";
-import { c, generateTempId } from "./helpers";
+import { Lane } from "../types";
+import { c, generateInstanceId } from "../helpers";
+
 
 interface LaneFormProps {
   addLane: (lane: Lane) => void;
@@ -10,19 +11,23 @@ export function LaneForm({ addLane }: LaneFormProps) {
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const [shouldMarkAsComplete, setShouldMarkAsComplete] = React.useState(false);
   const [laneTitle, setLaneTitle] = React.useState("");
+
   const inputRef = React.useRef<HTMLInputElement>();
 
   const clear = () => {
     setLaneTitle("");
+    setShouldMarkAsComplete(false);
     setIsInputVisible(false);
   };
 
   const createLane = () => {
     const newLane: Lane = {
-      id: generateTempId(),
+      id: generateInstanceId(),
       title: laneTitle,
       items: [],
-      data: {},
+      data: {
+        shouldMarkItemsComplete: shouldMarkAsComplete,
+      },
     };
 
     addLane(newLane);
@@ -50,15 +55,15 @@ export function LaneForm({ addLane }: LaneFormProps) {
           />
         </div>
         <div className={c("checkbox-wrapper")}>
+          <div className={c("checkbox-label")}>
+            Mark items in this list as complete
+          </div>
           <div
             onClick={() => setShouldMarkAsComplete(!shouldMarkAsComplete)}
             className={`checkbox-container ${
               shouldMarkAsComplete ? "is-enabled" : ""
             }`}
-          />{" "}
-          <div className={c("checkbox-label")}>
-            Mark items in this list as complete
-          </div>
+          />
         </div>
         <div className={c("lane-input-actions")}>
           <button className={c("lane-action-add")} onClick={createLane}>

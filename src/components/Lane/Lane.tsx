@@ -8,22 +8,26 @@ import {
   DraggableRubric,
   DroppableStateSnapshot,
 } from "react-beautiful-dnd";
-import { Item, Lane } from "./types";
-import { c } from "./helpers";
-import { draggableItemFactory, ItemContent } from "./Item";
-import { ItemForm } from "./ItemForm";
-import { GripIcon } from "./GripIcon";
+import { Item, Lane } from "../types";
+import { c } from "../helpers";
+import { draggableItemFactory, ItemContent } from "../Item/Item";
+import { ItemForm } from "../Item/ItemForm";
+import { LaneHeader } from "./LaneHeader";
 
 export interface DraggableLaneFactoryParams {
   lanes: Lane[];
   isGhost?: boolean;
-  addItemToLane: (item: Item, laneId: string) => void;
+  addItemToLane: (laneIndex: number, item: Item) => void;
+  updateLane: (laneIndex: number, lane: Lane) => void;
+  deleteLane: (laneIndex: number) => void;
 }
 
 export function draggableLaneFactory({
   lanes,
   isGhost,
   addItemToLane,
+  updateLane,
+  deleteLane,
 }: DraggableLaneFactoryParams) {
   return (
     provided: DraggableProvided,
@@ -72,18 +76,17 @@ export function draggableLaneFactory({
         ref={provided.innerRef}
         {...provided.draggableProps}
       >
-        <div className={c("lane-header-wrapper")}>
-          <div
-            className={c("lane-grip")}
-            {...provided.dragHandleProps}
-            aria-label="Move list"
-          >
-            <GripIcon />
-          </div>{" "}
-          <div className={c("lane-header")}>{lane.title}</div>
-        </div>
+        <LaneHeader
+          dragHandleProps={provided.dragHandleProps}
+          laneIndex={rubric.source.index}
+          lane={lane}
+          updateLane={updateLane}
+          deleteLane={deleteLane}
+        />
         {content}
-        <ItemForm addItem={(item: Item) => addItemToLane(item, lane.id)} />
+        <ItemForm
+          addItem={(item: Item) => addItemToLane(rubric.source.index, item)}
+        />
       </div>
     );
   };

@@ -1,5 +1,6 @@
 import React from "react";
 import { setIcon } from "obsidian";
+import { c } from "../helpers";
 
 interface IconProps {
   name: string;
@@ -9,7 +10,8 @@ interface IconProps {
 export function Icon({ name, className }: IconProps) {
   return (
     <span
-      className={className}
+      data-icon={name}
+      className={`${c('icon')} ${className || ''}`}
       ref={(c) => {
         if (c) {
           setIcon(c, name);
