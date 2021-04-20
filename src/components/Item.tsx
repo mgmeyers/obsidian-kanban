@@ -12,14 +12,7 @@ export interface ItemContentProps {
 }
 
 export function ItemContent({ item }: ItemContentProps) {
-  return (
-    <>
-      <div className={c("item-header")}>{item.title}</div>
-      {item.description && (
-        <div className={c("item-description")}>{item.description}</div>
-      )}
-    </>
-  );
+  return <div className={c("item-title")}>{item.title}</div>;
 }
 
 export interface DraggableItemFactoryParams {

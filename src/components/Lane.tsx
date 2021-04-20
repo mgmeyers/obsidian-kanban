@@ -9,48 +9,15 @@ import {
   DroppableStateSnapshot,
 } from "react-beautiful-dnd";
 import { Item, Lane } from "./types";
-import { c, generateTempId } from "./helpers";
+import { c } from "./helpers";
 import { draggableItemFactory, ItemContent } from "./Item";
+import { ItemForm } from "./ItemForm";
+import { GripIcon } from "./GripIcon";
 
 export interface DraggableLaneFactoryParams {
   lanes: Lane[];
   isGhost?: boolean;
   addItemToLane: (item: Item, laneId: string) => void;
-}
-
-interface AddItemButtonProps {
-  addItem: (item: Item) => void;
-}
-
-function AddItemButton({ addItem }: AddItemButtonProps) {
-  const [isInputVisible, setIsInputVisible] = React.useState(false);
-
-  if (isInputVisible) {
-    return (
-      <>
-        <input
-          className={c("item-input")}
-          type="text"
-          placeholder="Item title..."
-          onKeyPress={(e) => {
-            if (e.key === "Enter") {
-              const item: Item = {
-                id: generateTempId(),
-                title: (e.target as HTMLInputElement).value,
-              };
-
-              (e.target as HTMLInputElement).value = "";
-
-              addItem(item);
-            }
-          }}
-        />
-        <button className={c("close-button")} onClick={() => setIsInputVisible(false)}>X</button>
-      </>
-    );
-  } else {
-    return <button className={c("new-item-button")} onClick={() => setIsInputVisible(true)}>+ New Item</button>;
-  }
 }
 
 export function draggableLaneFactory({
@@ -105,20 +72,18 @@ export function draggableLaneFactory({
         ref={provided.innerRef}
         {...provided.draggableProps}
       >
-        <div
-          className={c("lane-header")}
-          data-is-dragging={snapshot.isDragging}
-          {...provided.dragHandleProps}
-          aria-label="Drag Lane"
-        >
-          {lane.title}
-        </div>
-        <div className={c("item-input-wrapper")}>
-          <AddItemButton
-            addItem={(item: Item) => addItemToLane(item, lane.id)}
-          />
+        <div className={c("lane-header-wrapper")}>
+          <div
+            className={c("lane-grip")}
+            {...provided.dragHandleProps}
+            aria-label="Move list"
+          >
+            <GripIcon />
+          </div>{" "}
+          <div className={c("lane-header")}>{lane.title}</div>
         </div>
         {content}
+        <ItemForm addItem={(item: Item) => addItemToLane(item, lane.id)} />
       </div>
     );
   };

@@ -16,9 +16,6 @@ export default class MyPlugin extends Plugin {
   settings: MyPluginSettings;
 
   async onload() {
-    console.log("loading plugin");
-    console.log(this);
-
     this.registerView(kanbanViewType, (leaf) => new KanbanView(leaf));
     this.registerEvent(
       this.app.workspace.on("file-menu", (menu, file: TFile, _, leaf) => {

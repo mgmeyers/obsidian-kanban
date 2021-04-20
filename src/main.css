@@ -1,68 +1,196 @@
+.workspace-leaf-content[data-type="kanban"] .view-content {
+  padding: 0;
+  overflow: hidden;
+}
+
 .kanban-plugin {
+  --lane-width: 272px;
+}
+
+.kanban-plugin {
+  background-color: var(--background-secondary-alt);
+  overflow-y: auto;
   width: 100%;
   height: 100%;
-  display: flex;
   position: relative;
 }
 
 .kanban-plugin button {
-  padding: 10px;
+  line-height: 1;
+  padding: 10px 12px;
   margin: 0;
-  background-color: var(--background-secondary-alt);
+  transition: 100ms color, 100ms background-color;
 }
 
 .kanban-plugin__board {
-  width: 100%;
   height: 100%;
+  width: fit-content;
   display: flex;
-  background-color: var(--background-primary);
+  align-items: flex-start;
+  justify-content: flex-start;
   padding: 1rem;
+  overflow: hidden;
 }
 
 .kanban-plugin__lane {
-  background-color: var(--background-primary-alt);
-  width: 250px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-secondary);
+  width: var(--lane-width);
   border-radius: 6px;
-  margin-right: 1rem;
+  margin-right: 10px;
+  flex-shrink: 0;
+  border: 1px solid var(--background-modifier-border);
+  max-height: 100%;
+}
+
+.kanban-plugin__lane button {
+  padding: 8px 10px;
+}
+
+.kanban-plugin__lane-button-wrapper {
+  width: var(--lane-width);
+  flex-shrink: 0;
+}
+
+.kanban-plugin__lane-input-wrapper {
+  padding: 10px;
+}
+
+.kanban-plugin__lane-input-wrapper input {
+  font-size: 0.875rem;
+  width: 100%;
+}
+
+.kanban-plugin__item-input-actions,
+.kanban-plugin__lane-input-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 0 10px 10px;
+}
+
+.kanban-plugin__item-input-actions button,
+.kanban-plugin__lane-input-actions button {
+  display: block;
+  margin-right: 5px;
+}
+
+.kanban-plugin__item-action-add,
+.kanban-plugin__lane-action-add {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.kanban-plugin__item-action-add:hover,
+.kanban-plugin__lane-action-add:hover {
+  background-color: var(--interactive-accent-hover);
+}
+
+.kanban-plugin__lane-button-wrapper > button {
+  width: 100%;
+  text-align: left;
+  margin: 1px;
+}
+
+.kanban-plugin__lane-button-wrapper > button:hover {
+  background-color: var(--interactive-accent-hover);
+  color: var(--text-on-accent);
+}
+
+.kanban-plugin__lane-header-wrapper {
+  margin-bottom: 10px;
+  padding: 10px 11px 0;
+  display: flex;
+  align-items: center;
+}
+
+.kanban-plugin__lane-grip {
+  flex-grow: 0;
+  margin-right: 5px;
+}
+
+.kanban-plugin__lane-grip > svg {
+  display: block;
+  color: var(--text-faint);
+  height: 1rem;
 }
 
 .kanban-plugin__lane-header {
-  margin-bottom: 10px;
-  padding: 1rem 1rem 0;
+  font-weight: 600;
+  font-size: 0.875rem;
 }
 
 .kanban-plugin__lane-items {
   transition: 150ms background-color ease-in-out;
-  padding: 0.5rem;
-  margin: 0.5rem;
+  padding: 5px;
+  margin: 5px;
   border-radius: 6px;
+  max-height: 100%;
+  overflow-y: auto;
 }
 
 .kanban-plugin__lane-items[data-is-dragging-over="true"] {
-  background-color: rgba(var(--interactive-accent-rgb), 0.2);
+  background-color: rgba(var(--interactive-accent-rgb), 0.15);
+}
+
+.kanban-plugin__item-button-wrapper {
+  border-top: 1px solid var(--background-modifier-border);
+  padding: 10px;
+}
+
+.kanban-plugin__item-button-wrapper > button {
+  text-align: left;
+  width: 100%;
 }
 
 .kanban-plugin__item-input-wrapper {
-  padding: 0 1rem;
-  margin-bottom: 10px;
+  border-top: 1px solid var(--background-modifier-border);
+  padding: 10px;
   display: flex;
 }
 
-.kanban-plugin__new-item-button {
-  flex-grow: 1;
+.kanban-plugin__new-item-button:hover {
+  color: var(--text-on-accent);
+  background-color: var(--interactive-accent-hover);
 }
 
 .kanban-plugin input.kanban-plugin__item-input {
+  font-size: 0.875rem;
   width: 100%;
   flex-grow: 1;
-  margin-right: 5px;
-  padding: 10px;
-  height: auto
 }
 
 .kanban-plugin__item {
+  font-size: 0.875rem;
   background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  padding: 6px 8px;
+  margin-bottom: 5px;
+  border-radius: 6px;
+}
+
+.kanban-plugin__item[data-is-dragging="true"] {
+  border-color: var(--interactive-accent);
+  box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.8);
+}
+
+.kanban-plugin__checkbox-wrapper {
+  border-top: 1px solid var(--background-modifier-border);
+  border-bottom: 1px solid var(--background-modifier-border);
   padding: 10px;
   margin-bottom: 10px;
-  border-radius: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.kanban-plugin__checkbox-wrapper .checkbox-container {
+  flex-shrink: 0;
+  flex-grow: 0;
+  margin-right: 15px;
+}
+
+.kanban-plugin__checkbox-label {
+  font-size: 0.8125rem;
+  line-height: 1.4;
 }

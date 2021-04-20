@@ -2,7 +2,7 @@ import ReactDOM from "react-dom";
 import React from "react";
 import { TextFileView, WorkspaceLeaf } from "obsidian";
 
-import { kanbanToMd, mdToKanban } from "./parser";
+import { boardToMd, mdToBoard } from "./parser";
 import { Kanban } from "./components/Kanban";
 import { DataBridge } from "./DataBridge";
 import { Board } from "./components/types";
@@ -35,20 +35,19 @@ export class KanbanView extends TextFileView {
   }
 
   getViewData() {
-    return JSON.stringify(this.dataBridge.getData(), null, 2);
+    return boardToMd(this.dataBridge.getData());
   }
 
   setViewData(data: string, clear: boolean) {
-    const board: Board = data.trim() ?  JSON.parse(data) as Board : { lanes: [] }
+    const trimmedContent = data.trim();
+    const board: Board = data.trim() ? mdToBoard(trimmedContent) : { lanes: [] }
     
     if (clear) {
       this.clear();
 
-      console.log('this.dataBridge.setExternal', board)
-
       this.dataBridge.setExternal(board);
       this.dataBridge.onInternalSet((data) => {
-        this.data = JSON.stringify(data, null, 2);
+        this.data = boardToMd(data);
         this.requestSave();
       });
 
