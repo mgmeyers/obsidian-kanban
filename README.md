@@ -36,6 +36,14 @@ kanban: basic
 
 ## Screenshots
 
+Create a new Kanban from the command palette:
+
+<img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/new-command.png" alt="Plugin new kanban command" />
+
+Or the folder context menu:
+
+<img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/folder-menu.png" alt="Plugin folder context menu" />
+
 <img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/02.png" alt="Plugin screenshot 2" />
 
 <img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/03.png" alt="Plugin screenshot 3" />
