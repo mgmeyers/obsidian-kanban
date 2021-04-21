@@ -297,11 +297,13 @@ button.kanban-plugin__item-edit-button.is-enabled,
   margin-left: 2.5px;
 }
 
+.kanban-plugin__archive-lane-button,
 .kanban-plugin__item-button-archive {
   color: var(--text-muted);
   border: 1px solid var(--background-modifier-border);
 }
 
+.kanban-plugin__archive-lane-button:hover,
 .kanban-plugin__item-button-archive:hover {
   color: var(--text-normal);
 }
