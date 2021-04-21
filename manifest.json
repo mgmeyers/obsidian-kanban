@@ -3,8 +3,8 @@
 	"name": "Kanban",
 	"version": "0.0.1",
 	"minAppVersion": "0.11.13",
-	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md/about",
+	"description": "Create markdown-backed Kanban boards in Obsidian.",
+	"author": "mgmeyers",
+	"authorUrl": "https://github.com/mgmeyers/obsidian-kanban",
 	"isDesktopOnly": false
 }

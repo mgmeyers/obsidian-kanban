@@ -2,7 +2,7 @@
 
 Note: This plugin is currently in alpha. Please submit any bugs or feature requests here: https://github.com/mgmeyers/obsidian-kanban/issues
 
-This plugin allows creating markdown-backed kanban boards. For example, this kanban board:
+This plugin allows creating markdown-backed Kanban boards. For example, this Kanban board:
 
 <img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/01.png" alt="Plugin screenshot 1" />
 
@@ -48,14 +48,14 @@ kanban: simple
 Below is the planned roadmap. Please [submit an issue](https://github.com/mgmeyers/obsidian-kanban/issues) if you'd like to request a feature.
 
 
-## Beta
+### Beta
 
 - [ ] Tags
 - [ ] Link / tag autocomplete
 - [ ] Markdown formatting support
 - [ ] Dates (support Natural Language Dates plugin)
 
-## Backlog
+### Backlog
 
 - [ ] Select & drag multiple
 - [ ] Sort lane by...
