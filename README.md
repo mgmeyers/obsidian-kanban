@@ -8,7 +8,7 @@ This plugin allows creating markdown-backed Kanban boards. For example, this Kan
 
 Will output this markdown:
 
-```md
+```markdown
 ---
 
 kanban: simple
