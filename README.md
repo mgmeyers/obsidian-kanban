@@ -36,9 +36,9 @@ kanban: simple
 
 ## Screenshots
 
-<img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/01.png" alt="Plugin screenshot 2" />
+<img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/02.png" alt="Plugin screenshot 2" />
 
-<img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/01.png" alt="Plugin screenshot 3" />
+<img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/03.png" alt="Plugin screenshot 3" />
 
 
 
