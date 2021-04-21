@@ -13,6 +13,7 @@ import { c } from "../helpers";
 import { draggableItemFactory, ItemContent } from "../Item/Item";
 import { ItemForm } from "../Item/ItemForm";
 import { LaneHeader } from "./LaneHeader";
+import { Icon } from "../Icon/Icon";
 
 export interface DraggableLaneFactoryParams {
   lanes: Lane[];
@@ -20,6 +21,9 @@ export interface DraggableLaneFactoryParams {
   addItemToLane: (laneIndex: number, item: Item) => void;
   updateLane: (laneIndex: number, lane: Lane) => void;
   deleteLane: (laneIndex: number) => void;
+  deleteItem: (laneIndex: number, itemIndex: number) => void;
+  updateItem: (laneIndex: number, itemIndex: number, item: Item) => void;
+  archiveItem: (laneIndex: number, itemIndex: number, item: Item) => void;
 }
 
 export function draggableLaneFactory({
@@ -28,6 +32,9 @@ export function draggableLaneFactory({
   addItemToLane,
   updateLane,
   deleteLane,
+  updateItem,
+  deleteItem,
+  archiveItem,
 }: DraggableLaneFactoryParams) {
   return (
     provided: DraggableProvided,
@@ -35,14 +42,33 @@ export function draggableLaneFactory({
     rubric: DraggableRubric
   ) => {
     const lane = lanes[rubric.source.index];
-    const renderItem = draggableItemFactory({ items: lane.items });
+    const shouldShowArchiveButton = !!lane.data.shouldMarkItemsComplete
+    
+    const renderItem = draggableItemFactory({
+      laneIndex: rubric.source.index,
+      items: lane.items,
+      updateItem,
+      deleteItem,
+      archiveItem,
+      shouldShowArchiveButton,
+    });
 
     const content = isGhost ? (
       <div className={c("lane-items")}>
         {lane.items.map((item, i) => {
           return (
             <div key={i} className={c("item")}>
-              <ItemContent item={item} />
+              <div className={c("item-content-wrapper")}>
+                <ItemContent isSettingsVisible={false} item={item} />
+                <div className={c("item-edit-button-wrapper")}>
+                  {shouldShowArchiveButton && <button className={`${c("item-edit-button")}`}>
+                    <Icon name="sheets-in-box" />
+                  </button>}
+                  <button className={`${c("item-edit-button")}`}>
+                    <Icon name="pencil" />
+                  </button>
+                </div>
+              </div>
             </div>
           );
         })}
@@ -51,8 +77,9 @@ export function draggableLaneFactory({
       <Droppable droppableId={lane.id} type="ITEM" renderClone={renderItem}>
         {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
           <div
-            data-is-dragging-over={snapshot.isDraggingOver}
-            className={c("lane-items")}
+            className={`${c("lane-items")} ${
+              snapshot.isDraggingOver ? "is-dragging-over" : ""
+            }`}
             ref={provided.innerRef}
             {...provided.droppableProps}
           >
@@ -71,8 +98,7 @@ export function draggableLaneFactory({
 
     return (
       <div
-        className={c("lane")}
-        data-is-dragging={snapshot.isDragging}
+        className={`${c("lane")} ${snapshot.isDragging ? "is-dragging" : ""}`}
         ref={provided.innerRef}
         {...provided.draggableProps}
       >

@@ -2,7 +2,6 @@ import React from "react";
 import { Lane } from "../types";
 import { c, generateInstanceId } from "../helpers";
 
-
 interface LaneFormProps {
   addLane: (lane: Lane) => void;
 }
@@ -78,14 +77,15 @@ export function LaneForm({ addLane }: LaneFormProps) {
   }
 
   return (
-    <div className={c("lane-button-wrapper")}>
+    <div className={c("new-lane-button-wrapper")}>
       <button
+        className={c("new-lane-button")}
         onClick={() => {
           setIsInputVisible(true);
           setTimeout(() => inputRef.current?.focus());
         }}
       >
-        <span className={c("lane-button-plus")}>+</span> Add a list
+        <span className={c("new-lane-button")}>+</span> Add a list
       </button>
     </div>
   );

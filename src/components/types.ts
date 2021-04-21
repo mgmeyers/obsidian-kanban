@@ -21,4 +21,5 @@ export interface Item {
 
 export interface Board {
   lanes: Lane[];
+  archive: Item[];
 }

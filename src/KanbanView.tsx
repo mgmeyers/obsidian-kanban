@@ -40,8 +40,10 @@ export class KanbanView extends TextFileView {
 
   setViewData(data: string, clear: boolean) {
     const trimmedContent = data.trim();
-    const board: Board = data.trim() ? mdToBoard(trimmedContent) : { lanes: [] }
-    
+    const board: Board = data.trim()
+      ? mdToBoard(trimmedContent)
+      : { lanes: [], archive: [] };
+
     if (clear) {
       this.clear();
 

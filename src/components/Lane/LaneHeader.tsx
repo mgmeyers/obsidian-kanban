@@ -153,7 +153,7 @@ export function LaneHeader({
             )
           }
           onKeyDown={(e) => {
-            if (e.key === "Escape") {
+            if (e.key === "Escape" || e.key === "Enter") {
               setIsSettingsVisible(false);
             }
           }}
@@ -164,12 +164,12 @@ export function LaneHeader({
             onClick={() => {
               setIsSettingsVisible(!isSettingsVisible);
             }}
-            aria-label="List settings"
+            aria-label={isSettingsVisible ? "Close settings" : "List settings"}
             className={`${c("lane-settings-button")} ${
               isSettingsVisible ? "is-enabled" : ""
             }`}
           >
-            <Icon name="gear" />
+            <Icon name={isSettingsVisible ? "cross" : "gear"} />
           </button>
         </div>
       </div>

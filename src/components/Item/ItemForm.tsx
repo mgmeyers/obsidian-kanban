@@ -9,7 +9,6 @@ interface ItemFormProps {
 export function ItemForm({ addItem }: ItemFormProps) {
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const [itemTitle, setItemTitle] = React.useState("");
-  const inputRef = React.useRef<HTMLInputElement>();
 
   const clear = () => {
     setItemTitle("");
@@ -32,7 +31,7 @@ export function ItemForm({ addItem }: ItemFormProps) {
         <div className={c("item-input-wrapper")}>
           <input
             value={itemTitle}
-            ref={inputRef}
+            ref={c => c && c.focus()}
             className={c("item-input")}
             type="text"
             placeholder="Item title..."
@@ -65,7 +64,6 @@ export function ItemForm({ addItem }: ItemFormProps) {
         className={c("new-item-button")}
         onClick={() => {
           setIsInputVisible(true);
-          setTimeout(() => inputRef.current?.focus());
         }}
       >
         <span className={c("item-button-plus")}>+</span> Add a card

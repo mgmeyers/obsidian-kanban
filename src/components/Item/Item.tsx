@@ -1,3 +1,4 @@
+import update from "immutability-helper";
 import React from "react";
 import {
   DraggableProvided,
@@ -6,36 +7,130 @@ import {
 } from "react-beautiful-dnd";
 import { Item } from "../types";
 import { c } from "../helpers";
+import { Icon } from "../Icon/Icon";
 
 export interface ItemContentProps {
   item: Item;
+  isSettingsVisible: boolean;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
 }
 
-export function ItemContent({ item }: ItemContentProps) {
+export function ItemContent({
+  item,
+  isSettingsVisible,
+  onChange,
+  onKeyDown,
+}: ItemContentProps) {
+  if (isSettingsVisible) {
+    return (
+      <input
+        ref={(c) => c && c.focus()}
+        className={c("item-input")}
+        value={item.title}
+        type="text"
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+      />
+    );
+  }
+
   return <div className={c("item-title")}>{item.title}</div>;
 }
 
 export interface DraggableItemFactoryParams {
   items: Item[];
+  laneIndex: number;
+  shouldShowArchiveButton: boolean;
+  deleteItem: (laneIndex: number, itemIndex: number) => void;
+  updateItem: (laneIndex: number, itemIndex: number, item: Item) => void;
+  archiveItem: (laneIndex: number, itemIndex: number, item: Item) => void;
 }
 
-export function draggableItemFactory({ items }: DraggableItemFactoryParams) {
+export function draggableItemFactory({
+  items,
+  laneIndex,
+  updateItem,
+  deleteItem,
+  archiveItem,
+  shouldShowArchiveButton,
+}: DraggableItemFactoryParams) {
   return (
     provided: DraggableProvided,
     snapshot: DraggableStateSnapshot,
     rubric: DraggableRubric
   ) => {
-    const item = items[rubric.source.index];
+    const itemIndex = rubric.source.index;
+    const item = items[itemIndex];
+    const [isSettingsVisible, setIsSettingsVisible] = React.useState(false);
 
     return (
       <div
-        className={c("item")}
-        data-is-dragging={snapshot.isDragging}
+        className={`${c("item")} ${snapshot.isDragging ? "is-dragging" : ""}`}
         ref={provided.innerRef}
         {...provided.draggableProps}
         {...provided.dragHandleProps}
       >
-        <ItemContent item={item} />
+        <div className={c("item-content-wrapper")}>
+          <ItemContent
+            isSettingsVisible={isSettingsVisible}
+            item={item}
+            onChange={(e) =>
+              updateItem(
+                laneIndex,
+                itemIndex,
+                update(item, { title: { $set: e.target.value } })
+              )
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Escape" || e.key === "Enter") {
+                setIsSettingsVisible(false);
+              }
+            }}
+          />
+          <div className={c("item-edit-button-wrapper")}>
+            <button
+              onClick={() => {
+                setIsSettingsVisible(!isSettingsVisible);
+              }}
+              className={`${c("item-edit-button")} ${
+                isSettingsVisible ? "is-enabled" : ""
+              }`}
+              aria-label={isSettingsVisible ? "Cancel" : "Edit item"}
+            >
+              <Icon name={isSettingsVisible ? "cross" : "pencil"} />
+            </button>
+            {shouldShowArchiveButton && (
+              <button
+                onClick={() => {
+                  archiveItem(laneIndex, itemIndex, item);
+                }}
+                className={c("item-edit-archive-button")}
+                aria-label="Archive item"
+              >
+                <Icon name="sheets-in-box" />
+              </button>
+            )}
+          </div>
+        </div>
+        {isSettingsVisible && (
+          <div className={c("item-settings")}>
+            <div className={c("item-settings-actions")}>
+              <button
+                onClick={() => deleteItem(laneIndex, itemIndex)}
+                className={c("item-button-delete")}
+              >
+                <Icon name="trash" /> Delete
+              </button>
+              <button
+                onClick={() => archiveItem(laneIndex, itemIndex, item)}
+                className={c("item-button-archive")}
+              >
+                <Icon name="sheets-in-box" /> Archive
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   };

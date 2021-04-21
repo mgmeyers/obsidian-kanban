@@ -16,8 +16,10 @@ const laneRegex = /^#+\s+(.+)$/;
  */
 const taskRegex = /^([\s\t]*)([-+*])\s+\[([^\]]+)]\s+(.+)$/;
 
-const completeString = "**Complete**"
+const completeString = "**Complete**";
 const completeRegex = /^\*\*Complete\*\*$/i;
+
+const archiveMarkerRegex = /^---$/;
 
 function itemToMd(item: Item) {
   return `- [${item.data.isComplete ? "x" : " "}] ${item.title}`;
@@ -57,21 +59,46 @@ function laneToMd(lane: Lane) {
   return lines.join("\n");
 }
 
+function archiveToMd(archive: Item[]) {
+  if (archive.length) {
+    const lines: string[] = ["---", "", "## Archive", ""];
+
+    archive.forEach((item) => {
+      lines.push(itemToMd(item));
+    });
+
+    return lines.join("\n");
+  }
+
+  return "";
+}
+
 export function boardToMd(board: Board) {
-  return board.lanes.reduce((md, lane) => {
+  const lanes = board.lanes.reduce((md, lane) => {
     return md + laneToMd(lane);
   }, "");
+
+  const archive = archiveToMd(board.archive);
+
+  return lanes + archive;
 }
 
 export function mdToBoard(boardMd: string): Board {
   const lines = boardMd.split(newLineRegex);
   const lanes: Lane[] = [];
+  const archive: Item[] = [];
+
+  let haveSeenArchiveMarker = false;
 
   let currentLane: Lane | null = null;
 
   lines.forEach((line) => {
+    if (archiveMarkerRegex.test(line)) {
+      haveSeenArchiveMarker = true;
+    }
+
     // New lane
-    if (laneRegex.test(line)) {
+    if (!haveSeenArchiveMarker && laneRegex.test(line)) {
       if (currentLane !== null) {
         lanes.push(currentLane);
       }
@@ -89,14 +116,18 @@ export function mdToBoard(boardMd: string): Board {
     }
 
     // Check if this is a completed lane
-    if (completeRegex.test(line)) {
+    if (!haveSeenArchiveMarker && completeRegex.test(line)) {
       currentLane.data.shouldMarkItemsComplete = true;
       return;
     }
 
     // Create an item from tasks
     if (taskRegex.test(line)) {
-      return currentLane.items.push(mdToItem(line));
+      if (haveSeenArchiveMarker) {
+        archive.push(mdToItem(line));
+      } else {
+        currentLane.items.push(mdToItem(line));
+      }
     }
   });
 
@@ -107,5 +138,6 @@ export function mdToBoard(boardMd: string): Board {
 
   return {
     lanes,
+    archive,
   };
 }

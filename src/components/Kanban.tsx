@@ -17,7 +17,7 @@ import {
   swapItems,
   moveItem,
 } from "./helpers";
-import { draggableLaneFactory } from "./Lane/Lane";
+import { draggableLaneFactory, DraggableLaneFactoryParams } from "./Lane/Lane";
 import { LaneForm } from "./Lane/LaneForm";
 
 interface KanbanProps {
@@ -122,10 +122,6 @@ export const Kanban = (props: KanbanProps) => {
     );
   };
 
-  const deleteItem = () => {
-    console.log("todo");
-  };
-
   const deleteLane = (laneIndex: number) => {
     setBoardData(
       update(boardData, {
@@ -136,19 +132,69 @@ export const Kanban = (props: KanbanProps) => {
     );
   };
 
+  const deleteItem = (laneIndex: number, itemIndex: number) => {
+    setBoardData(
+      update(boardData, {
+        lanes: {
+          [laneIndex]: {
+            items: {
+              $splice: [[itemIndex, 1]],
+            },
+          },
+        },
+      })
+    );
+  };
+
+  const updateItem = (laneIndex: number, itemIndex: number, item: Item) => {
+    setBoardData(
+      update(boardData, {
+        lanes: {
+          [laneIndex]: {
+            items: {
+              [itemIndex]: {
+                $set: item,
+              },
+            },
+          },
+        },
+      })
+    );
+  };
+
+  const archiveItem = (laneIndex: number, itemIndex: number, item: Item) => {
+    setBoardData(
+      update(boardData, {
+        lanes: {
+          [laneIndex]: {
+            items: {
+              $splice: [[itemIndex, 1]],
+            },
+          },
+        },
+        archive: {
+          $push: [item],
+        },
+      })
+    );
+  };
+
   const onDragEnd = createBoardDragHandler({ boardData, setBoardData });
-  const renderLane = draggableLaneFactory({
+
+  const laneFactoryParams: DraggableLaneFactoryParams = {
     lanes: boardData.lanes,
     addItemToLane,
     updateLane,
     deleteLane,
-  });
+    updateItem,
+    deleteItem,
+    archiveItem,
+  };
+
+  const renderLane = draggableLaneFactory(laneFactoryParams);
   const renderLaneGhost = draggableLaneFactory({
-    lanes: boardData.lanes,
+    ...laneFactoryParams,
     isGhost: true,
-    addItemToLane,
-    updateLane,
-    deleteLane,
   });
 
   const renderLanes = (provided: DroppableProvided) => (
