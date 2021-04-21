@@ -8,5 +8,6 @@ package-lock.json
 
 # build
 main.js
+.DS_Store
 *.js.map
 .env
