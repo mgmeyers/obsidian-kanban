@@ -1,3 +1,4 @@
+import update from "immutability-helper";
 import React from "react";
 import {
   Droppable,
@@ -21,6 +22,7 @@ export interface DraggableLaneFactoryParams {
   addItemToLane: (laneIndex: number, item: Item) => void;
   updateLane: (laneIndex: number, lane: Lane) => void;
   deleteLane: (laneIndex: number) => void;
+  archiveLane: (laneIndex: number) => void;
   deleteItem: (laneIndex: number, itemIndex: number) => void;
   updateItem: (laneIndex: number, itemIndex: number, item: Item) => void;
   archiveItem: (laneIndex: number, itemIndex: number, item: Item) => void;
@@ -32,6 +34,7 @@ export function draggableLaneFactory({
   addItemToLane,
   updateLane,
   deleteLane,
+  archiveLane,
   updateItem,
   deleteItem,
   archiveItem,
@@ -42,8 +45,8 @@ export function draggableLaneFactory({
     rubric: DraggableRubric
   ) => {
     const lane = lanes[rubric.source.index];
-    const shouldShowArchiveButton = !!lane.data.shouldMarkItemsComplete
-    
+    const shouldShowArchiveButton = !!lane.data.shouldMarkItemsComplete;
+
     const renderItem = draggableItemFactory({
       laneIndex: rubric.source.index,
       items: lane.items,
@@ -61,9 +64,11 @@ export function draggableLaneFactory({
               <div className={c("item-content-wrapper")}>
                 <ItemContent isSettingsVisible={false} item={item} />
                 <div className={c("item-edit-button-wrapper")}>
-                  {shouldShowArchiveButton && <button className={`${c("item-edit-button")}`}>
-                    <Icon name="sheets-in-box" />
-                  </button>}
+                  {shouldShowArchiveButton && (
+                    <button className={`${c("item-edit-button")}`}>
+                      <Icon name="sheets-in-box" />
+                    </button>
+                  )}
                   <button className={`${c("item-edit-button")}`}>
                     <Icon name="pencil" />
                   </button>
@@ -108,10 +113,23 @@ export function draggableLaneFactory({
           lane={lane}
           updateLane={updateLane}
           deleteLane={deleteLane}
+          archiveLane={archiveLane}
         />
         {content}
         <ItemForm
-          addItem={(item: Item) => addItemToLane(rubric.source.index, item)}
+          addItem={(item: Item) => {
+            addItemToLane(
+              rubric.source.index,
+              update(item, {
+                data: {
+                  isComplete: {
+                    // Mark the item complete if we're moving into a completed lane
+                    $set: !!lane.data.shouldMarkItemsComplete,
+                  },
+                },
+              })
+            );
+          }}
         />
       </div>
     );

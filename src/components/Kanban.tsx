@@ -132,6 +132,21 @@ export const Kanban = (props: KanbanProps) => {
     );
   };
 
+  const archiveLane = (laneIndex: number) => {
+    const items = boardData.lanes[laneIndex].items
+
+    setBoardData(
+      update(boardData, {
+        lanes: {
+          $splice: [[laneIndex, 1]],
+        },
+        archive: {
+          $push: items
+        }
+      })
+    );
+  };
+
   const deleteItem = (laneIndex: number, itemIndex: number) => {
     setBoardData(
       update(boardData, {
@@ -186,6 +201,7 @@ export const Kanban = (props: KanbanProps) => {
     addItemToLane,
     updateLane,
     deleteLane,
+    archiveLane,
     updateItem,
     deleteItem,
     archiveItem,

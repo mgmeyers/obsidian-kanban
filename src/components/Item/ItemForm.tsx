@@ -10,6 +10,14 @@ export function ItemForm({ addItem }: ItemFormProps) {
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const [itemTitle, setItemTitle] = React.useState("");
 
+  const inputRef = React.useRef<HTMLTextAreaElement>();
+
+  React.useEffect(() => {
+    if (isInputVisible) {
+      inputRef.current?.focus();
+    }
+  }, [isInputVisible]);
+
   const clear = () => {
     setItemTitle("");
     setIsInputVisible(false);
@@ -29,22 +37,25 @@ export function ItemForm({ addItem }: ItemFormProps) {
     return (
       <>
         <div className={c("item-input-wrapper")}>
-          <input
-            value={itemTitle}
-            ref={c => c && c.focus()}
-            className={c("item-input")}
-            type="text"
-            placeholder="Item title..."
-            onChange={(e) => setItemTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                createItem();
-                setItemTitle("");
-              } else if (e.key === "Escape") {
-                clear();
-              }
-            }}
-          />
+          <div data-replicated-value={itemTitle} className={c("grow-wrap")}>
+            <textarea
+              rows={1}
+              value={itemTitle}
+              ref={inputRef}
+              className={c("item-input")}
+              placeholder="Item title..."
+              onChange={(e) => setItemTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  createItem();
+                  setItemTitle("");
+                } else if (e.key === "Escape") {
+                  clear();
+                }
+              }}
+            />
+          </div>
         </div>
         <div className={c("item-input-actions")}>
           <button className={c("item-action-add")} onClick={createItem}>
@@ -62,9 +73,7 @@ export function ItemForm({ addItem }: ItemFormProps) {
     <div className={c("item-button-wrapper")}>
       <button
         className={c("new-item-button")}
-        onClick={() => {
-          setIsInputVisible(true);
-        }}
+        onClick={() => setIsInputVisible(true)}
       >
         <span className={c("item-button-plus")}>+</span> Add a card
       </button>

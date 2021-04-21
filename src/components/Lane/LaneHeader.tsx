@@ -9,8 +9,8 @@ import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 interface LaneTitleProps {
   title: string;
   isSettingsVisible: boolean;
-  onChange: React.ChangeEventHandler<HTMLInputElement>;
-  onKeyDown: React.KeyboardEventHandler<HTMLInputElement>;
+  onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
+  onKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement>;
 }
 
 function LaneTitle({
@@ -23,14 +23,16 @@ function LaneTitle({
     <div className={c("lane-title")}>
       {isSettingsVisible ? (
         <div className={c("lane-title")}>
-          <input
-            value={title}
-            className={c("lane-input")}
-            type="text"
-            placeholder="Enter list title..."
-            onChange={onChange}
-            onKeyDown={onKeyDown}
-          />
+          <div data-replicated-value={title} className={c("grow-wrap")}>
+            <textarea
+              rows={1}
+              value={title}
+              className={c("lane-input")}
+              placeholder="Enter list title..."
+              onChange={onChange}
+              onKeyDown={onKeyDown}
+            />
+          </div>
         </div>
       ) : (
         title
@@ -44,6 +46,7 @@ interface LaneSettingsProps {
   laneIndex: number;
   updateLane: (laneIndex: number, newLane: Lane) => void;
   deleteLane: (laneIndex: number) => void;
+  archiveLane: (laneIndex: number) => void;
 }
 
 function LaneSettings({
@@ -51,43 +54,64 @@ function LaneSettings({
   laneIndex,
   updateLane,
   deleteLane,
+  archiveLane,
 }: LaneSettingsProps) {
-  const [isConfirmingDelete, setIsConfirmingDelete] = React.useState(false);
+  const [confirmAction, setConfirmAction] = React.useState<
+    "delete" | "archive" | null
+  >(null);
 
-  const deleteButton = isConfirmingDelete ? (
-    <div className={c("delete-confirm-wrapper")}>
-      <div className={c("delete-confirm-text")}>
-        Are you sure you want to delete this list and all its cards?
+  const actionButtons = confirmAction ? (
+    <div className={c("action-confirm-wrapper")}>
+      <div className={c("action-confirm-text")}>
+        Are you sure you want to {confirmAction} this list and all its cards?
       </div>
       <div>
         <button
-          onClick={() => deleteLane(laneIndex)}
-          className={c("confirm-delete-button")}
+          onClick={() => {
+            if (confirmAction === "delete") deleteLane(laneIndex);
+            if (confirmAction === "archive") archiveLane(laneIndex);
+          }}
+          className={c("confirm-action-button")}
         >
-          Yes, delete list
+          Yes, {confirmAction} list
         </button>
         <button
-          onClick={() => setIsConfirmingDelete(false)}
-          className={c("cancel-delete-button")}
+          onClick={() => setConfirmAction(null)}
+          className={c("cancel-action-button")}
         >
           Cancel
         </button>
       </div>
     </div>
   ) : (
-    <button
-      onClick={() => {
-        if (lane.items.length == 0) {
-          deleteLane(laneIndex);
-        } else {
-          // Confirm if items will be deleted when the lane is deleted
-          setIsConfirmingDelete(true);
-        }
-      }}
-      className={c("delete-lane-button")}
-    >
-      <Icon name="trash" /> Delete List
-    </button>
+    <>
+      <button
+        onClick={() => {
+          if (lane.items.length == 0) {
+            deleteLane(laneIndex);
+          } else {
+            // Confirm if items will be deleted when the lane is deleted
+            setConfirmAction("delete");
+          }
+        }}
+        className={c("delete-lane-button")}
+      >
+        <Icon name="trash" /> Delete List
+      </button>
+      <button
+        onClick={() => {
+          if (lane.items.length == 0) {
+            deleteLane(laneIndex);
+          } else {
+            // Confirm if items will be deleted when the lane is deleted
+            setConfirmAction("archive");
+          }
+        }}
+        className={c("archive-lane-button")}
+      >
+        <Icon name="sheets-in-box" /> Archive List
+      </button>
+    </>
   );
 
   return (
@@ -110,7 +134,7 @@ function LaneSettings({
           }`}
         />
       </div>
-      <div className={c("delete-lane-wrapper")}>{deleteButton}</div>
+      <div className={c("lane-action-wrapper")}>{actionButtons}</div>
     </div>
   );
 }
@@ -121,6 +145,7 @@ interface LaneHeaderProps {
   dragHandleProps?: DraggableProvidedDragHandleProps;
   updateLane: (laneIndex: number, newLane: Lane) => void;
   deleteLane: (laneIndex: number) => void;
+  archiveLane: (laneIndex: number) => void;
 }
 
 export function LaneHeader({
@@ -129,6 +154,7 @@ export function LaneHeader({
   dragHandleProps,
   updateLane,
   deleteLane,
+  archiveLane,
 }: LaneHeaderProps) {
   const [isSettingsVisible, setIsSettingsVisible] = React.useState(false);
 
@@ -154,6 +180,7 @@ export function LaneHeader({
           }
           onKeyDown={(e) => {
             if (e.key === "Escape" || e.key === "Enter") {
+              e.preventDefault();
               setIsSettingsVisible(false);
             }
           }}
@@ -180,6 +207,7 @@ export function LaneHeader({
           laneIndex={laneIndex}
           updateLane={updateLane}
           deleteLane={deleteLane}
+          archiveLane={archiveLane}
         />
       )}
     </>

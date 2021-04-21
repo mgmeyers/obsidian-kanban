@@ -11,7 +11,13 @@ export function LaneForm({ addLane }: LaneFormProps) {
   const [shouldMarkAsComplete, setShouldMarkAsComplete] = React.useState(false);
   const [laneTitle, setLaneTitle] = React.useState("");
 
-  const inputRef = React.useRef<HTMLInputElement>();
+  const inputRef = React.useRef<HTMLTextAreaElement>();
+
+  React.useEffect(() => {
+    if (isInputVisible) {
+      inputRef.current?.focus();
+    }
+  }, [isInputVisible]);
 
   const clear = () => {
     setLaneTitle("");
@@ -37,21 +43,24 @@ export function LaneForm({ addLane }: LaneFormProps) {
     return (
       <div className={c("lane")}>
         <div className={c("lane-input-wrapper")}>
-          <input
-            value={laneTitle}
-            ref={inputRef}
-            className={c("lane-input")}
-            type="text"
-            placeholder="Enter list title..."
-            onChange={(e) => setLaneTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                createLane();
-              } else if (e.key === "Escape") {
-                clear();
-              }
-            }}
-          />
+          <div data-replicated-value={laneTitle} className={c("grow-wrap")}>
+            <textarea
+              rows={1}
+              value={laneTitle}
+              ref={inputRef}
+              className={c("lane-input")}
+              placeholder="Enter list title..."
+              onChange={(e) => setLaneTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  createLane();
+                } else if (e.key === "Escape") {
+                  clear();
+                }
+              }}
+            />
+          </div>
         </div>
         <div className={c("checkbox-wrapper")}>
           <div className={c("checkbox-label")}>
@@ -80,10 +89,7 @@ export function LaneForm({ addLane }: LaneFormProps) {
     <div className={c("new-lane-button-wrapper")}>
       <button
         className={c("new-lane-button")}
-        onClick={() => {
-          setIsInputVisible(true);
-          setTimeout(() => inputRef.current?.focus());
-        }}
+        onClick={() => setIsInputVisible(true)}
       >
         <span className={c("new-lane-button")}>+</span> Add a list
       </button>

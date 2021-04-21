@@ -69,11 +69,6 @@
   padding: 10px;
 }
 
-.kanban-plugin__lane-input-wrapper input {
-  font-size: 0.875rem;
-  width: 100%;
-}
-
 .kanban-plugin__item-input-actions,
 .kanban-plugin__lane-input-actions {
   display: flex;
@@ -100,6 +95,7 @@
 }
 
 button.kanban-plugin__new-lane-button {
+  border: 1px solid var(--background-modifier-border);
   color: var(--text-muted);
   width: 100%;
   text-align: left;
@@ -156,21 +152,18 @@ button.kanban-plugin__new-lane-button:hover {
   color: var(--text-on-accent);
 }
 
-.kanban-plugin__lane-settings-button .kanban-plugin__icon {
+.kanban-plugin__lane-action-wrapper,
+.kanban-plugin__item-edit-archive-button,
+.kanban-plugin__item-settings-actions > .kanban-plugin__icon,
+.kanban-plugin__item-edit-archive-button > .kanban-plugin__icon,
+.kanban-plugin__item-edit-button > .kanban-plugin__icon,
+.kanban-plugin__lane-settings-button > .kanban-plugin__icon {
   display: flex;
 }
 
 .kanban-plugin__lane-settings-button svg {
   width: 1em;
   height: 1em;
-}
-
-input.kanban-plugin__item-input,
-input.kanban-plugin__lane-input {
-  font-size: 0.875rem;
-  width: 100%;
-  padding: 5px 7px;
-  height: auto;
 }
 
 .kanban-plugin__lane-items {
@@ -216,12 +209,6 @@ input.kanban-plugin__lane-input {
   background-color: var(--interactive-accent-hover);
 }
 
-.kanban-plugin input.kanban-plugin__item-input {
-  font-size: 0.875rem;
-  width: 100%;
-  flex-grow: 1;
-}
-
 .kanban-plugin__item {
   font-size: 0.875rem;
   border: 1px solid var(--background-modifier-border);
@@ -247,7 +234,7 @@ input.kanban-plugin__lane-input {
 
 .kanban-plugin__item-title {
   width: 100%;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .kanban-plugin__item-edit-button-wrapper {
@@ -267,6 +254,7 @@ button.kanban-plugin__item-edit-button {
   display: flex;
 }
 
+.kanban-plugin__lane-action-wrapper,
 button.kanban-plugin__item-edit-archive-button,
 .kanban-plugin__item-settings-actions > button .kanban-plugin__icon,
 button.kanban-plugin__item-edit-archive-button .kanban-plugin__icon,
@@ -294,14 +282,18 @@ button.kanban-plugin__item-edit-button.is-enabled,
   width: 100%;
 }
 
-.kanban-plugin__item-settings-actions > button .kanban-plugin__icon {
+.kanban-plugin__lane-action-wrapper button > .kanban-plugin__icon,
+.kanban-plugin__item-settings-actions button > .kanban-plugin__icon {
   margin-right: 5px;
 }
 
-.kanban-plugin__item-settings-actions > button:first-child {
-  margin-right: 2.5px
+.kanban-plugin__item-settings-actions > button:first-child,
+.kanban-plugin__lane-action-wrapper > button:first-child {
+  margin-right: 2.5px;
 }
-.kanban-plugin__item-settings-actions > button:last-child {
+
+.kanban-plugin__item-settings-actions > button:last-child,
+.kanban-plugin__lane-action-wrapper > button:last-child {
   margin-left: 2.5px;
 }
 
@@ -321,6 +313,17 @@ button.kanban-plugin__item-edit-button.is-enabled,
 
 .kanban-plugin__item-button-delete:hover {
   background-color: rgba(var(--background-modifier-error-rgb), 0.2);
+  color: var(--text-error);
+}
+
+.theme-dark .kanban-plugin__item-button-delete {
+  background-color: transparent;
+  border: 1px solid rgba(var(--background-modifier-error-rgb), 1);
+  color: var(--text-error);
+}
+
+.theme-dark .kanban-plugin__item-button-delete:hover {
+  background-color: rgba(var(--background-modifier-error-rgb), 1);
   color: var(--text-error);
 }
 
@@ -356,21 +359,29 @@ button.kanban-plugin__item-edit-button.is-enabled,
   margin-bottom: 10px;
 }
 
-.kanban-plugin__delete-confirm-wrapper {
+.kanban-plugin__action-confirm-wrapper {
   border: 1px solid rgba(var(--background-modifier-error-rgb), 0.2);
   background-color: rgba(var(--background-modifier-error-rgb), 0.1);
   border-radius: 4px;
   padding: 10px;
 }
 
-.kanban-plugin__delete-lane-button {
-  font-size: 0.75rem;
-  border: 1px solid rgba(var(--background-modifier-error-rgb), 0.15);
-  color: rgba(var(--background-modifier-error-rgb), 1);
-  justify-content: center;
+.theme-dark .kanban-plugin__action-confirm-wrapper {
+  border: 1px solid rgba(var(--background-modifier-error-rgb), 1);
+}
+
+.kanban-plugin__delete-lane-button,
+.kanban-plugin__archive-lane-button {
   display: flex;
   align-items: center;
-  width: 100%;
+  justify-content: center;
+  font-size: 0.75rem;
+  width: 50%;
+}
+
+.kanban-plugin__delete-lane-button {
+  border: 1px solid rgba(var(--background-modifier-error-rgb), 0.15);
+  color: rgba(var(--background-modifier-error-rgb), 1);
 }
 
 .kanban-plugin__delete-lane-button:hover {
@@ -378,27 +389,64 @@ button.kanban-plugin__item-edit-button.is-enabled,
   color: var(--text-error);
 }
 
-.kanban-plugin__delete-lane-button .kanban-plugin__icon {
-  margin-right: 5px;
+.theme-dark .kanban-plugin__delete-lane-button {
+  background-color: transparent;
+  border: 1px solid rgba(var(--background-modifier-error-rgb), 1);
+  color: var(--text-error);
 }
 
-.kanban-plugin__delete-confirm-text {
+.theme-dark .kanban-plugin__delete-lane-button:hover {
+  background-color: rgba(var(--background-modifier-error-rgb), 1);
+  color: var(--text-error);
+}
+
+.kanban-plugin__action-confirm-text {
   font-size: 0.875rem;
   color: var(--text-error);
   margin-bottom: 10px;
   line-height: 1.4;
 }
 
-button.kanban-plugin__confirm-delete-button {
+button.kanban-plugin__confirm-action-button {
   border: 1px solid rgba(var(--background-modifier-error-rgb), 0.2);
   margin-right: 5px;
   color: var(--text-error);
 }
 
-button.kanban-plugin__confirm-delete-button:hover {
+button.kanban-plugin__confirm-action-button:hover {
   background-color: rgba(var(--background-modifier-error-rgb), 0.5);
 }
 
-button.kanban-plugin__cancel-delete-button {
+button.kanban-plugin__cancel-action-button {
   border: 1px solid var(--background-modifier-border);
+}
+
+/* Inputs */
+
+.kanban-plugin__grow-wrap {
+  width: 100%;
+  display: grid;
+}
+.kanban-plugin__grow-wrap::after {
+  content: attr(data-replicated-value) " ";
+  white-space: pre-wrap;
+  visibility: hidden;
+}
+.kanban-plugin__grow-wrap > textarea {
+  resize: none;
+  overflow: hidden;
+}
+
+.kanban-plugin__grow-wrap > textarea:focus {
+  border-color: var(--interactive-accent);
+}
+
+.kanban-plugin__grow-wrap > textarea,
+.kanban-plugin__grow-wrap::after {
+  /* Identical styling required!! */
+  border: 1px solid var(--background-modifier-border);
+  padding: 5px 7px;;
+  font: inherit;
+  grid-area: 1 / 1 / 2 / 2;
+  font-size: 0.875rem;
 }

@@ -12,8 +12,8 @@ import { Icon } from "../Icon/Icon";
 export interface ItemContentProps {
   item: Item;
   isSettingsVisible: boolean;
-  onChange?: React.ChangeEventHandler<HTMLInputElement>;
-  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
+  onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
+  onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>;
 }
 
 export function ItemContent({
@@ -22,16 +22,26 @@ export function ItemContent({
   onChange,
   onKeyDown,
 }: ItemContentProps) {
+  const inputRef = React.useRef<HTMLTextAreaElement>();
+
+  React.useEffect(() => {
+    if (isSettingsVisible) {
+      inputRef.current?.focus();
+    }
+  }, [isSettingsVisible]);
+
   if (isSettingsVisible) {
     return (
-      <input
-        ref={(c) => c && c.focus()}
-        className={c("item-input")}
-        value={item.title}
-        type="text"
-        onChange={onChange}
-        onKeyDown={onKeyDown}
-      />
+      <div data-replicated-value={item.title} className={c("grow-wrap")}>
+        <textarea
+          rows={1}
+          ref={inputRef}
+          className={c("item-input")}
+          value={item.title}
+          onChange={onChange}
+          onKeyDown={onKeyDown}
+        />
+      </div>
     );
   }
 
@@ -84,6 +94,7 @@ export function draggableItemFactory({
             }
             onKeyDown={(e) => {
               if (e.key === "Escape" || e.key === "Enter") {
+                e.preventDefault();
                 setIsSettingsVisible(false);
               }
             }}

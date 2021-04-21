@@ -18,8 +18,8 @@ const taskRegex = /^([\s\t]*)([-+*])\s+\[([^\]]+)]\s+(.+)$/;
 
 const completeString = "**Complete**";
 const completeRegex = /^\*\*Complete\*\*$/i;
-
-const archiveMarkerRegex = /^---$/;
+const archiveString = "***";
+const archiveMarkerRegex = /^\*\*\*$/;
 
 function itemToMd(item: Item) {
   return `- [${item.data.isComplete ? "x" : " "}] ${item.title}`;
@@ -61,7 +61,7 @@ function laneToMd(lane: Lane) {
 
 function archiveToMd(archive: Item[]) {
   if (archive.length) {
-    const lines: string[] = ["---", "", "## Archive", ""];
+    const lines: string[] = [archiveString, "", "## Archive", ""];
 
     archive.forEach((item) => {
       lines.push(itemToMd(item));
@@ -74,13 +74,15 @@ function archiveToMd(archive: Item[]) {
 }
 
 export function boardToMd(board: Board) {
+  const frontmatter = ["---", "", "kanban: basic", "", "---", "", ""].join("\n");
+
   const lanes = board.lanes.reduce((md, lane) => {
     return md + laneToMd(lane);
   }, "");
 
   const archive = archiveToMd(board.archive);
 
-  return lanes + archive;
+  return frontmatter + lanes + archive;
 }
 
 export function mdToBoard(boardMd: string): Board {

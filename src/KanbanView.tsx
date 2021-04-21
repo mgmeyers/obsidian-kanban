@@ -30,6 +30,10 @@ export class KanbanView extends TextFileView {
     this.dataBridge = new DataBridge();
   }
 
+  async onClose() {
+    ReactDOM.unmountComponentAtNode(this.contentEl);
+  }
+
   clear() {
     this.dataBridge.reset();
   }
@@ -40,14 +44,17 @@ export class KanbanView extends TextFileView {
 
   setViewData(data: string, clear: boolean) {
     const trimmedContent = data.trim();
-    const board: Board = data.trim()
+    const board: Board = trimmedContent
       ? mdToBoard(trimmedContent)
       : { lanes: [], archive: [] };
 
     if (clear) {
       this.clear();
 
+      // Tell react we have a new board
       this.dataBridge.setExternal(board);
+
+      // When the board has been updated by react
       this.dataBridge.onInternalSet((data) => {
         this.data = boardToMd(data);
         this.requestSave();
@@ -55,6 +62,7 @@ export class KanbanView extends TextFileView {
 
       this.constructKanban();
     } else {
+      // Tell react we have a new board
       this.dataBridge.setExternal(board);
     }
   }
