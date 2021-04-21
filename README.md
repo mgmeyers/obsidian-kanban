@@ -11,7 +11,7 @@ Will output this markdown:
 ```markdown
 ---
 
-kanban: simple
+kanban: basic
 
 ---
 

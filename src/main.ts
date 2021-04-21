@@ -97,7 +97,7 @@ export default class KanbanPlugin extends Plugin {
       : this.app.fileManager.getNewFileParent("");
 
     // Forcing frontmatter for now until more options are available
-    const frontmatter = ["---", "", "kanban: simple", "", "---", "", ""].join(
+    const frontmatter = ["---", "", "kanban: basic", "", "---", "", ""].join(
       "\n"
     );
 
