@@ -1,6 +1,7 @@
 import { Plugin, WorkspaceLeaf, TFile, TFolder } from "obsidian";
 import { kanbanIcon, KanbanView, kanbanViewType } from "./KanbanView";
 import "./main.css";
+import { frontMatterKey } from "./parser";
 
 // TODO: settings
 interface KanbanPluginSettings {}
@@ -43,7 +44,7 @@ export default class KanbanPlugin extends Plugin {
 
         const cache = this.app.metadataCache.getFileCache(file);
 
-        if (cache?.frontmatter && cache.frontmatter['kanban-plugin']) {
+        if (cache?.frontmatter && cache.frontmatter[frontMatterKey]) {
           this.setKanbanView(activeLeaf);
         }
       })
@@ -79,7 +80,7 @@ export default class KanbanPlugin extends Plugin {
         if (leaf?.view.getViewType() === "markdown") {
           const cache = this.app.metadataCache.getFileCache(file);
 
-          if (cache?.frontmatter?.kanban) {
+          if (cache?.frontmatter && cache.frontmatter[frontMatterKey]) {
             menu.addItem((item) => {
               item
                 .setTitle("Open as kanban board")
@@ -114,7 +115,7 @@ export default class KanbanPlugin extends Plugin {
       : this.app.fileManager.getNewFileParent("");
 
     // Forcing frontmatter for now until more options are available
-    const frontmatter = ["---", "", "kanban-plugin: basic", "", "---", "", ""].join(
+    const frontmatter = ["---", "", `${frontMatterKey}: basic`, "", "---", "", ""].join(
       "\n"
     );
 

@@ -1,6 +1,8 @@
 import { generateInstanceId } from "./components/helpers";
 import { Board, Item, Lane } from "./components/types";
 
+export const frontMatterKey = 'kanban-plugin'
+
 const newLineRegex = /[\r\n]+/g;
 
 // Begins with one or more # followed by a space
@@ -74,7 +76,7 @@ function archiveToMd(archive: Item[]) {
 }
 
 export function boardToMd(board: Board) {
-  const frontmatter = ["---", "", "kanban-plugin: basic", "", "---", "", ""].join("\n");
+  const frontmatter = ["---", "", `${frontMatterKey}: basic`, "", "---", "", ""].join("\n");
 
   const lanes = board.lanes.reduce((md, lane) => {
     return md + laneToMd(lane);
