@@ -31,6 +31,7 @@ export function ItemForm({ addItem }: ItemFormProps) {
     };
 
     addItem(newItem);
+    setItemTitle("");
   };
 
   if (isInputVisible) {
@@ -49,7 +50,6 @@ export function ItemForm({ addItem }: ItemFormProps) {
                 if (e.key === "Enter") {
                   e.preventDefault();
                   createItem();
-                  setItemTitle("");
                 } else if (e.key === "Escape") {
                   clear();
                 }
