@@ -74,7 +74,7 @@ function archiveToMd(archive: Item[]) {
 }
 
 export function boardToMd(board: Board) {
-  const frontmatter = ["---", "", "kanban: basic", "", "---", "", ""].join("\n");
+  const frontmatter = ["---", "", "kanban-plugin: basic", "", "---", "", ""].join("\n");
 
   const lanes = board.lanes.reduce((md, lane) => {
     return md + laneToMd(lane);

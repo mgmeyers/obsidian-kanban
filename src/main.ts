@@ -22,7 +22,7 @@ export default class KanbanPlugin extends Plugin {
     });
 
     this.registerView(kanbanViewType, (leaf) => new KanbanView(leaf));
-    
+
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
         const activeLeaf = this.app.workspace.activeLeaf;
@@ -43,7 +43,7 @@ export default class KanbanPlugin extends Plugin {
 
         const cache = this.app.metadataCache.getFileCache(file);
 
-        if (cache?.frontmatter?.kanban) {
+        if (cache?.frontmatter && cache.frontmatter['kanban-plugin']) {
           this.setKanbanView(activeLeaf);
         }
       })
@@ -114,7 +114,7 @@ export default class KanbanPlugin extends Plugin {
       : this.app.fileManager.getNewFileParent("");
 
     // Forcing frontmatter for now until more options are available
-    const frontmatter = ["---", "", "kanban: basic", "", "---", "", ""].join(
+    const frontmatter = ["---", "", "kanban-plugin: basic", "", "---", "", ""].join(
       "\n"
     );
 
