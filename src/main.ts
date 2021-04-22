@@ -10,6 +10,9 @@ export default class KanbanPlugin extends Plugin {
   settings: KanbanPluginSettings;
 
   async onload() {
+    // Which view to use as the default for kanban boards
+    // Users can switch between `kanbanViewType` and `markdown` via
+    // the more options menu
     let defaultViewType = kanbanViewType;
 
     this.addCommand({
@@ -19,15 +22,29 @@ export default class KanbanPlugin extends Plugin {
     });
 
     this.registerView(kanbanViewType, (leaf) => new KanbanView(leaf));
-
+    
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
-        if (!file || defaultViewType === "markdown") return;
+        const activeLeaf = this.app.workspace.activeLeaf;
+        const activeViewType = activeLeaf.view.getViewType();
+
+        this.app.workspace.getLeavesOfType("markdown");
+
+        if (
+          // We don't have a file
+          !file ||
+          // The file is opened in a special view (eg. localgraph)
+          activeViewType !== "markdown" ||
+          // The default view for kanbans is markdown
+          defaultViewType === "markdown"
+        ) {
+          return;
+        }
 
         const cache = this.app.metadataCache.getFileCache(file);
 
         if (cache?.frontmatter?.kanban) {
-          this.setKanbanView(this.app.workspace.activeLeaf);
+          this.setKanbanView(activeLeaf);
         }
       })
     );
@@ -35,7 +52,7 @@ export default class KanbanPlugin extends Plugin {
     this.registerEvent(
       this.app.workspace.on("file-menu", (menu, file: TFile, source, leaf) => {
         // Add a menu item to force the board to markdown view
-        if (leaf?.getViewState().type === kanbanViewType) {
+        if (leaf?.view.getViewType() === kanbanViewType) {
           menu.addItem((item) => {
             item
               .setTitle("Open as markdown")
@@ -59,7 +76,7 @@ export default class KanbanPlugin extends Plugin {
         }
 
         // Add a menu item to go back to kanban view
-        if (leaf?.getViewState().type === "markdown") {
+        if (leaf?.view.getViewType() === "markdown") {
           const cache = this.app.metadataCache.getFileCache(file);
 
           if (cache?.frontmatter?.kanban) {
@@ -124,8 +141,17 @@ export default class KanbanPlugin extends Plugin {
   }
 
   onunload() {
-    console.log("unloading plugin");
-    console.log("todo: close all kanban leaves");
+    const kanbanLeaves = this.app.workspace.getLeavesOfType(kanbanViewType);
+
+    kanbanLeaves.forEach((leaf) => {
+      leaf.setViewState({
+        type: "markdown",
+        state: {
+          file: leaf.getViewState().state?.file,
+          mode: "source",
+        },
+      });
+    });
   }
 
   async loadSettings() {
