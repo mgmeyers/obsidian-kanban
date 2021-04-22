@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, TFile, TFolder } from "obsidian";
+import { Plugin, WorkspaceLeaf, TFile, TFolder, MarkdownView } from "obsidian";
 import { kanbanIcon, KanbanView, kanbanViewType } from "./KanbanView";
 import "./main.css";
 import { frontMatterKey } from "./parser";
@@ -11,10 +11,7 @@ export default class KanbanPlugin extends Plugin {
   settings: KanbanPluginSettings;
 
   async onload() {
-    // Which view to use as the default for kanban boards
-    // Users can switch between `kanbanViewType` and `markdown` via
-    // the more options menu
-    let defaultViewType = kanbanViewType;
+    this.registerView(kanbanViewType, (leaf) => new KanbanView(leaf));
 
     this.addCommand({
       id: "create-new-kanban-board",
@@ -22,14 +19,27 @@ export default class KanbanPlugin extends Plugin {
       callback: () => this.newKanban(),
     });
 
-    this.registerView(kanbanViewType, (leaf) => new KanbanView(leaf));
+    /**
+     *
+     * TODO: How can we force the kanban view for files matching
+     * the kanban frontmatter key without messing up:
+     *
+     * 1. localgraph, backlink, and outline views
+     * 2. forward/back navigation
+     *
+     */
 
+    /*
+
+    // Which view to use as the default for kanban boards
+    // Users can switch between `kanbanViewType` and `markdown` via
+    // the more options menu
+    let defaultViewType = kanbanViewType;
+    
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
         const activeLeaf = this.app.workspace.activeLeaf;
         const activeViewType = activeLeaf.view.getViewType();
-
-        this.app.workspace.getLeavesOfType("markdown");
 
         if (
           // We don't have a file
@@ -49,6 +59,8 @@ export default class KanbanPlugin extends Plugin {
         }
       })
     );
+    
+    */
 
     this.registerEvent(
       this.app.workspace.on("file-menu", (menu, file: TFile, source, leaf) => {
@@ -59,17 +71,8 @@ export default class KanbanPlugin extends Plugin {
               .setTitle("Open as markdown")
               .setIcon("document")
               .onClick(() => {
-                const viewState = leaf.getViewState();
-
-                defaultViewType = "markdown";
-
-                leaf.setViewState({
-                  type: "markdown",
-                  state: {
-                    file: viewState.state.file,
-                    mode: "source",
-                  },
-                });
+                // defaultViewType = "markdown";
+                this.setMarkdownView(leaf);
               });
           });
 
@@ -86,8 +89,7 @@ export default class KanbanPlugin extends Plugin {
                 .setTitle("Open as kanban board")
                 .setIcon(kanbanIcon)
                 .onClick(() => {
-                  defaultViewType = kanbanViewType;
-
+                  // defaultViewType = kanbanViewType;
                   this.setKanbanView(leaf);
                 });
             });
@@ -109,49 +111,62 @@ export default class KanbanPlugin extends Plugin {
     );
   }
 
+  async setMarkdownView(leaf: WorkspaceLeaf) {
+    await leaf.setViewState({
+      type: "markdown",
+      state: {
+        file: leaf.view.getState()?.file,
+        mode: "source",
+      },
+    });
+  }
+
+  async setKanbanView(leaf: WorkspaceLeaf) {
+    await leaf.setViewState({
+      type: kanbanViewType,
+      state: leaf.view.getState(),
+    });
+  }
+
   async newKanban(folder?: TFolder) {
     const targetFolder = folder
       ? folder
       : this.app.fileManager.getNewFileParent("");
 
     // Forcing frontmatter for now until more options are available
-    const frontmatter = ["---", "", `${frontMatterKey}: basic`, "", "---", "", ""].join(
-      "\n"
-    );
+    const frontmatter = [
+      "---",
+      "",
+      `${frontMatterKey}: basic`,
+      "",
+      "---",
+      "",
+      "",
+    ].join("\n");
 
     try {
       // @ts-ignore
       const kanban: TFile = await this.app.fileManager.createNewMarkdownFile(
         targetFolder,
-        "Untitled"
+        "Untitled Kanban"
       );
 
       await this.app.vault.modify(kanban, frontmatter);
-      await this.app.workspace.activeLeaf.openFile(kanban);
-      await this.setKanbanView(this.app.workspace.activeLeaf);
+
+      const view = new KanbanView(this.app.workspace.activeLeaf);
+
+      await view.setState({ file: kanban.path }, {});
+      await this.app.workspace.activeLeaf.open(view);
     } catch (e) {
       console.log("Error creating kanban board:", e);
     }
-  }
-
-  async setKanbanView(leaf: WorkspaceLeaf) {
-    await leaf.setViewState({
-      type: kanbanViewType,
-      state: { file: leaf.getViewState().state.file },
-    });
   }
 
   onunload() {
     const kanbanLeaves = this.app.workspace.getLeavesOfType(kanbanViewType);
 
     kanbanLeaves.forEach((leaf) => {
-      leaf.setViewState({
-        type: "markdown",
-        state: {
-          file: leaf.getViewState().state?.file,
-          mode: "source",
-        },
-      });
+      this.setMarkdownView(leaf);
     });
   }
 
