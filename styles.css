@@ -1,6 +1,5 @@
 .workspace-leaf-content[data-type="kanban"] .view-content {
   padding: 0;
-  overflow: hidden;
 }
 
 .kanban-plugin {
@@ -9,9 +8,8 @@
 
 .kanban-plugin {
   background-color: var(--background-secondary-alt);
-  overflow-x: auto;
-  width: 100%;
-  height: 100%;
+  width: fit-content;
+  height: fit-content;
   position: relative;
 }
 
@@ -35,13 +33,10 @@
 }
 
 .kanban-plugin__board {
-  height: 100%;
-  width: fit-content;
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
   padding: 1rem;
-  overflow: hidden;
 }
 
 .kanban-plugin__lane {
@@ -53,7 +48,6 @@
   margin-right: 10px;
   flex-shrink: 0;
   border: 1px solid var(--background-modifier-border);
-  max-height: 100%;
 }
 
 .kanban-plugin__lane button {
@@ -172,12 +166,6 @@ button.kanban-plugin__new-lane-button:hover {
   margin: 4px;
   border-radius: 6px;
   height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.kanban-plugin__lane.is-dragging .kanban-plugin__lane-items {
-  overflow-y: hidden;
 }
 
 .kanban-plugin__lane-items.is-dragging-over {
