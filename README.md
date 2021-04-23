@@ -1,6 +1,10 @@
 ## Obsidian Kanban Plugin
 
-Note: This plugin is currently in alpha. Please submit any bugs or feature requests here: https://github.com/mgmeyers/obsidian-kanban/issues
+> Please submit bugs / issues here: https://github.com/mgmeyers/obsidian-kanban/issues
+
+> Please submit feature requests here: https://github.com/mgmeyers/obsidian-kanban/discussions/categories/ideas-feature-requests
+
+---
 
 This plugin allows creating markdown-backed Kanban boards. For example, this Kanban board:
 
@@ -54,8 +58,7 @@ Or the folder context menu:
 
 ## Roadmap
 
-Below is the planned roadmap. Please [submit an issue](https://github.com/mgmeyers/obsidian-kanban/issues) if you'd like to request a feature.
-
+Below is the planned roadmap.
 
 ### Beta
 
