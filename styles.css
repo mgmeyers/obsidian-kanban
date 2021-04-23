@@ -8,6 +8,8 @@
 
 .kanban-plugin {
   background-color: var(--background-secondary-alt);
+  min-height: 100%;
+  min-width: 100%;
   width: fit-content;
   height: fit-content;
   position: relative;
