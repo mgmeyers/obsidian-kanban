@@ -107,7 +107,7 @@ export function draggableItemFactory({
               className={`${c("item-edit-button")} ${
                 isSettingsVisible ? "is-enabled" : ""
               }`}
-              aria-label={isSettingsVisible ? "Cancel" : "Edit item"}
+              aria-label={isSettingsVisible ? "Close" : "Edit item"}
             >
               <Icon name={isSettingsVisible ? "cross" : "pencil"} />
             </button>
