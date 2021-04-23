@@ -1,7 +1,10 @@
-import { Plugin, WorkspaceLeaf, TFile, TFolder, MarkdownView } from "obsidian";
+import { Plugin, WorkspaceLeaf, TFile, TFolder, ViewState } from "obsidian";
+import { around } from "monkey-around";
+
 import { kanbanIcon, KanbanView, kanbanViewType } from "./KanbanView";
-import "./main.css";
 import { frontMatterKey } from "./parser";
+
+import "./main.css";
 
 // TODO: settings
 interface KanbanPluginSettings {}
@@ -9,8 +12,61 @@ const DEFAULT_SETTINGS: KanbanPluginSettings = {};
 
 export default class KanbanPlugin extends Plugin {
   settings: KanbanPluginSettings;
+  kanbanFileModes: { [file: string]: string } = {};
 
   async onload() {
+    const self = this;
+
+    // Monkey patch WorkspaceLeaf to open Kanbans with KanbanView by default
+    this.register(
+      around(WorkspaceLeaf.prototype, {
+
+        // Kanbans can be viewed as markdown or kanban, and we keep track of the mode
+        // while the file is open. When the file closes, we no longer need to keep track of it.
+        detach(originalDetach) {
+          return function () {
+            const state = this.view?.getState();
+
+            if (state?.file && self.kanbanFileModes[state.file]) {
+              delete self.kanbanFileModes[state.file];
+            }
+
+            return originalDetach.apply(this);
+          };
+        },
+
+        setViewState(originalSetViewState) {
+          return function (state: ViewState, ...rest: any[]) {
+            if (
+              // If we have a markdown file
+              state.type === "markdown" &&
+              state.state?.file &&
+
+              // And the current mode of the file is not set to markdown
+              self.kanbanFileModes[state.state.file] !== "markdown"
+            ) {
+              // Then check for the kanban frontMatterKey
+              const cache = self.app.metadataCache.getCache(state.state.file);
+
+              if (cache?.frontmatter && cache.frontmatter[frontMatterKey]) {
+                // If we have it, force the view type to kanban
+                const newState = {
+                  ...state,
+                  type: kanbanViewType,
+                };
+
+                self.kanbanFileModes[state.state.file] = kanbanViewType
+
+                return originalSetViewState.apply(this, [newState, ...rest]);
+              }
+            }
+
+            return originalSetViewState.apply(this, [state, ...rest]);
+          };
+        },
+      })
+    );
+
     this.registerView(kanbanViewType, (leaf) => new KanbanView(leaf));
 
     this.addCommand({
@@ -18,49 +74,6 @@ export default class KanbanPlugin extends Plugin {
       name: "Create new board",
       callback: () => this.newKanban(),
     });
-
-    /**
-     *
-     * TODO: How can we force the kanban view for files matching
-     * the kanban frontmatter key without messing up:
-     *
-     * 1. localgraph, backlink, and outline views
-     * 2. forward/back navigation
-     *
-     */
-
-    /*
-
-    // Which view to use as the default for kanban boards
-    // Users can switch between `kanbanViewType` and `markdown` via
-    // the more options menu
-    let defaultViewType = kanbanViewType;
-    
-    this.registerEvent(
-      this.app.workspace.on("file-open", (file) => {
-        const activeLeaf = this.app.workspace.activeLeaf;
-        const activeViewType = activeLeaf.view.getViewType();
-
-        if (
-          // We don't have a file
-          !file ||
-          // The file is opened in a special view (eg. localgraph)
-          activeViewType !== "markdown" ||
-          // The default view for kanbans is markdown
-          defaultViewType === "markdown"
-        ) {
-          return;
-        }
-
-        const cache = this.app.metadataCache.getFileCache(file);
-
-        if (cache?.frontmatter && cache.frontmatter[frontMatterKey]) {
-          this.setKanbanView(activeLeaf);
-        }
-      })
-    );
-    
-    */
 
     this.registerEvent(
       this.app.workspace.on("file-menu", (menu, file: TFile, source, leaf) => {
@@ -71,7 +84,7 @@ export default class KanbanPlugin extends Plugin {
               .setTitle("Open as markdown")
               .setIcon("document")
               .onClick(() => {
-                // defaultViewType = "markdown";
+                this.kanbanFileModes[file.path] = "markdown";
                 this.setMarkdownView(leaf);
               });
           });
@@ -89,7 +102,7 @@ export default class KanbanPlugin extends Plugin {
                 .setTitle("Open as kanban board")
                 .setIcon(kanbanIcon)
                 .onClick(() => {
-                  // defaultViewType = kanbanViewType;
+                  this.kanbanFileModes[file.path] = kanbanViewType;
                   this.setKanbanView(leaf);
                 });
             });
@@ -114,10 +127,7 @@ export default class KanbanPlugin extends Plugin {
   async setMarkdownView(leaf: WorkspaceLeaf) {
     await leaf.setViewState({
       type: "markdown",
-      state: {
-        file: leaf.view.getState()?.file,
-        mode: "source",
-      },
+      state: leaf.view.getState(),
     });
   }
 

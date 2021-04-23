@@ -91,7 +91,7 @@ export function LaneForm({ addLane }: LaneFormProps) {
         className={c("new-lane-button")}
         onClick={() => setIsInputVisible(true)}
       >
-        <span className={c("new-lane-button")}>+</span> Add a list
+        <span className={c("new-lane-button-plus")}>+</span> Add a list
       </button>
     </div>
   );

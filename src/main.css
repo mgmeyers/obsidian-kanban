@@ -9,7 +9,7 @@
 
 .kanban-plugin {
   background-color: var(--background-secondary-alt);
-  overflow-y: auto;
+  overflow-x: auto;
   width: 100%;
   height: 100%;
   position: relative;
