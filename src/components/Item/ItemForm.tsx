@@ -46,6 +46,7 @@ export function ItemForm({ addItem }: ItemFormProps) {
       };
 
       addItem(newItem);
+      setItemTitle("");
     }
   };
 
