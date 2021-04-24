@@ -1,3 +1,4 @@
+import { MarkdownRenderer } from "obsidian";
 import update from "immutability-helper";
 import React from "react";
 import {
@@ -8,6 +9,7 @@ import {
 import { Item } from "../types";
 import { c } from "../helpers";
 import { Icon } from "../Icon/Icon";
+import { ObsidianContext } from "../context";
 
 export interface ItemContentProps {
   item: Item;
@@ -22,13 +24,54 @@ export function ItemContent({
   onChange,
   onKeyDown,
 }: ItemContentProps) {
+  const { filePath, view } = React.useContext(ObsidianContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
+  const outputRef = React.useRef<HTMLDivElement>();
 
   React.useEffect(() => {
-    if (isSettingsVisible) {
-      inputRef.current?.focus();
+    if (isSettingsVisible && inputRef.current) {
+      const input = inputRef.current;
+
+      input.focus();
+      input.selectionStart = input.selectionEnd = input.value.length;
     }
   }, [isSettingsVisible]);
+
+  React.useEffect(() => {
+    if (!isSettingsVisible && outputRef.current) {
+      outputRef.current.empty();
+      MarkdownRenderer.renderMarkdown(
+        item.title,
+        outputRef.current,
+        filePath,
+        view
+      );
+    }
+  }, [item.title, filePath, view, isSettingsVisible]);
+
+  const onClick = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      const targetEl = e.target as HTMLElement;
+
+      // Open an internal link in a new pane
+      if (targetEl.hasClass("internal-link")) {
+        view.app.workspace.openLinkText(
+          targetEl.getAttr("href"),
+          filePath,
+          true
+        );
+        return;
+      }
+
+      // Open a tag search
+      if (targetEl.hasClass("tag")) {
+        (view.app as any).internalPlugins
+          .getPluginById("global-search")
+          .instance.openGlobalSearch(`tag:${targetEl.getAttr("href")}`);
+      }
+    },
+    [view, filePath]
+  );
 
   if (isSettingsVisible) {
     return (
@@ -45,7 +88,11 @@ export function ItemContent({
     );
   }
 
-  return <div className={c("item-title")}>{item.title}</div>;
+  return (
+    <div onClick={onClick} className={c("item-title")}>
+      <div className={c("item-markdown")} ref={outputRef} />
+    </div>
+  );
 }
 
 export interface DraggableItemFactoryParams {

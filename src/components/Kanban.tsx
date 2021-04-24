@@ -19,9 +19,13 @@ import {
 } from "./helpers";
 import { draggableLaneFactory, DraggableLaneFactoryParams } from "./Lane/Lane";
 import { LaneForm } from "./Lane/LaneForm";
+import { ObsidianContext } from "./context";
+import { KanbanView } from "src/KanbanView";
 
 interface KanbanProps {
   dataBridge: DataBridge;
+  filePath?: string;
+  view: KanbanView;
 }
 
 interface CreateBoardDragHandlerParams {
@@ -133,7 +137,7 @@ export const Kanban = (props: KanbanProps) => {
   };
 
   const archiveLane = (laneIndex: number) => {
-    const items = boardData.lanes[laneIndex].items
+    const items = boardData.lanes[laneIndex].items;
 
     setBoardData(
       update(boardData, {
@@ -141,8 +145,8 @@ export const Kanban = (props: KanbanProps) => {
           $splice: [[laneIndex, 1]],
         },
         archive: {
-          $push: items
-        }
+          $push: items,
+        },
       })
     );
   };
@@ -232,18 +236,20 @@ export const Kanban = (props: KanbanProps) => {
   );
 
   return (
-    <div className={baseClassName}>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable
-          droppableId="board"
-          type="LANE"
-          direction="horizontal"
-          ignoreContainerClipping={false}
-          renderClone={renderLaneGhost}
-        >
-          {renderLanes}
-        </Droppable>
-      </DragDropContext>
-    </div>
+    <ObsidianContext.Provider value={{ filePath: props.filePath, view: props.view }}>
+      <div className={baseClassName}>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable
+            droppableId="board"
+            type="LANE"
+            direction="horizontal"
+            ignoreContainerClipping={false}
+            renderClone={renderLaneGhost}
+          >
+            {renderLanes}
+          </Droppable>
+        </DragDropContext>
+      </div>
+    </ObsidianContext.Provider>
   );
 };

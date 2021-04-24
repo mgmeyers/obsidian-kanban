@@ -227,6 +227,10 @@ button.kanban-plugin__new-lane-button:hover {
   line-height: 1.5;
 }
 
+.kanban-plugin__item-title p {
+  margin: 0;
+}
+
 .kanban-plugin__item-edit-button-wrapper {
   display: flex;
   flex-grow: 0;
