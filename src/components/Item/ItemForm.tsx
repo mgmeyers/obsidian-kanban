@@ -1,20 +1,32 @@
 import React from "react";
+
 import { Item } from "../types";
 import { c, generateInstanceId } from "../helpers";
+import { ObsidianContext } from "../context";
+import { constructAutocomplete } from "./autocomplete";
 
 interface ItemFormProps {
   addItem: (item: Item) => void;
 }
 
 export function ItemForm({ addItem }: ItemFormProps) {
+  const obsidianContext = React.useContext(ObsidianContext);
+
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const [itemTitle, setItemTitle] = React.useState("");
 
+  const autocompleteVisibilityRef = React.useRef<boolean>(false);
   const inputRef = React.useRef<HTMLTextAreaElement>();
 
   React.useEffect(() => {
-    if (isInputVisible) {
-      inputRef.current?.focus();
+    if (isInputVisible && inputRef.current) {
+      inputRef.current.focus();
+
+      return constructAutocomplete({
+        inputRef,
+        autocompleteVisibilityRef,
+        obsidianContext,
+      });
     }
   }, [isInputVisible]);
 
@@ -24,14 +36,17 @@ export function ItemForm({ addItem }: ItemFormProps) {
   };
 
   const createItem = () => {
-    const newItem: Item = {
-      id: generateInstanceId(),
-      title: itemTitle,
-      data: {},
-    };
+    const title = itemTitle.trim();
 
-    addItem(newItem);
-    setItemTitle("");
+    if (title) {
+      const newItem: Item = {
+        id: generateInstanceId(),
+        title,
+        data: {},
+      };
+
+      addItem(newItem);
+    }
   };
 
   if (isInputVisible) {
@@ -46,7 +61,10 @@ export function ItemForm({ addItem }: ItemFormProps) {
               className={c("item-input")}
               placeholder="Item title..."
               onChange={(e) => setItemTitle(e.target.value)}
-              onKeyDown={(e) => {
+              onKeyDownCapture={(e) => {
+                // Using onKeyDownCapture to take precedence over autocomplete
+                if (autocompleteVisibilityRef.current) return;
+
                 if (e.key === "Enter") {
                   e.preventDefault();
                   createItem();

@@ -6,10 +6,14 @@ import {
   DraggableStateSnapshot,
   DraggableRubric,
 } from "react-beautiful-dnd";
+import { Textcomplete } from "@textcomplete/core";
+import { TextareaEditor } from "@textcomplete/textarea";
+
 import { Item } from "../types";
 import { c } from "../helpers";
 import { Icon } from "../Icon/Icon";
 import { KanbanContext, ObsidianContext } from "../context";
+import { constructAutocomplete } from "./autocomplete";
 
 export interface ItemContentProps {
   item: Item;
@@ -24,9 +28,12 @@ export function ItemContent({
   onChange,
   onKeyDown,
 }: ItemContentProps) {
-  const { filePath, view } = React.useContext(ObsidianContext);
+  const obsidianContext = React.useContext(ObsidianContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
+  const autocompleteVisibilityRef = React.useRef<boolean>(false);
   const outputRef = React.useRef<HTMLDivElement>();
+
+  const { view, filePath } = obsidianContext;
 
   React.useEffect(() => {
     if (isSettingsVisible && inputRef.current) {
@@ -34,6 +41,12 @@ export function ItemContent({
 
       input.focus();
       input.selectionStart = input.selectionEnd = input.value.length;
+
+      return constructAutocomplete({
+        inputRef,
+        autocompleteVisibilityRef,
+        obsidianContext,
+      });
     }
   }, [isSettingsVisible]);
 
@@ -82,7 +95,10 @@ export function ItemContent({
           className={c("item-input")}
           value={item.title}
           onChange={onChange}
-          onKeyDown={onKeyDown}
+          onKeyDown={(e) => {
+            if (autocompleteVisibilityRef.current) return;
+            onKeyDown(e);
+          }}
         />
       </div>
     );
@@ -90,7 +106,10 @@ export function ItemContent({
 
   return (
     <div onClick={onClick} className={c("item-title")}>
-      <div className={c("item-markdown")} ref={outputRef} />
+      <div
+        className={`markdown-preview-view ${c("item-markdown")}`}
+        ref={outputRef}
+      />
     </div>
   );
 }

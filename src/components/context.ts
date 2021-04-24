@@ -2,7 +2,7 @@ import React from "react";
 import { KanbanView } from "src/KanbanView";
 import { Board, BoardModifiers } from "./types";
 
-interface ObsidianContextProps {
+export interface ObsidianContextProps {
   filePath?: string;
   view?: KanbanView;
 }

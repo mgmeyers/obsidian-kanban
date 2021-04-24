@@ -439,10 +439,71 @@ button.kanban-plugin__cancel-action-button {
 
 .kanban-plugin__grow-wrap > textarea,
 .kanban-plugin__grow-wrap::after {
-  /* Identical styling required!! */
+  /* Identical styling required! */
   border: 1px solid var(--background-modifier-border);
   padding: 5px 7px;
   font: inherit;
   grid-area: 1 / 1 / 2 / 2;
   font-size: 0.875rem;
+}
+
+.kanban-plugin
+  .kanban-plugin__item
+  .markdown-preview-view.kanban-plugin__item-markdown {
+  padding: unset;
+  width: unset;
+  height: unset;
+  position: unset;
+  overflow-y: unset;
+  overflow-wrap: break-word;
+  color: unset;
+  user-select: unset;
+  -webkit-user-select: unset;
+}
+
+.kanban-plugin__autocomplete {
+  font-size: 0.875rem;
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-primary);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  min-width: 20ch;
+  max-width: 40ch;
+  max-height: 200px;
+  border-radius: 6px;
+  box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.2);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.kanban-plugin__autocomplete li {
+  margin: 0;
+}
+
+.kanban-plugin .textcomplete-footer,
+.kanban-plugin .textcomplete-header {
+  display: none;
+}
+
+.kanban-plugin__autocomplete-item-active,
+.kanban-plugin__autocomplete-item {
+  border-top: 1px solid var(--background-modifier-border);
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.kanban-plugin__autocomplete
+  .textcomplete-header
+  + .kanban-plugin__autocomplete-item,
+.kanban-plugin__autocomplete
+  .textcomplete-header
+  + .kanban-plugin__autocomplete-item-active {
+  border-top: none;
+}
+
+.kanban-plugin__autocomplete-item:hover,
+.kanban-plugin__autocomplete-item-active {
+  color: var(--text-on-accent);
+  background-color: var(--interactive-accent-hover);
 }
