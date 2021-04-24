@@ -5,6 +5,7 @@ import { c } from "../helpers";
 import { GripIcon } from "../Icon/GripIcon";
 import { Icon } from "../Icon/Icon";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
+import { KanbanContext } from "../context";
 
 interface LaneTitleProps {
   title: string;
@@ -44,18 +45,10 @@ function LaneTitle({
 interface LaneSettingsProps {
   lane: Lane;
   laneIndex: number;
-  updateLane: (laneIndex: number, newLane: Lane) => void;
-  deleteLane: (laneIndex: number) => void;
-  archiveLane: (laneIndex: number) => void;
 }
 
-function LaneSettings({
-  lane,
-  laneIndex,
-  updateLane,
-  deleteLane,
-  archiveLane,
-}: LaneSettingsProps) {
+function LaneSettings({ lane, laneIndex }: LaneSettingsProps) {
+  const { boardModifiers } = React.useContext(KanbanContext);
   const [confirmAction, setConfirmAction] = React.useState<
     "delete" | "archive" | null
   >(null);
@@ -68,8 +61,10 @@ function LaneSettings({
       <div>
         <button
           onClick={() => {
-            if (confirmAction === "delete") deleteLane(laneIndex);
-            if (confirmAction === "archive") archiveLane(laneIndex);
+            if (confirmAction === "delete")
+              boardModifiers.deleteLane(laneIndex);
+            if (confirmAction === "archive")
+              boardModifiers.archiveLane(laneIndex);
           }}
           className={c("confirm-action-button")}
         >
@@ -88,7 +83,7 @@ function LaneSettings({
       <button
         onClick={() => {
           if (lane.items.length == 0) {
-            deleteLane(laneIndex);
+            boardModifiers.deleteLane(laneIndex);
           } else {
             // Confirm if items will be deleted when the lane is deleted
             setConfirmAction("delete");
@@ -101,7 +96,7 @@ function LaneSettings({
       <button
         onClick={() => {
           if (lane.items.length == 0) {
-            deleteLane(laneIndex);
+            boardModifiers.deleteLane(laneIndex);
           } else {
             // Confirm if items will be deleted when the lane is deleted
             setConfirmAction("archive");
@@ -122,7 +117,7 @@ function LaneSettings({
         </div>
         <div
           onClick={() =>
-            updateLane(
+            boardModifiers.updateLane(
               laneIndex,
               update(lane, {
                 data: { $toggle: ["shouldMarkItemsComplete"] },
@@ -143,19 +138,14 @@ interface LaneHeaderProps {
   lane: Lane;
   laneIndex: number;
   dragHandleProps?: DraggableProvidedDragHandleProps;
-  updateLane: (laneIndex: number, newLane: Lane) => void;
-  deleteLane: (laneIndex: number) => void;
-  archiveLane: (laneIndex: number) => void;
 }
 
 export function LaneHeader({
   lane,
   laneIndex,
   dragHandleProps,
-  updateLane,
-  deleteLane,
-  archiveLane,
 }: LaneHeaderProps) {
+  const { boardModifiers } = React.useContext(KanbanContext);
   const [isSettingsVisible, setIsSettingsVisible] = React.useState(false);
 
   return (
@@ -173,7 +163,7 @@ export function LaneHeader({
           isSettingsVisible={isSettingsVisible}
           title={lane.title}
           onChange={(e) =>
-            updateLane(
+            boardModifiers.updateLane(
               laneIndex,
               update(lane, { title: { $set: e.target.value } })
             )
@@ -201,15 +191,7 @@ export function LaneHeader({
         </div>
       </div>
 
-      {isSettingsVisible && (
-        <LaneSettings
-          lane={lane}
-          laneIndex={laneIndex}
-          updateLane={updateLane}
-          deleteLane={deleteLane}
-          archiveLane={archiveLane}
-        />
-      )}
+      {isSettingsVisible && <LaneSettings lane={lane} laneIndex={laneIndex} />}
     </>
   );
 }

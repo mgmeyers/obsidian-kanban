@@ -1,12 +1,10 @@
 import React from "react";
 import { Lane } from "../types";
 import { c, generateInstanceId } from "../helpers";
+import { KanbanContext } from "../context";
 
-interface LaneFormProps {
-  addLane: (lane: Lane) => void;
-}
-
-export function LaneForm({ addLane }: LaneFormProps) {
+export function LaneForm() {
+  const { boardModifiers } = React.useContext(KanbanContext);
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const [shouldMarkAsComplete, setShouldMarkAsComplete] = React.useState(false);
   const [laneTitle, setLaneTitle] = React.useState("");
@@ -35,7 +33,7 @@ export function LaneForm({ addLane }: LaneFormProps) {
       },
     };
 
-    addLane(newLane);
+    boardModifiers.addLane(newLane);
     clear();
   };
 

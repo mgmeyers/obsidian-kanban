@@ -9,7 +9,7 @@ import {
 import { Item } from "../types";
 import { c } from "../helpers";
 import { Icon } from "../Icon/Icon";
-import { ObsidianContext } from "../context";
+import { KanbanContext, ObsidianContext } from "../context";
 
 export interface ItemContentProps {
   item: Item;
@@ -99,17 +99,11 @@ export interface DraggableItemFactoryParams {
   items: Item[];
   laneIndex: number;
   shouldShowArchiveButton: boolean;
-  deleteItem: (laneIndex: number, itemIndex: number) => void;
-  updateItem: (laneIndex: number, itemIndex: number, item: Item) => void;
-  archiveItem: (laneIndex: number, itemIndex: number, item: Item) => void;
 }
 
 export function draggableItemFactory({
   items,
   laneIndex,
-  updateItem,
-  deleteItem,
-  archiveItem,
   shouldShowArchiveButton,
 }: DraggableItemFactoryParams) {
   return (
@@ -117,6 +111,7 @@ export function draggableItemFactory({
     snapshot: DraggableStateSnapshot,
     rubric: DraggableRubric
   ) => {
+    const { boardModifiers } = React.useContext(KanbanContext);
     const itemIndex = rubric.source.index;
     const item = items[itemIndex];
     const [isSettingsVisible, setIsSettingsVisible] = React.useState(false);
@@ -133,7 +128,7 @@ export function draggableItemFactory({
             isSettingsVisible={isSettingsVisible}
             item={item}
             onChange={(e) =>
-              updateItem(
+              boardModifiers.updateItem(
                 laneIndex,
                 itemIndex,
                 update(item, { title: { $set: e.target.value } })
@@ -161,7 +156,7 @@ export function draggableItemFactory({
             {shouldShowArchiveButton && (
               <button
                 onClick={() => {
-                  archiveItem(laneIndex, itemIndex, item);
+                  boardModifiers.archiveItem(laneIndex, itemIndex, item);
                 }}
                 className={c("item-edit-archive-button")}
                 aria-label="Archive item"
@@ -175,13 +170,15 @@ export function draggableItemFactory({
           <div className={c("item-settings")}>
             <div className={c("item-settings-actions")}>
               <button
-                onClick={() => deleteItem(laneIndex, itemIndex)}
+                onClick={() => boardModifiers.deleteItem(laneIndex, itemIndex)}
                 className={c("item-button-delete")}
               >
                 <Icon name="trash" /> Delete
               </button>
               <button
-                onClick={() => archiveItem(laneIndex, itemIndex, item)}
+                onClick={() =>
+                  boardModifiers.archiveItem(laneIndex, itemIndex, item)
+                }
                 className={c("item-button-archive")}
               >
                 <Icon name="sheets-in-box" /> Archive

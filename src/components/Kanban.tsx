@@ -1,5 +1,5 @@
 import update from "immutability-helper";
-import React from "react";
+import React, { useCallback } from "react";
 import { DataBridge } from "../DataBridge";
 import {
   DragDropContext,
@@ -8,7 +8,7 @@ import {
   Draggable,
   DropResult,
 } from "react-beautiful-dnd";
-import { Board, Item, Lane } from "./types";
+import { Board, BoardModifiers, Item, Lane } from "./types";
 import {
   c,
   baseClassName,
@@ -19,7 +19,7 @@ import {
 } from "./helpers";
 import { draggableLaneFactory, DraggableLaneFactoryParams } from "./Lane/Lane";
 import { LaneForm } from "./Lane/LaneForm";
-import { ObsidianContext } from "./context";
+import { KanbanContext, ObsidianContext } from "./context";
 import { KanbanView } from "src/KanbanView";
 
 interface KanbanProps {
@@ -28,15 +28,15 @@ interface KanbanProps {
   view: KanbanView;
 }
 
-interface CreateBoardDragHandlerParams {
+interface BoardStateProps {
   boardData: Board;
   setBoardData: React.Dispatch<Board>;
 }
 
-export function createBoardDragHandler({
+export function getBoardDragHandler({
   boardData,
   setBoardData,
-}: CreateBoardDragHandlerParams) {
+}: BoardStateProps) {
   return (dropResult: DropResult) => {
     const { source, destination } = dropResult;
 
@@ -71,6 +71,121 @@ export function createBoardDragHandler({
   };
 }
 
+function getBoardModifiers({
+  boardData,
+  setBoardData,
+}: BoardStateProps): BoardModifiers {
+  return {
+    addItemToLane: (laneIndex: number, item: Item) => {
+      setBoardData(
+        update(boardData, {
+          lanes: {
+            [laneIndex]: {
+              items: {
+                $push: [item],
+              },
+            },
+          },
+        })
+      );
+    },
+
+    addLane: (lane: Lane) => {
+      setBoardData(
+        update(boardData, {
+          lanes: {
+            $push: [lane],
+          },
+        })
+      );
+    },
+
+    updateLane: (laneIndex: number, lane: Lane) => {
+      setBoardData(
+        update(boardData, {
+          lanes: {
+            [laneIndex]: {
+              $set: lane,
+            },
+          },
+        })
+      );
+    },
+
+    deleteLane: (laneIndex: number) => {
+      setBoardData(
+        update(boardData, {
+          lanes: {
+            $splice: [[laneIndex, 1]],
+          },
+        })
+      );
+    },
+
+    archiveLane: (laneIndex: number) => {
+      const items = boardData.lanes[laneIndex].items;
+
+      setBoardData(
+        update(boardData, {
+          lanes: {
+            $splice: [[laneIndex, 1]],
+          },
+          archive: {
+            $push: items,
+          },
+        })
+      );
+    },
+
+    deleteItem: (laneIndex: number, itemIndex: number) => {
+      setBoardData(
+        update(boardData, {
+          lanes: {
+            [laneIndex]: {
+              items: {
+                $splice: [[itemIndex, 1]],
+              },
+            },
+          },
+        })
+      );
+    },
+
+    updateItem: (laneIndex: number, itemIndex: number, item: Item) => {
+      setBoardData(
+        update(boardData, {
+          lanes: {
+            [laneIndex]: {
+              items: {
+                [itemIndex]: {
+                  $set: item,
+                },
+              },
+            },
+          },
+        })
+      );
+    },
+
+    archiveItem: (laneIndex: number, itemIndex: number, item: Item) => {
+      setBoardData(
+        update(boardData, {
+          lanes: {
+            [laneIndex]: {
+              items: {
+                $splice: [[itemIndex, 1]],
+              },
+            },
+          },
+          archive: {
+            $push: [item],
+          },
+        })
+      );
+    },
+  };
+}
+
 export const Kanban = (props: KanbanProps) => {
   const [boardData, setBoardData] = React.useState<Board | null>(
     props.dataBridge.data
@@ -88,132 +203,22 @@ export const Kanban = (props: KanbanProps) => {
     }
   }, [boardData]);
 
+  const boardModifiers = React.useMemo(() => {
+    return getBoardModifiers({ boardData, setBoardData });
+  }, [boardData, setBoardData]);
+
+  const onDragEnd = React.useMemo(() => {
+    return getBoardDragHandler({ boardData, setBoardData });
+  }, [boardData, setBoardData]);
+
   if (boardData === null) return null;
 
-  const addItemToLane = (laneIndex: number, item: Item) => {
-    setBoardData(
-      update(boardData, {
-        lanes: {
-          [laneIndex]: {
-            items: {
-              $push: [item],
-            },
-          },
-        },
-      })
-    );
-  };
-
-  const addLane = (lane: Lane) => {
-    setBoardData(
-      update(boardData, {
-        lanes: {
-          $push: [lane],
-        },
-      })
-    );
-  };
-
-  const updateLane = (laneIndex: number, lane: Lane) => {
-    setBoardData(
-      update(boardData, {
-        lanes: {
-          [laneIndex]: {
-            $set: lane,
-          },
-        },
-      })
-    );
-  };
-
-  const deleteLane = (laneIndex: number) => {
-    setBoardData(
-      update(boardData, {
-        lanes: {
-          $splice: [[laneIndex, 1]],
-        },
-      })
-    );
-  };
-
-  const archiveLane = (laneIndex: number) => {
-    const items = boardData.lanes[laneIndex].items;
-
-    setBoardData(
-      update(boardData, {
-        lanes: {
-          $splice: [[laneIndex, 1]],
-        },
-        archive: {
-          $push: items,
-        },
-      })
-    );
-  };
-
-  const deleteItem = (laneIndex: number, itemIndex: number) => {
-    setBoardData(
-      update(boardData, {
-        lanes: {
-          [laneIndex]: {
-            items: {
-              $splice: [[itemIndex, 1]],
-            },
-          },
-        },
-      })
-    );
-  };
-
-  const updateItem = (laneIndex: number, itemIndex: number, item: Item) => {
-    setBoardData(
-      update(boardData, {
-        lanes: {
-          [laneIndex]: {
-            items: {
-              [itemIndex]: {
-                $set: item,
-              },
-            },
-          },
-        },
-      })
-    );
-  };
-
-  const archiveItem = (laneIndex: number, itemIndex: number, item: Item) => {
-    setBoardData(
-      update(boardData, {
-        lanes: {
-          [laneIndex]: {
-            items: {
-              $splice: [[itemIndex, 1]],
-            },
-          },
-        },
-        archive: {
-          $push: [item],
-        },
-      })
-    );
-  };
-
-  const onDragEnd = createBoardDragHandler({ boardData, setBoardData });
-
-  const laneFactoryParams: DraggableLaneFactoryParams = {
+  const renderLane = draggableLaneFactory({
     lanes: boardData.lanes,
-    addItemToLane,
-    updateLane,
-    deleteLane,
-    archiveLane,
-    updateItem,
-    deleteItem,
-    archiveItem,
-  };
+  });
 
-  const renderLane = draggableLaneFactory(laneFactoryParams);
   const renderLaneGhost = draggableLaneFactory({
-    ...laneFactoryParams,
+    lanes: boardData.lanes,
     isGhost: true,
   });
 
@@ -231,25 +236,29 @@ export const Kanban = (props: KanbanProps) => {
         );
       })}
       {provided.placeholder}
-      <LaneForm addLane={addLane} />
+      <LaneForm />
     </div>
   );
 
   return (
-    <ObsidianContext.Provider value={{ filePath: props.filePath, view: props.view }}>
-      <div className={baseClassName}>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable
-            droppableId="board"
-            type="LANE"
-            direction="horizontal"
-            ignoreContainerClipping={false}
-            renderClone={renderLaneGhost}
-          >
-            {renderLanes}
-          </Droppable>
-        </DragDropContext>
-      </div>
+    <ObsidianContext.Provider
+      value={{ filePath: props.filePath, view: props.view }}
+    >
+      <KanbanContext.Provider value={{ boardModifiers, board: boardData }}>
+        <div className={baseClassName}>
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable
+              droppableId="board"
+              type="LANE"
+              direction="horizontal"
+              ignoreContainerClipping={false}
+              renderClone={renderLaneGhost}
+            >
+              {renderLanes}
+            </Droppable>
+          </DragDropContext>
+        </div>
+      </KanbanContext.Provider>
     </ObsidianContext.Provider>
   );
 };

@@ -10,7 +10,7 @@ export interface Lane {
 }
 
 export interface ItemData {
-  isComplete?: boolean; 
+  isComplete?: boolean;
 }
 
 export interface Item {
@@ -22,4 +22,15 @@ export interface Item {
 export interface Board {
   lanes: Lane[];
   archive: Item[];
+}
+
+export interface BoardModifiers {
+  addItemToLane: (laneIndex: number, item: Item) => void;
+  addLane: (lane: Lane) => void;
+  archiveItem: (laneIndex: number, itemIndex: number, item: Item) => void;
+  archiveLane: (laneIndex: number) => void;
+  deleteItem: (laneIndex: number, itemIndex: number) => void;
+  deleteLane: (laneIndex: number) => void;
+  updateItem: (laneIndex: number, itemIndex: number, item: Item) => void;
+  updateLane: (laneIndex: number, lane: Lane) => void;
 }

@@ -15,50 +15,38 @@ import { draggableItemFactory, ItemContent } from "../Item/Item";
 import { ItemForm } from "../Item/ItemForm";
 import { LaneHeader } from "./LaneHeader";
 import { Icon } from "../Icon/Icon";
+import { KanbanContext } from "../context";
 
 export interface DraggableLaneFactoryParams {
   lanes: Lane[];
   isGhost?: boolean;
-  addItemToLane: (laneIndex: number, item: Item) => void;
-  updateLane: (laneIndex: number, lane: Lane) => void;
-  deleteLane: (laneIndex: number) => void;
-  archiveLane: (laneIndex: number) => void;
-  deleteItem: (laneIndex: number, itemIndex: number) => void;
-  updateItem: (laneIndex: number, itemIndex: number, item: Item) => void;
-  archiveItem: (laneIndex: number, itemIndex: number, item: Item) => void;
 }
 
-export function draggableLaneFactory({
-  lanes,
+interface LaneItemsProps {
+  isGhost?: boolean;
+  items: Item[];
+  laneId: string;
+  laneIndex: number;
+  shouldShowArchiveButton: boolean;
+}
+
+function LaneItems({
   isGhost,
-  addItemToLane,
-  updateLane,
-  deleteLane,
-  archiveLane,
-  updateItem,
-  deleteItem,
-  archiveItem,
-}: DraggableLaneFactoryParams) {
-  return (
-    provided: DraggableProvided,
-    snapshot: DraggableStateSnapshot,
-    rubric: DraggableRubric
-  ) => {
-    const lane = lanes[rubric.source.index];
-    const shouldShowArchiveButton = !!lane.data.shouldMarkItemsComplete;
+  items,
+  laneId,
+  laneIndex,
+  shouldShowArchiveButton,
+}: LaneItemsProps) {
+  const renderItem = draggableItemFactory({
+    laneIndex,
+    items,
+    shouldShowArchiveButton,
+  });
 
-    const renderItem = draggableItemFactory({
-      laneIndex: rubric.source.index,
-      items: lane.items,
-      updateItem,
-      deleteItem,
-      archiveItem,
-      shouldShowArchiveButton,
-    });
-
-    const content = isGhost ? (
+  if (isGhost) {
+    return (
       <div className={c("lane-items")}>
-        {lane.items.map((item, i) => {
+        {items.map((item, i) => {
           return (
             <div key={i} className={c("item")}>
               <div className={c("item-content-wrapper")}>
@@ -78,28 +66,45 @@ export function draggableLaneFactory({
           );
         })}
       </div>
-    ) : (
-      <Droppable droppableId={lane.id} type="ITEM" renderClone={renderItem}>
-        {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
-          <div
-            className={`${c("lane-items")} ${
-              snapshot.isDraggingOver ? "is-dragging-over" : ""
-            }`}
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-          >
-            {lane.items.map((item, i) => {
-              return (
-                <Draggable draggableId={item.id} key={item.id} index={i}>
-                  {renderItem}
-                </Draggable>
-              );
-            })}
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
     );
+  }
+
+  return (
+    <Droppable droppableId={laneId} type="ITEM" renderClone={renderItem}>
+      {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
+        <div
+          className={`${c("lane-items")} ${
+            snapshot.isDraggingOver ? "is-dragging-over" : ""
+          }`}
+          ref={provided.innerRef}
+          {...provided.droppableProps}
+        >
+          {items.map((item, i) => {
+            return (
+              <Draggable draggableId={item.id} key={item.id} index={i}>
+                {renderItem}
+              </Draggable>
+            );
+          })}
+          {provided.placeholder}
+        </div>
+      )}
+    </Droppable>
+  );
+}
+
+export function draggableLaneFactory({
+  lanes,
+  isGhost,
+}: DraggableLaneFactoryParams) {
+  return (
+    provided: DraggableProvided,
+    snapshot: DraggableStateSnapshot,
+    rubric: DraggableRubric
+  ) => {
+    const { boardModifiers } = React.useContext(KanbanContext);
+    const lane = lanes[rubric.source.index];
+    const shouldShowArchiveButton = !!lane.data.shouldMarkItemsComplete;
 
     return (
       <div
@@ -111,14 +116,17 @@ export function draggableLaneFactory({
           dragHandleProps={provided.dragHandleProps}
           laneIndex={rubric.source.index}
           lane={lane}
-          updateLane={updateLane}
-          deleteLane={deleteLane}
-          archiveLane={archiveLane}
         />
-        {content}
+        <LaneItems
+          laneId={lane.id}
+          items={lane.items}
+          laneIndex={rubric.source.index}
+          isGhost={isGhost}
+          shouldShowArchiveButton={shouldShowArchiveButton}
+        />
         <ItemForm
           addItem={(item: Item) => {
-            addItemToLane(
+            boardModifiers.addItemToLane(
               rubric.source.index,
               update(item, {
                 data: {

@@ -69,6 +69,13 @@ export class KanbanView extends TextFileView {
 
   constructKanban() {
     ReactDOM.unmountComponentAtNode(this.contentEl);
-    ReactDOM.render(<Kanban dataBridge={this.dataBridge} filePath={this.file?.path} view={this} />, this.contentEl);
+    ReactDOM.render(
+      <Kanban
+        dataBridge={this.dataBridge}
+        filePath={this.file?.path}
+        view={this}
+      />,
+      this.contentEl
+    );
   }
 }
