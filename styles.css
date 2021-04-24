@@ -447,6 +447,8 @@ button.kanban-plugin__cancel-action-button {
   font-size: 0.875rem;
 }
 
+.is-dragging
+  .markdown-preview-view.kanban-plugin__item-markdown,
 .kanban-plugin
   .kanban-plugin__item
   .markdown-preview-view.kanban-plugin__item-markdown {
