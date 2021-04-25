@@ -4,6 +4,8 @@ import { around } from "monkey-around";
 import { kanbanIcon, KanbanView, kanbanViewType } from "./KanbanView";
 import { frontMatterKey } from "./parser";
 
+// import { KanbanEmbed } from "./KanbanEmbed";
+
 import "./main.css";
 
 // TODO: settings
@@ -13,9 +15,33 @@ const DEFAULT_SETTINGS: KanbanPluginSettings = {};
 export default class KanbanPlugin extends Plugin {
   settings: KanbanPluginSettings;
   kanbanFileModes: { [file: string]: string } = {};
+  dbTimers: { [id: string]: number } = {};
+  hasSet: { [id: string]: boolean } = {};
 
   async onload() {
     const self = this;
+
+    // TODO: embedded kanban:
+    // this.registerMarkdownPostProcessor((el, ctx) => {
+    //   if (ctx.frontmatter && ctx.frontmatter[frontMatterKey]) {
+    //     clearTimeout(this.dbTimers[ctx.docId]);
+
+    //     this.dbTimers[ctx.docId] = window.setTimeout(() => {
+    //       delete this.dbTimers[ctx.docId];
+
+    //       if (!el.parentNode) return;
+
+    //       const container = el.closest(".markdown-embed-content");
+
+    //       if (container) {
+    //         container.empty();
+    //         ctx.addChild(
+    //           new KanbanEmbed(ctx.sourcePath, container as HTMLElement)
+    //         );
+    //       }
+    //     }, 50);
+    //   }
+    // });
 
     // Monkey patch WorkspaceLeaf to open Kanbans with KanbanView by default
     this.register(

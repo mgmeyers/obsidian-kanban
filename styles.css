@@ -225,10 +225,28 @@ button.kanban-plugin__new-lane-button:hover {
 .kanban-plugin__item-title {
   width: 100%;
   line-height: 1.5;
+  overflow: hidden;
 }
 
 .kanban-plugin__item-title p {
   margin: 0;
+  overflow-x: auto;
+}
+
+.is-dragging
+  .markdown-preview-view.kanban-plugin__item-markdown,
+.kanban-plugin
+  .kanban-plugin__item
+  .markdown-preview-view.kanban-plugin__item-markdown {
+  padding: unset;
+  width: unset;
+  height: unset;
+  position: unset;
+  overflow-y: unset;
+  overflow-wrap: unset;
+  color: unset;
+  user-select: unset;
+  -webkit-user-select: unset;
 }
 
 .kanban-plugin__item-edit-button-wrapper {
@@ -445,22 +463,8 @@ button.kanban-plugin__cancel-action-button {
   font: inherit;
   grid-area: 1 / 1 / 2 / 2;
   font-size: 0.875rem;
-}
-
-.is-dragging
-  .markdown-preview-view.kanban-plugin__item-markdown,
-.kanban-plugin
-  .kanban-plugin__item
-  .markdown-preview-view.kanban-plugin__item-markdown {
-  padding: unset;
-  width: unset;
-  height: unset;
-  position: unset;
-  overflow-y: unset;
-  overflow-wrap: break-word;
-  color: unset;
-  user-select: unset;
-  -webkit-user-select: unset;
+  overflow-x: auto;
+  overflow-wrap: normal;
 }
 
 .kanban-plugin__autocomplete {

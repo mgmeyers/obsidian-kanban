@@ -6,8 +6,6 @@ import {
   DraggableStateSnapshot,
   DraggableRubric,
 } from "react-beautiful-dnd";
-import { Textcomplete } from "@textcomplete/core";
-import { TextareaEditor } from "@textcomplete/textarea";
 
 import { Item } from "../types";
 import { c } from "../helpers";
@@ -31,7 +29,6 @@ export function ItemContent({
   const obsidianContext = React.useContext(ObsidianContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
   const autocompleteVisibilityRef = React.useRef<boolean>(false);
-  const outputRef = React.useRef<HTMLDivElement>();
 
   const { view, filePath } = obsidianContext;
 
@@ -50,41 +47,49 @@ export function ItemContent({
     }
   }, [isSettingsVisible]);
 
-  React.useEffect(() => {
-    if (!isSettingsVisible && outputRef.current) {
-      outputRef.current.empty();
-      MarkdownRenderer.renderMarkdown(
-        item.title,
-        outputRef.current,
-        filePath,
-        view
-      );
-    }
-  }, [item.title, filePath, view, isSettingsVisible]);
-
   const onClick = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       const targetEl = e.target as HTMLElement;
 
       // Open an internal link in a new pane
       if (targetEl.hasClass("internal-link")) {
+        e.preventDefault();
+
         view.app.workspace.openLinkText(
           targetEl.getAttr("href"),
           filePath,
           true
         );
+
         return;
       }
 
       // Open a tag search
       if (targetEl.hasClass("tag")) {
+        e.preventDefault();
+
         (view.app as any).internalPlugins
           .getPluginById("global-search")
           .instance.openGlobalSearch(`tag:${targetEl.getAttr("href")}`);
+
+        return;
       }
     },
     [view, filePath]
   );
+
+  const markdownContent = React.useMemo(() => {
+    const tempEl = createDiv();
+
+    MarkdownRenderer.renderMarkdown(
+      item.title,
+      tempEl,
+      filePath,
+      view
+    );
+
+    return { __html: tempEl.innerHTML.toString() }
+  }, [item.title, filePath, view])
 
   if (isSettingsVisible) {
     return (
@@ -108,7 +113,7 @@ export function ItemContent({
     <div onClick={onClick} className={c("item-title")}>
       <div
         className={`markdown-preview-view ${c("item-markdown")}`}
-        ref={outputRef}
+        dangerouslySetInnerHTML={markdownContent}
       />
     </div>
   );
