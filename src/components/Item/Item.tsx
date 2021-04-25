@@ -11,11 +11,14 @@ import { Item } from "../types";
 import { c } from "../helpers";
 import { Icon } from "../Icon/Icon";
 import { KanbanContext, ObsidianContext } from "../context";
-import { constructAutocomplete } from "./autocomplete";
+import {
+  useAutocompleteInputProps,
+} from "./autocomplete";
 
 export interface ItemContentProps {
   item: Item;
   isSettingsVisible: boolean;
+  setIsSettingsVisible?: React.Dispatch<boolean>;
   onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
   onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>;
 }
@@ -23,29 +26,21 @@ export interface ItemContentProps {
 export function ItemContent({
   item,
   isSettingsVisible,
+  setIsSettingsVisible,
   onChange,
-  onKeyDown,
 }: ItemContentProps) {
   const obsidianContext = React.useContext(ObsidianContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
-  const autocompleteVisibilityRef = React.useRef<boolean>(false);
 
   const { view, filePath } = obsidianContext;
 
-  React.useEffect(() => {
-    if (isSettingsVisible && inputRef.current) {
-      const input = inputRef.current;
+  const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false)
 
-      input.focus();
-      input.selectionStart = input.selectionEnd = input.value.length;
-
-      return constructAutocomplete({
-        inputRef,
-        autocompleteVisibilityRef,
-        obsidianContext,
-      });
-    }
-  }, [isSettingsVisible]);
+  const autocompleteProps = useAutocompleteInputProps({
+    isInputVisible: isSettingsVisible,
+    onEnter: onAction,
+    onEscape: onAction,
+  });
 
   const onClick = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -78,7 +73,7 @@ export function ItemContent({
       // Open external link
       if (targetEl.hasClass("external-link")) {
         e.preventDefault();
-        window.open(targetEl.getAttr("href"), '_blank')
+        window.open(targetEl.getAttr("href"), "_blank");
       }
     },
     [view, filePath]
@@ -87,15 +82,10 @@ export function ItemContent({
   const markdownContent = React.useMemo(() => {
     const tempEl = createDiv();
 
-    MarkdownRenderer.renderMarkdown(
-      item.title,
-      tempEl,
-      filePath,
-      view
-    );
+    MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
 
-    return { __html: tempEl.innerHTML.toString() }
-  }, [item.title, filePath, view])
+    return { __html: tempEl.innerHTML.toString() };
+  }, [item.title, filePath, view]);
 
   if (isSettingsVisible) {
     return (
@@ -106,10 +96,7 @@ export function ItemContent({
           className={c("item-input")}
           value={item.title}
           onChange={onChange}
-          onKeyDown={(e) => {
-            if (autocompleteVisibilityRef.current) return;
-            onKeyDown(e);
-          }}
+          {...autocompleteProps}
         />
       </div>
     );
@@ -156,6 +143,7 @@ export function draggableItemFactory({
         <div className={c("item-content-wrapper")}>
           <ItemContent
             isSettingsVisible={isSettingsVisible}
+            setIsSettingsVisible={setIsSettingsVisible}
             item={item}
             onChange={(e) =>
               boardModifiers.updateItem(
@@ -164,12 +152,6 @@ export function draggableItemFactory({
                 update(item, { title: { $set: e.target.value } })
               )
             }
-            onKeyDown={(e) => {
-              if (e.key === "Escape" || e.key === "Enter") {
-                e.preventDefault();
-                setIsSettingsVisible(false);
-              }
-            }}
           />
           <div className={c("item-edit-button-wrapper")}>
             <button

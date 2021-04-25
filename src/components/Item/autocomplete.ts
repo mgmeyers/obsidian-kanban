@@ -4,18 +4,18 @@ import React from "react";
 import { Textcomplete } from "@textcomplete/core";
 import { TextareaEditor } from "@textcomplete/textarea";
 import Fuse from "fuse.js";
-import { c } from "../helpers";
-import { ObsidianContextProps } from "../context";
+import { c, useIMEInputProps } from "../helpers";
+import { ObsidianContext, ObsidianContextProps } from "../context";
 
 export interface ConstructAutocompleteParams {
   inputRef: React.MutableRefObject<HTMLTextAreaElement>;
-  autocompleteVisibilityRef: React.MutableRefObject<boolean>;
+  isAutocompleteVisibleRef: React.MutableRefObject<boolean>;
   obsidianContext: ObsidianContextProps;
 }
 
 export function constructAutocomplete({
   inputRef,
-  autocompleteVisibilityRef,
+  isAutocompleteVisibleRef,
   obsidianContext,
 }: ConstructAutocompleteParams) {
   const { view, filePath } = obsidianContext;
@@ -79,16 +79,73 @@ export function constructAutocomplete({
     }
   );
 
-  autocomplete.on("shown", () => {
-    autocompleteVisibilityRef.current = true;
+  autocomplete.on("show", () => {
+    isAutocompleteVisibleRef.current = true;
   });
 
-  autocomplete.on("hide", () => {
-    autocompleteVisibilityRef.current = false;
+  autocomplete.on("hidden", () => {
+    isAutocompleteVisibleRef.current = false;
   });
 
   return () => {
     autocomplete.destroy();
     editor.destroy();
+  };
+}
+
+export interface UseAutocompleteInputPropsParams {
+  isInputVisible: boolean;
+  onEnter: () => void;
+  onEscape: () => void;
+}
+
+export function useAutocompleteInputProps({
+  isInputVisible,
+  onEnter,
+  onEscape,
+}: UseAutocompleteInputPropsParams) {
+  const obsidianContext = React.useContext(ObsidianContext);
+  const isAutocompleteVisibleRef = React.useRef<boolean>(false);
+  const inputRef = React.useRef<HTMLTextAreaElement>();
+  const {
+    onCompositionStart,
+    onCompositionEnd,
+    getShouldIMEBlockAction,
+  } = useIMEInputProps();
+
+  React.useEffect(() => {
+    const input = inputRef.current;
+
+    if (isInputVisible && input) {
+      input.focus();
+      input.selectionStart = input.selectionEnd = input.value.length;
+
+      return constructAutocomplete({
+        inputRef,
+        isAutocompleteVisibleRef,
+        obsidianContext,
+      });
+    }
+  }, [isInputVisible]);
+
+  return {
+    ref: inputRef,
+    onCompositionStart,
+    onCompositionEnd,
+    onKeyDownCapture: (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (
+        getShouldIMEBlockAction() ||
+        isAutocompleteVisibleRef.current
+      ) {
+        return;
+      }
+
+      if (e.key === "Enter") {
+        e.preventDefault();
+        onEnter();
+      } else if (e.key === "Escape") {
+        onEscape();
+      }
+    },
   };
 }

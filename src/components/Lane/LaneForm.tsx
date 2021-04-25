@@ -1,6 +1,6 @@
 import React from "react";
 import { Lane } from "../types";
-import { c, generateInstanceId } from "../helpers";
+import { c, generateInstanceId, useIMEInputProps } from "../helpers";
 import { KanbanContext } from "../context";
 
 export function LaneForm() {
@@ -10,6 +10,11 @@ export function LaneForm() {
   const [laneTitle, setLaneTitle] = React.useState("");
 
   const inputRef = React.useRef<HTMLTextAreaElement>();
+
+  const {
+    getShouldIMEBlockAction,
+    ...inputProps
+  } = useIMEInputProps();
 
   React.useEffect(() => {
     if (isInputVisible) {
@@ -50,6 +55,8 @@ export function LaneForm() {
               placeholder="Enter list title..."
               onChange={(e) => setLaneTitle(e.target.value)}
               onKeyDown={(e) => {
+                if (getShouldIMEBlockAction()) return;
+
                 if (e.key === "Enter") {
                   e.preventDefault();
                   createLane();
@@ -57,6 +64,7 @@ export function LaneForm() {
                   clear();
                 }
               }}
+              {...inputProps}
             />
           </div>
         </div>

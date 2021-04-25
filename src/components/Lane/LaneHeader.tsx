@@ -1,7 +1,7 @@
 import update from "immutability-helper";
 import React from "react";
 import { Lane } from "../types";
-import { c } from "../helpers";
+import { c, useIMEInputProps } from "../helpers";
 import { GripIcon } from "../Icon/GripIcon";
 import { Icon } from "../Icon/Icon";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
@@ -20,6 +20,11 @@ function LaneTitle({
   onChange,
   onKeyDown,
 }: LaneTitleProps) {
+  const {
+    getShouldIMEBlockAction,
+    ...inputProps
+  } = useIMEInputProps();
+  
   return (
     <div className={c("lane-title")}>
       {isSettingsVisible ? (
@@ -31,7 +36,11 @@ function LaneTitle({
               className={c("lane-input")}
               placeholder="Enter list title..."
               onChange={onChange}
-              onKeyDown={onKeyDown}
+              onKeyDown={e => {
+                if (getShouldIMEBlockAction()) return;
+                onKeyDown(e)
+              }}
+              {...inputProps}
             />
           </div>
         </div>

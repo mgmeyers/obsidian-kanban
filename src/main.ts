@@ -192,7 +192,7 @@ export default class KanbanPlugin extends Plugin {
       await view.setState({ file: kanban.path }, {});
       await this.app.workspace.activeLeaf.open(view);
     } catch (e) {
-      console.log("Error creating kanban board:", e);
+      console.error("Error creating kanban board:", e);
     }
   }
 

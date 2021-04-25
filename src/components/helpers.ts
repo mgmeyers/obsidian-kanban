@@ -1,3 +1,4 @@
+import React from "react";
 import update from "immutability-helper";
 import { DropResult } from "react-beautiful-dnd";
 import { Board, Item, Lane } from "./types";
@@ -104,4 +105,20 @@ export function moveItem({ boardData, dropResult }: BoardDropMutationParams) {
       },
     },
   });
+}
+
+export function useIMEInputProps() {
+  const isComposingRef = React.useRef<boolean>(false);
+
+  return {
+    onCompositionStart: () => {
+      isComposingRef.current = true;
+    },
+    onCompositionEnd: () => {
+      isComposingRef.current = false;
+    },
+    getShouldIMEBlockAction: () => {
+      return isComposingRef.current;
+    },
+  };
 }

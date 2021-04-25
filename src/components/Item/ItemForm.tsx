@@ -2,33 +2,15 @@ import React from "react";
 
 import { Item } from "../types";
 import { c, generateInstanceId } from "../helpers";
-import { ObsidianContext } from "../context";
-import { constructAutocomplete } from "./autocomplete";
+import { useAutocompleteInputProps } from "./autocomplete";
 
 interface ItemFormProps {
   addItem: (item: Item) => void;
 }
 
 export function ItemForm({ addItem }: ItemFormProps) {
-  const obsidianContext = React.useContext(ObsidianContext);
-
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const [itemTitle, setItemTitle] = React.useState("");
-
-  const autocompleteVisibilityRef = React.useRef<boolean>(false);
-  const inputRef = React.useRef<HTMLTextAreaElement>();
-
-  React.useEffect(() => {
-    if (isInputVisible && inputRef.current) {
-      inputRef.current.focus();
-
-      return constructAutocomplete({
-        inputRef,
-        autocompleteVisibilityRef,
-        obsidianContext,
-      });
-    }
-  }, [isInputVisible]);
 
   const clear = () => {
     setItemTitle("");
@@ -50,6 +32,12 @@ export function ItemForm({ addItem }: ItemFormProps) {
     }
   };
 
+  const autocompleteProps = useAutocompleteInputProps({
+    isInputVisible,
+    onEnter: createItem,
+    onEscape: clear,
+  });
+
   if (isInputVisible) {
     return (
       <>
@@ -58,21 +46,10 @@ export function ItemForm({ addItem }: ItemFormProps) {
             <textarea
               rows={1}
               value={itemTitle}
-              ref={inputRef}
               className={c("item-input")}
               placeholder="Item title..."
               onChange={(e) => setItemTitle(e.target.value)}
-              onKeyDownCapture={(e) => {
-                // Using onKeyDownCapture to take precedence over autocomplete
-                if (autocompleteVisibilityRef.current) return;
-
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  createItem();
-                } else if (e.key === "Escape") {
-                  clear();
-                }
-              }}
+              {...autocompleteProps}
             />
           </div>
         </div>
