@@ -74,6 +74,12 @@ export function ItemContent({
 
         return;
       }
+
+      // Open external link
+      if (targetEl.hasClass("external-link")) {
+        e.preventDefault();
+        window.open(targetEl.getAttr("href"), '_blank')
+      }
     },
     [view, filePath]
   );
