@@ -34,7 +34,7 @@ export function constructAutocomplete({
     [
       {
         id: "tag",
-        match: /\B#(.*)$/,
+        match: /\B#([^\s]*)$/,
         index: 1,
         search: async (
           term: string,
@@ -49,7 +49,7 @@ export function constructAutocomplete({
       },
       {
         id: "link",
-        match: /\B\[\[(.*)$/,
+        match: /\B\[\[([^\]]*)$/,
         index: 1,
         template: (res: Fuse.FuseResult<TFile>) => {
           return view.app.metadataCache.fileToLinktext(res.item, filePath);
