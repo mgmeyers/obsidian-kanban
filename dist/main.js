@@ -23131,12 +23131,16 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
             .addItem((i) => {
             i.setIcon("create-new")
                 .setTitle("New note from card")
-                .onClick(() => {
+                .onClick(() => __awaiter(this, void 0, void 0, function* () {
                 const sanitizedTitle = item.title.replace(illegalCharsRegEx, " ");
+                const targetFolder = view.app.fileManager.getNewFileParent(view.file.parent.path);
                 // @ts-ignore
-                view.app.fileManager.createAndOpenMarkdownFile(sanitizedTitle, true);
+                const newFile = yield view.app.fileManager.createNewMarkdownFile(targetFolder, sanitizedTitle);
+                const newLeaf = view.app.workspace.splitActiveLeaf();
+                yield newLeaf.openFile(newFile);
+                view.app.workspace.setActiveLeaf(newLeaf, false, true);
                 boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, { title: { $set: `[[${sanitizedTitle}]]` } }));
-            });
+            }));
         })
             .addSeparator()
             .addItem((i) => {

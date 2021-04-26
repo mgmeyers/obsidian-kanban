@@ -42,14 +42,22 @@ export function useItemMenu({
       .addItem((i) => {
         i.setIcon("create-new")
           .setTitle("New note from card")
-          .onClick(() => {
+          .onClick(async () => {
             const sanitizedTitle = item.title.replace(illegalCharsRegEx, " ");
+            const targetFolder = view.app.fileManager.getNewFileParent(
+              view.file.parent.path
+            );
 
             // @ts-ignore
-            view.app.fileManager.createAndOpenMarkdownFile(
-              sanitizedTitle,
-              true
+            const newFile = await view.app.fileManager.createNewMarkdownFile(
+              targetFolder,
+              sanitizedTitle
             );
+            const newLeaf = view.app.workspace.splitActiveLeaf();
+
+            await newLeaf.openFile(newFile);
+
+            view.app.workspace.setActiveLeaf(newLeaf, false, true);
 
             boardModifiers.updateItem(
               laneIndex,
