@@ -23117,32 +23117,63 @@ function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, onChange, 
     return (react.createElement("div", { onClick: onClick, className: c$2("item-title") },
         react.createElement("div", { className: `markdown-preview-view ${c$2("item-markdown")}`, dangerouslySetInnerHTML: markdownContent })));
 }
-function draggableItemFactory({ items, laneIndex, shouldShowArchiveButton, }) {
+
+const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
+function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers, }) {
+    const { view } = react.useContext(ObsidianContext);
+    return react.useMemo(() => {
+        return new obsidian.Menu(view.app)
+            .addItem((i) => {
+            i.setIcon("pencil")
+                .setTitle("Edit card")
+                .onClick(() => setIsEditing(true));
+        })
+            .addItem((i) => {
+            i.setIcon("create-new")
+                .setTitle("New note from card")
+                .onClick(() => {
+                const sanitizedTitle = item.title.replace(illegalCharsRegEx, " ");
+                // @ts-ignore
+                view.app.fileManager.createAndOpenMarkdownFile(sanitizedTitle, true);
+                boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, { title: { $set: `[[${sanitizedTitle}]]` } }));
+            });
+        })
+            .addSeparator()
+            .addItem((i) => {
+            i.setIcon("sheets-in-box")
+                .setTitle("Archive card")
+                .onClick(() => boardModifiers.archiveItem(laneIndex, itemIndex, item));
+        })
+            .addItem((i) => {
+            i.setIcon("trash")
+                .setTitle("Delete card")
+                .onClick(() => boardModifiers.deleteItem(laneIndex, itemIndex));
+        });
+    }, [view, setIsEditing, boardModifiers, laneIndex, itemIndex, item]);
+}
+function draggableItemFactory({ items, laneIndex, }) {
     return (provided, snapshot, rubric) => {
         const { boardModifiers } = react.useContext(KanbanContext);
         const itemIndex = rubric.source.index;
         const item = items[itemIndex];
-        const [isSettingsVisible, setIsSettingsVisible] = react.useState(false);
+        const [isEditing, setIsEditing] = react.useState(false);
+        const settingsMenu = useItemMenu({
+            setIsEditing,
+            item,
+            laneIndex,
+            itemIndex,
+            boardModifiers,
+        });
         return (react.createElement("div", Object.assign({ className: `${c$2("item")} ${snapshot.isDragging ? "is-dragging" : ""}`, ref: provided.innerRef }, provided.draggableProps, provided.dragHandleProps),
             react.createElement("div", { className: c$2("item-content-wrapper") },
-                react.createElement(ItemContent, { isSettingsVisible: isSettingsVisible, setIsSettingsVisible: setIsSettingsVisible, item: item, onChange: (e) => boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, { title: { $set: e.target.value } })) }),
-                react.createElement("div", { className: c$2("item-edit-button-wrapper") },
-                    react.createElement("button", { onClick: () => {
-                            setIsSettingsVisible(!isSettingsVisible);
-                        }, className: `${c$2("item-edit-button")} ${isSettingsVisible ? "is-enabled" : ""}`, "aria-label": isSettingsVisible ? "Close" : "Edit item" },
-                        react.createElement(Icon, { name: isSettingsVisible ? "cross" : "pencil" })),
-                    shouldShowArchiveButton && (react.createElement("button", { onClick: () => {
-                            boardModifiers.archiveItem(laneIndex, itemIndex, item);
-                        }, className: c$2("item-edit-archive-button"), "aria-label": "Archive item" },
-                        react.createElement(Icon, { name: "sheets-in-box" }))))),
-            isSettingsVisible && (react.createElement("div", { className: c$2("item-settings") },
-                react.createElement("div", { className: c$2("item-settings-actions") },
-                    react.createElement("button", { onClick: () => boardModifiers.deleteItem(laneIndex, itemIndex), className: c$2("item-button-delete") },
-                        react.createElement(Icon, { name: "trash" }),
-                        " Delete"),
-                    react.createElement("button", { onClick: () => boardModifiers.archiveItem(laneIndex, itemIndex, item), className: c$2("item-button-archive") },
-                        react.createElement(Icon, { name: "sheets-in-box" }),
-                        " Archive"))))));
+                react.createElement(ItemContent, { isSettingsVisible: isEditing, setIsSettingsVisible: setIsEditing, item: item, onChange: (e) => boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, { title: { $set: e.target.value } })) }),
+                react.createElement("div", { className: c$2("item-edit-button-wrapper") }, isEditing ? (react.createElement("button", { onClick: () => {
+                        setIsEditing(false);
+                    }, className: `${c$2("item-edit-button")} is-enabled`, "aria-label": "Cancel" },
+                    react.createElement(Icon, { name: "cross" }))) : (react.createElement("button", { onClick: (e) => {
+                        settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
+                    }, className: c$2("item-edit-button"), "aria-label": "More options" },
+                    react.createElement(Icon, { name: "vertical-three-dots" })))))));
     };
 }
 
@@ -23190,16 +23221,25 @@ function GripIcon(props) {
         react.createElement("path", { fill: "currentColor", d: "M5 3h2v2H5zm0 4h2v2H5zm0 4h2v2H5zm4-8h2v2H9zm0 4h2v2H9zm0 4h2v2H9z" })));
 }
 
-function LaneTitle({ isSettingsVisible, title, onChange, onKeyDown, }) {
+function LaneTitle({ isEditing, title, onChange, onKeyDown, }) {
     const _a = useIMEInputProps(), { getShouldIMEBlockAction } = _a, inputProps = __rest(_a, ["getShouldIMEBlockAction"]);
-    return (react.createElement("div", { className: c$2("lane-title") }, isSettingsVisible ? (react.createElement("div", { className: c$2("lane-title") },
+    const inputRef = react.useRef();
+    react.useEffect(() => {
+        if (isEditing && inputRef.current) {
+            const input = inputRef.current;
+            inputRef.current.focus();
+            input.selectionStart = input.selectionEnd = input.value.length;
+        }
+    }, [isEditing]);
+    return (react.createElement("div", { className: c$2("lane-title") }, isEditing ? (react.createElement("div", { className: c$2("lane-title") },
         react.createElement("div", { "data-replicated-value": title, className: c$2("grow-wrap") },
-            react.createElement("textarea", Object.assign({ rows: 1, value: title, className: c$2("lane-input"), placeholder: "Enter list title...", onChange: onChange, onKeyDown: (e) => {
+            react.createElement("textarea", Object.assign({ ref: inputRef, rows: 1, value: title, className: c$2("lane-input"), placeholder: "Enter list title...", onChange: onChange, onKeyDown: (e) => {
                     if (getShouldIMEBlockAction())
                         return;
                     onKeyDown(e);
                 } }, inputProps))))) : (title)));
 }
+
 function LaneSettings({ lane, laneIndex }) {
     const { boardModifiers } = react.useContext(KanbanContext);
     return (react.createElement("div", { className: c$2("lane-setting-wrapper") },
@@ -23209,6 +23249,7 @@ function LaneSettings({ lane, laneIndex }) {
                     data: { $toggle: ["shouldMarkItemsComplete"] },
                 })), className: `checkbox-container ${lane.data.shouldMarkItemsComplete ? "is-enabled" : ""}` }))));
 }
+
 const actionLabels = {
     delete: {
         description: "Are you sure you want to delete this list and all its cards?",
@@ -23223,7 +23264,7 @@ const actionLabels = {
         confirm: "Yes, archive cards",
     },
 };
-function ConfirmAction({ action, cancel, onAction, lane }) {
+function ConfirmAction({ action, cancel, onAction, lane, }) {
     react.useEffect(() => {
         // Immediately execute action if lane is empty
         if (action && lane.items.length === 0) {
@@ -23238,11 +23279,17 @@ function ConfirmAction({ action, cancel, onAction, lane }) {
             react.createElement("button", { onClick: onAction, className: c$2("confirm-action-button") }, actionLabels[action].confirm),
             react.createElement("button", { onClick: cancel, className: c$2("cancel-action-button") }, "Cancel"))));
 }
-function useSettingsMenu() {
+function useSettingsMenu({ setIsEditing }) {
     const { view } = react.useContext(ObsidianContext);
     const [confirmAction, setConfirmAction] = react.useState(null);
     const settingsMenu = react.useMemo(() => {
         return new obsidian.Menu(view.app)
+            .addItem((item) => {
+            item
+                .setIcon("pencil")
+                .setTitle("Edit list")
+                .onClick(() => setIsEditing(true));
+        })
             .addItem((item) => {
             item
                 .setIcon("documents")
@@ -23269,30 +23316,31 @@ function useSettingsMenu() {
         setConfirmAction,
     };
 }
+
 function LaneHeader({ lane, laneIndex, dragHandleProps, }) {
     const { boardModifiers } = react.useContext(KanbanContext);
-    const [isSettingsVisible, setIsSettingsVisible] = react.useState(false);
-    const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu();
+    const [isEditing, setIsEditing] = react.useState(false);
+    const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
+        setIsEditing,
+    });
     return (react.createElement(react.Fragment, null,
         react.createElement("div", { className: c$2("lane-header-wrapper") },
             react.createElement("div", Object.assign({ className: c$2("lane-grip") }, dragHandleProps, { "aria-label": "Move list" }),
                 react.createElement(GripIcon, null)),
-            react.createElement(LaneTitle, { isSettingsVisible: isSettingsVisible, title: lane.title, onChange: (e) => boardModifiers.updateLane(laneIndex, update$2(lane, { title: { $set: e.target.value } })), onKeyDown: (e) => {
+            react.createElement(LaneTitle, { isEditing: isEditing, title: lane.title, onChange: (e) => boardModifiers.updateLane(laneIndex, update$2(lane, { title: { $set: e.target.value } })), onKeyDown: (e) => {
                     if (e.key === "Escape" || e.key === "Enter") {
                         e.preventDefault();
-                        setIsSettingsVisible(false);
+                        setIsEditing(false);
                     }
                 } }),
-            react.createElement("div", { className: c$2("lane-settings-button-wrapper") },
-                react.createElement("button", { onClick: () => {
-                        setIsSettingsVisible(!isSettingsVisible);
-                    }, "aria-label": isSettingsVisible ? "Close settings" : "Edit list", className: `${c$2("lane-settings-button")} ${isSettingsVisible ? "is-enabled" : ""}` },
-                    react.createElement(Icon, { name: isSettingsVisible ? "cross" : "pencil" })),
-                react.createElement("button", { "aria-label": "More options", className: c$2("lane-settings-button"), onClick: (e) => {
-                        settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
-                    } },
-                    react.createElement(Icon, { name: "vertical-three-dots" })))),
-        isSettingsVisible && react.createElement(LaneSettings, { lane: lane, laneIndex: laneIndex }),
+            react.createElement("div", { className: c$2("lane-settings-button-wrapper") }, isEditing ? (react.createElement("button", { onClick: () => {
+                    setIsEditing(false);
+                }, "aria-label": "Close", className: `${c$2("lane-settings-button")} is-enabled` },
+                react.createElement(Icon, { name: "cross" }))) : (react.createElement("button", { "aria-label": "More options", className: c$2("lane-settings-button"), onClick: (e) => {
+                    settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
+                } },
+                react.createElement(Icon, { name: "vertical-three-dots" }))))),
+        isEditing && react.createElement(LaneSettings, { lane: lane, laneIndex: laneIndex }),
         confirmAction && (react.createElement(ConfirmAction, { lane: lane, action: confirmAction, onAction: () => {
                 switch (confirmAction) {
                     case "archive":
@@ -23313,7 +23361,6 @@ function LaneItems({ isGhost, items, laneId, laneIndex, shouldShowArchiveButton,
     const renderItem = draggableItemFactory({
         laneIndex,
         items,
-        shouldShowArchiveButton,
     });
     if (isGhost) {
         return (react.createElement("div", { className: c$2("lane-items") }, items.map((item, i) => {

@@ -1,4 +1,4 @@
-import { MarkdownRenderer } from "obsidian";
+import { MarkdownRenderer, Menu } from "obsidian";
 import update from "immutability-helper";
 import React from "react";
 import {
@@ -7,121 +7,81 @@ import {
   DraggableRubric,
 } from "react-beautiful-dnd";
 
-import { Item } from "../types";
+import { BoardModifiers, Item } from "../types";
 import { c } from "../helpers";
 import { Icon } from "../Icon/Icon";
 import { KanbanContext, ObsidianContext } from "../context";
-import {
-  useAutocompleteInputProps,
-} from "./autocomplete";
+import { ItemContent } from "./ItemContent";
 
-export interface ItemContentProps {
+const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
+
+interface UseItemMenuParams {
+  setIsEditing: React.Dispatch<boolean>;
   item: Item;
-  isSettingsVisible: boolean;
-  setIsSettingsVisible?: React.Dispatch<boolean>;
-  onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
-  onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>;
+  laneIndex: number;
+  itemIndex: number;
+  boardModifiers: BoardModifiers;
 }
 
-export function ItemContent({
+export function useItemMenu({
+  setIsEditing,
   item,
-  isSettingsVisible,
-  setIsSettingsVisible,
-  onChange,
-}: ItemContentProps) {
-  const obsidianContext = React.useContext(ObsidianContext);
-  const inputRef = React.useRef<HTMLTextAreaElement>();
+  laneIndex,
+  itemIndex,
+  boardModifiers,
+}: UseItemMenuParams) {
+  const { view } = React.useContext(ObsidianContext);
 
-  const { view, filePath } = obsidianContext;
+  return React.useMemo(() => {
+    return new Menu(view.app)
+      .addItem((i) => {
+        i.setIcon("pencil")
+          .setTitle("Edit card")
+          .onClick(() => setIsEditing(true));
+      })
+      .addItem((i) => {
+        i.setIcon("create-new")
+          .setTitle("New note from card")
+          .onClick(() => {
+            const sanitizedTitle = item.title.replace(illegalCharsRegEx, " ");
 
-  const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false)
+            // @ts-ignore
+            view.app.fileManager.createAndOpenMarkdownFile(
+              sanitizedTitle,
+              true
+            );
 
-  const autocompleteProps = useAutocompleteInputProps({
-    isInputVisible: isSettingsVisible,
-    onEnter: onAction,
-    onEscape: onAction,
-  });
-
-  const onClick = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      const targetEl = e.target as HTMLElement;
-
-      // Open an internal link in a new pane
-      if (targetEl.hasClass("internal-link")) {
-        e.preventDefault();
-
-        view.app.workspace.openLinkText(
-          targetEl.getAttr("href"),
-          filePath,
-          true
-        );
-
-        return;
-      }
-
-      // Open a tag search
-      if (targetEl.hasClass("tag")) {
-        e.preventDefault();
-
-        (view.app as any).internalPlugins
-          .getPluginById("global-search")
-          .instance.openGlobalSearch(`tag:${targetEl.getAttr("href")}`);
-
-        return;
-      }
-
-      // Open external link
-      if (targetEl.hasClass("external-link")) {
-        e.preventDefault();
-        window.open(targetEl.getAttr("href"), "_blank");
-      }
-    },
-    [view, filePath]
-  );
-
-  const markdownContent = React.useMemo(() => {
-    const tempEl = createDiv();
-
-    MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
-
-    return { __html: tempEl.innerHTML.toString() };
-  }, [item.title, filePath, view]);
-
-  if (isSettingsVisible) {
-    return (
-      <div data-replicated-value={item.title} className={c("grow-wrap")}>
-        <textarea
-          rows={1}
-          ref={inputRef}
-          className={c("item-input")}
-          value={item.title}
-          onChange={onChange}
-          {...autocompleteProps}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div onClick={onClick} className={c("item-title")}>
-      <div
-        className={`markdown-preview-view ${c("item-markdown")}`}
-        dangerouslySetInnerHTML={markdownContent}
-      />
-    </div>
-  );
+            boardModifiers.updateItem(
+              laneIndex,
+              itemIndex,
+              update(item, { title: { $set: `[[${sanitizedTitle}]]` } })
+            );
+          });
+      })
+      .addSeparator()
+      .addItem((i) => {
+        i.setIcon("sheets-in-box")
+          .setTitle("Archive card")
+          .onClick(() =>
+            boardModifiers.archiveItem(laneIndex, itemIndex, item)
+          );
+      })
+      .addItem((i) => {
+        i.setIcon("trash")
+          .setTitle("Delete card")
+          .onClick(() => boardModifiers.deleteItem(laneIndex, itemIndex));
+      });
+  }, [view, setIsEditing, boardModifiers, laneIndex, itemIndex, item]);
 }
 
 export interface DraggableItemFactoryParams {
   items: Item[];
   laneIndex: number;
-  shouldShowArchiveButton: boolean;
 }
 
 export function draggableItemFactory({
   items,
   laneIndex,
-  shouldShowArchiveButton,
 }: DraggableItemFactoryParams) {
   return (
     provided: DraggableProvided,
@@ -131,7 +91,15 @@ export function draggableItemFactory({
     const { boardModifiers } = React.useContext(KanbanContext);
     const itemIndex = rubric.source.index;
     const item = items[itemIndex];
-    const [isSettingsVisible, setIsSettingsVisible] = React.useState(false);
+    const [isEditing, setIsEditing] = React.useState(false);
+
+    const settingsMenu = useItemMenu({
+      setIsEditing,
+      item,
+      laneIndex,
+      itemIndex,
+      boardModifiers,
+    });
 
     return (
       <div
@@ -142,8 +110,8 @@ export function draggableItemFactory({
       >
         <div className={c("item-content-wrapper")}>
           <ItemContent
-            isSettingsVisible={isSettingsVisible}
-            setIsSettingsVisible={setIsSettingsVisible}
+            isSettingsVisible={isEditing}
+            setIsSettingsVisible={setIsEditing}
             item={item}
             onChange={(e) =>
               boardModifiers.updateItem(
@@ -154,50 +122,29 @@ export function draggableItemFactory({
             }
           />
           <div className={c("item-edit-button-wrapper")}>
-            <button
-              onClick={() => {
-                setIsSettingsVisible(!isSettingsVisible);
-              }}
-              className={`${c("item-edit-button")} ${
-                isSettingsVisible ? "is-enabled" : ""
-              }`}
-              aria-label={isSettingsVisible ? "Close" : "Edit item"}
-            >
-              <Icon name={isSettingsVisible ? "cross" : "pencil"} />
-            </button>
-            {shouldShowArchiveButton && (
+            {isEditing ? (
               <button
                 onClick={() => {
-                  boardModifiers.archiveItem(laneIndex, itemIndex, item);
+                  setIsEditing(false);
                 }}
-                className={c("item-edit-archive-button")}
-                aria-label="Archive item"
+                className={`${c("item-edit-button")} is-enabled`}
+                aria-label="Cancel"
               >
-                <Icon name="sheets-in-box" />
+                <Icon name="cross" />
+              </button>
+            ) : (
+              <button
+                onClick={(e) => {
+                  settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
+                }}
+                className={c("item-edit-button")}
+                aria-label="More options"
+              >
+                <Icon name="vertical-three-dots" />
               </button>
             )}
           </div>
         </div>
-        {isSettingsVisible && (
-          <div className={c("item-settings")}>
-            <div className={c("item-settings-actions")}>
-              <button
-                onClick={() => boardModifiers.deleteItem(laneIndex, itemIndex)}
-                className={c("item-button-delete")}
-              >
-                <Icon name="trash" /> Delete
-              </button>
-              <button
-                onClick={() =>
-                  boardModifiers.archiveItem(laneIndex, itemIndex, item)
-                }
-                className={c("item-button-archive")}
-              >
-                <Icon name="sheets-in-box" /> Archive
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     );
   };

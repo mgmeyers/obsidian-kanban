@@ -128,24 +128,27 @@ button.kanban-plugin__new-lane-button:hover {
   width: 100%;
 }
 
-.kanban-plugin__item .kanban-plugin__item-edit-archive-button,
 .kanban-plugin__item button.kanban-plugin__item-edit-button,
 .kanban-plugin__lane button.kanban-plugin__lane-settings-button {
   font-size: 13px;
   line-height: 1;
   color: var(--text-muted);
-  padding: 5px;
+  padding: 4px;
   display: flex;
   margin-left: 5px;
+  background-color: transparent;
+  margin-right: -4px;
 }
 
-.kanban-plugin__item .kanban-plugin__item-edit-archive-button:hover,
 .kanban-plugin__item button.kanban-plugin__item-edit-button.is-enabled,
+.kanban-plugin__lane button.kanban-plugin__lane-settings-button.is-enabled {
+  color: var(--text-accent);
+}
+
 .kanban-plugin__item button.kanban-plugin__item-edit-button:hover,
-.kanban-plugin__lane button.kanban-plugin__lane-settings-button.is-enabled,
 .kanban-plugin__lane button.kanban-plugin__lane-settings-button:hover {
-  background-color: var(--interactive-accent-hover);
-  color: var(--text-on-accent);
+  background-color: transparent;
+  color: var(--text-normal);
 }
 
 .kanban-plugin__lane-action-wrapper,
@@ -226,7 +229,7 @@ button.kanban-plugin__lane-settings-button + button.kanban-plugin__lane-settings
   padding: 6px 8px;
   background-color: var(--background-primary);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -239,7 +242,6 @@ button.kanban-plugin__lane-settings-button + button.kanban-plugin__lane-settings
 .kanban-plugin__item-title p {
   margin: 0;
   overflow-x: auto;
-  hyphens: auto;
   white-space: pre-wrap;
   overflow-wrap: break-word;
 }
@@ -475,8 +477,8 @@ button.kanban-plugin__cancel-action-button {
   font: inherit;
   grid-area: 1 / 1 / 2 / 2;
   font-size: 0.875rem;
-  overflow-x: auto;
-  hyphens: auto;
+  overflow: hidden;
+  overflow-wrap: break-word;
   white-space: pre-wrap;
 }
 

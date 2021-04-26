@@ -11,7 +11,8 @@ import {
 } from "react-beautiful-dnd";
 import { Item, Lane } from "../types";
 import { c } from "../helpers";
-import { draggableItemFactory, ItemContent } from "../Item/Item";
+import { draggableItemFactory } from "../Item/Item";
+import { ItemContent } from "../Item/ItemContent";
 import { ItemForm } from "../Item/ItemForm";
 import { LaneHeader } from "./LaneHeader";
 import { Icon } from "../Icon/Icon";
@@ -40,7 +41,6 @@ function LaneItems({
   const renderItem = draggableItemFactory({
     laneIndex,
     items,
-    shouldShowArchiveButton,
   });
 
   if (isGhost) {
