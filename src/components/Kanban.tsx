@@ -205,20 +205,20 @@ function getBoardModifiers({
   };
 }
 
-export const Kanban = (props: KanbanProps) => {
+export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
   const [boardData, setBoardData] = React.useState<Board | null>(
-    props.dataBridge.data
+    dataBridge.data
   );
 
   React.useEffect(() => {
-    props.dataBridge.onExternalSet((data) => {
+    dataBridge.onExternalSet((data) => {
       setBoardData(data);
     });
   }, []);
 
   React.useEffect(() => {
     if (boardData !== null) {
-      props.dataBridge.setInternal(boardData);
+      dataBridge.setInternal(boardData);
     }
   }, [boardData]);
 
@@ -259,12 +259,73 @@ export const Kanban = (props: KanbanProps) => {
     </div>
   );
 
+  const onMouseOver = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      const targetEl = e.target as HTMLElement;
+
+      if (targetEl.tagName !== "A") return;
+
+      if (targetEl.hasClass("internal-link")) {
+        view.app.workspace.trigger("hover-link", {
+          event: e.nativeEvent,
+          source: "kanban",
+          hoverParent: view,
+          targetEl,
+          linktext: targetEl.getAttr("href"),
+          sourcePath: view.file.path,
+        });
+      }
+    },
+    [view]
+  );
+
+  const onClick = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      const targetEl = e.target as HTMLElement;
+
+      if (targetEl.tagName !== "A") return;
+
+      // Open an internal link in a new pane
+      if (targetEl.hasClass("internal-link")) {
+        e.preventDefault();
+
+        view.app.workspace.openLinkText(
+          targetEl.getAttr("href"),
+          filePath,
+          true
+        );
+
+        return;
+      }
+
+      // Open a tag search
+      if (targetEl.hasClass("tag")) {
+        e.preventDefault();
+
+        (view.app as any).internalPlugins
+          .getPluginById("global-search")
+          .instance.openGlobalSearch(`tag:${targetEl.getAttr("href")}`);
+
+        return;
+      }
+
+      // Open external link
+      if (targetEl.hasClass("external-link")) {
+        e.preventDefault();
+        window.open(targetEl.getAttr("href"), "_blank");
+      }
+    },
+    [view, filePath]
+  );
+
   return (
-    <ObsidianContext.Provider
-      value={{ filePath: props.filePath, view: props.view }}
-    >
+    <ObsidianContext.Provider value={{ filePath, view }}>
       <KanbanContext.Provider value={{ boardModifiers, board: boardData }}>
-        <div className={baseClassName}>
+        <div
+          className={baseClassName}
+          onMouseOver={onMouseOver}
+          onClick={onClick}
+        >
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable
               droppableId="board"

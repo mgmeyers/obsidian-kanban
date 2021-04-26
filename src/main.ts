@@ -1,4 +1,11 @@
-import { Plugin, WorkspaceLeaf, TFile, TFolder, ViewState } from "obsidian";
+import {
+  Plugin,
+  WorkspaceLeaf,
+  TFile,
+  TFolder,
+  ViewState,
+  Workspace,
+} from "obsidian";
 import { around } from "monkey-around";
 
 import { kanbanIcon, KanbanView, kanbanViewType } from "./KanbanView";
@@ -20,6 +27,12 @@ export default class KanbanPlugin extends Plugin {
 
   async onload() {
     const self = this;
+
+    // @ts-ignore
+    this.app.workspace.registerHoverLinkSource("kanban-plugin", {
+      display: "Kanban",
+      defaultMod: true,
+    });
 
     // TODO: embedded kanban:
     // this.registerMarkdownPostProcessor((el, ctx) => {
@@ -202,6 +215,9 @@ export default class KanbanPlugin extends Plugin {
     kanbanLeaves.forEach((leaf) => {
       this.setMarkdownView(leaf);
     });
+
+    // @ts-ignore
+    this.app.workspace.unregisterHoverLinkSource("kanban-plugin");
   }
 
   async loadSettings() {

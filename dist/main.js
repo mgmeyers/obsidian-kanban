@@ -23083,28 +23083,6 @@ function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, onChange, 
         onEnter: onAction,
         onEscape: onAction,
     });
-    const onClick = react.useCallback((e) => {
-        const targetEl = e.target;
-        // Open an internal link in a new pane
-        if (targetEl.hasClass("internal-link")) {
-            e.preventDefault();
-            view.app.workspace.openLinkText(targetEl.getAttr("href"), filePath, true);
-            return;
-        }
-        // Open a tag search
-        if (targetEl.hasClass("tag")) {
-            e.preventDefault();
-            view.app.internalPlugins
-                .getPluginById("global-search")
-                .instance.openGlobalSearch(`tag:${targetEl.getAttr("href")}`);
-            return;
-        }
-        // Open external link
-        if (targetEl.hasClass("external-link")) {
-            e.preventDefault();
-            window.open(targetEl.getAttr("href"), "_blank");
-        }
-    }, [view, filePath]);
     const markdownContent = react.useMemo(() => {
         const tempEl = createDiv();
         obsidian.MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
@@ -23114,7 +23092,7 @@ function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, onChange, 
         return (react.createElement("div", { "data-replicated-value": item.title, className: c$2("grow-wrap") },
             react.createElement("textarea", Object.assign({ rows: 1, ref: inputRef, className: c$2("item-input"), value: item.title, onChange: onChange }, autocompleteProps))));
     }
-    return (react.createElement("div", { onClick: onClick, className: c$2("item-title") },
+    return (react.createElement("div", { className: c$2("item-title") },
         react.createElement("div", { className: `markdown-preview-view ${c$2("item-markdown")}`, dangerouslySetInnerHTML: markdownContent })));
 }
 
@@ -23592,16 +23570,16 @@ function getBoardModifiers({ boardData, setBoardData, }) {
         },
     };
 }
-const Kanban = (props) => {
-    const [boardData, setBoardData] = react.useState(props.dataBridge.data);
+const Kanban = ({ filePath, view, dataBridge }) => {
+    const [boardData, setBoardData] = react.useState(dataBridge.data);
     react.useEffect(() => {
-        props.dataBridge.onExternalSet((data) => {
+        dataBridge.onExternalSet((data) => {
             setBoardData(data);
         });
     }, []);
     react.useEffect(() => {
         if (boardData !== null) {
-            props.dataBridge.setInternal(boardData);
+            dataBridge.setInternal(boardData);
         }
     }, [boardData]);
     const boardModifiers = react.useMemo(() => {
@@ -23625,9 +23603,48 @@ const Kanban = (props) => {
         }),
         provided.placeholder,
         react.createElement(LaneForm, null)));
-    return (react.createElement(ObsidianContext.Provider, { value: { filePath: props.filePath, view: props.view } },
+    const onMouseOver = react.useCallback((e) => {
+        const targetEl = e.target;
+        if (targetEl.tagName !== "A")
+            return;
+        if (targetEl.hasClass("internal-link")) {
+            view.app.workspace.trigger("hover-link", {
+                event: e.nativeEvent,
+                source: "kanban",
+                hoverParent: view,
+                targetEl,
+                linktext: targetEl.getAttr("href"),
+                sourcePath: view.file.path,
+            });
+        }
+    }, [view]);
+    const onClick = react.useCallback((e) => {
+        const targetEl = e.target;
+        if (targetEl.tagName !== "A")
+            return;
+        // Open an internal link in a new pane
+        if (targetEl.hasClass("internal-link")) {
+            e.preventDefault();
+            view.app.workspace.openLinkText(targetEl.getAttr("href"), filePath, true);
+            return;
+        }
+        // Open a tag search
+        if (targetEl.hasClass("tag")) {
+            e.preventDefault();
+            view.app.internalPlugins
+                .getPluginById("global-search")
+                .instance.openGlobalSearch(`tag:${targetEl.getAttr("href")}`);
+            return;
+        }
+        // Open external link
+        if (targetEl.hasClass("external-link")) {
+            e.preventDefault();
+            window.open(targetEl.getAttr("href"), "_blank");
+        }
+    }, [view, filePath]);
+    return (react.createElement(ObsidianContext.Provider, { value: { filePath, view } },
         react.createElement(KanbanContext.Provider, { value: { boardModifiers, board: boardData } },
-            react.createElement("div", { className: baseClassName },
+            react.createElement("div", { className: baseClassName, onMouseOver: onMouseOver, onClick: onClick },
                 react.createElement(DragDropContext, { onDragEnd: onDragEnd },
                     react.createElement(ConnectedDroppable, { droppableId: "board", type: "LANE", direction: "horizontal", ignoreContainerClipping: false, renderClone: renderLaneGhost }, renderLanes))))));
 };
@@ -23731,6 +23748,11 @@ class KanbanPlugin extends obsidian.Plugin {
     onload() {
         return __awaiter(this, void 0, void 0, function* () {
             const self = this;
+            // @ts-ignore
+            this.app.workspace.registerHoverLinkSource("kanban-plugin", {
+                display: "Kanban",
+                defaultMod: true,
+            });
             // TODO: embedded kanban:
             // this.registerMarkdownPostProcessor((el, ctx) => {
             //   if (ctx.frontmatter && ctx.frontmatter[frontMatterKey]) {
@@ -23881,6 +23903,8 @@ class KanbanPlugin extends obsidian.Plugin {
         kanbanLeaves.forEach((leaf) => {
             this.setMarkdownView(leaf);
         });
+        // @ts-ignore
+        this.app.workspace.unregisterHoverLinkSource("kanban-plugin");
     }
     loadSettings() {
         return __awaiter(this, void 0, void 0, function* () {

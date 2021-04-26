@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom";
 import React from "react";
-import { TextFileView, WorkspaceLeaf } from "obsidian";
+import { HoverParent, HoverPopover, TextFileView, WorkspaceLeaf } from "obsidian";
 
 import { boardToMd, mdToBoard } from "./parser";
 import { Kanban } from "./components/Kanban";
@@ -10,8 +10,9 @@ import { Board } from "./components/types";
 export const kanbanViewType = "kanban";
 export const kanbanIcon = "blocks";
 
-export class KanbanView extends TextFileView {
+export class KanbanView extends TextFileView implements HoverParent {
   dataBridge: DataBridge;
+  hoverPopover: HoverPopover | null;
 
   getViewType() {
     return kanbanViewType;

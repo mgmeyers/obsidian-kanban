@@ -32,43 +32,6 @@ export function ItemContent({
     onEscape: onAction,
   });
 
-  const onClick = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      const targetEl = e.target as HTMLElement;
-
-      // Open an internal link in a new pane
-      if (targetEl.hasClass("internal-link")) {
-        e.preventDefault();
-
-        view.app.workspace.openLinkText(
-          targetEl.getAttr("href"),
-          filePath,
-          true
-        );
-
-        return;
-      }
-
-      // Open a tag search
-      if (targetEl.hasClass("tag")) {
-        e.preventDefault();
-
-        (view.app as any).internalPlugins
-          .getPluginById("global-search")
-          .instance.openGlobalSearch(`tag:${targetEl.getAttr("href")}`);
-
-        return;
-      }
-
-      // Open external link
-      if (targetEl.hasClass("external-link")) {
-        e.preventDefault();
-        window.open(targetEl.getAttr("href"), "_blank");
-      }
-    },
-    [view, filePath]
-  );
-
   const markdownContent = React.useMemo(() => {
     const tempEl = createDiv();
 
@@ -93,7 +56,7 @@ export function ItemContent({
   }
 
   return (
-    <div onClick={onClick} className={c("item-title")}>
+    <div className={c("item-title")}>
       <div
         className={`markdown-preview-view ${c("item-markdown")}`}
         dangerouslySetInnerHTML={markdownContent}
