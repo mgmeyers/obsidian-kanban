@@ -23610,7 +23610,7 @@ const Kanban = ({ filePath, view, dataBridge }) => {
         if (targetEl.hasClass("internal-link")) {
             view.app.workspace.trigger("hover-link", {
                 event: e.nativeEvent,
-                source: "kanban",
+                source: "kanban-plugin",
                 hoverParent: view,
                 targetEl,
                 linktext: targetEl.getAttr("href"),

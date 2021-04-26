@@ -268,7 +268,7 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
       if (targetEl.hasClass("internal-link")) {
         view.app.workspace.trigger("hover-link", {
           event: e.nativeEvent,
-          source: "kanban",
+          source: "kanban-plugin",
           hoverParent: view,
           targetEl,
           linktext: targetEl.getAttr("href"),
