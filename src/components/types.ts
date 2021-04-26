@@ -29,6 +29,7 @@ export interface BoardModifiers {
   addLane: (lane: Lane) => void;
   archiveItem: (laneIndex: number, itemIndex: number, item: Item) => void;
   archiveLane: (laneIndex: number) => void;
+  archiveLaneItems: (laneIndex: number) => void;
   deleteItem: (laneIndex: number, itemIndex: number) => void;
   deleteLane: (laneIndex: number) => void;
   updateItem: (laneIndex: number, itemIndex: number, item: Item) => void;

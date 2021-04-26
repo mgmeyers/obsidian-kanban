@@ -157,6 +157,14 @@ button.kanban-plugin__new-lane-button:hover {
   display: flex;
 }
 
+.kanban-plugin__lane-settings-button-wrapper {
+  display: flex;
+}
+
+button.kanban-plugin__lane-settings-button + button.kanban-plugin__lane-settings-button {
+  margin-left: 2px;
+}
+
 .kanban-plugin__lane-settings-button svg {
   width: 1em;
   height: 1em;
@@ -231,6 +239,9 @@ button.kanban-plugin__new-lane-button:hover {
 .kanban-plugin__item-title p {
   margin: 0;
   overflow-x: auto;
+  hyphens: auto;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .is-dragging
@@ -378,6 +389,7 @@ button.kanban-plugin__item-edit-button.is-enabled,
   background-color: rgba(var(--background-modifier-error-rgb), 0.1);
   border-radius: 4px;
   padding: 10px;
+  margin: 5px 10px;
 }
 
 .theme-dark .kanban-plugin__action-confirm-wrapper {
@@ -464,7 +476,8 @@ button.kanban-plugin__cancel-action-button {
   grid-area: 1 / 1 / 2 / 2;
   font-size: 0.875rem;
   overflow-x: auto;
-  overflow-wrap: normal;
+  hyphens: auto;
+  white-space: pre-wrap;
 }
 
 .kanban-plugin__autocomplete {

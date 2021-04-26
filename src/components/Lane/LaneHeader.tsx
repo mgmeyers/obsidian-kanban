@@ -5,7 +5,8 @@ import { c, useIMEInputProps } from "../helpers";
 import { GripIcon } from "../Icon/GripIcon";
 import { Icon } from "../Icon/Icon";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
-import { KanbanContext } from "../context";
+import { KanbanContext, ObsidianContext } from "../context";
+import { Menu } from "obsidian";
 
 interface LaneTitleProps {
   title: string;
@@ -20,11 +21,8 @@ function LaneTitle({
   onChange,
   onKeyDown,
 }: LaneTitleProps) {
-  const {
-    getShouldIMEBlockAction,
-    ...inputProps
-  } = useIMEInputProps();
-  
+  const { getShouldIMEBlockAction, ...inputProps } = useIMEInputProps();
+
   return (
     <div className={c("lane-title")}>
       {isSettingsVisible ? (
@@ -36,9 +34,9 @@ function LaneTitle({
               className={c("lane-input")}
               placeholder="Enter list title..."
               onChange={onChange}
-              onKeyDown={e => {
+              onKeyDown={(e) => {
                 if (getShouldIMEBlockAction()) return;
-                onKeyDown(e)
+                onKeyDown(e);
               }}
               {...inputProps}
             />
@@ -58,65 +56,6 @@ interface LaneSettingsProps {
 
 function LaneSettings({ lane, laneIndex }: LaneSettingsProps) {
   const { boardModifiers } = React.useContext(KanbanContext);
-  const [confirmAction, setConfirmAction] = React.useState<
-    "delete" | "archive" | null
-  >(null);
-
-  const actionButtons = confirmAction ? (
-    <div className={c("action-confirm-wrapper")}>
-      <div className={c("action-confirm-text")}>
-        Are you sure you want to {confirmAction} this list and all its cards?
-      </div>
-      <div>
-        <button
-          onClick={() => {
-            if (confirmAction === "delete")
-              boardModifiers.deleteLane(laneIndex);
-            if (confirmAction === "archive")
-              boardModifiers.archiveLane(laneIndex);
-          }}
-          className={c("confirm-action-button")}
-        >
-          Yes, {confirmAction} list
-        </button>
-        <button
-          onClick={() => setConfirmAction(null)}
-          className={c("cancel-action-button")}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  ) : (
-    <>
-      <button
-        onClick={() => {
-          if (lane.items.length == 0) {
-            boardModifiers.deleteLane(laneIndex);
-          } else {
-            // Confirm if items will be deleted when the lane is deleted
-            setConfirmAction("delete");
-          }
-        }}
-        className={c("delete-lane-button")}
-      >
-        <Icon name="trash" /> Delete List
-      </button>
-      <button
-        onClick={() => {
-          if (lane.items.length == 0) {
-            boardModifiers.deleteLane(laneIndex);
-          } else {
-            // Confirm if items will be deleted when the lane is deleted
-            setConfirmAction("archive");
-          }
-        }}
-        className={c("archive-lane-button")}
-      >
-        <Icon name="sheets-in-box" /> Archive List
-      </button>
-    </>
-  );
 
   return (
     <div className={c("lane-setting-wrapper")}>
@@ -138,7 +77,58 @@ function LaneSettings({ lane, laneIndex }: LaneSettingsProps) {
           }`}
         />
       </div>
-      <div className={c("lane-action-wrapper")}>{actionButtons}</div>
+    </div>
+  );
+}
+
+type LaneAction = "delete" | "archive" | "archive-items" | null;
+
+const actionLabels = {
+  delete: {
+    description: "Are you sure you want to delete this list and all its cards?",
+    confirm: "Yes, delete list",
+  },
+  archive: {
+    description:
+      "Are you sure you want to archive this list and all its cards?",
+    confirm: "Yes, archive list",
+  },
+  "archive-items": {
+    description: "Are you sure you want to archive all cards in this list?",
+    confirm: "Yes, archive cards",
+  },
+};
+
+interface ConfirmActionProps {
+  lane: Lane;
+  action: LaneAction;
+  cancel: () => void;
+  onAction: () => void;
+}
+
+function ConfirmAction({ action, cancel, onAction, lane }: ConfirmActionProps) {
+  React.useEffect(() => {
+    // Immediately execute action if lane is empty
+    if (action && lane.items.length === 0) {
+      onAction();
+    }
+  }, [action, lane.items.length]);
+
+  if (!action || (action && lane.items.length === 0)) return null;
+
+  return (
+    <div className={c("action-confirm-wrapper")}>
+      <div className={c("action-confirm-text")}>
+        {actionLabels[action].description}
+      </div>
+      <div>
+        <button onClick={onAction} className={c("confirm-action-button")}>
+          {actionLabels[action].confirm}
+        </button>
+        <button onClick={cancel} className={c("cancel-action-button")}>
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }
@@ -149,6 +139,40 @@ interface LaneHeaderProps {
   dragHandleProps?: DraggableProvidedDragHandleProps;
 }
 
+function useSettingsMenu() {
+  const { view } = React.useContext(ObsidianContext);
+  const [confirmAction, setConfirmAction] = React.useState<LaneAction>(null);
+
+  const settingsMenu = React.useMemo(() => {
+    return new Menu(view.app)
+      .addItem((item) => {
+        item
+          .setIcon("documents")
+          .setTitle("Archive cards")
+          .onClick(() => setConfirmAction("archive-items"));
+      })
+      .addSeparator()
+      .addItem((item) => {
+        item
+          .setIcon("sheets-in-box")
+          .setTitle("Archive list")
+          .onClick(() => setConfirmAction("archive"));
+      })
+      .addItem((item) => {
+        item
+          .setIcon("trash")
+          .setTitle("Delete list")
+          .onClick(() => setConfirmAction("delete"));
+      });
+  }, [view, setConfirmAction]);
+
+  return {
+    settingsMenu,
+    confirmAction,
+    setConfirmAction,
+  };
+}
+
 export function LaneHeader({
   lane,
   laneIndex,
@@ -156,6 +180,8 @@ export function LaneHeader({
 }: LaneHeaderProps) {
   const { boardModifiers } = React.useContext(KanbanContext);
   const [isSettingsVisible, setIsSettingsVisible] = React.useState(false);
+
+  const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu();
 
   return (
     <>
@@ -190,17 +216,49 @@ export function LaneHeader({
             onClick={() => {
               setIsSettingsVisible(!isSettingsVisible);
             }}
-            aria-label={isSettingsVisible ? "Close settings" : "List settings"}
+            aria-label={isSettingsVisible ? "Close settings" : "Edit list"}
             className={`${c("lane-settings-button")} ${
               isSettingsVisible ? "is-enabled" : ""
             }`}
           >
-            <Icon name={isSettingsVisible ? "cross" : "gear"} />
+            <Icon name={isSettingsVisible ? "cross" : "pencil"} />
+          </button>
+          <button
+            aria-label="More options"
+            className={c("lane-settings-button")}
+            onClick={(e) => {
+              settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
+            }}
+          >
+            <Icon name="vertical-three-dots" />
           </button>
         </div>
       </div>
 
       {isSettingsVisible && <LaneSettings lane={lane} laneIndex={laneIndex} />}
+
+      {confirmAction && (
+        <ConfirmAction
+          lane={lane}
+          action={confirmAction}
+          onAction={() => {
+            switch (confirmAction) {
+              case "archive":
+                boardModifiers.archiveLane(laneIndex);
+                break;
+              case "archive-items":
+                boardModifiers.archiveLaneItems(laneIndex);
+                break;
+              case "delete":
+                boardModifiers.deleteLane(laneIndex);
+                break;
+            }
+
+            setConfirmAction(null);
+          }}
+          cancel={() => setConfirmAction(null)}
+        />
+      )}
     </>
   );
 }

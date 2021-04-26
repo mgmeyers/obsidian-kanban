@@ -137,6 +137,25 @@ function getBoardModifiers({
       );
     },
 
+    archiveLaneItems: (laneIndex: number) => {
+      const items = boardData.lanes[laneIndex].items;
+
+      setBoardData(
+        update(boardData, {
+          lanes: {
+            [laneIndex]: {
+              items: {
+                $set: [],
+              },
+            },
+          },
+          archive: {
+            $push: items,
+          },
+        })
+      );
+    },
+
     deleteItem: (laneIndex: number, itemIndex: number) => {
       setBoardData(
         update(boardData, {

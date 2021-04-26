@@ -23,7 +23,7 @@ if (isProd) {
   output.push({
     input: "./src/main.ts",
     output: {
-      dir: ".",
+      dir: "./dist",
       format: "cjs",
       exports: "default",
       banner,
@@ -43,6 +43,9 @@ if (isProd) {
         presets: ["@babel/preset-react", "@babel/preset-typescript"],
       }),
       commonjs(),
+      copy({
+        targets: [{ src: "./manifest.json", dest: "./dist" }],
+      }),
     ],
   });
 }
