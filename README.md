@@ -62,9 +62,9 @@ Below is the planned roadmap.
 
 ### Beta
 
-- [ ] Tags
-- [ ] Link / tag autocomplete
-- [ ] Markdown formatting support
+- [x] Tags
+- [x] Link / tag autocomplete
+- [x] Markdown formatting support
 - [ ] Dates (support Natural Language Dates plugin)
 
 ### Backlog
