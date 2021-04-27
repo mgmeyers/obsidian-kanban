@@ -1,5 +1,5 @@
 import update from "immutability-helper";
-import React, { useCallback } from "react";
+import React from "react";
 import { DataBridge } from "../DataBridge";
 import {
   DragDropContext,
@@ -17,10 +17,11 @@ import {
   swapItems,
   moveItem,
 } from "./helpers";
-import { draggableLaneFactory, DraggableLaneFactoryParams } from "./Lane/Lane";
+import { draggableLaneFactory } from "./Lane/Lane";
 import { LaneForm } from "./Lane/LaneForm";
 import { KanbanContext, ObsidianContext } from "./context";
 import { KanbanView } from "src/KanbanView";
+import { frontMatterKey } from "../parser";
 
 interface KanbanProps {
   dataBridge: DataBridge;
@@ -268,7 +269,7 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
       if (targetEl.hasClass("internal-link")) {
         view.app.workspace.trigger("hover-link", {
           event: e.nativeEvent,
-          source: "kanban-plugin",
+          source: frontMatterKey,
           hoverParent: view,
           targetEl,
           linktext: targetEl.getAttr("href"),

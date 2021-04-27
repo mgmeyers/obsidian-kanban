@@ -29,7 +29,7 @@ export default class KanbanPlugin extends Plugin {
     const self = this;
 
     // @ts-ignore
-    this.app.workspace.registerHoverLinkSource("kanban-plugin", {
+    this.app.workspace.registerHoverLinkSource(frontMatterKey, {
       display: "Kanban",
       defaultMod: true,
     });
@@ -217,7 +217,7 @@ export default class KanbanPlugin extends Plugin {
     });
 
     // @ts-ignore
-    this.app.workspace.unregisterHoverLinkSource("kanban-plugin");
+    this.app.workspace.unregisterHoverLinkSource(frontMatterKey);
   }
 
   async loadSettings() {

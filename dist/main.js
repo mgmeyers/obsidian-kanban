@@ -23610,7 +23610,7 @@ const Kanban = ({ filePath, view, dataBridge }) => {
         if (targetEl.hasClass("internal-link")) {
             view.app.workspace.trigger("hover-link", {
                 event: e.nativeEvent,
-                source: "kanban-plugin",
+                source: frontMatterKey,
                 hoverParent: view,
                 targetEl,
                 linktext: targetEl.getAttr("href"),
@@ -23749,7 +23749,7 @@ class KanbanPlugin extends obsidian.Plugin {
         return __awaiter(this, void 0, void 0, function* () {
             const self = this;
             // @ts-ignore
-            this.app.workspace.registerHoverLinkSource("kanban-plugin", {
+            this.app.workspace.registerHoverLinkSource(frontMatterKey, {
                 display: "Kanban",
                 defaultMod: true,
             });
@@ -23904,7 +23904,7 @@ class KanbanPlugin extends obsidian.Plugin {
             this.setMarkdownView(leaf);
         });
         // @ts-ignore
-        this.app.workspace.unregisterHoverLinkSource("kanban-plugin");
+        this.app.workspace.unregisterHoverLinkSource(frontMatterKey);
     }
     loadSettings() {
         return __awaiter(this, void 0, void 0, function* () {
