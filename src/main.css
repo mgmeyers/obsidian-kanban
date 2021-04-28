@@ -591,3 +591,7 @@ button.kanban-plugin__cancel-action-button {
   opacity: 1;
   color: var(--text-muted);
 }
+
+.kanban-plugin__board-settings-modal .error {
+  border-color: var(--background-modifier-error-hover) !important;
+}

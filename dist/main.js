@@ -27097,7 +27097,7 @@ function GripIcon(props) {
         react.createElement("path", { fill: "currentColor", d: "M5 3h2v2H5zm0 4h2v2H5zm0 4h2v2H5zm4-8h2v2H9zm0 4h2v2H9zm0 4h2v2H9z" })));
 }
 
-function LaneTitle({ isEditing, title, onChange, onKeyDown, }) {
+function LaneTitle({ itemCount, isEditing, title, onChange, onKeyDown, }) {
     const _a = useIMEInputProps(), { getShouldIMEBlockAction } = _a, inputProps = __rest(_a, ["getShouldIMEBlockAction"]);
     const inputRef = react.useRef();
     react.useEffect(() => {
@@ -27107,13 +27107,14 @@ function LaneTitle({ isEditing, title, onChange, onKeyDown, }) {
             input.selectionStart = input.selectionEnd = input.value.length;
         }
     }, [isEditing]);
-    return (react.createElement("div", { className: c$2("lane-title") }, isEditing ? (react.createElement("div", { className: c$2("lane-title") },
-        react.createElement("div", { "data-replicated-value": title, className: c$2("grow-wrap") },
-            react.createElement("textarea", Object.assign({ ref: inputRef, rows: 1, value: title, className: c$2("lane-input"), placeholder: "Enter list title...", onChange: onChange, onKeyDown: (e) => {
-                    if (getShouldIMEBlockAction())
-                        return;
-                    onKeyDown(e);
-                } }, inputProps))))) : (title)));
+    return (react.createElement("div", { className: c$2("lane-title") }, isEditing ? (react.createElement("div", { "data-replicated-value": title, className: c$2("grow-wrap") },
+        react.createElement("textarea", Object.assign({ ref: inputRef, rows: 1, value: title, className: c$2("lane-input"), placeholder: "Enter list title...", onChange: onChange, onKeyDown: (e) => {
+                if (getShouldIMEBlockAction())
+                    return;
+                onKeyDown(e);
+            } }, inputProps)))) : (react.createElement(react.Fragment, null,
+        react.createElement("span", { className: c$2("lane-title-text") }, title),
+        react.createElement("span", { className: c$2("lane-title-count") }, itemCount)))));
 }
 
 function LaneSettings({ lane, laneIndex }) {
@@ -27203,7 +27204,7 @@ function LaneHeader({ lane, laneIndex, dragHandleProps, }) {
         react.createElement("div", { className: c$2("lane-header-wrapper") },
             react.createElement("div", Object.assign({ className: c$2("lane-grip") }, dragHandleProps, { "aria-label": "Move list" }),
                 react.createElement(GripIcon, null)),
-            react.createElement(LaneTitle, { isEditing: isEditing, title: lane.title, onChange: (e) => boardModifiers.updateLane(laneIndex, update$2(lane, { title: { $set: e.target.value } })), onKeyDown: (e) => {
+            react.createElement(LaneTitle, { isEditing: isEditing, itemCount: lane.items.length, title: lane.title, onChange: (e) => boardModifiers.updateLane(laneIndex, update$2(lane, { title: { $set: e.target.value } })), onKeyDown: (e) => {
                     if (e.key === "Escape" || e.key === "Enter") {
                         e.preventDefault();
                         setIsEditing(false);
@@ -27259,9 +27260,13 @@ function LaneItems({ isGhost, items, laneId, laneIndex, shouldShowArchiveButton,
 function draggableLaneFactory({ lanes, isGhost, }) {
     return (provided, snapshot, rubric) => {
         const { boardModifiers } = react.useContext(KanbanContext);
+        const { view } = react.useContext(ObsidianContext);
         const lane = lanes[rubric.source.index];
         const shouldShowArchiveButton = !!lane.data.shouldMarkItemsComplete;
-        return (react.createElement("div", Object.assign({ className: `${c$2("lane")} ${snapshot.isDragging ? "is-dragging" : ""}`, ref: provided.innerRef }, provided.draggableProps),
+        const laneWidth = view.getSetting("lane-width");
+        const settingStyles = laneWidth ? { width: `${laneWidth}px` } : undefined;
+        const style = Object.assign(Object.assign({}, provided.draggableProps.style), settingStyles);
+        return (react.createElement("div", Object.assign({ className: `${c$2("lane")} ${snapshot.isDragging ? "is-dragging" : ""}`, ref: provided.innerRef }, provided.draggableProps, { style: style }),
             react.createElement(LaneHeader, { dragHandleProps: provided.dragHandleProps, laneIndex: rubric.source.index, lane: lane }),
             react.createElement(LaneItems, { laneId: lane.id, items: lane.items, laneIndex: rubric.source.index, isGhost: isGhost, shouldShowArchiveButton: shouldShowArchiveButton }),
             react.createElement(ItemForm, { addItem: (item) => {
@@ -33840,17 +33845,102 @@ function getListOptions(app, plugin) {
         templateWarning,
     };
 }
+function createSearchSelect({ choices, key, warningText, local, placeHolderStr, manager, }) {
+    return (setting) => {
+        setting.controlEl.createEl("select", {}, (el) => {
+            // el must be in the dom, so we setTimeout
+            setTimeout(() => {
+                let list = choices;
+                const [value, defaultVal] = manager.getSetting(key, local);
+                if (defaultVal) {
+                    const index = choices.findIndex((f) => f.value === defaultVal);
+                    const choice = choices[index];
+                    list = update$2(list, {
+                        $splice: [[index, 1]],
+                        $unshift: [
+                            update$2(choice, {
+                                placeholder: {
+                                    $set: true,
+                                },
+                                value: {
+                                    $set: "",
+                                },
+                                label: {
+                                    $apply: (v) => `${v} (default)`,
+                                },
+                            }),
+                        ],
+                    });
+                }
+                else {
+                    list = update$2(list, {
+                        $unshift: [
+                            {
+                                placeholder: true,
+                                value: "",
+                                label: placeHolderStr,
+                                selected: false,
+                                disabled: false,
+                            },
+                        ],
+                    });
+                }
+                const c = new Choices(el, {
+                    placeholder: true,
+                    position: "bottom",
+                    searchPlaceholderValue: "Search...",
+                    searchEnabled: list.length > 10,
+                    choices: list,
+                }).setChoiceByValue("");
+                if (value && typeof value === "string") {
+                    c.setChoiceByValue(value);
+                }
+                const onChange = (e) => {
+                    const val = e.detail.value;
+                    if (val) {
+                        manager.applySettingsUpdate({
+                            [key]: {
+                                $set: val,
+                            },
+                        });
+                    }
+                    else {
+                        manager.applySettingsUpdate({
+                            $unset: [key],
+                        });
+                    }
+                };
+                el.addEventListener("change", onChange);
+                manager.cleanupFns.push(() => {
+                    c.destroy();
+                    el.removeEventListener("change", onChange);
+                });
+            });
+            if (warningText) {
+                setting.descEl.createDiv({}, (div) => {
+                    div.createEl("strong", { text: warningText });
+                });
+            }
+        });
+    };
+}
+
+const numberRegEx = /^\d+(?:\.\d+)?$/;
 class SettingsManager {
     constructor(app, plugin, config, settings) {
         this.cleanupFns = [];
+        this.applyDebounceTimer = 0;
         this.app = app;
         this.plugin = plugin;
         this.config = config;
         this.settings = settings;
     }
     applySettingsUpdate(spec) {
-        this.settings = update$2(this.settings, spec);
-        this.config.onSettingsChange(this.settings);
+        clearTimeout(this.applyDebounceTimer);
+        this.applyDebounceTimer = window.setTimeout(() => {
+            this.settings = update$2(this.settings, spec);
+            this.config.onSettingsChange(this.settings);
+        }, 100);
     }
     getSetting(key, local) {
         if (local) {
@@ -33874,156 +33964,48 @@ class SettingsManager {
         new obsidian.Setting(contentEl)
             .setName("Note template")
             .setDesc("This template will be used when creating new notes from Kanban cards.")
-            .then((setting) => {
-            setting.controlEl.createEl("select", {}, (el) => {
-                // el must be in the dom, so we setTimeout
-                setTimeout(() => {
-                    let list = templateFiles;
-                    const [value, defaultVal] = this.getSetting("new-note-template", local);
-                    if (defaultVal) {
-                        const index = templateFiles.findIndex((f) => f.value === defaultVal);
-                        const choice = templateFiles[index];
-                        list = update$2(list, {
-                            $splice: [[index, 1]],
-                            $unshift: [
-                                update$2(choice, {
-                                    placeholder: {
-                                        $set: true,
-                                    },
-                                    value: {
-                                        $set: "",
-                                    },
-                                    label: {
-                                        $apply: (v) => `${v} (default)`,
-                                    },
-                                }),
-                            ],
-                        });
-                    }
-                    else {
-                        list = update$2(list, {
-                            $unshift: [
-                                {
-                                    placeholder: true,
-                                    value: "",
-                                    label: "No template",
-                                    selected: false,
-                                    disabled: false,
-                                },
-                            ],
-                        });
-                    }
-                    const c = new Choices(el, {
-                        placeholder: true,
-                        position: "bottom",
-                        searchPlaceholderValue: "Search...",
-                        searchEnabled: list.length > 10,
-                        choices: list,
-                    }).setChoiceByValue("");
-                    if (value) {
-                        c.setChoiceByValue(value);
-                    }
-                    const onChange = (e) => {
-                        const val = e.detail.value;
-                        if (val) {
-                            this.applySettingsUpdate({
-                                "new-note-template": {
-                                    $set: val,
-                                },
-                            });
-                        }
-                        else {
-                            this.applySettingsUpdate({
-                                $unset: ["new-note-template"],
-                            });
-                        }
-                    };
-                    el.addEventListener("change", onChange);
-                    this.cleanupFns.push(() => {
-                        c.destroy();
-                        el.removeEventListener("change", onChange);
-                    });
-                });
-                if (templateWarning) {
-                    setting.descEl.createDiv({}, (div) => {
-                        div.createEl("strong", { text: templateWarning });
-                    });
-                }
-            });
-        });
+            .then(createSearchSelect({
+            choices: templateFiles,
+            key: "new-note-template",
+            warningText: templateWarning,
+            local,
+            placeHolderStr: "No template",
+            manager: this,
+        }));
         new obsidian.Setting(contentEl)
             .setName("Note folder")
             .setDesc("Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.")
-            .then((setting) => {
-            let list = vaultFolders;
-            const [value, defaultVal] = this.getSetting("new-note-folder", local);
-            if (defaultVal) {
-                const index = vaultFolders.findIndex((f) => f.value === defaultVal);
-                const choice = vaultFolders[index];
-                list = update$2(list, {
-                    $splice: [[index, 1]],
-                    $unshift: [
-                        update$2(choice, {
-                            placeholder: {
-                                $set: true,
-                            },
-                            value: {
-                                $set: "",
-                            },
-                            label: {
-                                $apply: (v) => `${v} (default)`,
-                            },
-                        }),
-                    ],
-                });
-            }
-            else {
-                list = update$2(list, {
-                    $unshift: [
-                        {
-                            placeholder: true,
-                            value: "",
-                            label: "Default folder",
-                            selected: false,
-                            disabled: false,
+            .then(createSearchSelect({
+            choices: vaultFolders,
+            key: "new-note-folder",
+            local,
+            placeHolderStr: "Default folder",
+            manager: this,
+        }));
+        new obsidian.Setting(contentEl)
+            .setName("Lane width")
+            .setDesc("Enter a number to set the lane width in pixels.")
+            .addText((text) => {
+            const [value, globalValue] = this.getSetting("lane-width", local);
+            console.log("lane-width", value);
+            text.inputEl.setAttr("type", "number");
+            text.inputEl.placeholder = `${globalValue ? globalValue : "272"} (default)`;
+            text.inputEl.value = value ? value.toString() : "";
+            text.onChange((val) => {
+                if (numberRegEx.test(val)) {
+                    text.inputEl.removeClass("error");
+                    this.applySettingsUpdate({
+                        "lane-width": {
+                            $set: parseInt(val),
                         },
-                    ],
-                });
-            }
-            setting.controlEl.createEl("select", {}, (el) => {
-                // el must be in the dom, so we setTimeout
-                setTimeout(() => {
-                    const c = new Choices(el, {
-                        placeholder: true,
-                        position: "bottom",
-                        searchPlaceholderValue: "Search...",
-                        searchEnabled: list.length > 10,
-                        choices: list,
-                    }).setChoiceByValue("");
-                    if (value) {
-                        c.setChoiceByValue(value);
-                    }
-                    const onChange = (e) => {
-                        const val = e.detail.value;
-                        if (val) {
-                            this.applySettingsUpdate({
-                                "new-note-folder": {
-                                    $set: val,
-                                },
-                            });
-                        }
-                        else {
-                            this.applySettingsUpdate({
-                                $unset: ["new-note-folder"],
-                            });
-                        }
-                    };
-                    el.addEventListener("change", onChange);
-                    this.cleanupFns.push(() => {
-                        c.destroy();
-                        el.removeEventListener("change", onChange);
                     });
-                });
+                }
+                else {
+                    text.inputEl.addClass("error");
+                    this.applySettingsUpdate({
+                        $unset: ["lane-width"],
+                    });
+                }
             });
         });
     }
