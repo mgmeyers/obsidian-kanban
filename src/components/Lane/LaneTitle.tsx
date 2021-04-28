@@ -2,6 +2,7 @@ import React from "react";
 import { c, useIMEInputProps } from "../helpers";
 
 export interface LaneTitleProps {
+  itemCount: number;
   title: string;
   isEditing: boolean;
   onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
@@ -9,6 +10,7 @@ export interface LaneTitleProps {
 }
 
 export function LaneTitle({
+  itemCount,
   isEditing,
   title,
   onChange,
@@ -29,25 +31,26 @@ export function LaneTitle({
   return (
     <div className={c("lane-title")}>
       {isEditing ? (
-        <div className={c("lane-title")}>
-          <div data-replicated-value={title} className={c("grow-wrap")}>
-            <textarea
-              ref={inputRef}
-              rows={1}
-              value={title}
-              className={c("lane-input")}
-              placeholder="Enter list title..."
-              onChange={onChange}
-              onKeyDown={(e) => {
-                if (getShouldIMEBlockAction()) return;
-                onKeyDown(e);
-              }}
-              {...inputProps}
-            />
-          </div>
+        <div data-replicated-value={title} className={c("grow-wrap")}>
+          <textarea
+            ref={inputRef}
+            rows={1}
+            value={title}
+            className={c("lane-input")}
+            placeholder="Enter list title..."
+            onChange={onChange}
+            onKeyDown={(e) => {
+              if (getShouldIMEBlockAction()) return;
+              onKeyDown(e);
+            }}
+            {...inputProps}
+          />
         </div>
       ) : (
-        title
+        <>
+          <span className={c("lane-title-text")}>{title}</span>
+          <span className={c("lane-title-count")}>{itemCount}</span>
+        </>
       )}
     </div>
   );

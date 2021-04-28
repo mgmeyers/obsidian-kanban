@@ -41,6 +41,7 @@ export function LaneHeader({
 
         <LaneTitle
           isEditing={isEditing}
+          itemCount={lane.items.length}
           title={lane.title}
           onChange={(e) =>
             boardModifiers.updateLane(

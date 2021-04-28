@@ -127,7 +127,7 @@ export function useIMEInputProps() {
 
 export const templaterDetectRegex = /<%/;
 
-export async function applyTemplate(view: KanbanView, templatePath: string) {
+export async function applyTemplate(view: KanbanView, templatePath?: string) {
   const templateFile = templatePath
     ? view.app.vault.getAbstractFileByPath(templatePath)
     : null;

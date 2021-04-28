@@ -16,7 +16,7 @@ import { ItemContent } from "../Item/ItemContent";
 import { ItemForm } from "../Item/ItemForm";
 import { LaneHeader } from "./LaneHeader";
 import { Icon } from "../Icon/Icon";
-import { KanbanContext } from "../context";
+import { KanbanContext, ObsidianContext } from "../context";
 
 export interface DraggableLaneFactoryParams {
   lanes: Lane[];
@@ -103,14 +103,23 @@ export function draggableLaneFactory({
     rubric: DraggableRubric
   ) => {
     const { boardModifiers } = React.useContext(KanbanContext);
+    const { view } = React.useContext(ObsidianContext);
     const lane = lanes[rubric.source.index];
     const shouldShowArchiveButton = !!lane.data.shouldMarkItemsComplete;
+    const laneWidth = view.getSetting("lane-width");
+
+    const settingStyles = laneWidth ? { width: `${laneWidth}px` } : undefined
+    const style = {
+      ...provided.draggableProps.style,
+      ...settingStyles,
+    }
 
     return (
       <div
         className={`${c("lane")} ${snapshot.isDragging ? "is-dragging" : ""}`}
         ref={provided.innerRef}
         {...provided.draggableProps}
+        style={style}
       >
         <LaneHeader
           dragHandleProps={provided.dragHandleProps}

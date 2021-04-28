@@ -1,92 +1,25 @@
 import update, { Spec } from "immutability-helper";
-import Choices, { Choices as IChoices } from "choices.js";
-import {
-  App,
-  Modal,
-  PluginSettingTab,
-  Setting,
-  TFile,
-  TFolder,
-  Vault,
-} from "obsidian";
+import { App, Modal, PluginSettingTab, Setting, debounce } from "obsidian";
 import { c } from "./components/helpers";
 import { KanbanView } from "./KanbanView";
 import { frontMatterKey } from "./parser";
 import KanbanPlugin from "./main";
+import { createSearchSelect, getListOptions } from "./settingHelpers";
 
-type KanbanFormats = "basic";
+const numberRegEx = /^\d+(?:\.\d+)?$/;
+
+export type KanbanFormats = "basic";
 
 export interface KanbanSettings {
   [frontMatterKey]?: KanbanFormats;
   "new-note-folder"?: string;
   "new-note-template"?: string;
+  "lane-width"?: number;
+  "display-tags"?: boolean;
 }
 
 export interface SettingsManagerConfig {
   onSettingsChange: (newSettings: KanbanSettings) => void;
-}
-
-function getFolderChoices(app: App) {
-  const folderList: IChoices.Choice[] = [];
-
-  Vault.recurseChildren(app.vault.getRoot(), (f) => {
-    if (f instanceof TFolder) {
-      folderList.push({
-        value: f.path,
-        label: f.path,
-        selected: false,
-        disabled: false,
-      });
-    }
-  });
-
-  return folderList;
-}
-
-function getTemplateChoices(app: App, folderStr?: string) {
-  const fileList: IChoices.Choice[] = [];
-
-  let folder = folderStr ? app.vault.getAbstractFileByPath(folderStr) : null;
-
-  if (!folder || !(folder instanceof TFolder)) {
-    folder = app.vault.getRoot();
-  }
-
-  Vault.recurseChildren(folder as TFolder, (f) => {
-    if (f instanceof TFile) {
-      fileList.push({
-        value: f.path,
-        label: f.basename,
-        selected: false,
-        disabled: false,
-      });
-    }
-  });
-
-  return fileList;
-}
-
-function getListOptions(app: App, plugin: KanbanPlugin) {
-  const {
-    templateFolder,
-    templatesEnabled,
-    templaterPlugin,
-  } = plugin.getTemplatePlugins();
-
-  const templateFiles = getTemplateChoices(app, templateFolder);
-  const vaultFolders = getFolderChoices(app);
-
-  let templateWarning = "";
-
-  if (!templatesEnabled && !templaterPlugin) {
-    templateWarning = "Note: No template plugins are currently enabled.";
-  }
-
-  return {
-    templateFiles,
-    vaultFolders,
-    templateWarning,
-  };
 }
 
 export class SettingsManager {
@@ -95,6 +28,7 @@ export class SettingsManager {
   config: SettingsManagerConfig;
   settings: KanbanSettings;
   cleanupFns: Array<() => void> = [];
+  applyDebounceTimer: number = 0;
 
   constructor(
     app: App,
@@ -109,8 +43,12 @@ export class SettingsManager {
   }
 
   applySettingsUpdate(spec: Spec<KanbanSettings>) {
-    this.settings = update(this.settings, spec);
-    this.config.onSettingsChange(this.settings);
+    clearTimeout(this.applyDebounceTimer);
+
+    this.applyDebounceTimer = window.setTimeout(() => {
+      this.settings = update(this.settings, spec);
+      this.config.onSettingsChange(this.settings);
+    }, 100);
   }
 
   getSetting(key: keyof KanbanSettings, local: boolean) {
@@ -146,179 +84,62 @@ export class SettingsManager {
       .setDesc(
         "This template will be used when creating new notes from Kanban cards."
       )
-      .then((setting) => {
-        setting.controlEl.createEl("select", {}, (el) => {
-          // el must be in the dom, so we setTimeout
-          setTimeout(() => {
-            let list = templateFiles;
-
-            const [value, defaultVal] = this.getSetting(
-              "new-note-template",
-              local
-            );
-
-            if (defaultVal) {
-              const index = templateFiles.findIndex(
-                (f) => f.value === defaultVal
-              );
-              const choice = templateFiles[index];
-
-              list = update(list, {
-                $splice: [[index, 1]],
-                $unshift: [
-                  update(choice, {
-                    placeholder: {
-                      $set: true,
-                    },
-                    value: {
-                      $set: "",
-                    },
-                    label: {
-                      $apply: (v) => `${v} (default)`,
-                    },
-                  }),
-                ],
-              });
-            } else {
-              list = update(list, {
-                $unshift: [
-                  {
-                    placeholder: true,
-                    value: "",
-                    label: "No template",
-                    selected: false,
-                    disabled: false,
-                  },
-                ],
-              });
-            }
-
-            const c = new Choices(el, {
-              placeholder: true,
-              position: "bottom" as "auto",
-              searchPlaceholderValue: "Search...",
-              searchEnabled: list.length > 10,
-              choices: list,
-            }).setChoiceByValue("");
-
-            if (value) {
-              c.setChoiceByValue(value);
-            }
-
-            const onChange = (e: CustomEvent) => {
-              const val = e.detail.value;
-
-              if (val) {
-                this.applySettingsUpdate({
-                  "new-note-template": {
-                    $set: val,
-                  },
-                });
-              } else {
-                this.applySettingsUpdate({
-                  $unset: ["new-note-template"],
-                });
-              }
-            };
-
-            el.addEventListener("change", onChange);
-
-            this.cleanupFns.push(() => {
-              c.destroy();
-              el.removeEventListener("change", onChange);
-            });
-          });
-
-          if (templateWarning) {
-            setting.descEl.createDiv({}, (div) => {
-              div.createEl("strong", { text: templateWarning });
-            });
-          }
-        });
-      });
+      .then(
+        createSearchSelect({
+          choices: templateFiles,
+          key: "new-note-template",
+          warningText: templateWarning,
+          local,
+          placeHolderStr: "No template",
+          manager: this,
+        })
+      );
 
     new Setting(contentEl)
       .setName("Note folder")
       .setDesc(
         "Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault."
       )
-      .then((setting) => {
-        let list = vaultFolders;
+      .then(
+        createSearchSelect({
+          choices: vaultFolders,
+          key: "new-note-folder",
+          local,
+          placeHolderStr: "Default folder",
+          manager: this,
+        })
+      );
 
-        const [value, defaultVal] = this.getSetting("new-note-folder", local);
+    new Setting(contentEl)
+      .setName("Lane width")
+      .setDesc("Enter a number to set the lane width in pixels.")
+      .addText((text) => {
+        const [value, globalValue] = this.getSetting("lane-width", local);
 
-        if (defaultVal) {
-          const index = vaultFolders.findIndex((f) => f.value === defaultVal);
-          const choice = vaultFolders[index];
+        console.log("lane-width", value);
 
-          list = update(list, {
-            $splice: [[index, 1]],
-            $unshift: [
-              update(choice, {
-                placeholder: {
-                  $set: true,
-                },
-                value: {
-                  $set: "",
-                },
-                label: {
-                  $apply: (v) => `${v} (default)`,
-                },
-              }),
-            ],
-          });
-        } else {
-          list = update(list, {
-            $unshift: [
-              {
-                placeholder: true,
-                value: "",
-                label: "Default folder",
-                selected: false,
-                disabled: false,
+        text.inputEl.setAttr("type", "number");
+        text.inputEl.placeholder = `${
+          globalValue ? globalValue : "272"
+        } (default)`;
+        text.inputEl.value = value ? value.toString() : "";
+
+        text.onChange((val) => {
+          if (numberRegEx.test(val)) {
+            text.inputEl.removeClass("error");
+
+            this.applySettingsUpdate({
+              "lane-width": {
+                $set: parseInt(val),
               },
-            ],
-          });
-        }
-
-        setting.controlEl.createEl("select", {}, (el) => {
-          // el must be in the dom, so we setTimeout
-          setTimeout(() => {
-            const c = new Choices(el, {
-              placeholder: true,
-              position: "bottom" as "auto",
-              searchPlaceholderValue: "Search...",
-              searchEnabled: list.length > 10,
-              choices: list,
-            }).setChoiceByValue("");
-
-            if (value) {
-              c.setChoiceByValue(value);
-            }
-
-            const onChange = (e: CustomEvent) => {
-              const val = e.detail.value;
-
-              if (val) {
-                this.applySettingsUpdate({
-                  "new-note-folder": {
-                    $set: val,
-                  },
-                });
-              } else {
-                this.applySettingsUpdate({
-                  $unset: ["new-note-folder"],
-                });
-              }
-            };
-
-            el.addEventListener("change", onChange);
-
-            this.cleanupFns.push(() => {
-              c.destroy();
-              el.removeEventListener("change", onChange);
             });
-          });
+          } else {
+            text.inputEl.addClass("error");
+
+            this.applySettingsUpdate({
+              $unset: ["lane-width"],
+            });
+          }
         });
       });
   }

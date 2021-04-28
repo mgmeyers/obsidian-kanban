@@ -42,7 +42,7 @@ export function useItemMenu({
             const newNoteTemplatePath = view.getSetting("new-note-template");
 
             const targetFolder = newNoteFolder
-              ? (view.app.vault.getAbstractFileByPath(newNoteFolder) as TFolder)
+              ? (view.app.vault.getAbstractFileByPath(newNoteFolder as string) as TFolder)
               : view.app.fileManager.getNewFileParent(view.file.parent.path);
 
             // @ts-ignore
@@ -57,7 +57,7 @@ export function useItemMenu({
 
             view.app.workspace.setActiveLeaf(newLeaf, false, true);
 
-            await applyTemplate(view, newNoteTemplatePath);
+            await applyTemplate(view, newNoteTemplatePath as string | undefined);
 
             boardModifiers.updateItem(
               laneIndex,
