@@ -2,6 +2,8 @@ import React from "react";
 import update from "immutability-helper";
 import { DropResult } from "react-beautiful-dnd";
 import { Board, Item, Lane } from "./types";
+import { KanbanView } from "src/KanbanView";
+import { TFile } from "obsidian";
 
 export const baseClassName = "kanban-plugin";
 
@@ -121,4 +123,44 @@ export function useIMEInputProps() {
       return isComposingRef.current;
     },
   };
+}
+
+export const templaterDetectRegex = /<%/;
+
+export async function applyTemplate(view: KanbanView, templatePath: string) {
+  const templateFile = templatePath
+    ? view.app.vault.getAbstractFileByPath(templatePath)
+    : null;
+
+  if (templateFile && templateFile instanceof TFile) {
+    const {
+      templatesEnabled,
+      templaterPlugin,
+      templatesPlugin,
+    } = view.plugin.getTemplatePlugins();
+
+    const templateContent = await view.app.vault.read(templateFile);
+
+    // If both plugins are enabled, attempt to detect templater first
+    if (templatesEnabled && templaterPlugin) {
+      if (templaterDetectRegex.test(templateContent)) {
+        return await templaterPlugin.parser.replace_templates_and_append(
+          templateFile
+        );
+      }
+
+      return await templatesPlugin.instance.insertTemplate(templateFile);
+    }
+
+    if (templatesEnabled) {
+      return await templatesPlugin.instance.insertTemplate(templateFile);
+    }
+
+    if (templaterPlugin) {
+      return await templaterPlugin.parser.replace_templates_and_append(templateFile);
+    }
+
+    // No template plugins enabled so we can just append the template to the doc
+    await view.app.vault.modify(view.app.workspace.getActiveFile(), templateContent);
+  }
 }

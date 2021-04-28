@@ -1,4 +1,4 @@
-import { MarkdownRenderer, Menu } from "obsidian";
+import { Menu, TFolder } from "obsidian";
 import update from "immutability-helper";
 import React from "react";
 import {
@@ -7,80 +7,12 @@ import {
   DraggableRubric,
 } from "react-beautiful-dnd";
 
-import { BoardModifiers, Item } from "../types";
+import { Item } from "../types";
 import { c } from "../helpers";
 import { Icon } from "../Icon/Icon";
-import { KanbanContext, ObsidianContext } from "../context";
+import { KanbanContext } from "../context";
 import { ItemContent } from "./ItemContent";
-
-const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
-
-interface UseItemMenuParams {
-  setIsEditing: React.Dispatch<boolean>;
-  item: Item;
-  laneIndex: number;
-  itemIndex: number;
-  boardModifiers: BoardModifiers;
-}
-
-export function useItemMenu({
-  setIsEditing,
-  item,
-  laneIndex,
-  itemIndex,
-  boardModifiers,
-}: UseItemMenuParams) {
-  const { view } = React.useContext(ObsidianContext);
-
-  return React.useMemo(() => {
-    return new Menu(view.app)
-      .addItem((i) => {
-        i.setIcon("pencil")
-          .setTitle("Edit card")
-          .onClick(() => setIsEditing(true));
-      })
-      .addItem((i) => {
-        i.setIcon("create-new")
-          .setTitle("New note from card")
-          .onClick(async () => {
-            const sanitizedTitle = item.title.replace(illegalCharsRegEx, " ");
-            const targetFolder = view.app.fileManager.getNewFileParent(
-              view.file.parent.path
-            );
-
-            // @ts-ignore
-            const newFile = await view.app.fileManager.createNewMarkdownFile(
-              targetFolder,
-              sanitizedTitle
-            );
-            const newLeaf = view.app.workspace.splitActiveLeaf();
-
-            await newLeaf.openFile(newFile);
-
-            view.app.workspace.setActiveLeaf(newLeaf, false, true);
-
-            boardModifiers.updateItem(
-              laneIndex,
-              itemIndex,
-              update(item, { title: { $set: `[[${sanitizedTitle}]]` } })
-            );
-          });
-      })
-      .addSeparator()
-      .addItem((i) => {
-        i.setIcon("sheets-in-box")
-          .setTitle("Archive card")
-          .onClick(() =>
-            boardModifiers.archiveItem(laneIndex, itemIndex, item)
-          );
-      })
-      .addItem((i) => {
-        i.setIcon("trash")
-          .setTitle("Delete card")
-          .onClick(() => boardModifiers.deleteItem(laneIndex, itemIndex));
-      });
-  }, [view, setIsEditing, boardModifiers, laneIndex, itemIndex, item]);
-}
+import { useItemMenu } from "./ItemMenu";
 
 export interface DraggableItemFactoryParams {
   items: Item[];

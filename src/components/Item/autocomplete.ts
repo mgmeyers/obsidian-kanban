@@ -36,7 +36,7 @@ export function constructAutocomplete({
         id: "tag",
         match: /\B#([^\s]*)$/,
         index: 1,
-        search: async (
+        search: (
           term: string,
           callback: (results: Fuse.FuseResult<string>[]) => void
         ) => {
@@ -54,7 +54,7 @@ export function constructAutocomplete({
         template: (res: Fuse.FuseResult<TFile>) => {
           return view.app.metadataCache.fileToLinktext(res.item, filePath);
         },
-        search: async (
+        search: (
           term: string,
           callback: (results: Fuse.FuseResult<TFile>[]) => void
         ) => {

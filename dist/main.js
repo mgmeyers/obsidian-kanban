@@ -127,6 +127,316 @@ function createCommonjsModule(fn) {
 	return fn(module, module.exports), module.exports;
 }
 
+var immutabilityHelper = createCommonjsModule(function (module, exports) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function stringifiable(obj) {
+  // Safely stringify Object.create(null)
+
+  /* istanbul ignore next */
+  return typeof obj === 'object' && !('toString' in obj) ? Object.prototype.toString.call(obj).slice(8, -1) : obj;
+}
+
+var isProduction = typeof process === 'object' && "production" === 'production';
+
+function invariant(condition, message) {
+  if (!condition) {
+    /* istanbul ignore next */
+    if (isProduction) {
+      throw new Error('Invariant failed');
+    }
+
+    throw new Error(message());
+  }
+}
+
+exports.invariant = invariant;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+var splice = Array.prototype.splice;
+var toString = Object.prototype.toString;
+
+function type(obj) {
+  return toString.call(obj).slice(8, -1);
+}
+
+var assign = Object.assign ||
+/* istanbul ignore next */
+function (target, source) {
+  getAllKeys(source).forEach(function (key) {
+    if (hasOwnProperty.call(source, key)) {
+      target[key] = source[key];
+    }
+  });
+  return target;
+};
+
+var getAllKeys = typeof Object.getOwnPropertySymbols === 'function' ? function (obj) {
+  return Object.keys(obj).concat(Object.getOwnPropertySymbols(obj));
+}
+/* istanbul ignore next */
+: function (obj) {
+  return Object.keys(obj);
+};
+
+function copy(object) {
+  return Array.isArray(object) ? assign(object.constructor(object.length), object) : type(object) === 'Map' ? new Map(object) : type(object) === 'Set' ? new Set(object) : object && typeof object === 'object' ? assign(Object.create(Object.getPrototypeOf(object)), object)
+  /* istanbul ignore next */
+  : object;
+}
+
+var Context =
+/** @class */
+function () {
+  function Context() {
+    this.commands = assign({}, defaultCommands);
+    this.update = this.update.bind(this); // Deprecated: update.extend, update.isEquals and update.newContext
+
+    this.update.extend = this.extend = this.extend.bind(this);
+
+    this.update.isEquals = function (x, y) {
+      return x === y;
+    };
+
+    this.update.newContext = function () {
+      return new Context().update;
+    };
+  }
+
+  Object.defineProperty(Context.prototype, "isEquals", {
+    get: function () {
+      return this.update.isEquals;
+    },
+    set: function (value) {
+      this.update.isEquals = value;
+    },
+    enumerable: true,
+    configurable: true
+  });
+
+  Context.prototype.extend = function (directive, fn) {
+    this.commands[directive] = fn;
+  };
+
+  Context.prototype.update = function (object, $spec) {
+    var _this = this;
+
+    var spec = typeof $spec === 'function' ? {
+      $apply: $spec
+    } : $spec;
+
+    if (!(Array.isArray(object) && Array.isArray(spec))) {
+      invariant(!Array.isArray(spec), function () {
+        return "update(): You provided an invalid spec to update(). The spec may " + "not contain an array except as the value of $set, $push, $unshift, " + "$splice or any custom command allowing an array value.";
+      });
+    }
+
+    invariant(typeof spec === 'object' && spec !== null, function () {
+      return "update(): You provided an invalid spec to update(). The spec and " + "every included key path must be plain objects containing one of the " + ("following commands: " + Object.keys(_this.commands).join(', ') + ".");
+    });
+    var nextObject = object;
+    getAllKeys(spec).forEach(function (key) {
+      if (hasOwnProperty.call(_this.commands, key)) {
+        var objectWasNextObject = object === nextObject;
+        nextObject = _this.commands[key](spec[key], nextObject, spec, object);
+
+        if (objectWasNextObject && _this.isEquals(nextObject, object)) {
+          nextObject = object;
+        }
+      } else {
+        var nextValueForKey = type(object) === 'Map' ? _this.update(object.get(key), spec[key]) : _this.update(object[key], spec[key]);
+        var nextObjectValue = type(nextObject) === 'Map' ? nextObject.get(key) : nextObject[key];
+
+        if (!_this.isEquals(nextValueForKey, nextObjectValue) || typeof nextValueForKey === 'undefined' && !hasOwnProperty.call(object, key)) {
+          if (nextObject === object) {
+            nextObject = copy(object);
+          }
+
+          if (type(nextObject) === 'Map') {
+            nextObject.set(key, nextValueForKey);
+          } else {
+            nextObject[key] = nextValueForKey;
+          }
+        }
+      }
+    });
+    return nextObject;
+  };
+
+  return Context;
+}();
+
+exports.Context = Context;
+var defaultCommands = {
+  $push: function (value, nextObject, spec) {
+    invariantPushAndUnshift(nextObject, spec, '$push');
+    return value.length ? nextObject.concat(value) : nextObject;
+  },
+  $unshift: function (value, nextObject, spec) {
+    invariantPushAndUnshift(nextObject, spec, '$unshift');
+    return value.length ? value.concat(nextObject) : nextObject;
+  },
+  $splice: function (value, nextObject, spec, originalObject) {
+    invariantSplices(nextObject, spec);
+    value.forEach(function (args) {
+      invariantSplice(args);
+
+      if (nextObject === originalObject && args.length) {
+        nextObject = copy(originalObject);
+      }
+
+      splice.apply(nextObject, args);
+    });
+    return nextObject;
+  },
+  $set: function (value, _nextObject, spec) {
+    invariantSet(spec);
+    return value;
+  },
+  $toggle: function (targets, nextObject) {
+    invariantSpecArray(targets, '$toggle');
+    var nextObjectCopy = targets.length ? copy(nextObject) : nextObject;
+    targets.forEach(function (target) {
+      nextObjectCopy[target] = !nextObject[target];
+    });
+    return nextObjectCopy;
+  },
+  $unset: function (value, nextObject, _spec, originalObject) {
+    invariantSpecArray(value, '$unset');
+    value.forEach(function (key) {
+      if (Object.hasOwnProperty.call(nextObject, key)) {
+        if (nextObject === originalObject) {
+          nextObject = copy(originalObject);
+        }
+
+        delete nextObject[key];
+      }
+    });
+    return nextObject;
+  },
+  $add: function (values, nextObject, _spec, originalObject) {
+    invariantMapOrSet(nextObject, '$add');
+    invariantSpecArray(values, '$add');
+
+    if (type(nextObject) === 'Map') {
+      values.forEach(function (_a) {
+        var key = _a[0],
+            value = _a[1];
+
+        if (nextObject === originalObject && nextObject.get(key) !== value) {
+          nextObject = copy(originalObject);
+        }
+
+        nextObject.set(key, value);
+      });
+    } else {
+      values.forEach(function (value) {
+        if (nextObject === originalObject && !nextObject.has(value)) {
+          nextObject = copy(originalObject);
+        }
+
+        nextObject.add(value);
+      });
+    }
+
+    return nextObject;
+  },
+  $remove: function (value, nextObject, _spec, originalObject) {
+    invariantMapOrSet(nextObject, '$remove');
+    invariantSpecArray(value, '$remove');
+    value.forEach(function (key) {
+      if (nextObject === originalObject && nextObject.has(key)) {
+        nextObject = copy(originalObject);
+      }
+
+      nextObject.delete(key);
+    });
+    return nextObject;
+  },
+  $merge: function (value, nextObject, _spec, originalObject) {
+    invariantMerge(nextObject, value);
+    getAllKeys(value).forEach(function (key) {
+      if (value[key] !== nextObject[key]) {
+        if (nextObject === originalObject) {
+          nextObject = copy(originalObject);
+        }
+
+        nextObject[key] = value[key];
+      }
+    });
+    return nextObject;
+  },
+  $apply: function (value, original) {
+    invariantApply(value);
+    return value(original);
+  }
+};
+var defaultContext = new Context();
+exports.isEquals = defaultContext.update.isEquals;
+exports.extend = defaultContext.extend;
+exports.default = defaultContext.update; // @ts-ignore
+
+exports.default.default = module.exports = assign(exports.default, exports); // invariants
+
+function invariantPushAndUnshift(value, spec, command) {
+  invariant(Array.isArray(value), function () {
+    return "update(): expected target of " + stringifiable(command) + " to be an array; got " + stringifiable(value) + ".";
+  });
+  invariantSpecArray(spec[command], command);
+}
+
+function invariantSpecArray(spec, command) {
+  invariant(Array.isArray(spec), function () {
+    return "update(): expected spec of " + stringifiable(command) + " to be an array; got " + stringifiable(spec) + ". " + "Did you forget to wrap your parameter in an array?";
+  });
+}
+
+function invariantSplices(value, spec) {
+  invariant(Array.isArray(value), function () {
+    return "Expected $splice target to be an array; got " + stringifiable(value);
+  });
+  invariantSplice(spec.$splice);
+}
+
+function invariantSplice(value) {
+  invariant(Array.isArray(value), function () {
+    return "update(): expected spec of $splice to be an array of arrays; got " + stringifiable(value) + ". " + "Did you forget to wrap your parameters in an array?";
+  });
+}
+
+function invariantApply(fn) {
+  invariant(typeof fn === 'function', function () {
+    return "update(): expected spec of $apply to be a function; got " + stringifiable(fn) + ".";
+  });
+}
+
+function invariantSet(spec) {
+  invariant(Object.keys(spec).length === 1, function () {
+    return "Cannot have more than one key in an object with $set";
+  });
+}
+
+function invariantMerge(target, specValue) {
+  invariant(specValue && typeof specValue === 'object', function () {
+    return "update(): $merge expects a spec of type 'object'; got " + stringifiable(specValue);
+  });
+  invariant(target && typeof target === 'object', function () {
+    return "update(): $merge expects a target of type 'object'; got " + stringifiable(target);
+  });
+}
+
+function invariantMapOrSet(target, command) {
+  var typeOfTarget = type(target);
+  invariant(typeOfTarget === 'Map' || typeOfTarget === 'Set', function () {
+    return "update(): " + stringifiable(command) + " expects a target of type Set or Map; got " + stringifiable(typeOfTarget);
+  });
+}
+});
+
+var update$2 = /*@__PURE__*/getDefaultExportFromCjs(immutabilityHelper);
+
 /*
 object-assign
 (c) Sindre Sorhus
@@ -8574,316 +8884,6 @@ function checkDCE() {
 }
 });
 
-var immutabilityHelper = createCommonjsModule(function (module, exports) {
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-function stringifiable(obj) {
-  // Safely stringify Object.create(null)
-
-  /* istanbul ignore next */
-  return typeof obj === 'object' && !('toString' in obj) ? Object.prototype.toString.call(obj).slice(8, -1) : obj;
-}
-
-var isProduction = typeof process === 'object' && "production" === 'production';
-
-function invariant(condition, message) {
-  if (!condition) {
-    /* istanbul ignore next */
-    if (isProduction) {
-      throw new Error('Invariant failed');
-    }
-
-    throw new Error(message());
-  }
-}
-
-exports.invariant = invariant;
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-var splice = Array.prototype.splice;
-var toString = Object.prototype.toString;
-
-function type(obj) {
-  return toString.call(obj).slice(8, -1);
-}
-
-var assign = Object.assign ||
-/* istanbul ignore next */
-function (target, source) {
-  getAllKeys(source).forEach(function (key) {
-    if (hasOwnProperty.call(source, key)) {
-      target[key] = source[key];
-    }
-  });
-  return target;
-};
-
-var getAllKeys = typeof Object.getOwnPropertySymbols === 'function' ? function (obj) {
-  return Object.keys(obj).concat(Object.getOwnPropertySymbols(obj));
-}
-/* istanbul ignore next */
-: function (obj) {
-  return Object.keys(obj);
-};
-
-function copy(object) {
-  return Array.isArray(object) ? assign(object.constructor(object.length), object) : type(object) === 'Map' ? new Map(object) : type(object) === 'Set' ? new Set(object) : object && typeof object === 'object' ? assign(Object.create(Object.getPrototypeOf(object)), object)
-  /* istanbul ignore next */
-  : object;
-}
-
-var Context =
-/** @class */
-function () {
-  function Context() {
-    this.commands = assign({}, defaultCommands);
-    this.update = this.update.bind(this); // Deprecated: update.extend, update.isEquals and update.newContext
-
-    this.update.extend = this.extend = this.extend.bind(this);
-
-    this.update.isEquals = function (x, y) {
-      return x === y;
-    };
-
-    this.update.newContext = function () {
-      return new Context().update;
-    };
-  }
-
-  Object.defineProperty(Context.prototype, "isEquals", {
-    get: function () {
-      return this.update.isEquals;
-    },
-    set: function (value) {
-      this.update.isEquals = value;
-    },
-    enumerable: true,
-    configurable: true
-  });
-
-  Context.prototype.extend = function (directive, fn) {
-    this.commands[directive] = fn;
-  };
-
-  Context.prototype.update = function (object, $spec) {
-    var _this = this;
-
-    var spec = typeof $spec === 'function' ? {
-      $apply: $spec
-    } : $spec;
-
-    if (!(Array.isArray(object) && Array.isArray(spec))) {
-      invariant(!Array.isArray(spec), function () {
-        return "update(): You provided an invalid spec to update(). The spec may " + "not contain an array except as the value of $set, $push, $unshift, " + "$splice or any custom command allowing an array value.";
-      });
-    }
-
-    invariant(typeof spec === 'object' && spec !== null, function () {
-      return "update(): You provided an invalid spec to update(). The spec and " + "every included key path must be plain objects containing one of the " + ("following commands: " + Object.keys(_this.commands).join(', ') + ".");
-    });
-    var nextObject = object;
-    getAllKeys(spec).forEach(function (key) {
-      if (hasOwnProperty.call(_this.commands, key)) {
-        var objectWasNextObject = object === nextObject;
-        nextObject = _this.commands[key](spec[key], nextObject, spec, object);
-
-        if (objectWasNextObject && _this.isEquals(nextObject, object)) {
-          nextObject = object;
-        }
-      } else {
-        var nextValueForKey = type(object) === 'Map' ? _this.update(object.get(key), spec[key]) : _this.update(object[key], spec[key]);
-        var nextObjectValue = type(nextObject) === 'Map' ? nextObject.get(key) : nextObject[key];
-
-        if (!_this.isEquals(nextValueForKey, nextObjectValue) || typeof nextValueForKey === 'undefined' && !hasOwnProperty.call(object, key)) {
-          if (nextObject === object) {
-            nextObject = copy(object);
-          }
-
-          if (type(nextObject) === 'Map') {
-            nextObject.set(key, nextValueForKey);
-          } else {
-            nextObject[key] = nextValueForKey;
-          }
-        }
-      }
-    });
-    return nextObject;
-  };
-
-  return Context;
-}();
-
-exports.Context = Context;
-var defaultCommands = {
-  $push: function (value, nextObject, spec) {
-    invariantPushAndUnshift(nextObject, spec, '$push');
-    return value.length ? nextObject.concat(value) : nextObject;
-  },
-  $unshift: function (value, nextObject, spec) {
-    invariantPushAndUnshift(nextObject, spec, '$unshift');
-    return value.length ? value.concat(nextObject) : nextObject;
-  },
-  $splice: function (value, nextObject, spec, originalObject) {
-    invariantSplices(nextObject, spec);
-    value.forEach(function (args) {
-      invariantSplice(args);
-
-      if (nextObject === originalObject && args.length) {
-        nextObject = copy(originalObject);
-      }
-
-      splice.apply(nextObject, args);
-    });
-    return nextObject;
-  },
-  $set: function (value, _nextObject, spec) {
-    invariantSet(spec);
-    return value;
-  },
-  $toggle: function (targets, nextObject) {
-    invariantSpecArray(targets, '$toggle');
-    var nextObjectCopy = targets.length ? copy(nextObject) : nextObject;
-    targets.forEach(function (target) {
-      nextObjectCopy[target] = !nextObject[target];
-    });
-    return nextObjectCopy;
-  },
-  $unset: function (value, nextObject, _spec, originalObject) {
-    invariantSpecArray(value, '$unset');
-    value.forEach(function (key) {
-      if (Object.hasOwnProperty.call(nextObject, key)) {
-        if (nextObject === originalObject) {
-          nextObject = copy(originalObject);
-        }
-
-        delete nextObject[key];
-      }
-    });
-    return nextObject;
-  },
-  $add: function (values, nextObject, _spec, originalObject) {
-    invariantMapOrSet(nextObject, '$add');
-    invariantSpecArray(values, '$add');
-
-    if (type(nextObject) === 'Map') {
-      values.forEach(function (_a) {
-        var key = _a[0],
-            value = _a[1];
-
-        if (nextObject === originalObject && nextObject.get(key) !== value) {
-          nextObject = copy(originalObject);
-        }
-
-        nextObject.set(key, value);
-      });
-    } else {
-      values.forEach(function (value) {
-        if (nextObject === originalObject && !nextObject.has(value)) {
-          nextObject = copy(originalObject);
-        }
-
-        nextObject.add(value);
-      });
-    }
-
-    return nextObject;
-  },
-  $remove: function (value, nextObject, _spec, originalObject) {
-    invariantMapOrSet(nextObject, '$remove');
-    invariantSpecArray(value, '$remove');
-    value.forEach(function (key) {
-      if (nextObject === originalObject && nextObject.has(key)) {
-        nextObject = copy(originalObject);
-      }
-
-      nextObject.delete(key);
-    });
-    return nextObject;
-  },
-  $merge: function (value, nextObject, _spec, originalObject) {
-    invariantMerge(nextObject, value);
-    getAllKeys(value).forEach(function (key) {
-      if (value[key] !== nextObject[key]) {
-        if (nextObject === originalObject) {
-          nextObject = copy(originalObject);
-        }
-
-        nextObject[key] = value[key];
-      }
-    });
-    return nextObject;
-  },
-  $apply: function (value, original) {
-    invariantApply(value);
-    return value(original);
-  }
-};
-var defaultContext = new Context();
-exports.isEquals = defaultContext.update.isEquals;
-exports.extend = defaultContext.extend;
-exports.default = defaultContext.update; // @ts-ignore
-
-exports.default.default = module.exports = assign(exports.default, exports); // invariants
-
-function invariantPushAndUnshift(value, spec, command) {
-  invariant(Array.isArray(value), function () {
-    return "update(): expected target of " + stringifiable(command) + " to be an array; got " + stringifiable(value) + ".";
-  });
-  invariantSpecArray(spec[command], command);
-}
-
-function invariantSpecArray(spec, command) {
-  invariant(Array.isArray(spec), function () {
-    return "update(): expected spec of " + stringifiable(command) + " to be an array; got " + stringifiable(spec) + ". " + "Did you forget to wrap your parameter in an array?";
-  });
-}
-
-function invariantSplices(value, spec) {
-  invariant(Array.isArray(value), function () {
-    return "Expected $splice target to be an array; got " + stringifiable(value);
-  });
-  invariantSplice(spec.$splice);
-}
-
-function invariantSplice(value) {
-  invariant(Array.isArray(value), function () {
-    return "update(): expected spec of $splice to be an array of arrays; got " + stringifiable(value) + ". " + "Did you forget to wrap your parameters in an array?";
-  });
-}
-
-function invariantApply(fn) {
-  invariant(typeof fn === 'function', function () {
-    return "update(): expected spec of $apply to be a function; got " + stringifiable(fn) + ".";
-  });
-}
-
-function invariantSet(spec) {
-  invariant(Object.keys(spec).length === 1, function () {
-    return "Cannot have more than one key in an object with $set";
-  });
-}
-
-function invariantMerge(target, specValue) {
-  invariant(specValue && typeof specValue === 'object', function () {
-    return "update(): $merge expects a spec of type 'object'; got " + stringifiable(specValue);
-  });
-  invariant(target && typeof target === 'object', function () {
-    return "update(): $merge expects a target of type 'object'; got " + stringifiable(target);
-  });
-}
-
-function invariantMapOrSet(target, command) {
-  var typeOfTarget = type(target);
-  invariant(typeOfTarget === 'Map' || typeOfTarget === 'Set', function () {
-    return "update(): " + stringifiable(command) + " expects a target of type Set or Map; got " + stringifiable(typeOfTarget);
-  });
-}
-});
-
-var update$2 = /*@__PURE__*/getDefaultExportFromCjs(immutabilityHelper);
-
 const baseClassName = "kanban-plugin";
 function c$2(className) {
     return `${baseClassName}__${className}`;
@@ -8965,8 +8965,3886 @@ function useIMEInputProps() {
         },
     };
 }
+const templaterDetectRegex = /<%/;
+function applyTemplate(view, templatePath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const templateFile = templatePath
+            ? view.app.vault.getAbstractFileByPath(templatePath)
+            : null;
+        if (templateFile && templateFile instanceof obsidian.TFile) {
+            const { templatesEnabled, templaterPlugin, templatesPlugin, } = view.plugin.getTemplatePlugins();
+            const templateContent = yield view.app.vault.read(templateFile);
+            // If both plugins are enabled, attempt to detect templater first
+            if (templatesEnabled && templaterPlugin) {
+                if (templaterDetectRegex.test(templateContent)) {
+                    return yield templaterPlugin.parser.replace_templates_and_append(templateFile);
+                }
+                return yield templatesPlugin.instance.insertTemplate(templateFile);
+            }
+            if (templatesEnabled) {
+                return yield templatesPlugin.instance.insertTemplate(templateFile);
+            }
+            if (templaterPlugin) {
+                return yield templaterPlugin.parser.replace_templates_and_append(templateFile);
+            }
+            // No template plugins enabled so we can just append the template to the doc
+            yield view.app.vault.modify(view.app.workspace.getActiveFile(), templateContent);
+        }
+    });
+}
 
-const frontMatterKey = 'kanban-plugin';
+/*! js-yaml 4.1.0 https://github.com/nodeca/js-yaml @license MIT */
+function isNothing(subject) {
+  return typeof subject === 'undefined' || subject === null;
+}
+
+function isObject$1(subject) {
+  return typeof subject === 'object' && subject !== null;
+}
+
+function toArray$1(sequence) {
+  if (Array.isArray(sequence)) return sequence;else if (isNothing(sequence)) return [];
+  return [sequence];
+}
+
+function extend(target, source) {
+  var index, length, key, sourceKeys;
+
+  if (source) {
+    sourceKeys = Object.keys(source);
+
+    for (index = 0, length = sourceKeys.length; index < length; index += 1) {
+      key = sourceKeys[index];
+      target[key] = source[key];
+    }
+  }
+
+  return target;
+}
+
+function repeat(string, count) {
+  var result = '',
+      cycle;
+
+  for (cycle = 0; cycle < count; cycle += 1) {
+    result += string;
+  }
+
+  return result;
+}
+
+function isNegativeZero(number) {
+  return number === 0 && Number.NEGATIVE_INFINITY === 1 / number;
+}
+
+var isNothing_1 = isNothing;
+var isObject_1 = isObject$1;
+var toArray_1 = toArray$1;
+var repeat_1 = repeat;
+var isNegativeZero_1 = isNegativeZero;
+var extend_1 = extend;
+var common = {
+  isNothing: isNothing_1,
+  isObject: isObject_1,
+  toArray: toArray_1,
+  repeat: repeat_1,
+  isNegativeZero: isNegativeZero_1,
+  extend: extend_1
+}; // YAML error class. http://stackoverflow.com/questions/8458984
+
+function formatError(exception, compact) {
+  var where = '',
+      message = exception.reason || '(unknown reason)';
+  if (!exception.mark) return message;
+
+  if (exception.mark.name) {
+    where += 'in "' + exception.mark.name + '" ';
+  }
+
+  where += '(' + (exception.mark.line + 1) + ':' + (exception.mark.column + 1) + ')';
+
+  if (!compact && exception.mark.snippet) {
+    where += '\n\n' + exception.mark.snippet;
+  }
+
+  return message + ' ' + where;
+}
+
+function YAMLException$1(reason, mark) {
+  // Super constructor
+  Error.call(this);
+  this.name = 'YAMLException';
+  this.reason = reason;
+  this.mark = mark;
+  this.message = formatError(this, false); // Include stack trace in error object
+
+  if (Error.captureStackTrace) {
+    // Chrome and NodeJS
+    Error.captureStackTrace(this, this.constructor);
+  } else {
+    // FF, IE 10+ and Safari 6+. Fallback for others
+    this.stack = new Error().stack || '';
+  }
+} // Inherit from Error
+
+
+YAMLException$1.prototype = Object.create(Error.prototype);
+YAMLException$1.prototype.constructor = YAMLException$1;
+
+YAMLException$1.prototype.toString = function toString(compact) {
+  return this.name + ': ' + formatError(this, compact);
+};
+
+var exception = YAMLException$1; // get snippet for a single line, respecting maxLength
+
+function getLine(buffer, lineStart, lineEnd, position, maxLineLength) {
+  var head = '';
+  var tail = '';
+  var maxHalfLength = Math.floor(maxLineLength / 2) - 1;
+
+  if (position - lineStart > maxHalfLength) {
+    head = ' ... ';
+    lineStart = position - maxHalfLength + head.length;
+  }
+
+  if (lineEnd - position > maxHalfLength) {
+    tail = ' ...';
+    lineEnd = position + maxHalfLength - tail.length;
+  }
+
+  return {
+    str: head + buffer.slice(lineStart, lineEnd).replace(/\t/g, '→') + tail,
+    pos: position - lineStart + head.length // relative position
+
+  };
+}
+
+function padStart(string, max) {
+  return common.repeat(' ', max - string.length) + string;
+}
+
+function makeSnippet(mark, options) {
+  options = Object.create(options || null);
+  if (!mark.buffer) return null;
+  if (!options.maxLength) options.maxLength = 79;
+  if (typeof options.indent !== 'number') options.indent = 1;
+  if (typeof options.linesBefore !== 'number') options.linesBefore = 3;
+  if (typeof options.linesAfter !== 'number') options.linesAfter = 2;
+  var re = /\r?\n|\r|\0/g;
+  var lineStarts = [0];
+  var lineEnds = [];
+  var match;
+  var foundLineNo = -1;
+
+  while (match = re.exec(mark.buffer)) {
+    lineEnds.push(match.index);
+    lineStarts.push(match.index + match[0].length);
+
+    if (mark.position <= match.index && foundLineNo < 0) {
+      foundLineNo = lineStarts.length - 2;
+    }
+  }
+
+  if (foundLineNo < 0) foundLineNo = lineStarts.length - 1;
+  var result = '',
+      i,
+      line;
+  var lineNoLength = Math.min(mark.line + options.linesAfter, lineEnds.length).toString().length;
+  var maxLineLength = options.maxLength - (options.indent + lineNoLength + 3);
+
+  for (i = 1; i <= options.linesBefore; i++) {
+    if (foundLineNo - i < 0) break;
+    line = getLine(mark.buffer, lineStarts[foundLineNo - i], lineEnds[foundLineNo - i], mark.position - (lineStarts[foundLineNo] - lineStarts[foundLineNo - i]), maxLineLength);
+    result = common.repeat(' ', options.indent) + padStart((mark.line - i + 1).toString(), lineNoLength) + ' | ' + line.str + '\n' + result;
+  }
+
+  line = getLine(mark.buffer, lineStarts[foundLineNo], lineEnds[foundLineNo], mark.position, maxLineLength);
+  result += common.repeat(' ', options.indent) + padStart((mark.line + 1).toString(), lineNoLength) + ' | ' + line.str + '\n';
+  result += common.repeat('-', options.indent + lineNoLength + 3 + line.pos) + '^' + '\n';
+
+  for (i = 1; i <= options.linesAfter; i++) {
+    if (foundLineNo + i >= lineEnds.length) break;
+    line = getLine(mark.buffer, lineStarts[foundLineNo + i], lineEnds[foundLineNo + i], mark.position - (lineStarts[foundLineNo] - lineStarts[foundLineNo + i]), maxLineLength);
+    result += common.repeat(' ', options.indent) + padStart((mark.line + i + 1).toString(), lineNoLength) + ' | ' + line.str + '\n';
+  }
+
+  return result.replace(/\n$/, '');
+}
+
+var snippet = makeSnippet;
+var TYPE_CONSTRUCTOR_OPTIONS = ['kind', 'multi', 'resolve', 'construct', 'instanceOf', 'predicate', 'represent', 'representName', 'defaultStyle', 'styleAliases'];
+var YAML_NODE_KINDS = ['scalar', 'sequence', 'mapping'];
+
+function compileStyleAliases(map) {
+  var result = {};
+
+  if (map !== null) {
+    Object.keys(map).forEach(function (style) {
+      map[style].forEach(function (alias) {
+        result[String(alias)] = style;
+      });
+    });
+  }
+
+  return result;
+}
+
+function Type$1(tag, options) {
+  options = options || {};
+  Object.keys(options).forEach(function (name) {
+    if (TYPE_CONSTRUCTOR_OPTIONS.indexOf(name) === -1) {
+      throw new exception('Unknown option "' + name + '" is met in definition of "' + tag + '" YAML type.');
+    }
+  }); // TODO: Add tag format check.
+
+  this.options = options; // keep original options in case user wants to extend this type later
+
+  this.tag = tag;
+  this.kind = options['kind'] || null;
+
+  this.resolve = options['resolve'] || function () {
+    return true;
+  };
+
+  this.construct = options['construct'] || function (data) {
+    return data;
+  };
+
+  this.instanceOf = options['instanceOf'] || null;
+  this.predicate = options['predicate'] || null;
+  this.represent = options['represent'] || null;
+  this.representName = options['representName'] || null;
+  this.defaultStyle = options['defaultStyle'] || null;
+  this.multi = options['multi'] || false;
+  this.styleAliases = compileStyleAliases(options['styleAliases'] || null);
+
+  if (YAML_NODE_KINDS.indexOf(this.kind) === -1) {
+    throw new exception('Unknown kind "' + this.kind + '" is specified for "' + tag + '" YAML type.');
+  }
+}
+
+var type = Type$1;
+/*eslint-disable max-len*/
+
+function compileList(schema, name) {
+  var result = [];
+  schema[name].forEach(function (currentType) {
+    var newIndex = result.length;
+    result.forEach(function (previousType, previousIndex) {
+      if (previousType.tag === currentType.tag && previousType.kind === currentType.kind && previousType.multi === currentType.multi) {
+        newIndex = previousIndex;
+      }
+    });
+    result[newIndex] = currentType;
+  });
+  return result;
+}
+
+function compileMap()
+/* lists... */
+{
+  var result = {
+    scalar: {},
+    sequence: {},
+    mapping: {},
+    fallback: {},
+    multi: {
+      scalar: [],
+      sequence: [],
+      mapping: [],
+      fallback: []
+    }
+  },
+      index,
+      length;
+
+  function collectType(type) {
+    if (type.multi) {
+      result.multi[type.kind].push(type);
+      result.multi['fallback'].push(type);
+    } else {
+      result[type.kind][type.tag] = result['fallback'][type.tag] = type;
+    }
+  }
+
+  for (index = 0, length = arguments.length; index < length; index += 1) {
+    arguments[index].forEach(collectType);
+  }
+
+  return result;
+}
+
+function Schema$1(definition) {
+  return this.extend(definition);
+}
+
+Schema$1.prototype.extend = function extend(definition) {
+  var implicit = [];
+  var explicit = [];
+
+  if (definition instanceof type) {
+    // Schema.extend(type)
+    explicit.push(definition);
+  } else if (Array.isArray(definition)) {
+    // Schema.extend([ type1, type2, ... ])
+    explicit = explicit.concat(definition);
+  } else if (definition && (Array.isArray(definition.implicit) || Array.isArray(definition.explicit))) {
+    // Schema.extend({ explicit: [ type1, type2, ... ], implicit: [ type1, type2, ... ] })
+    if (definition.implicit) implicit = implicit.concat(definition.implicit);
+    if (definition.explicit) explicit = explicit.concat(definition.explicit);
+  } else {
+    throw new exception('Schema.extend argument should be a Type, [ Type ], ' + 'or a schema definition ({ implicit: [...], explicit: [...] })');
+  }
+
+  implicit.forEach(function (type$1) {
+    if (!(type$1 instanceof type)) {
+      throw new exception('Specified list of YAML types (or a single Type object) contains a non-Type object.');
+    }
+
+    if (type$1.loadKind && type$1.loadKind !== 'scalar') {
+      throw new exception('There is a non-scalar type in the implicit list of a schema. Implicit resolving of such types is not supported.');
+    }
+
+    if (type$1.multi) {
+      throw new exception('There is a multi type in the implicit list of a schema. Multi tags can only be listed as explicit.');
+    }
+  });
+  explicit.forEach(function (type$1) {
+    if (!(type$1 instanceof type)) {
+      throw new exception('Specified list of YAML types (or a single Type object) contains a non-Type object.');
+    }
+  });
+  var result = Object.create(Schema$1.prototype);
+  result.implicit = (this.implicit || []).concat(implicit);
+  result.explicit = (this.explicit || []).concat(explicit);
+  result.compiledImplicit = compileList(result, 'implicit');
+  result.compiledExplicit = compileList(result, 'explicit');
+  result.compiledTypeMap = compileMap(result.compiledImplicit, result.compiledExplicit);
+  return result;
+};
+
+var schema = Schema$1;
+var str = new type('tag:yaml.org,2002:str', {
+  kind: 'scalar',
+  construct: function (data) {
+    return data !== null ? data : '';
+  }
+});
+var seq = new type('tag:yaml.org,2002:seq', {
+  kind: 'sequence',
+  construct: function (data) {
+    return data !== null ? data : [];
+  }
+});
+var map = new type('tag:yaml.org,2002:map', {
+  kind: 'mapping',
+  construct: function (data) {
+    return data !== null ? data : {};
+  }
+});
+var failsafe = new schema({
+  explicit: [str, seq, map]
+});
+
+function resolveYamlNull(data) {
+  if (data === null) return true;
+  var max = data.length;
+  return max === 1 && data === '~' || max === 4 && (data === 'null' || data === 'Null' || data === 'NULL');
+}
+
+function constructYamlNull() {
+  return null;
+}
+
+function isNull(object) {
+  return object === null;
+}
+
+var _null = new type('tag:yaml.org,2002:null', {
+  kind: 'scalar',
+  resolve: resolveYamlNull,
+  construct: constructYamlNull,
+  predicate: isNull,
+  represent: {
+    canonical: function () {
+      return '~';
+    },
+    lowercase: function () {
+      return 'null';
+    },
+    uppercase: function () {
+      return 'NULL';
+    },
+    camelcase: function () {
+      return 'Null';
+    },
+    empty: function () {
+      return '';
+    }
+  },
+  defaultStyle: 'lowercase'
+});
+
+function resolveYamlBoolean(data) {
+  if (data === null) return false;
+  var max = data.length;
+  return max === 4 && (data === 'true' || data === 'True' || data === 'TRUE') || max === 5 && (data === 'false' || data === 'False' || data === 'FALSE');
+}
+
+function constructYamlBoolean(data) {
+  return data === 'true' || data === 'True' || data === 'TRUE';
+}
+
+function isBoolean$1(object) {
+  return Object.prototype.toString.call(object) === '[object Boolean]';
+}
+
+var bool = new type('tag:yaml.org,2002:bool', {
+  kind: 'scalar',
+  resolve: resolveYamlBoolean,
+  construct: constructYamlBoolean,
+  predicate: isBoolean$1,
+  represent: {
+    lowercase: function (object) {
+      return object ? 'true' : 'false';
+    },
+    uppercase: function (object) {
+      return object ? 'TRUE' : 'FALSE';
+    },
+    camelcase: function (object) {
+      return object ? 'True' : 'False';
+    }
+  },
+  defaultStyle: 'lowercase'
+});
+
+function isHexCode(c) {
+  return 0x30
+  /* 0 */
+  <= c && c <= 0x39
+  /* 9 */
+  || 0x41
+  /* A */
+  <= c && c <= 0x46
+  /* F */
+  || 0x61
+  /* a */
+  <= c && c <= 0x66
+  /* f */
+  ;
+}
+
+function isOctCode(c) {
+  return 0x30
+  /* 0 */
+  <= c && c <= 0x37
+  /* 7 */
+  ;
+}
+
+function isDecCode(c) {
+  return 0x30
+  /* 0 */
+  <= c && c <= 0x39
+  /* 9 */
+  ;
+}
+
+function resolveYamlInteger(data) {
+  if (data === null) return false;
+  var max = data.length,
+      index = 0,
+      hasDigits = false,
+      ch;
+  if (!max) return false;
+  ch = data[index]; // sign
+
+  if (ch === '-' || ch === '+') {
+    ch = data[++index];
+  }
+
+  if (ch === '0') {
+    // 0
+    if (index + 1 === max) return true;
+    ch = data[++index]; // base 2, base 8, base 16
+
+    if (ch === 'b') {
+      // base 2
+      index++;
+
+      for (; index < max; index++) {
+        ch = data[index];
+        if (ch === '_') continue;
+        if (ch !== '0' && ch !== '1') return false;
+        hasDigits = true;
+      }
+
+      return hasDigits && ch !== '_';
+    }
+
+    if (ch === 'x') {
+      // base 16
+      index++;
+
+      for (; index < max; index++) {
+        ch = data[index];
+        if (ch === '_') continue;
+        if (!isHexCode(data.charCodeAt(index))) return false;
+        hasDigits = true;
+      }
+
+      return hasDigits && ch !== '_';
+    }
+
+    if (ch === 'o') {
+      // base 8
+      index++;
+
+      for (; index < max; index++) {
+        ch = data[index];
+        if (ch === '_') continue;
+        if (!isOctCode(data.charCodeAt(index))) return false;
+        hasDigits = true;
+      }
+
+      return hasDigits && ch !== '_';
+    }
+  } // base 10 (except 0)
+  // value should not start with `_`;
+
+
+  if (ch === '_') return false;
+
+  for (; index < max; index++) {
+    ch = data[index];
+    if (ch === '_') continue;
+
+    if (!isDecCode(data.charCodeAt(index))) {
+      return false;
+    }
+
+    hasDigits = true;
+  } // Should have digits and should not end with `_`
+
+
+  if (!hasDigits || ch === '_') return false;
+  return true;
+}
+
+function constructYamlInteger(data) {
+  var value = data,
+      sign = 1,
+      ch;
+
+  if (value.indexOf('_') !== -1) {
+    value = value.replace(/_/g, '');
+  }
+
+  ch = value[0];
+
+  if (ch === '-' || ch === '+') {
+    if (ch === '-') sign = -1;
+    value = value.slice(1);
+    ch = value[0];
+  }
+
+  if (value === '0') return 0;
+
+  if (ch === '0') {
+    if (value[1] === 'b') return sign * parseInt(value.slice(2), 2);
+    if (value[1] === 'x') return sign * parseInt(value.slice(2), 16);
+    if (value[1] === 'o') return sign * parseInt(value.slice(2), 8);
+  }
+
+  return sign * parseInt(value, 10);
+}
+
+function isInteger(object) {
+  return Object.prototype.toString.call(object) === '[object Number]' && object % 1 === 0 && !common.isNegativeZero(object);
+}
+
+var int = new type('tag:yaml.org,2002:int', {
+  kind: 'scalar',
+  resolve: resolveYamlInteger,
+  construct: constructYamlInteger,
+  predicate: isInteger,
+  represent: {
+    binary: function (obj) {
+      return obj >= 0 ? '0b' + obj.toString(2) : '-0b' + obj.toString(2).slice(1);
+    },
+    octal: function (obj) {
+      return obj >= 0 ? '0o' + obj.toString(8) : '-0o' + obj.toString(8).slice(1);
+    },
+    decimal: function (obj) {
+      return obj.toString(10);
+    },
+
+    /* eslint-disable max-len */
+    hexadecimal: function (obj) {
+      return obj >= 0 ? '0x' + obj.toString(16).toUpperCase() : '-0x' + obj.toString(16).toUpperCase().slice(1);
+    }
+  },
+  defaultStyle: 'decimal',
+  styleAliases: {
+    binary: [2, 'bin'],
+    octal: [8, 'oct'],
+    decimal: [10, 'dec'],
+    hexadecimal: [16, 'hex']
+  }
+});
+var YAML_FLOAT_PATTERN = new RegExp( // 2.5e4, 2.5 and integers
+'^(?:[-+]?(?:[0-9][0-9_]*)(?:\\.[0-9_]*)?(?:[eE][-+]?[0-9]+)?' + // .2e4, .2
+// special case, seems not from spec
+'|\\.[0-9_]+(?:[eE][-+]?[0-9]+)?' + // .inf
+'|[-+]?\\.(?:inf|Inf|INF)' + // .nan
+'|\\.(?:nan|NaN|NAN))$');
+
+function resolveYamlFloat(data) {
+  if (data === null) return false;
+
+  if (!YAML_FLOAT_PATTERN.test(data) || // Quick hack to not allow integers end with `_`
+  // Probably should update regexp & check speed
+  data[data.length - 1] === '_') {
+    return false;
+  }
+
+  return true;
+}
+
+function constructYamlFloat(data) {
+  var value, sign;
+  value = data.replace(/_/g, '').toLowerCase();
+  sign = value[0] === '-' ? -1 : 1;
+
+  if ('+-'.indexOf(value[0]) >= 0) {
+    value = value.slice(1);
+  }
+
+  if (value === '.inf') {
+    return sign === 1 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+  } else if (value === '.nan') {
+    return NaN;
+  }
+
+  return sign * parseFloat(value, 10);
+}
+
+var SCIENTIFIC_WITHOUT_DOT = /^[-+]?[0-9]+e/;
+
+function representYamlFloat(object, style) {
+  var res;
+
+  if (isNaN(object)) {
+    switch (style) {
+      case 'lowercase':
+        return '.nan';
+
+      case 'uppercase':
+        return '.NAN';
+
+      case 'camelcase':
+        return '.NaN';
+    }
+  } else if (Number.POSITIVE_INFINITY === object) {
+    switch (style) {
+      case 'lowercase':
+        return '.inf';
+
+      case 'uppercase':
+        return '.INF';
+
+      case 'camelcase':
+        return '.Inf';
+    }
+  } else if (Number.NEGATIVE_INFINITY === object) {
+    switch (style) {
+      case 'lowercase':
+        return '-.inf';
+
+      case 'uppercase':
+        return '-.INF';
+
+      case 'camelcase':
+        return '-.Inf';
+    }
+  } else if (common.isNegativeZero(object)) {
+    return '-0.0';
+  }
+
+  res = object.toString(10); // JS stringifier can build scientific format without dots: 5e-100,
+  // while YAML requres dot: 5.e-100. Fix it with simple hack
+
+  return SCIENTIFIC_WITHOUT_DOT.test(res) ? res.replace('e', '.e') : res;
+}
+
+function isFloat(object) {
+  return Object.prototype.toString.call(object) === '[object Number]' && (object % 1 !== 0 || common.isNegativeZero(object));
+}
+
+var float = new type('tag:yaml.org,2002:float', {
+  kind: 'scalar',
+  resolve: resolveYamlFloat,
+  construct: constructYamlFloat,
+  predicate: isFloat,
+  represent: representYamlFloat,
+  defaultStyle: 'lowercase'
+});
+var json = failsafe.extend({
+  implicit: [_null, bool, int, float]
+});
+var core = json;
+var YAML_DATE_REGEXP = new RegExp('^([0-9][0-9][0-9][0-9])' + // [1] year
+'-([0-9][0-9])' + // [2] month
+'-([0-9][0-9])$'); // [3] day
+
+var YAML_TIMESTAMP_REGEXP = new RegExp('^([0-9][0-9][0-9][0-9])' + // [1] year
+'-([0-9][0-9]?)' + // [2] month
+'-([0-9][0-9]?)' + // [3] day
+'(?:[Tt]|[ \\t]+)' + // ...
+'([0-9][0-9]?)' + // [4] hour
+':([0-9][0-9])' + // [5] minute
+':([0-9][0-9])' + // [6] second
+'(?:\\.([0-9]*))?' + // [7] fraction
+'(?:[ \\t]*(Z|([-+])([0-9][0-9]?)' + // [8] tz [9] tz_sign [10] tz_hour
+'(?::([0-9][0-9]))?))?$'); // [11] tz_minute
+
+function resolveYamlTimestamp(data) {
+  if (data === null) return false;
+  if (YAML_DATE_REGEXP.exec(data) !== null) return true;
+  if (YAML_TIMESTAMP_REGEXP.exec(data) !== null) return true;
+  return false;
+}
+
+function constructYamlTimestamp(data) {
+  var match,
+      year,
+      month,
+      day,
+      hour,
+      minute,
+      second,
+      fraction = 0,
+      delta = null,
+      tz_hour,
+      tz_minute,
+      date;
+  match = YAML_DATE_REGEXP.exec(data);
+  if (match === null) match = YAML_TIMESTAMP_REGEXP.exec(data);
+  if (match === null) throw new Error('Date resolve error'); // match: [1] year [2] month [3] day
+
+  year = +match[1];
+  month = +match[2] - 1; // JS month starts with 0
+
+  day = +match[3];
+
+  if (!match[4]) {
+    // no hour
+    return new Date(Date.UTC(year, month, day));
+  } // match: [4] hour [5] minute [6] second [7] fraction
+
+
+  hour = +match[4];
+  minute = +match[5];
+  second = +match[6];
+
+  if (match[7]) {
+    fraction = match[7].slice(0, 3);
+
+    while (fraction.length < 3) {
+      // milli-seconds
+      fraction += '0';
+    }
+
+    fraction = +fraction;
+  } // match: [8] tz [9] tz_sign [10] tz_hour [11] tz_minute
+
+
+  if (match[9]) {
+    tz_hour = +match[10];
+    tz_minute = +(match[11] || 0);
+    delta = (tz_hour * 60 + tz_minute) * 60000; // delta in mili-seconds
+
+    if (match[9] === '-') delta = -delta;
+  }
+
+  date = new Date(Date.UTC(year, month, day, hour, minute, second, fraction));
+  if (delta) date.setTime(date.getTime() - delta);
+  return date;
+}
+
+function representYamlTimestamp(object
+/*, style*/
+) {
+  return object.toISOString();
+}
+
+var timestamp = new type('tag:yaml.org,2002:timestamp', {
+  kind: 'scalar',
+  resolve: resolveYamlTimestamp,
+  construct: constructYamlTimestamp,
+  instanceOf: Date,
+  represent: representYamlTimestamp
+});
+
+function resolveYamlMerge(data) {
+  return data === '<<' || data === null;
+}
+
+var merge = new type('tag:yaml.org,2002:merge', {
+  kind: 'scalar',
+  resolve: resolveYamlMerge
+});
+/*eslint-disable no-bitwise*/
+// [ 64, 65, 66 ] -> [ padding, CR, LF ]
+
+var BASE64_MAP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\n\r';
+
+function resolveYamlBinary(data) {
+  if (data === null) return false;
+  var code,
+      idx,
+      bitlen = 0,
+      max = data.length,
+      map = BASE64_MAP; // Convert one by one.
+
+  for (idx = 0; idx < max; idx++) {
+    code = map.indexOf(data.charAt(idx)); // Skip CR/LF
+
+    if (code > 64) continue; // Fail on illegal characters
+
+    if (code < 0) return false;
+    bitlen += 6;
+  } // If there are any bits left, source was corrupted
+
+
+  return bitlen % 8 === 0;
+}
+
+function constructYamlBinary(data) {
+  var idx,
+      tailbits,
+      input = data.replace(/[\r\n=]/g, ''),
+      // remove CR/LF & padding to simplify scan
+  max = input.length,
+      map = BASE64_MAP,
+      bits = 0,
+      result = []; // Collect by 6*4 bits (3 bytes)
+
+  for (idx = 0; idx < max; idx++) {
+    if (idx % 4 === 0 && idx) {
+      result.push(bits >> 16 & 0xFF);
+      result.push(bits >> 8 & 0xFF);
+      result.push(bits & 0xFF);
+    }
+
+    bits = bits << 6 | map.indexOf(input.charAt(idx));
+  } // Dump tail
+
+
+  tailbits = max % 4 * 6;
+
+  if (tailbits === 0) {
+    result.push(bits >> 16 & 0xFF);
+    result.push(bits >> 8 & 0xFF);
+    result.push(bits & 0xFF);
+  } else if (tailbits === 18) {
+    result.push(bits >> 10 & 0xFF);
+    result.push(bits >> 2 & 0xFF);
+  } else if (tailbits === 12) {
+    result.push(bits >> 4 & 0xFF);
+  }
+
+  return new Uint8Array(result);
+}
+
+function representYamlBinary(object
+/*, style*/
+) {
+  var result = '',
+      bits = 0,
+      idx,
+      tail,
+      max = object.length,
+      map = BASE64_MAP; // Convert every three bytes to 4 ASCII characters.
+
+  for (idx = 0; idx < max; idx++) {
+    if (idx % 3 === 0 && idx) {
+      result += map[bits >> 18 & 0x3F];
+      result += map[bits >> 12 & 0x3F];
+      result += map[bits >> 6 & 0x3F];
+      result += map[bits & 0x3F];
+    }
+
+    bits = (bits << 8) + object[idx];
+  } // Dump tail
+
+
+  tail = max % 3;
+
+  if (tail === 0) {
+    result += map[bits >> 18 & 0x3F];
+    result += map[bits >> 12 & 0x3F];
+    result += map[bits >> 6 & 0x3F];
+    result += map[bits & 0x3F];
+  } else if (tail === 2) {
+    result += map[bits >> 10 & 0x3F];
+    result += map[bits >> 4 & 0x3F];
+    result += map[bits << 2 & 0x3F];
+    result += map[64];
+  } else if (tail === 1) {
+    result += map[bits >> 2 & 0x3F];
+    result += map[bits << 4 & 0x3F];
+    result += map[64];
+    result += map[64];
+  }
+
+  return result;
+}
+
+function isBinary(obj) {
+  return Object.prototype.toString.call(obj) === '[object Uint8Array]';
+}
+
+var binary = new type('tag:yaml.org,2002:binary', {
+  kind: 'scalar',
+  resolve: resolveYamlBinary,
+  construct: constructYamlBinary,
+  predicate: isBinary,
+  represent: representYamlBinary
+});
+var _hasOwnProperty$3 = Object.prototype.hasOwnProperty;
+var _toString$2 = Object.prototype.toString;
+
+function resolveYamlOmap(data) {
+  if (data === null) return true;
+  var objectKeys = [],
+      index,
+      length,
+      pair,
+      pairKey,
+      pairHasKey,
+      object = data;
+
+  for (index = 0, length = object.length; index < length; index += 1) {
+    pair = object[index];
+    pairHasKey = false;
+    if (_toString$2.call(pair) !== '[object Object]') return false;
+
+    for (pairKey in pair) {
+      if (_hasOwnProperty$3.call(pair, pairKey)) {
+        if (!pairHasKey) pairHasKey = true;else return false;
+      }
+    }
+
+    if (!pairHasKey) return false;
+    if (objectKeys.indexOf(pairKey) === -1) objectKeys.push(pairKey);else return false;
+  }
+
+  return true;
+}
+
+function constructYamlOmap(data) {
+  return data !== null ? data : [];
+}
+
+var omap = new type('tag:yaml.org,2002:omap', {
+  kind: 'sequence',
+  resolve: resolveYamlOmap,
+  construct: constructYamlOmap
+});
+var _toString$1 = Object.prototype.toString;
+
+function resolveYamlPairs(data) {
+  if (data === null) return true;
+  var index,
+      length,
+      pair,
+      keys,
+      result,
+      object = data;
+  result = new Array(object.length);
+
+  for (index = 0, length = object.length; index < length; index += 1) {
+    pair = object[index];
+    if (_toString$1.call(pair) !== '[object Object]') return false;
+    keys = Object.keys(pair);
+    if (keys.length !== 1) return false;
+    result[index] = [keys[0], pair[keys[0]]];
+  }
+
+  return true;
+}
+
+function constructYamlPairs(data) {
+  if (data === null) return [];
+  var index,
+      length,
+      pair,
+      keys,
+      result,
+      object = data;
+  result = new Array(object.length);
+
+  for (index = 0, length = object.length; index < length; index += 1) {
+    pair = object[index];
+    keys = Object.keys(pair);
+    result[index] = [keys[0], pair[keys[0]]];
+  }
+
+  return result;
+}
+
+var pairs = new type('tag:yaml.org,2002:pairs', {
+  kind: 'sequence',
+  resolve: resolveYamlPairs,
+  construct: constructYamlPairs
+});
+var _hasOwnProperty$2 = Object.prototype.hasOwnProperty;
+
+function resolveYamlSet(data) {
+  if (data === null) return true;
+  var key,
+      object = data;
+
+  for (key in object) {
+    if (_hasOwnProperty$2.call(object, key)) {
+      if (object[key] !== null) return false;
+    }
+  }
+
+  return true;
+}
+
+function constructYamlSet(data) {
+  return data !== null ? data : {};
+}
+
+var set = new type('tag:yaml.org,2002:set', {
+  kind: 'mapping',
+  resolve: resolveYamlSet,
+  construct: constructYamlSet
+});
+
+var _default = core.extend({
+  implicit: [timestamp, merge],
+  explicit: [binary, omap, pairs, set]
+});
+/*eslint-disable max-len,no-use-before-define*/
+
+
+var _hasOwnProperty$1 = Object.prototype.hasOwnProperty;
+var CONTEXT_FLOW_IN = 1;
+var CONTEXT_FLOW_OUT = 2;
+var CONTEXT_BLOCK_IN = 3;
+var CONTEXT_BLOCK_OUT = 4;
+var CHOMPING_CLIP = 1;
+var CHOMPING_STRIP = 2;
+var CHOMPING_KEEP = 3;
+var PATTERN_NON_PRINTABLE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x84\x86-\x9F\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/;
+var PATTERN_NON_ASCII_LINE_BREAKS = /[\x85\u2028\u2029]/;
+var PATTERN_FLOW_INDICATORS = /[,\[\]\{\}]/;
+var PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z\-]+!)$/i;
+var PATTERN_TAG_URI = /^(?:!|[^,\[\]\{\}])(?:%[0-9a-f]{2}|[0-9a-z\-#;\/\?:@&=\+\$,_\.!~\*'\(\)\[\]])*$/i;
+
+function _class(obj) {
+  return Object.prototype.toString.call(obj);
+}
+
+function is_EOL(c) {
+  return c === 0x0A
+  /* LF */
+  || c === 0x0D
+  /* CR */
+  ;
+}
+
+function is_WHITE_SPACE(c) {
+  return c === 0x09
+  /* Tab */
+  || c === 0x20
+  /* Space */
+  ;
+}
+
+function is_WS_OR_EOL(c) {
+  return c === 0x09
+  /* Tab */
+  || c === 0x20
+  /* Space */
+  || c === 0x0A
+  /* LF */
+  || c === 0x0D
+  /* CR */
+  ;
+}
+
+function is_FLOW_INDICATOR(c) {
+  return c === 0x2C
+  /* , */
+  || c === 0x5B
+  /* [ */
+  || c === 0x5D
+  /* ] */
+  || c === 0x7B
+  /* { */
+  || c === 0x7D
+  /* } */
+  ;
+}
+
+function fromHexCode(c) {
+  var lc;
+
+  if (0x30
+  /* 0 */
+  <= c && c <= 0x39
+  /* 9 */
+  ) {
+    return c - 0x30;
+  }
+  /*eslint-disable no-bitwise*/
+
+
+  lc = c | 0x20;
+
+  if (0x61
+  /* a */
+  <= lc && lc <= 0x66
+  /* f */
+  ) {
+    return lc - 0x61 + 10;
+  }
+
+  return -1;
+}
+
+function escapedHexLen(c) {
+  if (c === 0x78
+  /* x */
+  ) {
+      return 2;
+    }
+
+  if (c === 0x75
+  /* u */
+  ) {
+      return 4;
+    }
+
+  if (c === 0x55
+  /* U */
+  ) {
+      return 8;
+    }
+
+  return 0;
+}
+
+function fromDecimalCode(c) {
+  if (0x30
+  /* 0 */
+  <= c && c <= 0x39
+  /* 9 */
+  ) {
+    return c - 0x30;
+  }
+
+  return -1;
+}
+
+function simpleEscapeSequence(c) {
+  /* eslint-disable indent */
+  return c === 0x30
+  /* 0 */
+  ? '\x00' : c === 0x61
+  /* a */
+  ? '\x07' : c === 0x62
+  /* b */
+  ? '\x08' : c === 0x74
+  /* t */
+  ? '\x09' : c === 0x09
+  /* Tab */
+  ? '\x09' : c === 0x6E
+  /* n */
+  ? '\x0A' : c === 0x76
+  /* v */
+  ? '\x0B' : c === 0x66
+  /* f */
+  ? '\x0C' : c === 0x72
+  /* r */
+  ? '\x0D' : c === 0x65
+  /* e */
+  ? '\x1B' : c === 0x20
+  /* Space */
+  ? ' ' : c === 0x22
+  /* " */
+  ? '\x22' : c === 0x2F
+  /* / */
+  ? '/' : c === 0x5C
+  /* \ */
+  ? '\x5C' : c === 0x4E
+  /* N */
+  ? '\x85' : c === 0x5F
+  /* _ */
+  ? '\xA0' : c === 0x4C
+  /* L */
+  ? '\u2028' : c === 0x50
+  /* P */
+  ? '\u2029' : '';
+}
+
+function charFromCodepoint(c) {
+  if (c <= 0xFFFF) {
+    return String.fromCharCode(c);
+  } // Encode UTF-16 surrogate pair
+  // https://en.wikipedia.org/wiki/UTF-16#Code_points_U.2B010000_to_U.2B10FFFF
+
+
+  return String.fromCharCode((c - 0x010000 >> 10) + 0xD800, (c - 0x010000 & 0x03FF) + 0xDC00);
+}
+
+var simpleEscapeCheck = new Array(256); // integer, for fast access
+
+var simpleEscapeMap = new Array(256);
+
+for (var i = 0; i < 256; i++) {
+  simpleEscapeCheck[i] = simpleEscapeSequence(i) ? 1 : 0;
+  simpleEscapeMap[i] = simpleEscapeSequence(i);
+}
+
+function State$1(input, options) {
+  this.input = input;
+  this.filename = options['filename'] || null;
+  this.schema = options['schema'] || _default;
+  this.onWarning = options['onWarning'] || null; // (Hidden) Remove? makes the loader to expect YAML 1.1 documents
+  // if such documents have no explicit %YAML directive
+
+  this.legacy = options['legacy'] || false;
+  this.json = options['json'] || false;
+  this.listener = options['listener'] || null;
+  this.implicitTypes = this.schema.compiledImplicit;
+  this.typeMap = this.schema.compiledTypeMap;
+  this.length = input.length;
+  this.position = 0;
+  this.line = 0;
+  this.lineStart = 0;
+  this.lineIndent = 0; // position of first leading tab in the current line,
+  // used to make sure there are no tabs in the indentation
+
+  this.firstTabInLine = -1;
+  this.documents = [];
+  /*
+  this.version;
+  this.checkLineBreaks;
+  this.tagMap;
+  this.anchorMap;
+  this.tag;
+  this.anchor;
+  this.kind;
+  this.result;*/
+}
+
+function generateError(state, message) {
+  var mark = {
+    name: state.filename,
+    buffer: state.input.slice(0, -1),
+    // omit trailing \0
+    position: state.position,
+    line: state.line,
+    column: state.position - state.lineStart
+  };
+  mark.snippet = snippet(mark);
+  return new exception(message, mark);
+}
+
+function throwError(state, message) {
+  throw generateError(state, message);
+}
+
+function throwWarning(state, message) {
+  if (state.onWarning) {
+    state.onWarning.call(null, generateError(state, message));
+  }
+}
+
+var directiveHandlers = {
+  YAML: function handleYamlDirective(state, name, args) {
+    var match, major, minor;
+
+    if (state.version !== null) {
+      throwError(state, 'duplication of %YAML directive');
+    }
+
+    if (args.length !== 1) {
+      throwError(state, 'YAML directive accepts exactly one argument');
+    }
+
+    match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]);
+
+    if (match === null) {
+      throwError(state, 'ill-formed argument of the YAML directive');
+    }
+
+    major = parseInt(match[1], 10);
+    minor = parseInt(match[2], 10);
+
+    if (major !== 1) {
+      throwError(state, 'unacceptable YAML version of the document');
+    }
+
+    state.version = args[0];
+    state.checkLineBreaks = minor < 2;
+
+    if (minor !== 1 && minor !== 2) {
+      throwWarning(state, 'unsupported YAML version of the document');
+    }
+  },
+  TAG: function handleTagDirective(state, name, args) {
+    var handle, prefix;
+
+    if (args.length !== 2) {
+      throwError(state, 'TAG directive accepts exactly two arguments');
+    }
+
+    handle = args[0];
+    prefix = args[1];
+
+    if (!PATTERN_TAG_HANDLE.test(handle)) {
+      throwError(state, 'ill-formed tag handle (first argument) of the TAG directive');
+    }
+
+    if (_hasOwnProperty$1.call(state.tagMap, handle)) {
+      throwError(state, 'there is a previously declared suffix for "' + handle + '" tag handle');
+    }
+
+    if (!PATTERN_TAG_URI.test(prefix)) {
+      throwError(state, 'ill-formed tag prefix (second argument) of the TAG directive');
+    }
+
+    try {
+      prefix = decodeURIComponent(prefix);
+    } catch (err) {
+      throwError(state, 'tag prefix is malformed: ' + prefix);
+    }
+
+    state.tagMap[handle] = prefix;
+  }
+};
+
+function captureSegment(state, start, end, checkJson) {
+  var _position, _length, _character, _result;
+
+  if (start < end) {
+    _result = state.input.slice(start, end);
+
+    if (checkJson) {
+      for (_position = 0, _length = _result.length; _position < _length; _position += 1) {
+        _character = _result.charCodeAt(_position);
+
+        if (!(_character === 0x09 || 0x20 <= _character && _character <= 0x10FFFF)) {
+          throwError(state, 'expected valid JSON character');
+        }
+      }
+    } else if (PATTERN_NON_PRINTABLE.test(_result)) {
+      throwError(state, 'the stream contains non-printable characters');
+    }
+
+    state.result += _result;
+  }
+}
+
+function mergeMappings(state, destination, source, overridableKeys) {
+  var sourceKeys, key, index, quantity;
+
+  if (!common.isObject(source)) {
+    throwError(state, 'cannot merge mappings; the provided source object is unacceptable');
+  }
+
+  sourceKeys = Object.keys(source);
+
+  for (index = 0, quantity = sourceKeys.length; index < quantity; index += 1) {
+    key = sourceKeys[index];
+
+    if (!_hasOwnProperty$1.call(destination, key)) {
+      destination[key] = source[key];
+      overridableKeys[key] = true;
+    }
+  }
+}
+
+function storeMappingPair(state, _result, overridableKeys, keyTag, keyNode, valueNode, startLine, startLineStart, startPos) {
+  var index, quantity; // The output is a plain object here, so keys can only be strings.
+  // We need to convert keyNode to a string, but doing so can hang the process
+  // (deeply nested arrays that explode exponentially using aliases).
+
+  if (Array.isArray(keyNode)) {
+    keyNode = Array.prototype.slice.call(keyNode);
+
+    for (index = 0, quantity = keyNode.length; index < quantity; index += 1) {
+      if (Array.isArray(keyNode[index])) {
+        throwError(state, 'nested arrays are not supported inside keys');
+      }
+
+      if (typeof keyNode === 'object' && _class(keyNode[index]) === '[object Object]') {
+        keyNode[index] = '[object Object]';
+      }
+    }
+  } // Avoid code execution in load() via toString property
+  // (still use its own toString for arrays, timestamps,
+  // and whatever user schema extensions happen to have @@toStringTag)
+
+
+  if (typeof keyNode === 'object' && _class(keyNode) === '[object Object]') {
+    keyNode = '[object Object]';
+  }
+
+  keyNode = String(keyNode);
+
+  if (_result === null) {
+    _result = {};
+  }
+
+  if (keyTag === 'tag:yaml.org,2002:merge') {
+    if (Array.isArray(valueNode)) {
+      for (index = 0, quantity = valueNode.length; index < quantity; index += 1) {
+        mergeMappings(state, _result, valueNode[index], overridableKeys);
+      }
+    } else {
+      mergeMappings(state, _result, valueNode, overridableKeys);
+    }
+  } else {
+    if (!state.json && !_hasOwnProperty$1.call(overridableKeys, keyNode) && _hasOwnProperty$1.call(_result, keyNode)) {
+      state.line = startLine || state.line;
+      state.lineStart = startLineStart || state.lineStart;
+      state.position = startPos || state.position;
+      throwError(state, 'duplicated mapping key');
+    } // used for this specific key only because Object.defineProperty is slow
+
+
+    if (keyNode === '__proto__') {
+      Object.defineProperty(_result, keyNode, {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: valueNode
+      });
+    } else {
+      _result[keyNode] = valueNode;
+    }
+
+    delete overridableKeys[keyNode];
+  }
+
+  return _result;
+}
+
+function readLineBreak(state) {
+  var ch;
+  ch = state.input.charCodeAt(state.position);
+
+  if (ch === 0x0A
+  /* LF */
+  ) {
+      state.position++;
+    } else if (ch === 0x0D
+  /* CR */
+  ) {
+      state.position++;
+
+      if (state.input.charCodeAt(state.position) === 0x0A
+      /* LF */
+      ) {
+          state.position++;
+        }
+    } else {
+    throwError(state, 'a line break is expected');
+  }
+
+  state.line += 1;
+  state.lineStart = state.position;
+  state.firstTabInLine = -1;
+}
+
+function skipSeparationSpace(state, allowComments, checkIndent) {
+  var lineBreaks = 0,
+      ch = state.input.charCodeAt(state.position);
+
+  while (ch !== 0) {
+    while (is_WHITE_SPACE(ch)) {
+      if (ch === 0x09
+      /* Tab */
+      && state.firstTabInLine === -1) {
+        state.firstTabInLine = state.position;
+      }
+
+      ch = state.input.charCodeAt(++state.position);
+    }
+
+    if (allowComments && ch === 0x23
+    /* # */
+    ) {
+        do {
+          ch = state.input.charCodeAt(++state.position);
+        } while (ch !== 0x0A
+        /* LF */
+        && ch !== 0x0D
+        /* CR */
+        && ch !== 0);
+      }
+
+    if (is_EOL(ch)) {
+      readLineBreak(state);
+      ch = state.input.charCodeAt(state.position);
+      lineBreaks++;
+      state.lineIndent = 0;
+
+      while (ch === 0x20
+      /* Space */
+      ) {
+        state.lineIndent++;
+        ch = state.input.charCodeAt(++state.position);
+      }
+    } else {
+      break;
+    }
+  }
+
+  if (checkIndent !== -1 && lineBreaks !== 0 && state.lineIndent < checkIndent) {
+    throwWarning(state, 'deficient indentation');
+  }
+
+  return lineBreaks;
+}
+
+function testDocumentSeparator(state) {
+  var _position = state.position,
+      ch;
+  ch = state.input.charCodeAt(_position); // Condition state.position === state.lineStart is tested
+  // in parent on each call, for efficiency. No needs to test here again.
+
+  if ((ch === 0x2D
+  /* - */
+  || ch === 0x2E
+  /* . */
+  ) && ch === state.input.charCodeAt(_position + 1) && ch === state.input.charCodeAt(_position + 2)) {
+    _position += 3;
+    ch = state.input.charCodeAt(_position);
+
+    if (ch === 0 || is_WS_OR_EOL(ch)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function writeFoldedLines(state, count) {
+  if (count === 1) {
+    state.result += ' ';
+  } else if (count > 1) {
+    state.result += common.repeat('\n', count - 1);
+  }
+}
+
+function readPlainScalar(state, nodeIndent, withinFlowCollection) {
+  var preceding,
+      following,
+      captureStart,
+      captureEnd,
+      hasPendingContent,
+      _line,
+      _lineStart,
+      _lineIndent,
+      _kind = state.kind,
+      _result = state.result,
+      ch;
+
+  ch = state.input.charCodeAt(state.position);
+
+  if (is_WS_OR_EOL(ch) || is_FLOW_INDICATOR(ch) || ch === 0x23
+  /* # */
+  || ch === 0x26
+  /* & */
+  || ch === 0x2A
+  /* * */
+  || ch === 0x21
+  /* ! */
+  || ch === 0x7C
+  /* | */
+  || ch === 0x3E
+  /* > */
+  || ch === 0x27
+  /* ' */
+  || ch === 0x22
+  /* " */
+  || ch === 0x25
+  /* % */
+  || ch === 0x40
+  /* @ */
+  || ch === 0x60
+  /* ` */
+  ) {
+      return false;
+    }
+
+  if (ch === 0x3F
+  /* ? */
+  || ch === 0x2D
+  /* - */
+  ) {
+      following = state.input.charCodeAt(state.position + 1);
+
+      if (is_WS_OR_EOL(following) || withinFlowCollection && is_FLOW_INDICATOR(following)) {
+        return false;
+      }
+    }
+
+  state.kind = 'scalar';
+  state.result = '';
+  captureStart = captureEnd = state.position;
+  hasPendingContent = false;
+
+  while (ch !== 0) {
+    if (ch === 0x3A
+    /* : */
+    ) {
+        following = state.input.charCodeAt(state.position + 1);
+
+        if (is_WS_OR_EOL(following) || withinFlowCollection && is_FLOW_INDICATOR(following)) {
+          break;
+        }
+      } else if (ch === 0x23
+    /* # */
+    ) {
+        preceding = state.input.charCodeAt(state.position - 1);
+
+        if (is_WS_OR_EOL(preceding)) {
+          break;
+        }
+      } else if (state.position === state.lineStart && testDocumentSeparator(state) || withinFlowCollection && is_FLOW_INDICATOR(ch)) {
+      break;
+    } else if (is_EOL(ch)) {
+      _line = state.line;
+      _lineStart = state.lineStart;
+      _lineIndent = state.lineIndent;
+      skipSeparationSpace(state, false, -1);
+
+      if (state.lineIndent >= nodeIndent) {
+        hasPendingContent = true;
+        ch = state.input.charCodeAt(state.position);
+        continue;
+      } else {
+        state.position = captureEnd;
+        state.line = _line;
+        state.lineStart = _lineStart;
+        state.lineIndent = _lineIndent;
+        break;
+      }
+    }
+
+    if (hasPendingContent) {
+      captureSegment(state, captureStart, captureEnd, false);
+      writeFoldedLines(state, state.line - _line);
+      captureStart = captureEnd = state.position;
+      hasPendingContent = false;
+    }
+
+    if (!is_WHITE_SPACE(ch)) {
+      captureEnd = state.position + 1;
+    }
+
+    ch = state.input.charCodeAt(++state.position);
+  }
+
+  captureSegment(state, captureStart, captureEnd, false);
+
+  if (state.result) {
+    return true;
+  }
+
+  state.kind = _kind;
+  state.result = _result;
+  return false;
+}
+
+function readSingleQuotedScalar(state, nodeIndent) {
+  var ch, captureStart, captureEnd;
+  ch = state.input.charCodeAt(state.position);
+
+  if (ch !== 0x27
+  /* ' */
+  ) {
+      return false;
+    }
+
+  state.kind = 'scalar';
+  state.result = '';
+  state.position++;
+  captureStart = captureEnd = state.position;
+
+  while ((ch = state.input.charCodeAt(state.position)) !== 0) {
+    if (ch === 0x27
+    /* ' */
+    ) {
+        captureSegment(state, captureStart, state.position, true);
+        ch = state.input.charCodeAt(++state.position);
+
+        if (ch === 0x27
+        /* ' */
+        ) {
+            captureStart = state.position;
+            state.position++;
+            captureEnd = state.position;
+          } else {
+          return true;
+        }
+      } else if (is_EOL(ch)) {
+      captureSegment(state, captureStart, captureEnd, true);
+      writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
+      captureStart = captureEnd = state.position;
+    } else if (state.position === state.lineStart && testDocumentSeparator(state)) {
+      throwError(state, 'unexpected end of the document within a single quoted scalar');
+    } else {
+      state.position++;
+      captureEnd = state.position;
+    }
+  }
+
+  throwError(state, 'unexpected end of the stream within a single quoted scalar');
+}
+
+function readDoubleQuotedScalar(state, nodeIndent) {
+  var captureStart, captureEnd, hexLength, hexResult, tmp, ch;
+  ch = state.input.charCodeAt(state.position);
+
+  if (ch !== 0x22
+  /* " */
+  ) {
+      return false;
+    }
+
+  state.kind = 'scalar';
+  state.result = '';
+  state.position++;
+  captureStart = captureEnd = state.position;
+
+  while ((ch = state.input.charCodeAt(state.position)) !== 0) {
+    if (ch === 0x22
+    /* " */
+    ) {
+        captureSegment(state, captureStart, state.position, true);
+        state.position++;
+        return true;
+      } else if (ch === 0x5C
+    /* \ */
+    ) {
+        captureSegment(state, captureStart, state.position, true);
+        ch = state.input.charCodeAt(++state.position);
+
+        if (is_EOL(ch)) {
+          skipSeparationSpace(state, false, nodeIndent); // TODO: rework to inline fn with no type cast?
+        } else if (ch < 256 && simpleEscapeCheck[ch]) {
+          state.result += simpleEscapeMap[ch];
+          state.position++;
+        } else if ((tmp = escapedHexLen(ch)) > 0) {
+          hexLength = tmp;
+          hexResult = 0;
+
+          for (; hexLength > 0; hexLength--) {
+            ch = state.input.charCodeAt(++state.position);
+
+            if ((tmp = fromHexCode(ch)) >= 0) {
+              hexResult = (hexResult << 4) + tmp;
+            } else {
+              throwError(state, 'expected hexadecimal character');
+            }
+          }
+
+          state.result += charFromCodepoint(hexResult);
+          state.position++;
+        } else {
+          throwError(state, 'unknown escape sequence');
+        }
+
+        captureStart = captureEnd = state.position;
+      } else if (is_EOL(ch)) {
+      captureSegment(state, captureStart, captureEnd, true);
+      writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
+      captureStart = captureEnd = state.position;
+    } else if (state.position === state.lineStart && testDocumentSeparator(state)) {
+      throwError(state, 'unexpected end of the document within a double quoted scalar');
+    } else {
+      state.position++;
+      captureEnd = state.position;
+    }
+  }
+
+  throwError(state, 'unexpected end of the stream within a double quoted scalar');
+}
+
+function readFlowCollection(state, nodeIndent) {
+  var readNext = true,
+      _line,
+      _lineStart,
+      _pos,
+      _tag = state.tag,
+      _result,
+      _anchor = state.anchor,
+      following,
+      terminator,
+      isPair,
+      isExplicitPair,
+      isMapping,
+      overridableKeys = Object.create(null),
+      keyNode,
+      keyTag,
+      valueNode,
+      ch;
+
+  ch = state.input.charCodeAt(state.position);
+
+  if (ch === 0x5B
+  /* [ */
+  ) {
+      terminator = 0x5D;
+      /* ] */
+
+      isMapping = false;
+      _result = [];
+    } else if (ch === 0x7B
+  /* { */
+  ) {
+      terminator = 0x7D;
+      /* } */
+
+      isMapping = true;
+      _result = {};
+    } else {
+    return false;
+  }
+
+  if (state.anchor !== null) {
+    state.anchorMap[state.anchor] = _result;
+  }
+
+  ch = state.input.charCodeAt(++state.position);
+
+  while (ch !== 0) {
+    skipSeparationSpace(state, true, nodeIndent);
+    ch = state.input.charCodeAt(state.position);
+
+    if (ch === terminator) {
+      state.position++;
+      state.tag = _tag;
+      state.anchor = _anchor;
+      state.kind = isMapping ? 'mapping' : 'sequence';
+      state.result = _result;
+      return true;
+    } else if (!readNext) {
+      throwError(state, 'missed comma between flow collection entries');
+    } else if (ch === 0x2C
+    /* , */
+    ) {
+        // "flow collection entries can never be completely empty", as per YAML 1.2, section 7.4
+        throwError(state, "expected the node content, but found ','");
+      }
+
+    keyTag = keyNode = valueNode = null;
+    isPair = isExplicitPair = false;
+
+    if (ch === 0x3F
+    /* ? */
+    ) {
+        following = state.input.charCodeAt(state.position + 1);
+
+        if (is_WS_OR_EOL(following)) {
+          isPair = isExplicitPair = true;
+          state.position++;
+          skipSeparationSpace(state, true, nodeIndent);
+        }
+      }
+
+    _line = state.line; // Save the current line.
+
+    _lineStart = state.lineStart;
+    _pos = state.position;
+    composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
+    keyTag = state.tag;
+    keyNode = state.result;
+    skipSeparationSpace(state, true, nodeIndent);
+    ch = state.input.charCodeAt(state.position);
+
+    if ((isExplicitPair || state.line === _line) && ch === 0x3A
+    /* : */
+    ) {
+        isPair = true;
+        ch = state.input.charCodeAt(++state.position);
+        skipSeparationSpace(state, true, nodeIndent);
+        composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
+        valueNode = state.result;
+      }
+
+    if (isMapping) {
+      storeMappingPair(state, _result, overridableKeys, keyTag, keyNode, valueNode, _line, _lineStart, _pos);
+    } else if (isPair) {
+      _result.push(storeMappingPair(state, null, overridableKeys, keyTag, keyNode, valueNode, _line, _lineStart, _pos));
+    } else {
+      _result.push(keyNode);
+    }
+
+    skipSeparationSpace(state, true, nodeIndent);
+    ch = state.input.charCodeAt(state.position);
+
+    if (ch === 0x2C
+    /* , */
+    ) {
+        readNext = true;
+        ch = state.input.charCodeAt(++state.position);
+      } else {
+      readNext = false;
+    }
+  }
+
+  throwError(state, 'unexpected end of the stream within a flow collection');
+}
+
+function readBlockScalar(state, nodeIndent) {
+  var captureStart,
+      folding,
+      chomping = CHOMPING_CLIP,
+      didReadContent = false,
+      detectedIndent = false,
+      textIndent = nodeIndent,
+      emptyLines = 0,
+      atMoreIndented = false,
+      tmp,
+      ch;
+  ch = state.input.charCodeAt(state.position);
+
+  if (ch === 0x7C
+  /* | */
+  ) {
+      folding = false;
+    } else if (ch === 0x3E
+  /* > */
+  ) {
+      folding = true;
+    } else {
+    return false;
+  }
+
+  state.kind = 'scalar';
+  state.result = '';
+
+  while (ch !== 0) {
+    ch = state.input.charCodeAt(++state.position);
+
+    if (ch === 0x2B
+    /* + */
+    || ch === 0x2D
+    /* - */
+    ) {
+        if (CHOMPING_CLIP === chomping) {
+          chomping = ch === 0x2B
+          /* + */
+          ? CHOMPING_KEEP : CHOMPING_STRIP;
+        } else {
+          throwError(state, 'repeat of a chomping mode identifier');
+        }
+      } else if ((tmp = fromDecimalCode(ch)) >= 0) {
+      if (tmp === 0) {
+        throwError(state, 'bad explicit indentation width of a block scalar; it cannot be less than one');
+      } else if (!detectedIndent) {
+        textIndent = nodeIndent + tmp - 1;
+        detectedIndent = true;
+      } else {
+        throwError(state, 'repeat of an indentation width identifier');
+      }
+    } else {
+      break;
+    }
+  }
+
+  if (is_WHITE_SPACE(ch)) {
+    do {
+      ch = state.input.charCodeAt(++state.position);
+    } while (is_WHITE_SPACE(ch));
+
+    if (ch === 0x23
+    /* # */
+    ) {
+        do {
+          ch = state.input.charCodeAt(++state.position);
+        } while (!is_EOL(ch) && ch !== 0);
+      }
+  }
+
+  while (ch !== 0) {
+    readLineBreak(state);
+    state.lineIndent = 0;
+    ch = state.input.charCodeAt(state.position);
+
+    while ((!detectedIndent || state.lineIndent < textIndent) && ch === 0x20
+    /* Space */
+    ) {
+      state.lineIndent++;
+      ch = state.input.charCodeAt(++state.position);
+    }
+
+    if (!detectedIndent && state.lineIndent > textIndent) {
+      textIndent = state.lineIndent;
+    }
+
+    if (is_EOL(ch)) {
+      emptyLines++;
+      continue;
+    } // End of the scalar.
+
+
+    if (state.lineIndent < textIndent) {
+      // Perform the chomping.
+      if (chomping === CHOMPING_KEEP) {
+        state.result += common.repeat('\n', didReadContent ? 1 + emptyLines : emptyLines);
+      } else if (chomping === CHOMPING_CLIP) {
+        if (didReadContent) {
+          // i.e. only if the scalar is not empty.
+          state.result += '\n';
+        }
+      } // Break this `while` cycle and go to the funciton's epilogue.
+
+
+      break;
+    } // Folded style: use fancy rules to handle line breaks.
+
+
+    if (folding) {
+      // Lines starting with white space characters (more-indented lines) are not folded.
+      if (is_WHITE_SPACE(ch)) {
+        atMoreIndented = true; // except for the first content line (cf. Example 8.1)
+
+        state.result += common.repeat('\n', didReadContent ? 1 + emptyLines : emptyLines); // End of more-indented block.
+      } else if (atMoreIndented) {
+        atMoreIndented = false;
+        state.result += common.repeat('\n', emptyLines + 1); // Just one line break - perceive as the same line.
+      } else if (emptyLines === 0) {
+        if (didReadContent) {
+          // i.e. only if we have already read some scalar content.
+          state.result += ' ';
+        } // Several line breaks - perceive as different lines.
+
+      } else {
+        state.result += common.repeat('\n', emptyLines);
+      } // Literal style: just add exact number of line breaks between content lines.
+
+    } else {
+      // Keep all line breaks except the header line break.
+      state.result += common.repeat('\n', didReadContent ? 1 + emptyLines : emptyLines);
+    }
+
+    didReadContent = true;
+    detectedIndent = true;
+    emptyLines = 0;
+    captureStart = state.position;
+
+    while (!is_EOL(ch) && ch !== 0) {
+      ch = state.input.charCodeAt(++state.position);
+    }
+
+    captureSegment(state, captureStart, state.position, false);
+  }
+
+  return true;
+}
+
+function readBlockSequence(state, nodeIndent) {
+  var _line,
+      _tag = state.tag,
+      _anchor = state.anchor,
+      _result = [],
+      following,
+      detected = false,
+      ch; // there is a leading tab before this token, so it can't be a block sequence/mapping;
+  // it can still be flow sequence/mapping or a scalar
+
+
+  if (state.firstTabInLine !== -1) return false;
+
+  if (state.anchor !== null) {
+    state.anchorMap[state.anchor] = _result;
+  }
+
+  ch = state.input.charCodeAt(state.position);
+
+  while (ch !== 0) {
+    if (state.firstTabInLine !== -1) {
+      state.position = state.firstTabInLine;
+      throwError(state, 'tab characters must not be used in indentation');
+    }
+
+    if (ch !== 0x2D
+    /* - */
+    ) {
+        break;
+      }
+
+    following = state.input.charCodeAt(state.position + 1);
+
+    if (!is_WS_OR_EOL(following)) {
+      break;
+    }
+
+    detected = true;
+    state.position++;
+
+    if (skipSeparationSpace(state, true, -1)) {
+      if (state.lineIndent <= nodeIndent) {
+        _result.push(null);
+
+        ch = state.input.charCodeAt(state.position);
+        continue;
+      }
+    }
+
+    _line = state.line;
+    composeNode(state, nodeIndent, CONTEXT_BLOCK_IN, false, true);
+
+    _result.push(state.result);
+
+    skipSeparationSpace(state, true, -1);
+    ch = state.input.charCodeAt(state.position);
+
+    if ((state.line === _line || state.lineIndent > nodeIndent) && ch !== 0) {
+      throwError(state, 'bad indentation of a sequence entry');
+    } else if (state.lineIndent < nodeIndent) {
+      break;
+    }
+  }
+
+  if (detected) {
+    state.tag = _tag;
+    state.anchor = _anchor;
+    state.kind = 'sequence';
+    state.result = _result;
+    return true;
+  }
+
+  return false;
+}
+
+function readBlockMapping(state, nodeIndent, flowIndent) {
+  var following,
+      allowCompact,
+      _line,
+      _keyLine,
+      _keyLineStart,
+      _keyPos,
+      _tag = state.tag,
+      _anchor = state.anchor,
+      _result = {},
+      overridableKeys = Object.create(null),
+      keyTag = null,
+      keyNode = null,
+      valueNode = null,
+      atExplicitKey = false,
+      detected = false,
+      ch; // there is a leading tab before this token, so it can't be a block sequence/mapping;
+  // it can still be flow sequence/mapping or a scalar
+
+
+  if (state.firstTabInLine !== -1) return false;
+
+  if (state.anchor !== null) {
+    state.anchorMap[state.anchor] = _result;
+  }
+
+  ch = state.input.charCodeAt(state.position);
+
+  while (ch !== 0) {
+    if (!atExplicitKey && state.firstTabInLine !== -1) {
+      state.position = state.firstTabInLine;
+      throwError(state, 'tab characters must not be used in indentation');
+    }
+
+    following = state.input.charCodeAt(state.position + 1);
+    _line = state.line; // Save the current line.
+    //
+    // Explicit notation case. There are two separate blocks:
+    // first for the key (denoted by "?") and second for the value (denoted by ":")
+    //
+
+    if ((ch === 0x3F
+    /* ? */
+    || ch === 0x3A
+    /* : */
+    ) && is_WS_OR_EOL(following)) {
+      if (ch === 0x3F
+      /* ? */
+      ) {
+          if (atExplicitKey) {
+            storeMappingPair(state, _result, overridableKeys, keyTag, keyNode, null, _keyLine, _keyLineStart, _keyPos);
+            keyTag = keyNode = valueNode = null;
+          }
+
+          detected = true;
+          atExplicitKey = true;
+          allowCompact = true;
+        } else if (atExplicitKey) {
+        // i.e. 0x3A/* : */ === character after the explicit key.
+        atExplicitKey = false;
+        allowCompact = true;
+      } else {
+        throwError(state, 'incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line');
+      }
+
+      state.position += 1;
+      ch = following; //
+      // Implicit notation case. Flow-style node as the key first, then ":", and the value.
+      //
+    } else {
+      _keyLine = state.line;
+      _keyLineStart = state.lineStart;
+      _keyPos = state.position;
+
+      if (!composeNode(state, flowIndent, CONTEXT_FLOW_OUT, false, true)) {
+        // Neither implicit nor explicit notation.
+        // Reading is done. Go to the epilogue.
+        break;
+      }
+
+      if (state.line === _line) {
+        ch = state.input.charCodeAt(state.position);
+
+        while (is_WHITE_SPACE(ch)) {
+          ch = state.input.charCodeAt(++state.position);
+        }
+
+        if (ch === 0x3A
+        /* : */
+        ) {
+            ch = state.input.charCodeAt(++state.position);
+
+            if (!is_WS_OR_EOL(ch)) {
+              throwError(state, 'a whitespace character is expected after the key-value separator within a block mapping');
+            }
+
+            if (atExplicitKey) {
+              storeMappingPair(state, _result, overridableKeys, keyTag, keyNode, null, _keyLine, _keyLineStart, _keyPos);
+              keyTag = keyNode = valueNode = null;
+            }
+
+            detected = true;
+            atExplicitKey = false;
+            allowCompact = false;
+            keyTag = state.tag;
+            keyNode = state.result;
+          } else if (detected) {
+          throwError(state, 'can not read an implicit mapping pair; a colon is missed');
+        } else {
+          state.tag = _tag;
+          state.anchor = _anchor;
+          return true; // Keep the result of `composeNode`.
+        }
+      } else if (detected) {
+        throwError(state, 'can not read a block mapping entry; a multiline key may not be an implicit key');
+      } else {
+        state.tag = _tag;
+        state.anchor = _anchor;
+        return true; // Keep the result of `composeNode`.
+      }
+    } //
+    // Common reading code for both explicit and implicit notations.
+    //
+
+
+    if (state.line === _line || state.lineIndent > nodeIndent) {
+      if (atExplicitKey) {
+        _keyLine = state.line;
+        _keyLineStart = state.lineStart;
+        _keyPos = state.position;
+      }
+
+      if (composeNode(state, nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)) {
+        if (atExplicitKey) {
+          keyNode = state.result;
+        } else {
+          valueNode = state.result;
+        }
+      }
+
+      if (!atExplicitKey) {
+        storeMappingPair(state, _result, overridableKeys, keyTag, keyNode, valueNode, _keyLine, _keyLineStart, _keyPos);
+        keyTag = keyNode = valueNode = null;
+      }
+
+      skipSeparationSpace(state, true, -1);
+      ch = state.input.charCodeAt(state.position);
+    }
+
+    if ((state.line === _line || state.lineIndent > nodeIndent) && ch !== 0) {
+      throwError(state, 'bad indentation of a mapping entry');
+    } else if (state.lineIndent < nodeIndent) {
+      break;
+    }
+  } //
+  // Epilogue.
+  //
+  // Special case: last mapping's node contains only the key in explicit notation.
+
+
+  if (atExplicitKey) {
+    storeMappingPair(state, _result, overridableKeys, keyTag, keyNode, null, _keyLine, _keyLineStart, _keyPos);
+  } // Expose the resulting mapping.
+
+
+  if (detected) {
+    state.tag = _tag;
+    state.anchor = _anchor;
+    state.kind = 'mapping';
+    state.result = _result;
+  }
+
+  return detected;
+}
+
+function readTagProperty(state) {
+  var _position,
+      isVerbatim = false,
+      isNamed = false,
+      tagHandle,
+      tagName,
+      ch;
+
+  ch = state.input.charCodeAt(state.position);
+  if (ch !== 0x21
+  /* ! */
+  ) return false;
+
+  if (state.tag !== null) {
+    throwError(state, 'duplication of a tag property');
+  }
+
+  ch = state.input.charCodeAt(++state.position);
+
+  if (ch === 0x3C
+  /* < */
+  ) {
+      isVerbatim = true;
+      ch = state.input.charCodeAt(++state.position);
+    } else if (ch === 0x21
+  /* ! */
+  ) {
+      isNamed = true;
+      tagHandle = '!!';
+      ch = state.input.charCodeAt(++state.position);
+    } else {
+    tagHandle = '!';
+  }
+
+  _position = state.position;
+
+  if (isVerbatim) {
+    do {
+      ch = state.input.charCodeAt(++state.position);
+    } while (ch !== 0 && ch !== 0x3E
+    /* > */
+    );
+
+    if (state.position < state.length) {
+      tagName = state.input.slice(_position, state.position);
+      ch = state.input.charCodeAt(++state.position);
+    } else {
+      throwError(state, 'unexpected end of the stream within a verbatim tag');
+    }
+  } else {
+    while (ch !== 0 && !is_WS_OR_EOL(ch)) {
+      if (ch === 0x21
+      /* ! */
+      ) {
+          if (!isNamed) {
+            tagHandle = state.input.slice(_position - 1, state.position + 1);
+
+            if (!PATTERN_TAG_HANDLE.test(tagHandle)) {
+              throwError(state, 'named tag handle cannot contain such characters');
+            }
+
+            isNamed = true;
+            _position = state.position + 1;
+          } else {
+            throwError(state, 'tag suffix cannot contain exclamation marks');
+          }
+        }
+
+      ch = state.input.charCodeAt(++state.position);
+    }
+
+    tagName = state.input.slice(_position, state.position);
+
+    if (PATTERN_FLOW_INDICATORS.test(tagName)) {
+      throwError(state, 'tag suffix cannot contain flow indicator characters');
+    }
+  }
+
+  if (tagName && !PATTERN_TAG_URI.test(tagName)) {
+    throwError(state, 'tag name cannot contain such characters: ' + tagName);
+  }
+
+  try {
+    tagName = decodeURIComponent(tagName);
+  } catch (err) {
+    throwError(state, 'tag name is malformed: ' + tagName);
+  }
+
+  if (isVerbatim) {
+    state.tag = tagName;
+  } else if (_hasOwnProperty$1.call(state.tagMap, tagHandle)) {
+    state.tag = state.tagMap[tagHandle] + tagName;
+  } else if (tagHandle === '!') {
+    state.tag = '!' + tagName;
+  } else if (tagHandle === '!!') {
+    state.tag = 'tag:yaml.org,2002:' + tagName;
+  } else {
+    throwError(state, 'undeclared tag handle "' + tagHandle + '"');
+  }
+
+  return true;
+}
+
+function readAnchorProperty(state) {
+  var _position, ch;
+
+  ch = state.input.charCodeAt(state.position);
+  if (ch !== 0x26
+  /* & */
+  ) return false;
+
+  if (state.anchor !== null) {
+    throwError(state, 'duplication of an anchor property');
+  }
+
+  ch = state.input.charCodeAt(++state.position);
+  _position = state.position;
+
+  while (ch !== 0 && !is_WS_OR_EOL(ch) && !is_FLOW_INDICATOR(ch)) {
+    ch = state.input.charCodeAt(++state.position);
+  }
+
+  if (state.position === _position) {
+    throwError(state, 'name of an anchor node must contain at least one character');
+  }
+
+  state.anchor = state.input.slice(_position, state.position);
+  return true;
+}
+
+function readAlias(state) {
+  var _position, alias, ch;
+
+  ch = state.input.charCodeAt(state.position);
+  if (ch !== 0x2A
+  /* * */
+  ) return false;
+  ch = state.input.charCodeAt(++state.position);
+  _position = state.position;
+
+  while (ch !== 0 && !is_WS_OR_EOL(ch) && !is_FLOW_INDICATOR(ch)) {
+    ch = state.input.charCodeAt(++state.position);
+  }
+
+  if (state.position === _position) {
+    throwError(state, 'name of an alias node must contain at least one character');
+  }
+
+  alias = state.input.slice(_position, state.position);
+
+  if (!_hasOwnProperty$1.call(state.anchorMap, alias)) {
+    throwError(state, 'unidentified alias "' + alias + '"');
+  }
+
+  state.result = state.anchorMap[alias];
+  skipSeparationSpace(state, true, -1);
+  return true;
+}
+
+function composeNode(state, parentIndent, nodeContext, allowToSeek, allowCompact) {
+  var allowBlockStyles,
+      allowBlockScalars,
+      allowBlockCollections,
+      indentStatus = 1,
+      // 1: this>parent, 0: this=parent, -1: this<parent
+  atNewLine = false,
+      hasContent = false,
+      typeIndex,
+      typeQuantity,
+      typeList,
+      type,
+      flowIndent,
+      blockIndent;
+
+  if (state.listener !== null) {
+    state.listener('open', state);
+  }
+
+  state.tag = null;
+  state.anchor = null;
+  state.kind = null;
+  state.result = null;
+  allowBlockStyles = allowBlockScalars = allowBlockCollections = CONTEXT_BLOCK_OUT === nodeContext || CONTEXT_BLOCK_IN === nodeContext;
+
+  if (allowToSeek) {
+    if (skipSeparationSpace(state, true, -1)) {
+      atNewLine = true;
+
+      if (state.lineIndent > parentIndent) {
+        indentStatus = 1;
+      } else if (state.lineIndent === parentIndent) {
+        indentStatus = 0;
+      } else if (state.lineIndent < parentIndent) {
+        indentStatus = -1;
+      }
+    }
+  }
+
+  if (indentStatus === 1) {
+    while (readTagProperty(state) || readAnchorProperty(state)) {
+      if (skipSeparationSpace(state, true, -1)) {
+        atNewLine = true;
+        allowBlockCollections = allowBlockStyles;
+
+        if (state.lineIndent > parentIndent) {
+          indentStatus = 1;
+        } else if (state.lineIndent === parentIndent) {
+          indentStatus = 0;
+        } else if (state.lineIndent < parentIndent) {
+          indentStatus = -1;
+        }
+      } else {
+        allowBlockCollections = false;
+      }
+    }
+  }
+
+  if (allowBlockCollections) {
+    allowBlockCollections = atNewLine || allowCompact;
+  }
+
+  if (indentStatus === 1 || CONTEXT_BLOCK_OUT === nodeContext) {
+    if (CONTEXT_FLOW_IN === nodeContext || CONTEXT_FLOW_OUT === nodeContext) {
+      flowIndent = parentIndent;
+    } else {
+      flowIndent = parentIndent + 1;
+    }
+
+    blockIndent = state.position - state.lineStart;
+
+    if (indentStatus === 1) {
+      if (allowBlockCollections && (readBlockSequence(state, blockIndent) || readBlockMapping(state, blockIndent, flowIndent)) || readFlowCollection(state, flowIndent)) {
+        hasContent = true;
+      } else {
+        if (allowBlockScalars && readBlockScalar(state, flowIndent) || readSingleQuotedScalar(state, flowIndent) || readDoubleQuotedScalar(state, flowIndent)) {
+          hasContent = true;
+        } else if (readAlias(state)) {
+          hasContent = true;
+
+          if (state.tag !== null || state.anchor !== null) {
+            throwError(state, 'alias node should not have any properties');
+          }
+        } else if (readPlainScalar(state, flowIndent, CONTEXT_FLOW_IN === nodeContext)) {
+          hasContent = true;
+
+          if (state.tag === null) {
+            state.tag = '?';
+          }
+        }
+
+        if (state.anchor !== null) {
+          state.anchorMap[state.anchor] = state.result;
+        }
+      }
+    } else if (indentStatus === 0) {
+      // Special case: block sequences are allowed to have same indentation level as the parent.
+      // http://www.yaml.org/spec/1.2/spec.html#id2799784
+      hasContent = allowBlockCollections && readBlockSequence(state, blockIndent);
+    }
+  }
+
+  if (state.tag === null) {
+    if (state.anchor !== null) {
+      state.anchorMap[state.anchor] = state.result;
+    }
+  } else if (state.tag === '?') {
+    // Implicit resolving is not allowed for non-scalar types, and '?'
+    // non-specific tag is only automatically assigned to plain scalars.
+    //
+    // We only need to check kind conformity in case user explicitly assigns '?'
+    // tag, for example like this: "!<?> [0]"
+    //
+    if (state.result !== null && state.kind !== 'scalar') {
+      throwError(state, 'unacceptable node kind for !<?> tag; it should be "scalar", not "' + state.kind + '"');
+    }
+
+    for (typeIndex = 0, typeQuantity = state.implicitTypes.length; typeIndex < typeQuantity; typeIndex += 1) {
+      type = state.implicitTypes[typeIndex];
+
+      if (type.resolve(state.result)) {
+        // `state.result` updated in resolver if matched
+        state.result = type.construct(state.result);
+        state.tag = type.tag;
+
+        if (state.anchor !== null) {
+          state.anchorMap[state.anchor] = state.result;
+        }
+
+        break;
+      }
+    }
+  } else if (state.tag !== '!') {
+    if (_hasOwnProperty$1.call(state.typeMap[state.kind || 'fallback'], state.tag)) {
+      type = state.typeMap[state.kind || 'fallback'][state.tag];
+    } else {
+      // looking for multi type
+      type = null;
+      typeList = state.typeMap.multi[state.kind || 'fallback'];
+
+      for (typeIndex = 0, typeQuantity = typeList.length; typeIndex < typeQuantity; typeIndex += 1) {
+        if (state.tag.slice(0, typeList[typeIndex].tag.length) === typeList[typeIndex].tag) {
+          type = typeList[typeIndex];
+          break;
+        }
+      }
+    }
+
+    if (!type) {
+      throwError(state, 'unknown tag !<' + state.tag + '>');
+    }
+
+    if (state.result !== null && type.kind !== state.kind) {
+      throwError(state, 'unacceptable node kind for !<' + state.tag + '> tag; it should be "' + type.kind + '", not "' + state.kind + '"');
+    }
+
+    if (!type.resolve(state.result, state.tag)) {
+      // `state.result` updated in resolver if matched
+      throwError(state, 'cannot resolve a node with !<' + state.tag + '> explicit tag');
+    } else {
+      state.result = type.construct(state.result, state.tag);
+
+      if (state.anchor !== null) {
+        state.anchorMap[state.anchor] = state.result;
+      }
+    }
+  }
+
+  if (state.listener !== null) {
+    state.listener('close', state);
+  }
+
+  return state.tag !== null || state.anchor !== null || hasContent;
+}
+
+function readDocument(state) {
+  var documentStart = state.position,
+      _position,
+      directiveName,
+      directiveArgs,
+      hasDirectives = false,
+      ch;
+
+  state.version = null;
+  state.checkLineBreaks = state.legacy;
+  state.tagMap = Object.create(null);
+  state.anchorMap = Object.create(null);
+
+  while ((ch = state.input.charCodeAt(state.position)) !== 0) {
+    skipSeparationSpace(state, true, -1);
+    ch = state.input.charCodeAt(state.position);
+
+    if (state.lineIndent > 0 || ch !== 0x25
+    /* % */
+    ) {
+        break;
+      }
+
+    hasDirectives = true;
+    ch = state.input.charCodeAt(++state.position);
+    _position = state.position;
+
+    while (ch !== 0 && !is_WS_OR_EOL(ch)) {
+      ch = state.input.charCodeAt(++state.position);
+    }
+
+    directiveName = state.input.slice(_position, state.position);
+    directiveArgs = [];
+
+    if (directiveName.length < 1) {
+      throwError(state, 'directive name must not be less than one character in length');
+    }
+
+    while (ch !== 0) {
+      while (is_WHITE_SPACE(ch)) {
+        ch = state.input.charCodeAt(++state.position);
+      }
+
+      if (ch === 0x23
+      /* # */
+      ) {
+          do {
+            ch = state.input.charCodeAt(++state.position);
+          } while (ch !== 0 && !is_EOL(ch));
+
+          break;
+        }
+
+      if (is_EOL(ch)) break;
+      _position = state.position;
+
+      while (ch !== 0 && !is_WS_OR_EOL(ch)) {
+        ch = state.input.charCodeAt(++state.position);
+      }
+
+      directiveArgs.push(state.input.slice(_position, state.position));
+    }
+
+    if (ch !== 0) readLineBreak(state);
+
+    if (_hasOwnProperty$1.call(directiveHandlers, directiveName)) {
+      directiveHandlers[directiveName](state, directiveName, directiveArgs);
+    } else {
+      throwWarning(state, 'unknown document directive "' + directiveName + '"');
+    }
+  }
+
+  skipSeparationSpace(state, true, -1);
+
+  if (state.lineIndent === 0 && state.input.charCodeAt(state.position) === 0x2D
+  /* - */
+  && state.input.charCodeAt(state.position + 1) === 0x2D
+  /* - */
+  && state.input.charCodeAt(state.position + 2) === 0x2D
+  /* - */
+  ) {
+      state.position += 3;
+      skipSeparationSpace(state, true, -1);
+    } else if (hasDirectives) {
+    throwError(state, 'directives end mark is expected');
+  }
+
+  composeNode(state, state.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
+  skipSeparationSpace(state, true, -1);
+
+  if (state.checkLineBreaks && PATTERN_NON_ASCII_LINE_BREAKS.test(state.input.slice(documentStart, state.position))) {
+    throwWarning(state, 'non-ASCII line breaks are interpreted as content');
+  }
+
+  state.documents.push(state.result);
+
+  if (state.position === state.lineStart && testDocumentSeparator(state)) {
+    if (state.input.charCodeAt(state.position) === 0x2E
+    /* . */
+    ) {
+        state.position += 3;
+        skipSeparationSpace(state, true, -1);
+      }
+
+    return;
+  }
+
+  if (state.position < state.length - 1) {
+    throwError(state, 'end of the stream or a document separator is expected');
+  } else {
+    return;
+  }
+}
+
+function loadDocuments(input, options) {
+  input = String(input);
+  options = options || {};
+
+  if (input.length !== 0) {
+    // Add tailing `\n` if not exists
+    if (input.charCodeAt(input.length - 1) !== 0x0A
+    /* LF */
+    && input.charCodeAt(input.length - 1) !== 0x0D
+    /* CR */
+    ) {
+        input += '\n';
+      } // Strip BOM
+
+
+    if (input.charCodeAt(0) === 0xFEFF) {
+      input = input.slice(1);
+    }
+  }
+
+  var state = new State$1(input, options);
+  var nullpos = input.indexOf('\0');
+
+  if (nullpos !== -1) {
+    state.position = nullpos;
+    throwError(state, 'null byte is not allowed in input');
+  } // Use 0 as string terminator. That significantly simplifies bounds check.
+
+
+  state.input += '\0';
+
+  while (state.input.charCodeAt(state.position) === 0x20
+  /* Space */
+  ) {
+    state.lineIndent += 1;
+    state.position += 1;
+  }
+
+  while (state.position < state.length - 1) {
+    readDocument(state);
+  }
+
+  return state.documents;
+}
+
+function loadAll$1(input, iterator, options) {
+  if (iterator !== null && typeof iterator === 'object' && typeof options === 'undefined') {
+    options = iterator;
+    iterator = null;
+  }
+
+  var documents = loadDocuments(input, options);
+
+  if (typeof iterator !== 'function') {
+    return documents;
+  }
+
+  for (var index = 0, length = documents.length; index < length; index += 1) {
+    iterator(documents[index]);
+  }
+}
+
+function load$1(input, options) {
+  var documents = loadDocuments(input, options);
+
+  if (documents.length === 0) {
+    /*eslint-disable no-undefined*/
+    return undefined;
+  } else if (documents.length === 1) {
+    return documents[0];
+  }
+
+  throw new exception('expected a single document in the stream, but found more');
+}
+
+var loadAll_1 = loadAll$1;
+var load_1 = load$1;
+var loader = {
+  loadAll: loadAll_1,
+  load: load_1
+};
+/*eslint-disable no-use-before-define*/
+
+var _toString = Object.prototype.toString;
+var _hasOwnProperty = Object.prototype.hasOwnProperty;
+var CHAR_BOM = 0xFEFF;
+var CHAR_TAB = 0x09;
+/* Tab */
+
+var CHAR_LINE_FEED = 0x0A;
+/* LF */
+
+var CHAR_CARRIAGE_RETURN = 0x0D;
+/* CR */
+
+var CHAR_SPACE = 0x20;
+/* Space */
+
+var CHAR_EXCLAMATION = 0x21;
+/* ! */
+
+var CHAR_DOUBLE_QUOTE = 0x22;
+/* " */
+
+var CHAR_SHARP = 0x23;
+/* # */
+
+var CHAR_PERCENT = 0x25;
+/* % */
+
+var CHAR_AMPERSAND = 0x26;
+/* & */
+
+var CHAR_SINGLE_QUOTE = 0x27;
+/* ' */
+
+var CHAR_ASTERISK = 0x2A;
+/* * */
+
+var CHAR_COMMA = 0x2C;
+/* , */
+
+var CHAR_MINUS = 0x2D;
+/* - */
+
+var CHAR_COLON = 0x3A;
+/* : */
+
+var CHAR_EQUALS = 0x3D;
+/* = */
+
+var CHAR_GREATER_THAN = 0x3E;
+/* > */
+
+var CHAR_QUESTION = 0x3F;
+/* ? */
+
+var CHAR_COMMERCIAL_AT = 0x40;
+/* @ */
+
+var CHAR_LEFT_SQUARE_BRACKET = 0x5B;
+/* [ */
+
+var CHAR_RIGHT_SQUARE_BRACKET = 0x5D;
+/* ] */
+
+var CHAR_GRAVE_ACCENT = 0x60;
+/* ` */
+
+var CHAR_LEFT_CURLY_BRACKET = 0x7B;
+/* { */
+
+var CHAR_VERTICAL_LINE = 0x7C;
+/* | */
+
+var CHAR_RIGHT_CURLY_BRACKET = 0x7D;
+/* } */
+
+var ESCAPE_SEQUENCES = {};
+ESCAPE_SEQUENCES[0x00] = '\\0';
+ESCAPE_SEQUENCES[0x07] = '\\a';
+ESCAPE_SEQUENCES[0x08] = '\\b';
+ESCAPE_SEQUENCES[0x09] = '\\t';
+ESCAPE_SEQUENCES[0x0A] = '\\n';
+ESCAPE_SEQUENCES[0x0B] = '\\v';
+ESCAPE_SEQUENCES[0x0C] = '\\f';
+ESCAPE_SEQUENCES[0x0D] = '\\r';
+ESCAPE_SEQUENCES[0x1B] = '\\e';
+ESCAPE_SEQUENCES[0x22] = '\\"';
+ESCAPE_SEQUENCES[0x5C] = '\\\\';
+ESCAPE_SEQUENCES[0x85] = '\\N';
+ESCAPE_SEQUENCES[0xA0] = '\\_';
+ESCAPE_SEQUENCES[0x2028] = '\\L';
+ESCAPE_SEQUENCES[0x2029] = '\\P';
+var DEPRECATED_BOOLEANS_SYNTAX = ['y', 'Y', 'yes', 'Yes', 'YES', 'on', 'On', 'ON', 'n', 'N', 'no', 'No', 'NO', 'off', 'Off', 'OFF'];
+var DEPRECATED_BASE60_SYNTAX = /^[-+]?[0-9_]+(?::[0-9_]+)+(?:\.[0-9_]*)?$/;
+
+function compileStyleMap(schema, map) {
+  var result, keys, index, length, tag, style, type;
+  if (map === null) return {};
+  result = {};
+  keys = Object.keys(map);
+
+  for (index = 0, length = keys.length; index < length; index += 1) {
+    tag = keys[index];
+    style = String(map[tag]);
+
+    if (tag.slice(0, 2) === '!!') {
+      tag = 'tag:yaml.org,2002:' + tag.slice(2);
+    }
+
+    type = schema.compiledTypeMap['fallback'][tag];
+
+    if (type && _hasOwnProperty.call(type.styleAliases, style)) {
+      style = type.styleAliases[style];
+    }
+
+    result[tag] = style;
+  }
+
+  return result;
+}
+
+function encodeHex(character) {
+  var string, handle, length;
+  string = character.toString(16).toUpperCase();
+
+  if (character <= 0xFF) {
+    handle = 'x';
+    length = 2;
+  } else if (character <= 0xFFFF) {
+    handle = 'u';
+    length = 4;
+  } else if (character <= 0xFFFFFFFF) {
+    handle = 'U';
+    length = 8;
+  } else {
+    throw new exception('code point within a string may not be greater than 0xFFFFFFFF');
+  }
+
+  return '\\' + handle + common.repeat('0', length - string.length) + string;
+}
+
+var QUOTING_TYPE_SINGLE = 1,
+    QUOTING_TYPE_DOUBLE = 2;
+
+function State(options) {
+  this.schema = options['schema'] || _default;
+  this.indent = Math.max(1, options['indent'] || 2);
+  this.noArrayIndent = options['noArrayIndent'] || false;
+  this.skipInvalid = options['skipInvalid'] || false;
+  this.flowLevel = common.isNothing(options['flowLevel']) ? -1 : options['flowLevel'];
+  this.styleMap = compileStyleMap(this.schema, options['styles'] || null);
+  this.sortKeys = options['sortKeys'] || false;
+  this.lineWidth = options['lineWidth'] || 80;
+  this.noRefs = options['noRefs'] || false;
+  this.noCompatMode = options['noCompatMode'] || false;
+  this.condenseFlow = options['condenseFlow'] || false;
+  this.quotingType = options['quotingType'] === '"' ? QUOTING_TYPE_DOUBLE : QUOTING_TYPE_SINGLE;
+  this.forceQuotes = options['forceQuotes'] || false;
+  this.replacer = typeof options['replacer'] === 'function' ? options['replacer'] : null;
+  this.implicitTypes = this.schema.compiledImplicit;
+  this.explicitTypes = this.schema.compiledExplicit;
+  this.tag = null;
+  this.result = '';
+  this.duplicates = [];
+  this.usedDuplicates = null;
+} // Indents every line in a string. Empty lines (\n only) are not indented.
+
+
+function indentString(string, spaces) {
+  var ind = common.repeat(' ', spaces),
+      position = 0,
+      next = -1,
+      result = '',
+      line,
+      length = string.length;
+
+  while (position < length) {
+    next = string.indexOf('\n', position);
+
+    if (next === -1) {
+      line = string.slice(position);
+      position = length;
+    } else {
+      line = string.slice(position, next + 1);
+      position = next + 1;
+    }
+
+    if (line.length && line !== '\n') result += ind;
+    result += line;
+  }
+
+  return result;
+}
+
+function generateNextLine(state, level) {
+  return '\n' + common.repeat(' ', state.indent * level);
+}
+
+function testImplicitResolving(state, str) {
+  var index, length, type;
+
+  for (index = 0, length = state.implicitTypes.length; index < length; index += 1) {
+    type = state.implicitTypes[index];
+
+    if (type.resolve(str)) {
+      return true;
+    }
+  }
+
+  return false;
+} // [33] s-white ::= s-space | s-tab
+
+
+function isWhitespace(c) {
+  return c === CHAR_SPACE || c === CHAR_TAB;
+} // Returns true if the character can be printed without escaping.
+// From YAML 1.2: "any allowed characters known to be non-printable
+// should also be escaped. [However,] This isn’t mandatory"
+// Derived from nb-char - \t - #x85 - #xA0 - #x2028 - #x2029.
+
+
+function isPrintable(c) {
+  return 0x00020 <= c && c <= 0x00007E || 0x000A1 <= c && c <= 0x00D7FF && c !== 0x2028 && c !== 0x2029 || 0x0E000 <= c && c <= 0x00FFFD && c !== CHAR_BOM || 0x10000 <= c && c <= 0x10FFFF;
+} // [34] ns-char ::= nb-char - s-white
+// [27] nb-char ::= c-printable - b-char - c-byte-order-mark
+// [26] b-char  ::= b-line-feed | b-carriage-return
+// Including s-white (for some reason, examples doesn't match specs in this aspect)
+// ns-char ::= c-printable - b-line-feed - b-carriage-return - c-byte-order-mark
+
+
+function isNsCharOrWhitespace(c) {
+  return isPrintable(c) && c !== CHAR_BOM // - b-char
+  && c !== CHAR_CARRIAGE_RETURN && c !== CHAR_LINE_FEED;
+} // [127]  ns-plain-safe(c) ::= c = flow-out  ⇒ ns-plain-safe-out
+//                             c = flow-in   ⇒ ns-plain-safe-in
+//                             c = block-key ⇒ ns-plain-safe-out
+//                             c = flow-key  ⇒ ns-plain-safe-in
+// [128] ns-plain-safe-out ::= ns-char
+// [129]  ns-plain-safe-in ::= ns-char - c-flow-indicator
+// [130]  ns-plain-char(c) ::=  ( ns-plain-safe(c) - “:” - “#” )
+//                            | ( /* An ns-char preceding */ “#” )
+//                            | ( “:” /* Followed by an ns-plain-safe(c) */ )
+
+
+function isPlainSafe(c, prev, inblock) {
+  var cIsNsCharOrWhitespace = isNsCharOrWhitespace(c);
+  var cIsNsChar = cIsNsCharOrWhitespace && !isWhitespace(c);
+  return ( // ns-plain-safe
+  inblock ? // c = flow-in
+  cIsNsCharOrWhitespace : cIsNsCharOrWhitespace // - c-flow-indicator
+  && c !== CHAR_COMMA && c !== CHAR_LEFT_SQUARE_BRACKET && c !== CHAR_RIGHT_SQUARE_BRACKET && c !== CHAR_LEFT_CURLY_BRACKET && c !== CHAR_RIGHT_CURLY_BRACKET) && // ns-plain-char
+  c !== CHAR_SHARP // false on '#'
+  && !(prev === CHAR_COLON && !cIsNsChar) // false on ': '
+  || isNsCharOrWhitespace(prev) && !isWhitespace(prev) && c === CHAR_SHARP // change to true on '[^ ]#'
+  || prev === CHAR_COLON && cIsNsChar; // change to true on ':[^ ]'
+} // Simplified test for values allowed as the first character in plain style.
+
+
+function isPlainSafeFirst(c) {
+  // Uses a subset of ns-char - c-indicator
+  // where ns-char = nb-char - s-white.
+  // No support of ( ( “?” | “:” | “-” ) /* Followed by an ns-plain-safe(c)) */ ) part
+  return isPrintable(c) && c !== CHAR_BOM && !isWhitespace(c) // - s-white
+  // - (c-indicator ::=
+  // “-” | “?” | “:” | “,” | “[” | “]” | “{” | “}”
+  && c !== CHAR_MINUS && c !== CHAR_QUESTION && c !== CHAR_COLON && c !== CHAR_COMMA && c !== CHAR_LEFT_SQUARE_BRACKET && c !== CHAR_RIGHT_SQUARE_BRACKET && c !== CHAR_LEFT_CURLY_BRACKET && c !== CHAR_RIGHT_CURLY_BRACKET // | “#” | “&” | “*” | “!” | “|” | “=” | “>” | “'” | “"”
+  && c !== CHAR_SHARP && c !== CHAR_AMPERSAND && c !== CHAR_ASTERISK && c !== CHAR_EXCLAMATION && c !== CHAR_VERTICAL_LINE && c !== CHAR_EQUALS && c !== CHAR_GREATER_THAN && c !== CHAR_SINGLE_QUOTE && c !== CHAR_DOUBLE_QUOTE // | “%” | “@” | “`”)
+  && c !== CHAR_PERCENT && c !== CHAR_COMMERCIAL_AT && c !== CHAR_GRAVE_ACCENT;
+} // Simplified test for values allowed as the last character in plain style.
+
+
+function isPlainSafeLast(c) {
+  // just not whitespace or colon, it will be checked to be plain character later
+  return !isWhitespace(c) && c !== CHAR_COLON;
+} // Same as 'string'.codePointAt(pos), but works in older browsers.
+
+
+function codePointAt(string, pos) {
+  var first = string.charCodeAt(pos),
+      second;
+
+  if (first >= 0xD800 && first <= 0xDBFF && pos + 1 < string.length) {
+    second = string.charCodeAt(pos + 1);
+
+    if (second >= 0xDC00 && second <= 0xDFFF) {
+      // https://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+      return (first - 0xD800) * 0x400 + second - 0xDC00 + 0x10000;
+    }
+  }
+
+  return first;
+} // Determines whether block indentation indicator is required.
+
+
+function needIndentIndicator(string) {
+  var leadingSpaceRe = /^\n* /;
+  return leadingSpaceRe.test(string);
+}
+
+var STYLE_PLAIN = 1,
+    STYLE_SINGLE = 2,
+    STYLE_LITERAL = 3,
+    STYLE_FOLDED = 4,
+    STYLE_DOUBLE = 5; // Determines which scalar styles are possible and returns the preferred style.
+// lineWidth = -1 => no limit.
+// Pre-conditions: str.length > 0.
+// Post-conditions:
+//    STYLE_PLAIN or STYLE_SINGLE => no \n are in the string.
+//    STYLE_LITERAL => no lines are suitable for folding (or lineWidth is -1).
+//    STYLE_FOLDED => a line > lineWidth and can be folded (and lineWidth != -1).
+
+function chooseScalarStyle(string, singleLineOnly, indentPerLevel, lineWidth, testAmbiguousType, quotingType, forceQuotes, inblock) {
+  var i;
+  var char = 0;
+  var prevChar = null;
+  var hasLineBreak = false;
+  var hasFoldableLine = false; // only checked if shouldTrackWidth
+
+  var shouldTrackWidth = lineWidth !== -1;
+  var previousLineBreak = -1; // count the first line correctly
+
+  var plain = isPlainSafeFirst(codePointAt(string, 0)) && isPlainSafeLast(codePointAt(string, string.length - 1));
+
+  if (singleLineOnly || forceQuotes) {
+    // Case: no block styles.
+    // Check for disallowed characters to rule out plain and single.
+    for (i = 0; i < string.length; char >= 0x10000 ? i += 2 : i++) {
+      char = codePointAt(string, i);
+
+      if (!isPrintable(char)) {
+        return STYLE_DOUBLE;
+      }
+
+      plain = plain && isPlainSafe(char, prevChar, inblock);
+      prevChar = char;
+    }
+  } else {
+    // Case: block styles permitted.
+    for (i = 0; i < string.length; char >= 0x10000 ? i += 2 : i++) {
+      char = codePointAt(string, i);
+
+      if (char === CHAR_LINE_FEED) {
+        hasLineBreak = true; // Check if any line can be folded.
+
+        if (shouldTrackWidth) {
+          hasFoldableLine = hasFoldableLine || // Foldable line = too long, and not more-indented.
+          i - previousLineBreak - 1 > lineWidth && string[previousLineBreak + 1] !== ' ';
+          previousLineBreak = i;
+        }
+      } else if (!isPrintable(char)) {
+        return STYLE_DOUBLE;
+      }
+
+      plain = plain && isPlainSafe(char, prevChar, inblock);
+      prevChar = char;
+    } // in case the end is missing a \n
+
+
+    hasFoldableLine = hasFoldableLine || shouldTrackWidth && i - previousLineBreak - 1 > lineWidth && string[previousLineBreak + 1] !== ' ';
+  } // Although every style can represent \n without escaping, prefer block styles
+  // for multiline, since they're more readable and they don't add empty lines.
+  // Also prefer folding a super-long line.
+
+
+  if (!hasLineBreak && !hasFoldableLine) {
+    // Strings interpretable as another type have to be quoted;
+    // e.g. the string 'true' vs. the boolean true.
+    if (plain && !forceQuotes && !testAmbiguousType(string)) {
+      return STYLE_PLAIN;
+    }
+
+    return quotingType === QUOTING_TYPE_DOUBLE ? STYLE_DOUBLE : STYLE_SINGLE;
+  } // Edge case: block indentation indicator can only have one digit.
+
+
+  if (indentPerLevel > 9 && needIndentIndicator(string)) {
+    return STYLE_DOUBLE;
+  } // At this point we know block styles are valid.
+  // Prefer literal style unless we want to fold.
+
+
+  if (!forceQuotes) {
+    return hasFoldableLine ? STYLE_FOLDED : STYLE_LITERAL;
+  }
+
+  return quotingType === QUOTING_TYPE_DOUBLE ? STYLE_DOUBLE : STYLE_SINGLE;
+} // Note: line breaking/folding is implemented for only the folded style.
+// NB. We drop the last trailing newline (if any) of a returned block scalar
+//  since the dumper adds its own newline. This always works:
+//    • No ending newline => unaffected; already using strip "-" chomping.
+//    • Ending newline    => removed then restored.
+//  Importantly, this keeps the "+" chomp indicator from gaining an extra line.
+
+
+function writeScalar(state, string, level, iskey, inblock) {
+  state.dump = function () {
+    if (string.length === 0) {
+      return state.quotingType === QUOTING_TYPE_DOUBLE ? '""' : "''";
+    }
+
+    if (!state.noCompatMode) {
+      if (DEPRECATED_BOOLEANS_SYNTAX.indexOf(string) !== -1 || DEPRECATED_BASE60_SYNTAX.test(string)) {
+        return state.quotingType === QUOTING_TYPE_DOUBLE ? '"' + string + '"' : "'" + string + "'";
+      }
+    }
+
+    var indent = state.indent * Math.max(1, level); // no 0-indent scalars
+    // As indentation gets deeper, let the width decrease monotonically
+    // to the lower bound min(state.lineWidth, 40).
+    // Note that this implies
+    //  state.lineWidth ≤ 40 + state.indent: width is fixed at the lower bound.
+    //  state.lineWidth > 40 + state.indent: width decreases until the lower bound.
+    // This behaves better than a constant minimum width which disallows narrower options,
+    // or an indent threshold which causes the width to suddenly increase.
+
+    var lineWidth = state.lineWidth === -1 ? -1 : Math.max(Math.min(state.lineWidth, 40), state.lineWidth - indent); // Without knowing if keys are implicit/explicit, assume implicit for safety.
+
+    var singleLineOnly = iskey // No block styles in flow mode.
+    || state.flowLevel > -1 && level >= state.flowLevel;
+
+    function testAmbiguity(string) {
+      return testImplicitResolving(state, string);
+    }
+
+    switch (chooseScalarStyle(string, singleLineOnly, state.indent, lineWidth, testAmbiguity, state.quotingType, state.forceQuotes && !iskey, inblock)) {
+      case STYLE_PLAIN:
+        return string;
+
+      case STYLE_SINGLE:
+        return "'" + string.replace(/'/g, "''") + "'";
+
+      case STYLE_LITERAL:
+        return '|' + blockHeader(string, state.indent) + dropEndingNewline(indentString(string, indent));
+
+      case STYLE_FOLDED:
+        return '>' + blockHeader(string, state.indent) + dropEndingNewline(indentString(foldString(string, lineWidth), indent));
+
+      case STYLE_DOUBLE:
+        return '"' + escapeString(string) + '"';
+
+      default:
+        throw new exception('impossible error: invalid scalar style');
+    }
+  }();
+} // Pre-conditions: string is valid for a block scalar, 1 <= indentPerLevel <= 9.
+
+
+function blockHeader(string, indentPerLevel) {
+  var indentIndicator = needIndentIndicator(string) ? String(indentPerLevel) : ''; // note the special case: the string '\n' counts as a "trailing" empty line.
+
+  var clip = string[string.length - 1] === '\n';
+  var keep = clip && (string[string.length - 2] === '\n' || string === '\n');
+  var chomp = keep ? '+' : clip ? '' : '-';
+  return indentIndicator + chomp + '\n';
+} // (See the note for writeScalar.)
+
+
+function dropEndingNewline(string) {
+  return string[string.length - 1] === '\n' ? string.slice(0, -1) : string;
+} // Note: a long line without a suitable break point will exceed the width limit.
+// Pre-conditions: every char in str isPrintable, str.length > 0, width > 0.
+
+
+function foldString(string, width) {
+  // In folded style, $k$ consecutive newlines output as $k+1$ newlines—
+  // unless they're before or after a more-indented line, or at the very
+  // beginning or end, in which case $k$ maps to $k$.
+  // Therefore, parse each chunk as newline(s) followed by a content line.
+  var lineRe = /(\n+)([^\n]*)/g; // first line (possibly an empty line)
+
+  var result = function () {
+    var nextLF = string.indexOf('\n');
+    nextLF = nextLF !== -1 ? nextLF : string.length;
+    lineRe.lastIndex = nextLF;
+    return foldLine(string.slice(0, nextLF), width);
+  }(); // If we haven't reached the first content line yet, don't add an extra \n.
+
+
+  var prevMoreIndented = string[0] === '\n' || string[0] === ' ';
+  var moreIndented; // rest of the lines
+
+  var match;
+
+  while (match = lineRe.exec(string)) {
+    var prefix = match[1],
+        line = match[2];
+    moreIndented = line[0] === ' ';
+    result += prefix + (!prevMoreIndented && !moreIndented && line !== '' ? '\n' : '') + foldLine(line, width);
+    prevMoreIndented = moreIndented;
+  }
+
+  return result;
+} // Greedy line breaking.
+// Picks the longest line under the limit each time,
+// otherwise settles for the shortest line over the limit.
+// NB. More-indented lines *cannot* be folded, as that would add an extra \n.
+
+
+function foldLine(line, width) {
+  if (line === '' || line[0] === ' ') return line; // Since a more-indented line adds a \n, breaks can't be followed by a space.
+
+  var breakRe = / [^ ]/g; // note: the match index will always be <= length-2.
+
+  var match; // start is an inclusive index. end, curr, and next are exclusive.
+
+  var start = 0,
+      end,
+      curr = 0,
+      next = 0;
+  var result = ''; // Invariants: 0 <= start <= length-1.
+  //   0 <= curr <= next <= max(0, length-2). curr - start <= width.
+  // Inside the loop:
+  //   A match implies length >= 2, so curr and next are <= length-2.
+
+  while (match = breakRe.exec(line)) {
+    next = match.index; // maintain invariant: curr - start <= width
+
+    if (next - start > width) {
+      end = curr > start ? curr : next; // derive end <= length-2
+
+      result += '\n' + line.slice(start, end); // skip the space that was output as \n
+
+      start = end + 1; // derive start <= length-1
+    }
+
+    curr = next;
+  } // By the invariants, start <= length-1, so there is something left over.
+  // It is either the whole string or a part starting from non-whitespace.
+
+
+  result += '\n'; // Insert a break if the remainder is too long and there is a break available.
+
+  if (line.length - start > width && curr > start) {
+    result += line.slice(start, curr) + '\n' + line.slice(curr + 1);
+  } else {
+    result += line.slice(start);
+  }
+
+  return result.slice(1); // drop extra \n joiner
+} // Escapes a double-quoted string.
+
+
+function escapeString(string) {
+  var result = '';
+  var char = 0;
+  var escapeSeq;
+
+  for (var i = 0; i < string.length; char >= 0x10000 ? i += 2 : i++) {
+    char = codePointAt(string, i);
+    escapeSeq = ESCAPE_SEQUENCES[char];
+
+    if (!escapeSeq && isPrintable(char)) {
+      result += string[i];
+      if (char >= 0x10000) result += string[i + 1];
+    } else {
+      result += escapeSeq || encodeHex(char);
+    }
+  }
+
+  return result;
+}
+
+function writeFlowSequence(state, level, object) {
+  var _result = '',
+      _tag = state.tag,
+      index,
+      length,
+      value;
+
+  for (index = 0, length = object.length; index < length; index += 1) {
+    value = object[index];
+
+    if (state.replacer) {
+      value = state.replacer.call(object, String(index), value);
+    } // Write only valid elements, put null instead of invalid elements.
+
+
+    if (writeNode(state, level, value, false, false) || typeof value === 'undefined' && writeNode(state, level, null, false, false)) {
+      if (_result !== '') _result += ',' + (!state.condenseFlow ? ' ' : '');
+      _result += state.dump;
+    }
+  }
+
+  state.tag = _tag;
+  state.dump = '[' + _result + ']';
+}
+
+function writeBlockSequence(state, level, object, compact) {
+  var _result = '',
+      _tag = state.tag,
+      index,
+      length,
+      value;
+
+  for (index = 0, length = object.length; index < length; index += 1) {
+    value = object[index];
+
+    if (state.replacer) {
+      value = state.replacer.call(object, String(index), value);
+    } // Write only valid elements, put null instead of invalid elements.
+
+
+    if (writeNode(state, level + 1, value, true, true, false, true) || typeof value === 'undefined' && writeNode(state, level + 1, null, true, true, false, true)) {
+      if (!compact || _result !== '') {
+        _result += generateNextLine(state, level);
+      }
+
+      if (state.dump && CHAR_LINE_FEED === state.dump.charCodeAt(0)) {
+        _result += '-';
+      } else {
+        _result += '- ';
+      }
+
+      _result += state.dump;
+    }
+  }
+
+  state.tag = _tag;
+  state.dump = _result || '[]'; // Empty sequence if no valid values.
+}
+
+function writeFlowMapping(state, level, object) {
+  var _result = '',
+      _tag = state.tag,
+      objectKeyList = Object.keys(object),
+      index,
+      length,
+      objectKey,
+      objectValue,
+      pairBuffer;
+
+  for (index = 0, length = objectKeyList.length; index < length; index += 1) {
+    pairBuffer = '';
+    if (_result !== '') pairBuffer += ', ';
+    if (state.condenseFlow) pairBuffer += '"';
+    objectKey = objectKeyList[index];
+    objectValue = object[objectKey];
+
+    if (state.replacer) {
+      objectValue = state.replacer.call(object, objectKey, objectValue);
+    }
+
+    if (!writeNode(state, level, objectKey, false, false)) {
+      continue; // Skip this pair because of invalid key;
+    }
+
+    if (state.dump.length > 1024) pairBuffer += '? ';
+    pairBuffer += state.dump + (state.condenseFlow ? '"' : '') + ':' + (state.condenseFlow ? '' : ' ');
+
+    if (!writeNode(state, level, objectValue, false, false)) {
+      continue; // Skip this pair because of invalid value.
+    }
+
+    pairBuffer += state.dump; // Both key and value are valid.
+
+    _result += pairBuffer;
+  }
+
+  state.tag = _tag;
+  state.dump = '{' + _result + '}';
+}
+
+function writeBlockMapping(state, level, object, compact) {
+  var _result = '',
+      _tag = state.tag,
+      objectKeyList = Object.keys(object),
+      index,
+      length,
+      objectKey,
+      objectValue,
+      explicitPair,
+      pairBuffer; // Allow sorting keys so that the output file is deterministic
+
+  if (state.sortKeys === true) {
+    // Default sorting
+    objectKeyList.sort();
+  } else if (typeof state.sortKeys === 'function') {
+    // Custom sort function
+    objectKeyList.sort(state.sortKeys);
+  } else if (state.sortKeys) {
+    // Something is wrong
+    throw new exception('sortKeys must be a boolean or a function');
+  }
+
+  for (index = 0, length = objectKeyList.length; index < length; index += 1) {
+    pairBuffer = '';
+
+    if (!compact || _result !== '') {
+      pairBuffer += generateNextLine(state, level);
+    }
+
+    objectKey = objectKeyList[index];
+    objectValue = object[objectKey];
+
+    if (state.replacer) {
+      objectValue = state.replacer.call(object, objectKey, objectValue);
+    }
+
+    if (!writeNode(state, level + 1, objectKey, true, true, true)) {
+      continue; // Skip this pair because of invalid key.
+    }
+
+    explicitPair = state.tag !== null && state.tag !== '?' || state.dump && state.dump.length > 1024;
+
+    if (explicitPair) {
+      if (state.dump && CHAR_LINE_FEED === state.dump.charCodeAt(0)) {
+        pairBuffer += '?';
+      } else {
+        pairBuffer += '? ';
+      }
+    }
+
+    pairBuffer += state.dump;
+
+    if (explicitPair) {
+      pairBuffer += generateNextLine(state, level);
+    }
+
+    if (!writeNode(state, level + 1, objectValue, true, explicitPair)) {
+      continue; // Skip this pair because of invalid value.
+    }
+
+    if (state.dump && CHAR_LINE_FEED === state.dump.charCodeAt(0)) {
+      pairBuffer += ':';
+    } else {
+      pairBuffer += ': ';
+    }
+
+    pairBuffer += state.dump; // Both key and value are valid.
+
+    _result += pairBuffer;
+  }
+
+  state.tag = _tag;
+  state.dump = _result || '{}'; // Empty mapping if no valid pairs.
+}
+
+function detectType(state, object, explicit) {
+  var _result, typeList, index, length, type, style;
+
+  typeList = explicit ? state.explicitTypes : state.implicitTypes;
+
+  for (index = 0, length = typeList.length; index < length; index += 1) {
+    type = typeList[index];
+
+    if ((type.instanceOf || type.predicate) && (!type.instanceOf || typeof object === 'object' && object instanceof type.instanceOf) && (!type.predicate || type.predicate(object))) {
+      if (explicit) {
+        if (type.multi && type.representName) {
+          state.tag = type.representName(object);
+        } else {
+          state.tag = type.tag;
+        }
+      } else {
+        state.tag = '?';
+      }
+
+      if (type.represent) {
+        style = state.styleMap[type.tag] || type.defaultStyle;
+
+        if (_toString.call(type.represent) === '[object Function]') {
+          _result = type.represent(object, style);
+        } else if (_hasOwnProperty.call(type.represent, style)) {
+          _result = type.represent[style](object, style);
+        } else {
+          throw new exception('!<' + type.tag + '> tag resolver accepts not "' + style + '" style');
+        }
+
+        state.dump = _result;
+      }
+
+      return true;
+    }
+  }
+
+  return false;
+} // Serializes `object` and writes it to global `result`.
+// Returns true on success, or false on invalid object.
+//
+
+
+function writeNode(state, level, object, block, compact, iskey, isblockseq) {
+  state.tag = null;
+  state.dump = object;
+
+  if (!detectType(state, object, false)) {
+    detectType(state, object, true);
+  }
+
+  var type = _toString.call(state.dump);
+
+  var inblock = block;
+  var tagStr;
+
+  if (block) {
+    block = state.flowLevel < 0 || state.flowLevel > level;
+  }
+
+  var objectOrArray = type === '[object Object]' || type === '[object Array]',
+      duplicateIndex,
+      duplicate;
+
+  if (objectOrArray) {
+    duplicateIndex = state.duplicates.indexOf(object);
+    duplicate = duplicateIndex !== -1;
+  }
+
+  if (state.tag !== null && state.tag !== '?' || duplicate || state.indent !== 2 && level > 0) {
+    compact = false;
+  }
+
+  if (duplicate && state.usedDuplicates[duplicateIndex]) {
+    state.dump = '*ref_' + duplicateIndex;
+  } else {
+    if (objectOrArray && duplicate && !state.usedDuplicates[duplicateIndex]) {
+      state.usedDuplicates[duplicateIndex] = true;
+    }
+
+    if (type === '[object Object]') {
+      if (block && Object.keys(state.dump).length !== 0) {
+        writeBlockMapping(state, level, state.dump, compact);
+
+        if (duplicate) {
+          state.dump = '&ref_' + duplicateIndex + state.dump;
+        }
+      } else {
+        writeFlowMapping(state, level, state.dump);
+
+        if (duplicate) {
+          state.dump = '&ref_' + duplicateIndex + ' ' + state.dump;
+        }
+      }
+    } else if (type === '[object Array]') {
+      if (block && state.dump.length !== 0) {
+        if (state.noArrayIndent && !isblockseq && level > 0) {
+          writeBlockSequence(state, level - 1, state.dump, compact);
+        } else {
+          writeBlockSequence(state, level, state.dump, compact);
+        }
+
+        if (duplicate) {
+          state.dump = '&ref_' + duplicateIndex + state.dump;
+        }
+      } else {
+        writeFlowSequence(state, level, state.dump);
+
+        if (duplicate) {
+          state.dump = '&ref_' + duplicateIndex + ' ' + state.dump;
+        }
+      }
+    } else if (type === '[object String]') {
+      if (state.tag !== '?') {
+        writeScalar(state, state.dump, level, iskey, inblock);
+      }
+    } else if (type === '[object Undefined]') {
+      return false;
+    } else {
+      if (state.skipInvalid) return false;
+      throw new exception('unacceptable kind of an object to dump ' + type);
+    }
+
+    if (state.tag !== null && state.tag !== '?') {
+      // Need to encode all characters except those allowed by the spec:
+      //
+      // [35] ns-dec-digit    ::=  [#x30-#x39] /* 0-9 */
+      // [36] ns-hex-digit    ::=  ns-dec-digit
+      //                         | [#x41-#x46] /* A-F */ | [#x61-#x66] /* a-f */
+      // [37] ns-ascii-letter ::=  [#x41-#x5A] /* A-Z */ | [#x61-#x7A] /* a-z */
+      // [38] ns-word-char    ::=  ns-dec-digit | ns-ascii-letter | “-”
+      // [39] ns-uri-char     ::=  “%” ns-hex-digit ns-hex-digit | ns-word-char | “#”
+      //                         | “;” | “/” | “?” | “:” | “@” | “&” | “=” | “+” | “$” | “,”
+      //                         | “_” | “.” | “!” | “~” | “*” | “'” | “(” | “)” | “[” | “]”
+      //
+      // Also need to encode '!' because it has special meaning (end of tag prefix).
+      //
+      tagStr = encodeURI(state.tag[0] === '!' ? state.tag.slice(1) : state.tag).replace(/!/g, '%21');
+
+      if (state.tag[0] === '!') {
+        tagStr = '!' + tagStr;
+      } else if (tagStr.slice(0, 18) === 'tag:yaml.org,2002:') {
+        tagStr = '!!' + tagStr.slice(18);
+      } else {
+        tagStr = '!<' + tagStr + '>';
+      }
+
+      state.dump = tagStr + ' ' + state.dump;
+    }
+  }
+
+  return true;
+}
+
+function getDuplicateReferences(object, state) {
+  var objects = [],
+      duplicatesIndexes = [],
+      index,
+      length;
+  inspectNode(object, objects, duplicatesIndexes);
+
+  for (index = 0, length = duplicatesIndexes.length; index < length; index += 1) {
+    state.duplicates.push(objects[duplicatesIndexes[index]]);
+  }
+
+  state.usedDuplicates = new Array(length);
+}
+
+function inspectNode(object, objects, duplicatesIndexes) {
+  var objectKeyList, index, length;
+
+  if (object !== null && typeof object === 'object') {
+    index = objects.indexOf(object);
+
+    if (index !== -1) {
+      if (duplicatesIndexes.indexOf(index) === -1) {
+        duplicatesIndexes.push(index);
+      }
+    } else {
+      objects.push(object);
+
+      if (Array.isArray(object)) {
+        for (index = 0, length = object.length; index < length; index += 1) {
+          inspectNode(object[index], objects, duplicatesIndexes);
+        }
+      } else {
+        objectKeyList = Object.keys(object);
+
+        for (index = 0, length = objectKeyList.length; index < length; index += 1) {
+          inspectNode(object[objectKeyList[index]], objects, duplicatesIndexes);
+        }
+      }
+    }
+  }
+}
+
+function dump$1(input, options) {
+  options = options || {};
+  var state = new State(options);
+  if (!state.noRefs) getDuplicateReferences(input, state);
+  var value = input;
+
+  if (state.replacer) {
+    value = state.replacer.call({
+      '': value
+    }, '', value);
+  }
+
+  if (writeNode(state, 0, value, true, true)) return state.dump + '\n';
+  return '';
+}
+
+var dump_1 = dump$1;
+var dumper = {
+  dump: dump_1
+};
+
+function renamed(from, to) {
+  return function () {
+    throw new Error('Function yaml.' + from + ' is removed in js-yaml 4. ' + 'Use yaml.' + to + ' instead, which is now safe by default.');
+  };
+}
+
+var Type = type;
+var Schema = schema;
+var FAILSAFE_SCHEMA = failsafe;
+var JSON_SCHEMA = json;
+var CORE_SCHEMA = core;
+var DEFAULT_SCHEMA = _default;
+var load = loader.load;
+var loadAll = loader.loadAll;
+var dump = dumper.dump;
+var YAMLException = exception; // Re-export all types in case user wants to create custom schema
+
+var types = {
+  binary: binary,
+  float: float,
+  map: map,
+  null: _null,
+  pairs: pairs,
+  set: set,
+  timestamp: timestamp,
+  bool: bool,
+  int: int,
+  merge: merge,
+  omap: omap,
+  seq: seq,
+  str: str
+}; // Removed functions from JS-YAML 3.0.x
+
+var safeLoad = renamed('safeLoad', 'load');
+var safeLoadAll = renamed('safeLoadAll', 'loadAll');
+var safeDump = renamed('safeDump', 'dump');
+var jsYaml = {
+  Type: Type,
+  Schema: Schema,
+  FAILSAFE_SCHEMA: FAILSAFE_SCHEMA,
+  JSON_SCHEMA: JSON_SCHEMA,
+  CORE_SCHEMA: CORE_SCHEMA,
+  DEFAULT_SCHEMA: DEFAULT_SCHEMA,
+  load: load,
+  loadAll: loadAll,
+  dump: dump,
+  YAMLException: YAMLException,
+  types: types,
+  safeLoad: safeLoad,
+  safeLoadAll: safeLoadAll,
+  safeDump: safeDump
+};
+
+const frontMatterKey = "kanban-plugin";
+const frontmatterRegEx = /^---([\w\W]+)---/;
 const newLineRegex = /[\r\n]+/g;
 // Begins with one or more # followed by a space
 const laneRegex = /^#+\s+(.+)$/;
@@ -9021,15 +12899,24 @@ function archiveToMd(archive) {
     }
     return "";
 }
+function settingsToFrontmatter(settings) {
+    return ["---", "", jsYaml.dump(settings), "---", "", ""].join("\n");
+}
 function boardToMd(board) {
-    const frontmatter = ["---", "", `${frontMatterKey}: basic`, "", "---", "", ""].join("\n");
     const lanes = board.lanes.reduce((md, lane) => {
         return md + laneToMd(lane);
     }, "");
-    const archive = archiveToMd(board.archive);
-    return frontmatter + lanes + archive;
+    return (settingsToFrontmatter(board.settings) + lanes + archiveToMd(board.archive));
+}
+function mdToSettings(boardMd) {
+    const match = boardMd.match(frontmatterRegEx);
+    if (match) {
+        return jsYaml.load(match[1].trim());
+    }
+    return { "kanban-plugin": "basic" };
 }
 function mdToBoard(boardMd) {
+    const settings = mdToSettings(boardMd);
     const lines = boardMd.split(newLineRegex);
     const lanes = [];
     const archive = [];
@@ -9073,6 +12960,7 @@ function mdToBoard(boardMd) {
         lanes.push(currentLane);
     }
     return {
+        settings,
         lanes,
         archive,
     };
@@ -22995,9 +26883,9 @@ function constructAutocomplete({ inputRef, isAutocompleteVisibleRef, obsidianCon
             id: "tag",
             match: /\B#([^\s]*)$/,
             index: 1,
-            search: (term, callback) => __awaiter(this, void 0, void 0, function* () {
+            search: (term, callback) => {
                 callback(tagSearch.search(term));
-            }),
+            },
             template: (result) => {
                 return result.item;
             },
@@ -23010,9 +26898,9 @@ function constructAutocomplete({ inputRef, isAutocompleteVisibleRef, obsidianCon
             template: (res) => {
                 return view.app.metadataCache.fileToLinktext(res.item, filePath);
             },
-            search: (term, callback) => __awaiter(this, void 0, void 0, function* () {
+            search: (term, callback) => {
                 callback(fileSearch.search(term));
-            }),
+            },
             replace: (result) => `[[${view.app.metadataCache.fileToLinktext(result.item, filePath)}]] `,
         },
     ], {
@@ -23111,12 +26999,17 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
                 .setTitle("New note from card")
                 .onClick(() => __awaiter(this, void 0, void 0, function* () {
                 const sanitizedTitle = item.title.replace(illegalCharsRegEx, " ");
-                const targetFolder = view.app.fileManager.getNewFileParent(view.file.parent.path);
+                const newNoteFolder = view.getSetting("new-note-folder");
+                const newNoteTemplatePath = view.getSetting("new-note-template");
+                const targetFolder = newNoteFolder
+                    ? view.app.vault.getAbstractFileByPath(newNoteFolder)
+                    : view.app.fileManager.getNewFileParent(view.file.parent.path);
                 // @ts-ignore
                 const newFile = yield view.app.fileManager.createNewMarkdownFile(targetFolder, sanitizedTitle);
                 const newLeaf = view.app.workspace.splitActiveLeaf();
                 yield newLeaf.openFile(newFile);
                 view.app.workspace.setActiveLeaf(newLeaf, false, true);
+                yield applyTemplate(view, newNoteTemplatePath);
                 boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, { title: { $set: `[[${sanitizedTitle}]]` } }));
             }));
         })
@@ -23133,6 +27026,7 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
         });
     }, [view, setIsEditing, boardModifiers, laneIndex, itemIndex, item]);
 }
+
 function draggableItemFactory({ items, laneIndex, }) {
     return (provided, snapshot, rubric) => {
         const { boardModifiers } = react.useContext(KanbanContext);
@@ -23681,12 +27575,6501 @@ class DataBridge {
     }
 }
 
+/*! choices.js v9.0.1 | © 2019 Josh Johnson | https://github.com/jshjohnson/Choices#readme */
+
+var choices = createCommonjsModule(function (module, exports) {
+(function webpackUniversalModuleDefinition(root, factory) {
+  module.exports = factory();
+})(window, function () {
+  return (
+    /******/
+    function (modules) {
+      // webpackBootstrap
+
+      /******/
+      // The module cache
+
+      /******/
+      var installedModules = {};
+      /******/
+
+      /******/
+      // The require function
+
+      /******/
+
+      function __webpack_require__(moduleId) {
+        /******/
+
+        /******/
+        // Check if module is in cache
+
+        /******/
+        if (installedModules[moduleId]) {
+          /******/
+          return installedModules[moduleId].exports;
+          /******/
+        }
+        /******/
+        // Create a new module (and put it into the cache)
+
+        /******/
+
+
+        var module = installedModules[moduleId] = {
+          /******/
+          i: moduleId,
+
+          /******/
+          l: false,
+
+          /******/
+          exports: {}
+          /******/
+
+        };
+        /******/
+
+        /******/
+        // Execute the module function
+
+        /******/
+
+        modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+        /******/
+
+        /******/
+        // Flag the module as loaded
+
+        /******/
+
+        module.l = true;
+        /******/
+
+        /******/
+        // Return the exports of the module
+
+        /******/
+
+        return module.exports;
+        /******/
+      }
+      /******/
+
+      /******/
+
+      /******/
+      // expose the modules object (__webpack_modules__)
+
+      /******/
+
+
+      __webpack_require__.m = modules;
+      /******/
+
+      /******/
+      // expose the module cache
+
+      /******/
+
+      __webpack_require__.c = installedModules;
+      /******/
+
+      /******/
+      // define getter function for harmony exports
+
+      /******/
+
+      __webpack_require__.d = function (exports, name, getter) {
+        /******/
+        if (!__webpack_require__.o(exports, name)) {
+          /******/
+          Object.defineProperty(exports, name, {
+            enumerable: true,
+            get: getter
+          });
+          /******/
+        }
+        /******/
+
+      };
+      /******/
+
+      /******/
+      // define __esModule on exports
+
+      /******/
+
+
+      __webpack_require__.r = function (exports) {
+        /******/
+        if (typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+          /******/
+          Object.defineProperty(exports, Symbol.toStringTag, {
+            value: 'Module'
+          });
+          /******/
+        }
+        /******/
+
+
+        Object.defineProperty(exports, '__esModule', {
+          value: true
+        });
+        /******/
+      };
+      /******/
+
+      /******/
+      // create a fake namespace object
+
+      /******/
+      // mode & 1: value is a module id, require it
+
+      /******/
+      // mode & 2: merge all properties of value into the ns
+
+      /******/
+      // mode & 4: return value when already ns object
+
+      /******/
+      // mode & 8|1: behave like require
+
+      /******/
+
+
+      __webpack_require__.t = function (value, mode) {
+        /******/
+        if (mode & 1) value = __webpack_require__(value);
+        /******/
+
+        if (mode & 8) return value;
+        /******/
+
+        if (mode & 4 && typeof value === 'object' && value && value.__esModule) return value;
+        /******/
+
+        var ns = Object.create(null);
+        /******/
+
+        __webpack_require__.r(ns);
+        /******/
+
+
+        Object.defineProperty(ns, 'default', {
+          enumerable: true,
+          value: value
+        });
+        /******/
+
+        if (mode & 2 && typeof value != 'string') for (var key in value) __webpack_require__.d(ns, key, function (key) {
+          return value[key];
+        }.bind(null, key));
+        /******/
+
+        return ns;
+        /******/
+      };
+      /******/
+
+      /******/
+      // getDefaultExport function for compatibility with non-harmony modules
+
+      /******/
+
+
+      __webpack_require__.n = function (module) {
+        /******/
+        var getter = module && module.__esModule ?
+        /******/
+        function getDefault() {
+          return module['default'];
+        } :
+        /******/
+        function getModuleExports() {
+          return module;
+        };
+        /******/
+
+        __webpack_require__.d(getter, 'a', getter);
+        /******/
+
+
+        return getter;
+        /******/
+      };
+      /******/
+
+      /******/
+      // Object.prototype.hasOwnProperty.call
+
+      /******/
+
+
+      __webpack_require__.o = function (object, property) {
+        return Object.prototype.hasOwnProperty.call(object, property);
+      };
+      /******/
+
+      /******/
+      // __webpack_public_path__
+
+      /******/
+
+
+      __webpack_require__.p = "/public/assets/scripts/";
+      /******/
+
+      /******/
+
+      /******/
+      // Load entry module and return exports
+
+      /******/
+
+      return __webpack_require__(__webpack_require__.s = 4);
+      /******/
+    }(
+    /************************************************************************/
+
+    /******/
+    [
+    /* 0 */
+
+    /***/
+    function (module, exports, __webpack_require__) {
+
+      var isMergeableObject = function isMergeableObject(value) {
+        return isNonNullObject(value) && !isSpecial(value);
+      };
+
+      function isNonNullObject(value) {
+        return !!value && typeof value === 'object';
+      }
+
+      function isSpecial(value) {
+        var stringValue = Object.prototype.toString.call(value);
+        return stringValue === '[object RegExp]' || stringValue === '[object Date]' || isReactElement(value);
+      } // see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
+
+
+      var canUseSymbol = typeof Symbol === 'function' && Symbol.for;
+      var REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for('react.element') : 0xeac7;
+
+      function isReactElement(value) {
+        return value.$$typeof === REACT_ELEMENT_TYPE;
+      }
+
+      function emptyTarget(val) {
+        return Array.isArray(val) ? [] : {};
+      }
+
+      function cloneUnlessOtherwiseSpecified(value, options) {
+        return options.clone !== false && options.isMergeableObject(value) ? deepmerge(emptyTarget(value), value, options) : value;
+      }
+
+      function defaultArrayMerge(target, source, options) {
+        return target.concat(source).map(function (element) {
+          return cloneUnlessOtherwiseSpecified(element, options);
+        });
+      }
+
+      function getMergeFunction(key, options) {
+        if (!options.customMerge) {
+          return deepmerge;
+        }
+
+        var customMerge = options.customMerge(key);
+        return typeof customMerge === 'function' ? customMerge : deepmerge;
+      }
+
+      function getEnumerableOwnPropertySymbols(target) {
+        return Object.getOwnPropertySymbols ? Object.getOwnPropertySymbols(target).filter(function (symbol) {
+          return target.propertyIsEnumerable(symbol);
+        }) : [];
+      }
+
+      function getKeys(target) {
+        return Object.keys(target).concat(getEnumerableOwnPropertySymbols(target));
+      } // Protects from prototype poisoning and unexpected merging up the prototype chain.
+
+
+      function propertyIsUnsafe(target, key) {
+        try {
+          return key in target && // Properties are safe to merge if they don't exist in the target yet,
+          !(Object.hasOwnProperty.call(target, key) // unsafe if they exist up the prototype chain,
+          && Object.propertyIsEnumerable.call(target, key)); // and also unsafe if they're nonenumerable.
+        } catch (unused) {
+          // Counterintuitively, it's safe to merge any property on a target that causes the `in` operator to throw.
+          // This happens when trying to copy an object in the source over a plain string in the target.
+          return false;
+        }
+      }
+
+      function mergeObject(target, source, options) {
+        var destination = {};
+
+        if (options.isMergeableObject(target)) {
+          getKeys(target).forEach(function (key) {
+            destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
+          });
+        }
+
+        getKeys(source).forEach(function (key) {
+          if (propertyIsUnsafe(target, key)) {
+            return;
+          }
+
+          if (!options.isMergeableObject(source[key]) || !target[key]) {
+            destination[key] = cloneUnlessOtherwiseSpecified(source[key], options);
+          } else {
+            destination[key] = getMergeFunction(key, options)(target[key], source[key], options);
+          }
+        });
+        return destination;
+      }
+
+      function deepmerge(target, source, options) {
+        options = options || {};
+        options.arrayMerge = options.arrayMerge || defaultArrayMerge;
+        options.isMergeableObject = options.isMergeableObject || isMergeableObject; // cloneUnlessOtherwiseSpecified is added to `options` so that custom arrayMerge()
+        // implementations can use it. The caller may not replace it.
+
+        options.cloneUnlessOtherwiseSpecified = cloneUnlessOtherwiseSpecified;
+        var sourceIsArray = Array.isArray(source);
+        var targetIsArray = Array.isArray(target);
+        var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
+
+        if (!sourceAndTargetTypesMatch) {
+          return cloneUnlessOtherwiseSpecified(source, options);
+        } else if (sourceIsArray) {
+          return options.arrayMerge(target, source, options);
+        } else {
+          return mergeObject(target, source, options);
+        }
+      }
+
+      deepmerge.all = function deepmergeAll(array, options) {
+        if (!Array.isArray(array)) {
+          throw new Error('first argument should be an array');
+        }
+
+        return array.reduce(function (prev, next) {
+          return deepmerge(prev, next, options);
+        }, {});
+      };
+
+      var deepmerge_1 = deepmerge;
+      module.exports = deepmerge_1;
+      /***/
+    },
+    /* 1 */
+
+    /***/
+    function (module, __webpack_exports__, __webpack_require__) {
+      /* WEBPACK VAR INJECTION */
+
+      (function (global, module) {
+        /* harmony import */
+        var _ponyfill_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3);
+        /* global window */
+
+
+        var root;
+
+        if (typeof self !== 'undefined') {
+          root = self;
+        } else if (typeof window !== 'undefined') {
+          root = window;
+        } else if (typeof global !== 'undefined') {
+          root = global;
+        } else {
+          root = module;
+        }
+
+        var result = Object(_ponyfill_js__WEBPACK_IMPORTED_MODULE_0__[
+        /* default */
+        "a"])(root);
+        /* harmony default export */
+
+        __webpack_exports__["a"] = result;
+        /* WEBPACK VAR INJECTION */
+      }).call(this, __webpack_require__(5), __webpack_require__(6)(module));
+      /***/
+    },
+    /* 2 */
+
+    /***/
+    function (module, exports, __webpack_require__) {
+      /*!
+       * Fuse.js v3.4.5 - Lightweight fuzzy-search (http://fusejs.io)
+       * 
+       * Copyright (c) 2012-2017 Kirollos Risk (http://kiro.me)
+       * All Rights Reserved. Apache Software License 2.0
+       * 
+       * http://www.apache.org/licenses/LICENSE-2.0
+       */
+      !function (e, t) {
+        module.exports = t() ;
+      }(this, function () {
+        return function (e) {
+          var t = {};
+
+          function n(r) {
+            if (t[r]) return t[r].exports;
+            var o = t[r] = {
+              i: r,
+              l: !1,
+              exports: {}
+            };
+            return e[r].call(o.exports, o, o.exports, n), o.l = !0, o.exports;
+          }
+
+          return n.m = e, n.c = t, n.d = function (e, t, r) {
+            n.o(e, t) || Object.defineProperty(e, t, {
+              enumerable: !0,
+              get: r
+            });
+          }, n.r = function (e) {
+            "undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(e, Symbol.toStringTag, {
+              value: "Module"
+            }), Object.defineProperty(e, "__esModule", {
+              value: !0
+            });
+          }, n.t = function (e, t) {
+            if (1 & t && (e = n(e)), 8 & t) return e;
+            if (4 & t && "object" == typeof e && e && e.__esModule) return e;
+            var r = Object.create(null);
+            if (n.r(r), Object.defineProperty(r, "default", {
+              enumerable: !0,
+              value: e
+            }), 2 & t && "string" != typeof e) for (var o in e) n.d(r, o, function (t) {
+              return e[t];
+            }.bind(null, o));
+            return r;
+          }, n.n = function (e) {
+            var t = e && e.__esModule ? function () {
+              return e.default;
+            } : function () {
+              return e;
+            };
+            return n.d(t, "a", t), t;
+          }, n.o = function (e, t) {
+            return Object.prototype.hasOwnProperty.call(e, t);
+          }, n.p = "", n(n.s = 1);
+        }([function (e, t) {
+          e.exports = function (e) {
+            return Array.isArray ? Array.isArray(e) : "[object Array]" === Object.prototype.toString.call(e);
+          };
+        }, function (e, t, n) {
+          function r(e) {
+            return (r = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (e) {
+              return typeof e;
+            } : function (e) {
+              return e && "function" == typeof Symbol && e.constructor === Symbol && e !== Symbol.prototype ? "symbol" : typeof e;
+            })(e);
+          }
+
+          function o(e, t) {
+            for (var n = 0; n < t.length; n++) {
+              var r = t[n];
+              r.enumerable = r.enumerable || !1, r.configurable = !0, "value" in r && (r.writable = !0), Object.defineProperty(e, r.key, r);
+            }
+          }
+
+          var i = n(2),
+              a = n(8),
+              s = n(0),
+              c = function () {
+            function e(t, n) {
+              var r = n.location,
+                  o = void 0 === r ? 0 : r,
+                  i = n.distance,
+                  s = void 0 === i ? 100 : i,
+                  c = n.threshold,
+                  h = void 0 === c ? .6 : c,
+                  l = n.maxPatternLength,
+                  u = void 0 === l ? 32 : l,
+                  f = n.caseSensitive,
+                  d = void 0 !== f && f,
+                  v = n.tokenSeparator,
+                  p = void 0 === v ? / +/g : v,
+                  g = n.findAllMatches,
+                  y = void 0 !== g && g,
+                  m = n.minMatchCharLength,
+                  k = void 0 === m ? 1 : m,
+                  S = n.id,
+                  x = void 0 === S ? null : S,
+                  b = n.keys,
+                  M = void 0 === b ? [] : b,
+                  _ = n.shouldSort,
+                  L = void 0 === _ || _,
+                  w = n.getFn,
+                  A = void 0 === w ? a : w,
+                  C = n.sortFn,
+                  I = void 0 === C ? function (e, t) {
+                return e.score - t.score;
+              } : C,
+                  O = n.tokenize,
+                  j = void 0 !== O && O,
+                  P = n.matchAllTokens,
+                  F = void 0 !== P && P,
+                  T = n.includeMatches,
+                  z = void 0 !== T && T,
+                  E = n.includeScore,
+                  K = void 0 !== E && E,
+                  $ = n.verbose,
+                  J = void 0 !== $ && $;
+              !function (e, t) {
+                if (!(e instanceof t)) throw new TypeError("Cannot call a class as a function");
+              }(this, e), this.options = {
+                location: o,
+                distance: s,
+                threshold: h,
+                maxPatternLength: u,
+                isCaseSensitive: d,
+                tokenSeparator: p,
+                findAllMatches: y,
+                minMatchCharLength: k,
+                id: x,
+                keys: M,
+                includeMatches: z,
+                includeScore: K,
+                shouldSort: L,
+                getFn: A,
+                sortFn: I,
+                verbose: J,
+                tokenize: j,
+                matchAllTokens: F
+              }, this.setCollection(t);
+            }
+
+            var t, n;
+            return t = e, (n = [{
+              key: "setCollection",
+              value: function (e) {
+                return this.list = e, e;
+              }
+            }, {
+              key: "search",
+              value: function (e) {
+                var t = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : {
+                  limit: !1
+                };
+
+                this._log('---------\nSearch pattern: "'.concat(e, '"'));
+
+                var n = this._prepareSearchers(e),
+                    r = n.tokenSearchers,
+                    o = n.fullSearcher,
+                    i = this._search(r, o),
+                    a = i.weights,
+                    s = i.results;
+
+                return this._computeScore(a, s), this.options.shouldSort && this._sort(s), t.limit && "number" == typeof t.limit && (s = s.slice(0, t.limit)), this._format(s);
+              }
+            }, {
+              key: "_prepareSearchers",
+              value: function () {
+                var e = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : "",
+                    t = [];
+                if (this.options.tokenize) for (var n = e.split(this.options.tokenSeparator), r = 0, o = n.length; r < o; r += 1) t.push(new i(n[r], this.options));
+                return {
+                  tokenSearchers: t,
+                  fullSearcher: new i(e, this.options)
+                };
+              }
+            }, {
+              key: "_search",
+              value: function () {
+                var e = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : [],
+                    t = arguments.length > 1 ? arguments[1] : void 0,
+                    n = this.list,
+                    r = {},
+                    o = [];
+
+                if ("string" == typeof n[0]) {
+                  for (var i = 0, a = n.length; i < a; i += 1) this._analyze({
+                    key: "",
+                    value: n[i],
+                    record: i,
+                    index: i
+                  }, {
+                    resultMap: r,
+                    results: o,
+                    tokenSearchers: e,
+                    fullSearcher: t
+                  });
+
+                  return {
+                    weights: null,
+                    results: o
+                  };
+                }
+
+                for (var s = {}, c = 0, h = n.length; c < h; c += 1) for (var l = n[c], u = 0, f = this.options.keys.length; u < f; u += 1) {
+                  var d = this.options.keys[u];
+
+                  if ("string" != typeof d) {
+                    if (s[d.name] = {
+                      weight: 1 - d.weight || 1
+                    }, d.weight <= 0 || d.weight > 1) throw new Error("Key weight has to be > 0 and <= 1");
+                    d = d.name;
+                  } else s[d] = {
+                    weight: 1
+                  };
+
+                  this._analyze({
+                    key: d,
+                    value: this.options.getFn(l, d),
+                    record: l,
+                    index: c
+                  }, {
+                    resultMap: r,
+                    results: o,
+                    tokenSearchers: e,
+                    fullSearcher: t
+                  });
+                }
+
+                return {
+                  weights: s,
+                  results: o
+                };
+              }
+            }, {
+              key: "_analyze",
+              value: function (e, t) {
+                var n = e.key,
+                    r = e.arrayIndex,
+                    o = void 0 === r ? -1 : r,
+                    i = e.value,
+                    a = e.record,
+                    c = e.index,
+                    h = t.tokenSearchers,
+                    l = void 0 === h ? [] : h,
+                    u = t.fullSearcher,
+                    f = void 0 === u ? [] : u,
+                    d = t.resultMap,
+                    v = void 0 === d ? {} : d,
+                    p = t.results,
+                    g = void 0 === p ? [] : p;
+
+                if (null != i) {
+                  var y = !1,
+                      m = -1,
+                      k = 0;
+
+                  if ("string" == typeof i) {
+                    this._log("\nKey: ".concat("" === n ? "-" : n));
+
+                    var S = f.search(i);
+
+                    if (this._log('Full text: "'.concat(i, '", score: ').concat(S.score)), this.options.tokenize) {
+                      for (var x = i.split(this.options.tokenSeparator), b = [], M = 0; M < l.length; M += 1) {
+                        var _ = l[M];
+
+                        this._log('\nPattern: "'.concat(_.pattern, '"'));
+
+                        for (var L = !1, w = 0; w < x.length; w += 1) {
+                          var A = x[w],
+                              C = _.search(A),
+                              I = {};
+
+                          C.isMatch ? (I[A] = C.score, y = !0, L = !0, b.push(C.score)) : (I[A] = 1, this.options.matchAllTokens || b.push(1)), this._log('Token: "'.concat(A, '", score: ').concat(I[A]));
+                        }
+
+                        L && (k += 1);
+                      }
+
+                      m = b[0];
+
+                      for (var O = b.length, j = 1; j < O; j += 1) m += b[j];
+
+                      m /= O, this._log("Token score average:", m);
+                    }
+
+                    var P = S.score;
+                    m > -1 && (P = (P + m) / 2), this._log("Score average:", P);
+                    var F = !this.options.tokenize || !this.options.matchAllTokens || k >= l.length;
+
+                    if (this._log("\nCheck Matches: ".concat(F)), (y || S.isMatch) && F) {
+                      var T = v[c];
+                      T ? T.output.push({
+                        key: n,
+                        arrayIndex: o,
+                        value: i,
+                        score: P,
+                        matchedIndices: S.matchedIndices
+                      }) : (v[c] = {
+                        item: a,
+                        output: [{
+                          key: n,
+                          arrayIndex: o,
+                          value: i,
+                          score: P,
+                          matchedIndices: S.matchedIndices
+                        }]
+                      }, g.push(v[c]));
+                    }
+                  } else if (s(i)) for (var z = 0, E = i.length; z < E; z += 1) this._analyze({
+                    key: n,
+                    arrayIndex: z,
+                    value: i[z],
+                    record: a,
+                    index: c
+                  }, {
+                    resultMap: v,
+                    results: g,
+                    tokenSearchers: l,
+                    fullSearcher: f
+                  });
+                }
+              }
+            }, {
+              key: "_computeScore",
+              value: function (e, t) {
+                this._log("\n\nComputing score:\n");
+
+                for (var n = 0, r = t.length; n < r; n += 1) {
+                  for (var o = t[n].output, i = o.length, a = 1, s = 1, c = 0; c < i; c += 1) {
+                    var h = e ? e[o[c].key].weight : 1,
+                        l = (1 === h ? o[c].score : o[c].score || .001) * h;
+                    1 !== h ? s = Math.min(s, l) : (o[c].nScore = l, a *= l);
+                  }
+
+                  t[n].score = 1 === s ? a : s, this._log(t[n]);
+                }
+              }
+            }, {
+              key: "_sort",
+              value: function (e) {
+                this._log("\n\nSorting...."), e.sort(this.options.sortFn);
+              }
+            }, {
+              key: "_format",
+              value: function (e) {
+                var t = [];
+
+                if (this.options.verbose) {
+                  var n = [];
+                  this._log("\n\nOutput:\n\n", JSON.stringify(e, function (e, t) {
+                    if ("object" === r(t) && null !== t) {
+                      if (-1 !== n.indexOf(t)) return;
+                      n.push(t);
+                    }
+
+                    return t;
+                  })), n = null;
+                }
+
+                var o = [];
+                this.options.includeMatches && o.push(function (e, t) {
+                  var n = e.output;
+                  t.matches = [];
+
+                  for (var r = 0, o = n.length; r < o; r += 1) {
+                    var i = n[r];
+
+                    if (0 !== i.matchedIndices.length) {
+                      var a = {
+                        indices: i.matchedIndices,
+                        value: i.value
+                      };
+                      i.key && (a.key = i.key), i.hasOwnProperty("arrayIndex") && i.arrayIndex > -1 && (a.arrayIndex = i.arrayIndex), t.matches.push(a);
+                    }
+                  }
+                }), this.options.includeScore && o.push(function (e, t) {
+                  t.score = e.score;
+                });
+
+                for (var i = 0, a = e.length; i < a; i += 1) {
+                  var s = e[i];
+
+                  if (this.options.id && (s.item = this.options.getFn(s.item, this.options.id)[0]), o.length) {
+                    for (var c = {
+                      item: s.item
+                    }, h = 0, l = o.length; h < l; h += 1) o[h](s, c);
+
+                    t.push(c);
+                  } else t.push(s.item);
+                }
+
+                return t;
+              }
+            }, {
+              key: "_log",
+              value: function () {
+                var e;
+                this.options.verbose && (e = console).log.apply(e, arguments);
+              }
+            }]) && o(t.prototype, n), e;
+          }();
+
+          e.exports = c;
+        }, function (e, t, n) {
+          function r(e, t) {
+            for (var n = 0; n < t.length; n++) {
+              var r = t[n];
+              r.enumerable = r.enumerable || !1, r.configurable = !0, "value" in r && (r.writable = !0), Object.defineProperty(e, r.key, r);
+            }
+          }
+
+          var o = n(3),
+              i = n(4),
+              a = n(7),
+              s = function () {
+            function e(t, n) {
+              var r = n.location,
+                  o = void 0 === r ? 0 : r,
+                  i = n.distance,
+                  s = void 0 === i ? 100 : i,
+                  c = n.threshold,
+                  h = void 0 === c ? .6 : c,
+                  l = n.maxPatternLength,
+                  u = void 0 === l ? 32 : l,
+                  f = n.isCaseSensitive,
+                  d = void 0 !== f && f,
+                  v = n.tokenSeparator,
+                  p = void 0 === v ? / +/g : v,
+                  g = n.findAllMatches,
+                  y = void 0 !== g && g,
+                  m = n.minMatchCharLength,
+                  k = void 0 === m ? 1 : m;
+              !function (e, t) {
+                if (!(e instanceof t)) throw new TypeError("Cannot call a class as a function");
+              }(this, e), this.options = {
+                location: o,
+                distance: s,
+                threshold: h,
+                maxPatternLength: u,
+                isCaseSensitive: d,
+                tokenSeparator: p,
+                findAllMatches: y,
+                minMatchCharLength: k
+              }, this.pattern = this.options.isCaseSensitive ? t : t.toLowerCase(), this.pattern.length <= u && (this.patternAlphabet = a(this.pattern));
+            }
+
+            var t, n;
+            return t = e, (n = [{
+              key: "search",
+              value: function (e) {
+                if (this.options.isCaseSensitive || (e = e.toLowerCase()), this.pattern === e) return {
+                  isMatch: !0,
+                  score: 0,
+                  matchedIndices: [[0, e.length - 1]]
+                };
+                var t = this.options,
+                    n = t.maxPatternLength,
+                    r = t.tokenSeparator;
+                if (this.pattern.length > n) return o(e, this.pattern, r);
+                var a = this.options,
+                    s = a.location,
+                    c = a.distance,
+                    h = a.threshold,
+                    l = a.findAllMatches,
+                    u = a.minMatchCharLength;
+                return i(e, this.pattern, this.patternAlphabet, {
+                  location: s,
+                  distance: c,
+                  threshold: h,
+                  findAllMatches: l,
+                  minMatchCharLength: u
+                });
+              }
+            }]) && r(t.prototype, n), e;
+          }();
+
+          e.exports = s;
+        }, function (e, t) {
+          var n = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
+
+          e.exports = function (e, t) {
+            var r = arguments.length > 2 && void 0 !== arguments[2] ? arguments[2] : / +/g,
+                o = new RegExp(t.replace(n, "\\$&").replace(r, "|")),
+                i = e.match(o),
+                a = !!i,
+                s = [];
+            if (a) for (var c = 0, h = i.length; c < h; c += 1) {
+              var l = i[c];
+              s.push([e.indexOf(l), l.length - 1]);
+            }
+            return {
+              score: a ? .5 : 1,
+              isMatch: a,
+              matchedIndices: s
+            };
+          };
+        }, function (e, t, n) {
+          var r = n(5),
+              o = n(6);
+
+          e.exports = function (e, t, n, i) {
+            for (var a = i.location, s = void 0 === a ? 0 : a, c = i.distance, h = void 0 === c ? 100 : c, l = i.threshold, u = void 0 === l ? .6 : l, f = i.findAllMatches, d = void 0 !== f && f, v = i.minMatchCharLength, p = void 0 === v ? 1 : v, g = s, y = e.length, m = u, k = e.indexOf(t, g), S = t.length, x = [], b = 0; b < y; b += 1) x[b] = 0;
+
+            if (-1 !== k) {
+              var M = r(t, {
+                errors: 0,
+                currentLocation: k,
+                expectedLocation: g,
+                distance: h
+              });
+
+              if (m = Math.min(M, m), -1 !== (k = e.lastIndexOf(t, g + S))) {
+                var _ = r(t, {
+                  errors: 0,
+                  currentLocation: k,
+                  expectedLocation: g,
+                  distance: h
+                });
+
+                m = Math.min(_, m);
+              }
+            }
+
+            k = -1;
+
+            for (var L = [], w = 1, A = S + y, C = 1 << S - 1, I = 0; I < S; I += 1) {
+              for (var O = 0, j = A; O < j;) {
+                r(t, {
+                  errors: I,
+                  currentLocation: g + j,
+                  expectedLocation: g,
+                  distance: h
+                }) <= m ? O = j : A = j, j = Math.floor((A - O) / 2 + O);
+              }
+
+              A = j;
+              var P = Math.max(1, g - j + 1),
+                  F = d ? y : Math.min(g + j, y) + S,
+                  T = Array(F + 2);
+              T[F + 1] = (1 << I) - 1;
+
+              for (var z = F; z >= P; z -= 1) {
+                var E = z - 1,
+                    K = n[e.charAt(E)];
+
+                if (K && (x[E] = 1), T[z] = (T[z + 1] << 1 | 1) & K, 0 !== I && (T[z] |= (L[z + 1] | L[z]) << 1 | 1 | L[z + 1]), T[z] & C && (w = r(t, {
+                  errors: I,
+                  currentLocation: E,
+                  expectedLocation: g,
+                  distance: h
+                })) <= m) {
+                  if (m = w, (k = E) <= g) break;
+                  P = Math.max(1, 2 * g - k);
+                }
+              }
+
+              if (r(t, {
+                errors: I + 1,
+                currentLocation: g,
+                expectedLocation: g,
+                distance: h
+              }) > m) break;
+              L = T;
+            }
+
+            return {
+              isMatch: k >= 0,
+              score: 0 === w ? .001 : w,
+              matchedIndices: o(x, p)
+            };
+          };
+        }, function (e, t) {
+          e.exports = function (e, t) {
+            var n = t.errors,
+                r = void 0 === n ? 0 : n,
+                o = t.currentLocation,
+                i = void 0 === o ? 0 : o,
+                a = t.expectedLocation,
+                s = void 0 === a ? 0 : a,
+                c = t.distance,
+                h = void 0 === c ? 100 : c,
+                l = r / e.length,
+                u = Math.abs(s - i);
+            return h ? l + u / h : u ? 1 : l;
+          };
+        }, function (e, t) {
+          e.exports = function () {
+            for (var e = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : [], t = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : 1, n = [], r = -1, o = -1, i = 0, a = e.length; i < a; i += 1) {
+              var s = e[i];
+              s && -1 === r ? r = i : s || -1 === r || ((o = i - 1) - r + 1 >= t && n.push([r, o]), r = -1);
+            }
+
+            return e[i - 1] && i - r >= t && n.push([r, i - 1]), n;
+          };
+        }, function (e, t) {
+          e.exports = function (e) {
+            for (var t = {}, n = e.length, r = 0; r < n; r += 1) t[e.charAt(r)] = 0;
+
+            for (var o = 0; o < n; o += 1) t[e.charAt(o)] |= 1 << n - o - 1;
+
+            return t;
+          };
+        }, function (e, t, n) {
+          var r = n(0);
+
+          e.exports = function (e, t) {
+            return function e(t, n, o) {
+              if (n) {
+                var i = n.indexOf("."),
+                    a = n,
+                    s = null;
+                -1 !== i && (a = n.slice(0, i), s = n.slice(i + 1));
+                var c = t[a];
+                if (null != c) if (s || "string" != typeof c && "number" != typeof c) {
+                  if (r(c)) for (var h = 0, l = c.length; h < l; h += 1) e(c[h], s, o);else s && e(c, s, o);
+                } else o.push(c.toString());
+              } else o.push(t);
+
+              return o;
+            }(e, t, []);
+          };
+        }]);
+      });
+      /***/
+    },
+    /* 3 */
+
+    /***/
+    function (module, __webpack_exports__, __webpack_require__) {
+      /* harmony export (binding) */
+
+      __webpack_require__.d(__webpack_exports__, "a", function () {
+        return symbolObservablePonyfill;
+      });
+
+      function symbolObservablePonyfill(root) {
+        var result;
+        var Symbol = root.Symbol;
+
+        if (typeof Symbol === 'function') {
+          if (Symbol.observable) {
+            result = Symbol.observable;
+          } else {
+            result = Symbol('observable');
+            Symbol.observable = result;
+          }
+        } else {
+          result = '@@observable';
+        }
+
+        return result;
+      }
+      /***/
+    },
+    /* 4 */
+
+    /***/
+    function (module, exports, __webpack_require__) {
+      module.exports = __webpack_require__(7);
+      /***/
+    },
+    /* 5 */
+
+    /***/
+    function (module, exports) {
+      var g; // This works in non-strict mode
+
+      g = function () {
+        return this;
+      }();
+
+      try {
+        // This works if eval is allowed (see CSP)
+        g = g || new Function("return this")();
+      } catch (e) {
+        // This works if the window reference is available
+        if (typeof window === "object") g = window;
+      } // g can still be undefined, but nothing to do about it...
+      // We return undefined, instead of nothing here, so it's
+      // easier to handle this case. if(!global) { ...}
+
+
+      module.exports = g;
+      /***/
+    },
+    /* 6 */
+
+    /***/
+    function (module, exports) {
+      module.exports = function (originalModule) {
+        if (!originalModule.webpackPolyfill) {
+          var module = Object.create(originalModule); // module.parent = undefined by default
+
+          if (!module.children) module.children = [];
+          Object.defineProperty(module, "loaded", {
+            enumerable: true,
+            get: function () {
+              return module.l;
+            }
+          });
+          Object.defineProperty(module, "id", {
+            enumerable: true,
+            get: function () {
+              return module.i;
+            }
+          });
+          Object.defineProperty(module, "exports", {
+            enumerable: true
+          });
+          module.webpackPolyfill = 1;
+        }
+
+        return module;
+      };
+      /***/
+
+    },
+    /* 7 */
+
+    /***/
+    function (module, __webpack_exports__, __webpack_require__) {
+
+      __webpack_require__.r(__webpack_exports__); // EXTERNAL MODULE: ./node_modules/fuse.js/dist/fuse.js
+
+
+      var dist_fuse = __webpack_require__(2);
+
+      var fuse_default = /*#__PURE__*/__webpack_require__.n(dist_fuse); // EXTERNAL MODULE: ./node_modules/deepmerge/dist/cjs.js
+
+
+      var cjs = __webpack_require__(0);
+
+      var cjs_default = /*#__PURE__*/__webpack_require__.n(cjs); // EXTERNAL MODULE: ./node_modules/symbol-observable/es/index.js
+
+
+      var es = __webpack_require__(1); // CONCATENATED MODULE: ./node_modules/redux/es/redux.js
+
+      /**
+       * These are private action types reserved by Redux.
+       * For any unknown actions, you must return the current state.
+       * If the current state is undefined, you must return the initial state.
+       * Do not reference these action types directly in your code.
+       */
+
+
+      var randomString = function randomString() {
+        return Math.random().toString(36).substring(7).split('').join('.');
+      };
+
+      var ActionTypes = {
+        INIT: "@@redux/INIT" + randomString(),
+        REPLACE: "@@redux/REPLACE" + randomString(),
+        PROBE_UNKNOWN_ACTION: function PROBE_UNKNOWN_ACTION() {
+          return "@@redux/PROBE_UNKNOWN_ACTION" + randomString();
+        }
+      };
+      /**
+       * @param {any} obj The object to inspect.
+       * @returns {boolean} True if the argument appears to be a plain object.
+       */
+
+      function isPlainObject(obj) {
+        if (typeof obj !== 'object' || obj === null) return false;
+        var proto = obj;
+
+        while (Object.getPrototypeOf(proto) !== null) {
+          proto = Object.getPrototypeOf(proto);
+        }
+
+        return Object.getPrototypeOf(obj) === proto;
+      }
+      /**
+       * Creates a Redux store that holds the state tree.
+       * The only way to change the data in the store is to call `dispatch()` on it.
+       *
+       * There should only be a single store in your app. To specify how different
+       * parts of the state tree respond to actions, you may combine several reducers
+       * into a single reducer function by using `combineReducers`.
+       *
+       * @param {Function} reducer A function that returns the next state tree, given
+       * the current state tree and the action to handle.
+       *
+       * @param {any} [preloadedState] The initial state. You may optionally specify it
+       * to hydrate the state from the server in universal apps, or to restore a
+       * previously serialized user session.
+       * If you use `combineReducers` to produce the root reducer function, this must be
+       * an object with the same shape as `combineReducers` keys.
+       *
+       * @param {Function} [enhancer] The store enhancer. You may optionally specify it
+       * to enhance the store with third-party capabilities such as middleware,
+       * time travel, persistence, etc. The only store enhancer that ships with Redux
+       * is `applyMiddleware()`.
+       *
+       * @returns {Store} A Redux store that lets you read the state, dispatch actions
+       * and subscribe to changes.
+       */
+
+
+      function createStore(reducer, preloadedState, enhancer) {
+        var _ref2;
+
+        if (typeof preloadedState === 'function' && typeof enhancer === 'function' || typeof enhancer === 'function' && typeof arguments[3] === 'function') {
+          throw new Error('It looks like you are passing several store enhancers to ' + 'createStore(). This is not supported. Instead, compose them ' + 'together to a single function.');
+        }
+
+        if (typeof preloadedState === 'function' && typeof enhancer === 'undefined') {
+          enhancer = preloadedState;
+          preloadedState = undefined;
+        }
+
+        if (typeof enhancer !== 'undefined') {
+          if (typeof enhancer !== 'function') {
+            throw new Error('Expected the enhancer to be a function.');
+          }
+
+          return enhancer(createStore)(reducer, preloadedState);
+        }
+
+        if (typeof reducer !== 'function') {
+          throw new Error('Expected the reducer to be a function.');
+        }
+
+        var currentReducer = reducer;
+        var currentState = preloadedState;
+        var currentListeners = [];
+        var nextListeners = currentListeners;
+        var isDispatching = false;
+        /**
+         * This makes a shallow copy of currentListeners so we can use
+         * nextListeners as a temporary list while dispatching.
+         *
+         * This prevents any bugs around consumers calling
+         * subscribe/unsubscribe in the middle of a dispatch.
+         */
+
+        function ensureCanMutateNextListeners() {
+          if (nextListeners === currentListeners) {
+            nextListeners = currentListeners.slice();
+          }
+        }
+        /**
+         * Reads the state tree managed by the store.
+         *
+         * @returns {any} The current state tree of your application.
+         */
+
+
+        function getState() {
+          if (isDispatching) {
+            throw new Error('You may not call store.getState() while the reducer is executing. ' + 'The reducer has already received the state as an argument. ' + 'Pass it down from the top reducer instead of reading it from the store.');
+          }
+
+          return currentState;
+        }
+        /**
+         * Adds a change listener. It will be called any time an action is dispatched,
+         * and some part of the state tree may potentially have changed. You may then
+         * call `getState()` to read the current state tree inside the callback.
+         *
+         * You may call `dispatch()` from a change listener, with the following
+         * caveats:
+         *
+         * 1. The subscriptions are snapshotted just before every `dispatch()` call.
+         * If you subscribe or unsubscribe while the listeners are being invoked, this
+         * will not have any effect on the `dispatch()` that is currently in progress.
+         * However, the next `dispatch()` call, whether nested or not, will use a more
+         * recent snapshot of the subscription list.
+         *
+         * 2. The listener should not expect to see all state changes, as the state
+         * might have been updated multiple times during a nested `dispatch()` before
+         * the listener is called. It is, however, guaranteed that all subscribers
+         * registered before the `dispatch()` started will be called with the latest
+         * state by the time it exits.
+         *
+         * @param {Function} listener A callback to be invoked on every dispatch.
+         * @returns {Function} A function to remove this change listener.
+         */
+
+
+        function subscribe(listener) {
+          if (typeof listener !== 'function') {
+            throw new Error('Expected the listener to be a function.');
+          }
+
+          if (isDispatching) {
+            throw new Error('You may not call store.subscribe() while the reducer is executing. ' + 'If you would like to be notified after the store has been updated, subscribe from a ' + 'component and invoke store.getState() in the callback to access the latest state. ' + 'See https://redux.js.org/api-reference/store#subscribe(listener) for more details.');
+          }
+
+          var isSubscribed = true;
+          ensureCanMutateNextListeners();
+          nextListeners.push(listener);
+          return function unsubscribe() {
+            if (!isSubscribed) {
+              return;
+            }
+
+            if (isDispatching) {
+              throw new Error('You may not unsubscribe from a store listener while the reducer is executing. ' + 'See https://redux.js.org/api-reference/store#subscribe(listener) for more details.');
+            }
+
+            isSubscribed = false;
+            ensureCanMutateNextListeners();
+            var index = nextListeners.indexOf(listener);
+            nextListeners.splice(index, 1);
+          };
+        }
+        /**
+         * Dispatches an action. It is the only way to trigger a state change.
+         *
+         * The `reducer` function, used to create the store, will be called with the
+         * current state tree and the given `action`. Its return value will
+         * be considered the **next** state of the tree, and the change listeners
+         * will be notified.
+         *
+         * The base implementation only supports plain object actions. If you want to
+         * dispatch a Promise, an Observable, a thunk, or something else, you need to
+         * wrap your store creating function into the corresponding middleware. For
+         * example, see the documentation for the `redux-thunk` package. Even the
+         * middleware will eventually dispatch plain object actions using this method.
+         *
+         * @param {Object} action A plain object representing “what changed”. It is
+         * a good idea to keep actions serializable so you can record and replay user
+         * sessions, or use the time travelling `redux-devtools`. An action must have
+         * a `type` property which may not be `undefined`. It is a good idea to use
+         * string constants for action types.
+         *
+         * @returns {Object} For convenience, the same action object you dispatched.
+         *
+         * Note that, if you use a custom middleware, it may wrap `dispatch()` to
+         * return something else (for example, a Promise you can await).
+         */
+
+
+        function dispatch(action) {
+          if (!isPlainObject(action)) {
+            throw new Error('Actions must be plain objects. ' + 'Use custom middleware for async actions.');
+          }
+
+          if (typeof action.type === 'undefined') {
+            throw new Error('Actions may not have an undefined "type" property. ' + 'Have you misspelled a constant?');
+          }
+
+          if (isDispatching) {
+            throw new Error('Reducers may not dispatch actions.');
+          }
+
+          try {
+            isDispatching = true;
+            currentState = currentReducer(currentState, action);
+          } finally {
+            isDispatching = false;
+          }
+
+          var listeners = currentListeners = nextListeners;
+
+          for (var i = 0; i < listeners.length; i++) {
+            var listener = listeners[i];
+            listener();
+          }
+
+          return action;
+        }
+        /**
+         * Replaces the reducer currently used by the store to calculate the state.
+         *
+         * You might need this if your app implements code splitting and you want to
+         * load some of the reducers dynamically. You might also need this if you
+         * implement a hot reloading mechanism for Redux.
+         *
+         * @param {Function} nextReducer The reducer for the store to use instead.
+         * @returns {void}
+         */
+
+
+        function replaceReducer(nextReducer) {
+          if (typeof nextReducer !== 'function') {
+            throw new Error('Expected the nextReducer to be a function.');
+          }
+
+          currentReducer = nextReducer; // This action has a similiar effect to ActionTypes.INIT.
+          // Any reducers that existed in both the new and old rootReducer
+          // will receive the previous state. This effectively populates
+          // the new state tree with any relevant data from the old one.
+
+          dispatch({
+            type: ActionTypes.REPLACE
+          });
+        }
+        /**
+         * Interoperability point for observable/reactive libraries.
+         * @returns {observable} A minimal observable of state changes.
+         * For more information, see the observable proposal:
+         * https://github.com/tc39/proposal-observable
+         */
+
+
+        function observable() {
+          var _ref;
+
+          var outerSubscribe = subscribe;
+          return _ref = {
+            /**
+             * The minimal observable subscription method.
+             * @param {Object} observer Any object that can be used as an observer.
+             * The observer object should have a `next` method.
+             * @returns {subscription} An object with an `unsubscribe` method that can
+             * be used to unsubscribe the observable from the store, and prevent further
+             * emission of values from the observable.
+             */
+            subscribe: function subscribe(observer) {
+              if (typeof observer !== 'object' || observer === null) {
+                throw new TypeError('Expected the observer to be an object.');
+              }
+
+              function observeState() {
+                if (observer.next) {
+                  observer.next(getState());
+                }
+              }
+
+              observeState();
+              var unsubscribe = outerSubscribe(observeState);
+              return {
+                unsubscribe: unsubscribe
+              };
+            }
+          }, _ref[es["a"
+          /* default */
+          ]] = function () {
+            return this;
+          }, _ref;
+        } // When a store is created, an "INIT" action is dispatched so that every
+        // reducer returns their initial state. This effectively populates
+        // the initial state tree.
+
+
+        dispatch({
+          type: ActionTypes.INIT
+        });
+        return _ref2 = {
+          dispatch: dispatch,
+          subscribe: subscribe,
+          getState: getState,
+          replaceReducer: replaceReducer
+        }, _ref2[es["a"
+        /* default */
+        ]] = observable, _ref2;
+      }
+
+      function getUndefinedStateErrorMessage(key, action) {
+        var actionType = action && action.type;
+        var actionDescription = actionType && "action \"" + String(actionType) + "\"" || 'an action';
+        return "Given " + actionDescription + ", reducer \"" + key + "\" returned undefined. " + "To ignore an action, you must explicitly return the previous state. " + "If you want this reducer to hold no value, you can return null instead of undefined.";
+      }
+
+      function assertReducerShape(reducers) {
+        Object.keys(reducers).forEach(function (key) {
+          var reducer = reducers[key];
+          var initialState = reducer(undefined, {
+            type: ActionTypes.INIT
+          });
+
+          if (typeof initialState === 'undefined') {
+            throw new Error("Reducer \"" + key + "\" returned undefined during initialization. " + "If the state passed to the reducer is undefined, you must " + "explicitly return the initial state. The initial state may " + "not be undefined. If you don't want to set a value for this reducer, " + "you can use null instead of undefined.");
+          }
+
+          if (typeof reducer(undefined, {
+            type: ActionTypes.PROBE_UNKNOWN_ACTION()
+          }) === 'undefined') {
+            throw new Error("Reducer \"" + key + "\" returned undefined when probed with a random type. " + ("Don't try to handle " + ActionTypes.INIT + " or other actions in \"redux/*\" ") + "namespace. They are considered private. Instead, you must return the " + "current state for any unknown actions, unless it is undefined, " + "in which case you must return the initial state, regardless of the " + "action type. The initial state may not be undefined, but can be null.");
+          }
+        });
+      }
+      /**
+       * Turns an object whose values are different reducer functions, into a single
+       * reducer function. It will call every child reducer, and gather their results
+       * into a single state object, whose keys correspond to the keys of the passed
+       * reducer functions.
+       *
+       * @param {Object} reducers An object whose values correspond to different
+       * reducer functions that need to be combined into one. One handy way to obtain
+       * it is to use ES6 `import * as reducers` syntax. The reducers may never return
+       * undefined for any action. Instead, they should return their initial state
+       * if the state passed to them was undefined, and the current state for any
+       * unrecognized action.
+       *
+       * @returns {Function} A reducer function that invokes every reducer inside the
+       * passed object, and builds a state object with the same shape.
+       */
+
+
+      function combineReducers(reducers) {
+        var reducerKeys = Object.keys(reducers);
+        var finalReducers = {};
+
+        for (var i = 0; i < reducerKeys.length; i++) {
+          var key = reducerKeys[i];
+
+          if (typeof reducers[key] === 'function') {
+            finalReducers[key] = reducers[key];
+          }
+        }
+
+        var finalReducerKeys = Object.keys(finalReducers); // This is used to make sure we don't warn about the same
+
+        var shapeAssertionError;
+
+        try {
+          assertReducerShape(finalReducers);
+        } catch (e) {
+          shapeAssertionError = e;
+        }
+
+        return function combination(state, action) {
+          if (state === void 0) {
+            state = {};
+          }
+
+          if (shapeAssertionError) {
+            throw shapeAssertionError;
+          }
+
+          var hasChanged = false;
+          var nextState = {};
+
+          for (var _i = 0; _i < finalReducerKeys.length; _i++) {
+            var _key = finalReducerKeys[_i];
+            var reducer = finalReducers[_key];
+            var previousStateForKey = state[_key];
+            var nextStateForKey = reducer(previousStateForKey, action);
+
+            if (typeof nextStateForKey === 'undefined') {
+              var errorMessage = getUndefinedStateErrorMessage(_key, action);
+              throw new Error(errorMessage);
+            }
+
+            nextState[_key] = nextStateForKey;
+            hasChanged = hasChanged || nextStateForKey !== previousStateForKey;
+          }
+
+          return hasChanged ? nextState : state;
+        };
+      }
+
+
+      var defaultState = [];
+
+      function items_items(state, action) {
+        if (state === void 0) {
+          state = defaultState;
+        }
+
+        switch (action.type) {
+          case 'ADD_ITEM':
+            {
+              // Add object to items array
+              var newState = [].concat(state, [{
+                id: action.id,
+                choiceId: action.choiceId,
+                groupId: action.groupId,
+                value: action.value,
+                label: action.label,
+                active: true,
+                highlighted: false,
+                customProperties: action.customProperties,
+                placeholder: action.placeholder || false,
+                keyCode: null
+              }]);
+              return newState.map(function (obj) {
+                var item = obj;
+                item.highlighted = false;
+                return item;
+              });
+            }
+
+          case 'REMOVE_ITEM':
+            {
+              // Set item to inactive
+              return state.map(function (obj) {
+                var item = obj;
+
+                if (item.id === action.id) {
+                  item.active = false;
+                }
+
+                return item;
+              });
+            }
+
+          case 'HIGHLIGHT_ITEM':
+            {
+              return state.map(function (obj) {
+                var item = obj;
+
+                if (item.id === action.id) {
+                  item.highlighted = action.highlighted;
+                }
+
+                return item;
+              });
+            }
+
+          default:
+            {
+              return state;
+            }
+        }
+      } // CONCATENATED MODULE: ./src/scripts/reducers/groups.js
+
+
+      var groups_defaultState = [];
+
+      function groups(state, action) {
+        if (state === void 0) {
+          state = groups_defaultState;
+        }
+
+        switch (action.type) {
+          case 'ADD_GROUP':
+            {
+              return [].concat(state, [{
+                id: action.id,
+                value: action.value,
+                active: action.active,
+                disabled: action.disabled
+              }]);
+            }
+
+          case 'CLEAR_CHOICES':
+            {
+              return [];
+            }
+
+          default:
+            {
+              return state;
+            }
+        }
+      } // CONCATENATED MODULE: ./src/scripts/reducers/choices.js
+
+
+      var choices_defaultState = [];
+
+      function choices_choices(state, action) {
+        if (state === void 0) {
+          state = choices_defaultState;
+        }
+
+        switch (action.type) {
+          case 'ADD_CHOICE':
+            {
+              /*
+                  A disabled choice appears in the choice dropdown but cannot be selected
+                  A selected choice has been added to the passed input's value (added as an item)
+                  An active choice appears within the choice dropdown
+               */
+              return [].concat(state, [{
+                id: action.id,
+                elementId: action.elementId,
+                groupId: action.groupId,
+                value: action.value,
+                label: action.label || action.value,
+                disabled: action.disabled || false,
+                selected: false,
+                active: true,
+                score: 9999,
+                customProperties: action.customProperties,
+                placeholder: action.placeholder || false,
+                keyCode: null
+              }]);
+            }
+
+          case 'ADD_ITEM':
+            {
+              // If all choices need to be activated
+              if (action.activateOptions) {
+                return state.map(function (obj) {
+                  var choice = obj;
+                  choice.active = action.active;
+                  return choice;
+                });
+              } // When an item is added and it has an associated choice,
+              // we want to disable it so it can't be chosen again
+
+
+              if (action.choiceId > -1) {
+                return state.map(function (obj) {
+                  var choice = obj;
+
+                  if (choice.id === parseInt(action.choiceId, 10)) {
+                    choice.selected = true;
+                  }
+
+                  return choice;
+                });
+              }
+
+              return state;
+            }
+
+          case 'REMOVE_ITEM':
+            {
+              // When an item is removed and it has an associated choice,
+              // we want to re-enable it so it can be chosen again
+              if (action.choiceId > -1) {
+                return state.map(function (obj) {
+                  var choice = obj;
+
+                  if (choice.id === parseInt(action.choiceId, 10)) {
+                    choice.selected = false;
+                  }
+
+                  return choice;
+                });
+              }
+
+              return state;
+            }
+
+          case 'FILTER_CHOICES':
+            {
+              return state.map(function (obj) {
+                var choice = obj; // Set active state based on whether choice is
+                // within filtered results
+
+                choice.active = action.results.some(function (_ref) {
+                  var item = _ref.item,
+                      score = _ref.score;
+
+                  if (item.id === choice.id) {
+                    choice.score = score;
+                    return true;
+                  }
+
+                  return false;
+                });
+                return choice;
+              });
+            }
+
+          case 'ACTIVATE_CHOICES':
+            {
+              return state.map(function (obj) {
+                var choice = obj;
+                choice.active = action.active;
+                return choice;
+              });
+            }
+
+          case 'CLEAR_CHOICES':
+            {
+              return choices_defaultState;
+            }
+
+          default:
+            {
+              return state;
+            }
+        }
+      } // CONCATENATED MODULE: ./src/scripts/reducers/general.js
+
+
+      var general_defaultState = {
+        loading: false
+      };
+
+      var general = function general(state, action) {
+        if (state === void 0) {
+          state = general_defaultState;
+        }
+
+        switch (action.type) {
+          case 'SET_IS_LOADING':
+            {
+              return {
+                loading: action.isLoading
+              };
+            }
+
+          default:
+            {
+              return state;
+            }
+        }
+      };
+      /* harmony default export */
+
+
+      var reducers_general = general; // CONCATENATED MODULE: ./src/scripts/lib/utils.js
+
+      /**
+       * @param {number} min
+       * @param {number} max
+       * @returns {number}
+       */
+
+      var getRandomNumber = function getRandomNumber(min, max) {
+        return Math.floor(Math.random() * (max - min) + min);
+      };
+      /**
+       * @param {number} length
+       * @returns {string}
+       */
+
+
+      var generateChars = function generateChars(length) {
+        return Array.from({
+          length: length
+        }, function () {
+          return getRandomNumber(0, 36).toString(36);
+        }).join('');
+      };
+      /**
+       * @param {HTMLInputElement | HTMLSelectElement} element
+       * @param {string} prefix
+       * @returns {string}
+       */
+
+
+      var generateId = function generateId(element, prefix) {
+        var id = element.id || element.name && element.name + "-" + generateChars(2) || generateChars(4);
+        id = id.replace(/(:|\.|\[|\]|,)/g, '');
+        id = prefix + "-" + id;
+        return id;
+      };
+      /**
+       * @param {any} obj
+       * @returns {string}
+       */
+
+
+      var getType = function getType(obj) {
+        return Object.prototype.toString.call(obj).slice(8, -1);
+      };
+      /**
+       * @param {string} type
+       * @param {any} obj
+       * @returns {boolean}
+       */
+
+
+      var isType = function isType(type, obj) {
+        return obj !== undefined && obj !== null && getType(obj) === type;
+      };
+      /**
+       * @param {HTMLElement} element
+       * @param {HTMLElement} [wrapper={HTMLDivElement}]
+       * @returns {HTMLElement}
+       */
+
+
+      var utils_wrap = function wrap(element, wrapper) {
+        if (wrapper === void 0) {
+          wrapper = document.createElement('div');
+        }
+
+        if (element.nextSibling) {
+          element.parentNode.insertBefore(wrapper, element.nextSibling);
+        } else {
+          element.parentNode.appendChild(wrapper);
+        }
+
+        return wrapper.appendChild(element);
+      };
+      /**
+       * @param {Element} startEl
+       * @param {string} selector
+       * @param {1 | -1} direction
+       * @returns {Element | undefined}
+       */
+
+
+      var getAdjacentEl = function getAdjacentEl(startEl, selector, direction) {
+        if (direction === void 0) {
+          direction = 1;
+        }
+
+        if (!(startEl instanceof Element) || typeof selector !== 'string') {
+          return undefined;
+        }
+
+        var prop = (direction > 0 ? 'next' : 'previous') + "ElementSibling";
+        var sibling = startEl[prop];
+
+        while (sibling) {
+          if (sibling.matches(selector)) {
+            return sibling;
+          }
+
+          sibling = sibling[prop];
+        }
+
+        return sibling;
+      };
+      /**
+       * @param {Element} element
+       * @param {Element} parent
+       * @param {-1 | 1} direction
+       * @returns {boolean}
+       */
+
+
+      var isScrolledIntoView = function isScrolledIntoView(element, parent, direction) {
+        if (direction === void 0) {
+          direction = 1;
+        }
+
+        if (!element) {
+          return false;
+        }
+
+        var isVisible;
+
+        if (direction > 0) {
+          // In view from bottom
+          isVisible = parent.scrollTop + parent.offsetHeight >= element.offsetTop + element.offsetHeight;
+        } else {
+          // In view from top
+          isVisible = element.offsetTop >= parent.scrollTop;
+        }
+
+        return isVisible;
+      };
+      /**
+       * @param {any} value
+       * @returns {any}
+       */
+
+
+      var sanitise = function sanitise(value) {
+        if (typeof value !== 'string') {
+          return value;
+        }
+
+        return value.replace(/&/g, '&amp;').replace(/>/g, '&rt;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+      };
+      /**
+       * @returns {() => (str: string) => Element}
+       */
+
+
+      var strToEl = function () {
+        var tmpEl = document.createElement('div');
+        return function (str) {
+          var cleanedInput = str.trim();
+          tmpEl.innerHTML = cleanedInput;
+          var firldChild = tmpEl.children[0];
+
+          while (tmpEl.firstChild) {
+            tmpEl.removeChild(tmpEl.firstChild);
+          }
+
+          return firldChild;
+        };
+      }();
+      /**
+       * @param {{ label?: string, value: string }} a
+       * @param {{ label?: string, value: string }} b
+       * @returns {number}
+       */
+
+
+      var sortByAlpha = function sortByAlpha(_ref, _ref2) {
+        var value = _ref.value,
+            _ref$label = _ref.label,
+            label = _ref$label === void 0 ? value : _ref$label;
+        var value2 = _ref2.value,
+            _ref2$label = _ref2.label,
+            label2 = _ref2$label === void 0 ? value2 : _ref2$label;
+        return label.localeCompare(label2, [], {
+          sensitivity: 'base',
+          ignorePunctuation: true,
+          numeric: true
+        });
+      };
+      /**
+       * @param {{ score: number }} a
+       * @param {{ score: number }} b
+       */
+
+
+      var sortByScore = function sortByScore(a, b) {
+        return a.score - b.score;
+      };
+      /**
+       * @param {HTMLElement} element
+       * @param {string} type
+       * @param {object} customArgs
+       */
+
+
+      var dispatchEvent = function dispatchEvent(element, type, customArgs) {
+        if (customArgs === void 0) {
+          customArgs = null;
+        }
+
+        var event = new CustomEvent(type, {
+          detail: customArgs,
+          bubbles: true,
+          cancelable: true
+        });
+        return element.dispatchEvent(event);
+      };
+      /**
+       * @param {array} array
+       * @param {any} value
+       * @param {string} [key="value"]
+       * @returns {boolean}
+       */
+
+
+      var existsInArray = function existsInArray(array, value, key) {
+        if (key === void 0) {
+          key = 'value';
+        }
+
+        return array.some(function (item) {
+          if (typeof value === 'string') {
+            return item[key] === value.trim();
+          }
+
+          return item[key] === value;
+        });
+      };
+      /**
+       * @param {any} obj
+       * @returns {any}
+       */
+
+
+      var cloneObject = function cloneObject(obj) {
+        return JSON.parse(JSON.stringify(obj));
+      };
+      /**
+       * Returns an array of keys present on the first but missing on the second object
+       * @param {object} a
+       * @param {object} b
+       * @returns {string[]}
+       */
+
+
+      var diff = function diff(a, b) {
+        var aKeys = Object.keys(a).sort();
+        var bKeys = Object.keys(b).sort();
+        return aKeys.filter(function (i) {
+          return bKeys.indexOf(i) < 0;
+        });
+      }; // CONCATENATED MODULE: ./src/scripts/reducers/index.js
+
+
+      var appReducer = combineReducers({
+        items: items_items,
+        groups: groups,
+        choices: choices_choices,
+        general: reducers_general
+      });
+
+      var reducers_rootReducer = function rootReducer(passedState, action) {
+        var state = passedState; // If we are clearing all items, groups and options we reassign
+        // state and then pass that state to our proper reducer. This isn't
+        // mutating our actual state
+        // See: http://stackoverflow.com/a/35641992
+
+        if (action.type === 'CLEAR_ALL') {
+          state = undefined;
+        } else if (action.type === 'RESET_TO') {
+          return cloneObject(action.state);
+        }
+
+        return appReducer(state, action);
+      };
+      /* harmony default export */
+
+
+      var reducers = reducers_rootReducer; // CONCATENATED MODULE: ./src/scripts/store/store.js
+
+      function _defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function _createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) _defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+      /**
+       * @typedef {import('../../../types/index').Choices.Choice} Choice
+       * @typedef {import('../../../types/index').Choices.Group} Group
+       * @typedef {import('../../../types/index').Choices.Item} Item
+       */
+
+
+      var store_Store = /*#__PURE__*/function () {
+        function Store() {
+          this._store = createStore(reducers, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
+        }
+        /**
+         * Subscribe store to function call (wrapped Redux method)
+         * @param  {Function} onChange Function to trigger when state changes
+         * @return
+         */
+
+
+        var _proto = Store.prototype;
+
+        _proto.subscribe = function subscribe(onChange) {
+          this._store.subscribe(onChange);
+        }
+        /**
+         * Dispatch event to store (wrapped Redux method)
+         * @param  {{ type: string, [x: string]: any }} action Action to trigger
+         * @return
+         */
+        ;
+
+        _proto.dispatch = function dispatch(action) {
+          this._store.dispatch(action);
+        }
+        /**
+         * Get store object (wrapping Redux method)
+         * @returns {object} State
+         */
+        ;
+        /**
+         * Get loading state from store
+         * @returns {boolean} Loading State
+         */
+
+
+        _proto.isLoading = function isLoading() {
+          return this.state.general.loading;
+        }
+        /**
+         * Get single choice by it's ID
+         * @param {string} id
+         * @returns {Choice | undefined} Found choice
+         */
+        ;
+
+        _proto.getChoiceById = function getChoiceById(id) {
+          return this.activeChoices.find(function (choice) {
+            return choice.id === parseInt(id, 10);
+          });
+        }
+        /**
+         * Get group by group id
+         * @param  {number} id Group ID
+         * @returns {Group | undefined} Group data
+         */
+        ;
+
+        _proto.getGroupById = function getGroupById(id) {
+          return this.groups.find(function (group) {
+            return group.id === id;
+          });
+        };
+
+        _createClass(Store, [{
+          key: "state",
+          get: function get() {
+            return this._store.getState();
+          }
+          /**
+           * Get items from store
+           * @returns {Item[]} Item objects
+           */
+
+        }, {
+          key: "items",
+          get: function get() {
+            return this.state.items;
+          }
+          /**
+           * Get active items from store
+           * @returns {Item[]} Item objects
+           */
+
+        }, {
+          key: "activeItems",
+          get: function get() {
+            return this.items.filter(function (item) {
+              return item.active === true;
+            });
+          }
+          /**
+           * Get highlighted items from store
+           * @returns {Item[]} Item objects
+           */
+
+        }, {
+          key: "highlightedActiveItems",
+          get: function get() {
+            return this.items.filter(function (item) {
+              return item.active && item.highlighted;
+            });
+          }
+          /**
+           * Get choices from store
+           * @returns {Choice[]} Option objects
+           */
+
+        }, {
+          key: "choices",
+          get: function get() {
+            return this.state.choices;
+          }
+          /**
+           * Get active choices from store
+           * @returns {Choice[]} Option objects
+           */
+
+        }, {
+          key: "activeChoices",
+          get: function get() {
+            return this.choices.filter(function (choice) {
+              return choice.active === true;
+            });
+          }
+          /**
+           * Get selectable choices from store
+           * @returns {Choice[]} Option objects
+           */
+
+        }, {
+          key: "selectableChoices",
+          get: function get() {
+            return this.choices.filter(function (choice) {
+              return choice.disabled !== true;
+            });
+          }
+          /**
+           * Get choices that can be searched (excluding placeholders)
+           * @returns {Choice[]} Option objects
+           */
+
+        }, {
+          key: "searchableChoices",
+          get: function get() {
+            return this.selectableChoices.filter(function (choice) {
+              return choice.placeholder !== true;
+            });
+          }
+          /**
+           * Get placeholder choice from store
+           * @returns {Choice | undefined} Found placeholder
+           */
+
+        }, {
+          key: "placeholderChoice",
+          get: function get() {
+            return [].concat(this.choices).reverse().find(function (choice) {
+              return choice.placeholder === true;
+            });
+          }
+          /**
+           * Get groups from store
+           * @returns {Group[]} Group objects
+           */
+
+        }, {
+          key: "groups",
+          get: function get() {
+            return this.state.groups;
+          }
+          /**
+           * Get active groups from store
+           * @returns {Group[]} Group objects
+           */
+
+        }, {
+          key: "activeGroups",
+          get: function get() {
+            var groups = this.groups,
+                choices = this.choices;
+            return groups.filter(function (group) {
+              var isActive = group.active === true && group.disabled === false;
+              var hasActiveOptions = choices.some(function (choice) {
+                return choice.active === true && choice.disabled === false;
+              });
+              return isActive && hasActiveOptions;
+            }, []);
+          }
+        }]);
+
+        return Store;
+      }(); // CONCATENATED MODULE: ./src/scripts/components/dropdown.js
+
+
+      function dropdown_defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function dropdown_createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) dropdown_defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) dropdown_defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+      /**
+       * @typedef {import('../../../types/index').Choices.passedElement} passedElement
+       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
+       */
+
+
+      var Dropdown = /*#__PURE__*/function () {
+        /**
+         * @param {{
+         *  element: HTMLElement,
+         *  type: passedElement['type'],
+         *  classNames: ClassNames,
+         * }} args
+         */
+        function Dropdown(_ref) {
+          var element = _ref.element,
+              type = _ref.type,
+              classNames = _ref.classNames;
+          this.element = element;
+          this.classNames = classNames;
+          this.type = type;
+          this.isActive = false;
+        }
+        /**
+         * Bottom position of dropdown in viewport coordinates
+         * @returns {number} Vertical position
+         */
+
+
+        var _proto = Dropdown.prototype;
+        /**
+         * Find element that matches passed selector
+         * @param {string} selector
+         * @returns {HTMLElement | null}
+         */
+
+        _proto.getChild = function getChild(selector) {
+          return this.element.querySelector(selector);
+        }
+        /**
+         * Show dropdown to user by adding active state class
+         * @returns {this}
+         */
+        ;
+
+        _proto.show = function show() {
+          this.element.classList.add(this.classNames.activeState);
+          this.element.setAttribute('aria-expanded', 'true');
+          this.isActive = true;
+          return this;
+        }
+        /**
+         * Hide dropdown from user
+         * @returns {this}
+         */
+        ;
+
+        _proto.hide = function hide() {
+          this.element.classList.remove(this.classNames.activeState);
+          this.element.setAttribute('aria-expanded', 'false');
+          this.isActive = false;
+          return this;
+        };
+
+        dropdown_createClass(Dropdown, [{
+          key: "distanceFromTopWindow",
+          get: function get() {
+            return this.element.getBoundingClientRect().bottom;
+          }
+        }]);
+        return Dropdown;
+      }(); // CONCATENATED MODULE: ./src/scripts/constants.js
+
+      /**
+       * @typedef {import('../../types/index').Choices.ClassNames} ClassNames
+       * @typedef {import('../../types/index').Choices.Options} Options
+       */
+
+      /** @type {ClassNames} */
+
+
+      var DEFAULT_CLASSNAMES = {
+        containerOuter: 'choices',
+        containerInner: 'choices__inner',
+        input: 'choices__input',
+        inputCloned: 'choices__input--cloned',
+        list: 'choices__list',
+        listItems: 'choices__list--multiple',
+        listSingle: 'choices__list--single',
+        listDropdown: 'choices__list--dropdown',
+        item: 'choices__item',
+        itemSelectable: 'choices__item--selectable',
+        itemDisabled: 'choices__item--disabled',
+        itemChoice: 'choices__item--choice',
+        placeholder: 'choices__placeholder',
+        group: 'choices__group',
+        groupHeading: 'choices__heading',
+        button: 'choices__button',
+        activeState: 'is-active',
+        focusState: 'is-focused',
+        openState: 'is-open',
+        disabledState: 'is-disabled',
+        highlightedState: 'is-highlighted',
+        selectedState: 'is-selected',
+        flippedState: 'is-flipped',
+        loadingState: 'is-loading',
+        noResults: 'has-no-results',
+        noChoices: 'has-no-choices'
+      };
+      /** @type {Options} */
+
+      var DEFAULT_CONFIG = {
+        items: [],
+        choices: [],
+        silent: false,
+        renderChoiceLimit: -1,
+        maxItemCount: -1,
+        addItems: true,
+        addItemFilter: null,
+        removeItems: true,
+        removeItemButton: false,
+        editItems: false,
+        duplicateItemsAllowed: true,
+        delimiter: ',',
+        paste: true,
+        searchEnabled: true,
+        searchChoices: true,
+        searchFloor: 1,
+        searchResultLimit: 4,
+        searchFields: ['label', 'value'],
+        position: 'auto',
+        resetScrollPosition: true,
+        shouldSort: true,
+        shouldSortItems: false,
+        sorter: sortByAlpha,
+        placeholder: true,
+        placeholderValue: null,
+        searchPlaceholderValue: null,
+        prependValue: null,
+        appendValue: null,
+        renderSelectedChoices: 'auto',
+        loadingText: 'Loading...',
+        noResultsText: 'No results found',
+        noChoicesText: 'No choices to choose from',
+        itemSelectText: 'Press to select',
+        uniqueItemText: 'Only unique values can be added',
+        customAddItemText: 'Only values matching specific conditions can be added',
+        addItemText: function addItemText(value) {
+          return "Press Enter to add <b>\"" + sanitise(value) + "\"</b>";
+        },
+        maxItemText: function maxItemText(maxItemCount) {
+          return "Only " + maxItemCount + " values can be added";
+        },
+        valueComparer: function valueComparer(value1, value2) {
+          return value1 === value2;
+        },
+        fuseOptions: {
+          includeScore: true
+        },
+        callbackOnInit: null,
+        callbackOnCreateTemplates: null,
+        classNames: DEFAULT_CLASSNAMES
+      };
+      var EVENTS = {
+        showDropdown: 'showDropdown',
+        hideDropdown: 'hideDropdown',
+        change: 'change',
+        choice: 'choice',
+        search: 'search',
+        addItem: 'addItem',
+        removeItem: 'removeItem',
+        highlightItem: 'highlightItem',
+        highlightChoice: 'highlightChoice'
+      };
+      var ACTION_TYPES = {
+        ADD_CHOICE: 'ADD_CHOICE',
+        FILTER_CHOICES: 'FILTER_CHOICES',
+        ACTIVATE_CHOICES: 'ACTIVATE_CHOICES',
+        CLEAR_CHOICES: 'CLEAR_CHOICES',
+        ADD_GROUP: 'ADD_GROUP',
+        ADD_ITEM: 'ADD_ITEM',
+        REMOVE_ITEM: 'REMOVE_ITEM',
+        HIGHLIGHT_ITEM: 'HIGHLIGHT_ITEM',
+        CLEAR_ALL: 'CLEAR_ALL'
+      };
+      var KEY_CODES = {
+        BACK_KEY: 46,
+        DELETE_KEY: 8,
+        ENTER_KEY: 13,
+        A_KEY: 65,
+        ESC_KEY: 27,
+        UP_KEY: 38,
+        DOWN_KEY: 40,
+        PAGE_UP_KEY: 33,
+        PAGE_DOWN_KEY: 34
+      };
+      var TEXT_TYPE = 'text';
+      var SELECT_ONE_TYPE = 'select-one';
+      var SELECT_MULTIPLE_TYPE = 'select-multiple';
+      var SCROLLING_SPEED = 4; // CONCATENATED MODULE: ./src/scripts/components/container.js
+
+      /**
+       * @typedef {import('../../../types/index').Choices.passedElement} passedElement
+       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
+       */
+
+      var container_Container = /*#__PURE__*/function () {
+        /**
+         * @param {{
+         *  element: HTMLElement,
+         *  type: passedElement['type'],
+         *  classNames: ClassNames,
+         *  position
+         * }} args
+         */
+        function Container(_ref) {
+          var element = _ref.element,
+              type = _ref.type,
+              classNames = _ref.classNames,
+              position = _ref.position;
+          this.element = element;
+          this.classNames = classNames;
+          this.type = type;
+          this.position = position;
+          this.isOpen = false;
+          this.isFlipped = false;
+          this.isFocussed = false;
+          this.isDisabled = false;
+          this.isLoading = false;
+          this._onFocus = this._onFocus.bind(this);
+          this._onBlur = this._onBlur.bind(this);
+        }
+
+        var _proto = Container.prototype;
+
+        _proto.addEventListeners = function addEventListeners() {
+          this.element.addEventListener('focus', this._onFocus);
+          this.element.addEventListener('blur', this._onBlur);
+        };
+
+        _proto.removeEventListeners = function removeEventListeners() {
+          this.element.removeEventListener('focus', this._onFocus);
+          this.element.removeEventListener('blur', this._onBlur);
+        }
+        /**
+         * Determine whether container should be flipped based on passed
+         * dropdown position
+         * @param {number} dropdownPos
+         * @returns {boolean}
+         */
+        ;
+
+        _proto.shouldFlip = function shouldFlip(dropdownPos) {
+          if (typeof dropdownPos !== 'number') {
+            return false;
+          } // If flip is enabled and the dropdown bottom position is
+          // greater than the window height flip the dropdown.
+
+
+          var shouldFlip = false;
+
+          if (this.position === 'auto') {
+            shouldFlip = !window.matchMedia("(min-height: " + (dropdownPos + 1) + "px)").matches;
+          } else if (this.position === 'top') {
+            shouldFlip = true;
+          }
+
+          return shouldFlip;
+        }
+        /**
+         * @param {string} activeDescendantID
+         */
+        ;
+
+        _proto.setActiveDescendant = function setActiveDescendant(activeDescendantID) {
+          this.element.setAttribute('aria-activedescendant', activeDescendantID);
+        };
+
+        _proto.removeActiveDescendant = function removeActiveDescendant() {
+          this.element.removeAttribute('aria-activedescendant');
+        }
+        /**
+         * @param {number} dropdownPos
+         */
+        ;
+
+        _proto.open = function open(dropdownPos) {
+          this.element.classList.add(this.classNames.openState);
+          this.element.setAttribute('aria-expanded', 'true');
+          this.isOpen = true;
+
+          if (this.shouldFlip(dropdownPos)) {
+            this.element.classList.add(this.classNames.flippedState);
+            this.isFlipped = true;
+          }
+        };
+
+        _proto.close = function close() {
+          this.element.classList.remove(this.classNames.openState);
+          this.element.setAttribute('aria-expanded', 'false');
+          this.removeActiveDescendant();
+          this.isOpen = false; // A dropdown flips if it does not have space within the page
+
+          if (this.isFlipped) {
+            this.element.classList.remove(this.classNames.flippedState);
+            this.isFlipped = false;
+          }
+        };
+
+        _proto.focus = function focus() {
+          if (!this.isFocussed) {
+            this.element.focus();
+          }
+        };
+
+        _proto.addFocusState = function addFocusState() {
+          this.element.classList.add(this.classNames.focusState);
+        };
+
+        _proto.removeFocusState = function removeFocusState() {
+          this.element.classList.remove(this.classNames.focusState);
+        };
+
+        _proto.enable = function enable() {
+          this.element.classList.remove(this.classNames.disabledState);
+          this.element.removeAttribute('aria-disabled');
+
+          if (this.type === SELECT_ONE_TYPE) {
+            this.element.setAttribute('tabindex', '0');
+          }
+
+          this.isDisabled = false;
+        };
+
+        _proto.disable = function disable() {
+          this.element.classList.add(this.classNames.disabledState);
+          this.element.setAttribute('aria-disabled', 'true');
+
+          if (this.type === SELECT_ONE_TYPE) {
+            this.element.setAttribute('tabindex', '-1');
+          }
+
+          this.isDisabled = true;
+        }
+        /**
+         * @param {HTMLElement} element
+         */
+        ;
+
+        _proto.wrap = function wrap(element) {
+          utils_wrap(element, this.element);
+        }
+        /**
+         * @param {Element} element
+         */
+        ;
+
+        _proto.unwrap = function unwrap(element) {
+          // Move passed element outside this element
+          this.element.parentNode.insertBefore(element, this.element); // Remove this element
+
+          this.element.parentNode.removeChild(this.element);
+        };
+
+        _proto.addLoadingState = function addLoadingState() {
+          this.element.classList.add(this.classNames.loadingState);
+          this.element.setAttribute('aria-busy', 'true');
+          this.isLoading = true;
+        };
+
+        _proto.removeLoadingState = function removeLoadingState() {
+          this.element.classList.remove(this.classNames.loadingState);
+          this.element.removeAttribute('aria-busy');
+          this.isLoading = false;
+        };
+
+        _proto._onFocus = function _onFocus() {
+          this.isFocussed = true;
+        };
+
+        _proto._onBlur = function _onBlur() {
+          this.isFocussed = false;
+        };
+
+        return Container;
+      }(); // CONCATENATED MODULE: ./src/scripts/components/input.js
+
+
+      function input_defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function input_createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) input_defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) input_defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+      /**
+       * @typedef {import('../../../types/index').Choices.passedElement} passedElement
+       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
+       */
+
+
+      var input_Input = /*#__PURE__*/function () {
+        /**
+         * @param {{
+         *  element: HTMLInputElement,
+         *  type: passedElement['type'],
+         *  classNames: ClassNames,
+         *  preventPaste: boolean
+         * }} args
+         */
+        function Input(_ref) {
+          var element = _ref.element,
+              type = _ref.type,
+              classNames = _ref.classNames,
+              preventPaste = _ref.preventPaste;
+          this.element = element;
+          this.type = type;
+          this.classNames = classNames;
+          this.preventPaste = preventPaste;
+          this.isFocussed = this.element === document.activeElement;
+          this.isDisabled = element.disabled;
+          this._onPaste = this._onPaste.bind(this);
+          this._onInput = this._onInput.bind(this);
+          this._onFocus = this._onFocus.bind(this);
+          this._onBlur = this._onBlur.bind(this);
+        }
+        /**
+         * @param {string} placeholder
+         */
+
+
+        var _proto = Input.prototype;
+
+        _proto.addEventListeners = function addEventListeners() {
+          this.element.addEventListener('paste', this._onPaste);
+          this.element.addEventListener('input', this._onInput, {
+            passive: true
+          });
+          this.element.addEventListener('focus', this._onFocus, {
+            passive: true
+          });
+          this.element.addEventListener('blur', this._onBlur, {
+            passive: true
+          });
+        };
+
+        _proto.removeEventListeners = function removeEventListeners() {
+          this.element.removeEventListener('input', this._onInput, {
+            passive: true
+          });
+          this.element.removeEventListener('paste', this._onPaste);
+          this.element.removeEventListener('focus', this._onFocus, {
+            passive: true
+          });
+          this.element.removeEventListener('blur', this._onBlur, {
+            passive: true
+          });
+        };
+
+        _proto.enable = function enable() {
+          this.element.removeAttribute('disabled');
+          this.isDisabled = false;
+        };
+
+        _proto.disable = function disable() {
+          this.element.setAttribute('disabled', '');
+          this.isDisabled = true;
+        };
+
+        _proto.focus = function focus() {
+          if (!this.isFocussed) {
+            this.element.focus();
+          }
+        };
+
+        _proto.blur = function blur() {
+          if (this.isFocussed) {
+            this.element.blur();
+          }
+        }
+        /**
+         * Set value of input to blank
+         * @param {boolean} setWidth
+         * @returns {this}
+         */
+        ;
+
+        _proto.clear = function clear(setWidth) {
+          if (setWidth === void 0) {
+            setWidth = true;
+          }
+
+          if (this.element.value) {
+            this.element.value = '';
+          }
+
+          if (setWidth) {
+            this.setWidth();
+          }
+
+          return this;
+        }
+        /**
+         * Set the correct input width based on placeholder
+         * value or input value
+         */
+        ;
+
+        _proto.setWidth = function setWidth() {
+          // Resize input to contents or placeholder
+          var _this$element = this.element,
+              style = _this$element.style,
+              value = _this$element.value,
+              placeholder = _this$element.placeholder;
+          style.minWidth = placeholder.length + 1 + "ch";
+          style.width = value.length + 1 + "ch";
+        }
+        /**
+         * @param {string} activeDescendantID
+         */
+        ;
+
+        _proto.setActiveDescendant = function setActiveDescendant(activeDescendantID) {
+          this.element.setAttribute('aria-activedescendant', activeDescendantID);
+        };
+
+        _proto.removeActiveDescendant = function removeActiveDescendant() {
+          this.element.removeAttribute('aria-activedescendant');
+        };
+
+        _proto._onInput = function _onInput() {
+          if (this.type !== SELECT_ONE_TYPE) {
+            this.setWidth();
+          }
+        }
+        /**
+         * @param {Event} event
+         */
+        ;
+
+        _proto._onPaste = function _onPaste(event) {
+          if (this.preventPaste) {
+            event.preventDefault();
+          }
+        };
+
+        _proto._onFocus = function _onFocus() {
+          this.isFocussed = true;
+        };
+
+        _proto._onBlur = function _onBlur() {
+          this.isFocussed = false;
+        };
+
+        input_createClass(Input, [{
+          key: "placeholder",
+          set: function set(placeholder) {
+            this.element.placeholder = placeholder;
+          }
+          /**
+           * @returns {string}
+           */
+
+        }, {
+          key: "value",
+          get: function get() {
+            return sanitise(this.element.value);
+          }
+          /**
+           * @param {string} value
+           */
+          ,
+          set: function set(value) {
+            this.element.value = value;
+          }
+        }]);
+        return Input;
+      }(); // CONCATENATED MODULE: ./src/scripts/components/list.js
+
+      /**
+       * @typedef {import('../../../types/index').Choices.Choice} Choice
+       */
+
+
+      var list_List = /*#__PURE__*/function () {
+        /**
+         * @param {{ element: HTMLElement }} args
+         */
+        function List(_ref) {
+          var element = _ref.element;
+          this.element = element;
+          this.scrollPos = this.element.scrollTop;
+          this.height = this.element.offsetHeight;
+        }
+
+        var _proto = List.prototype;
+
+        _proto.clear = function clear() {
+          this.element.innerHTML = '';
+        }
+        /**
+         * @param {Element | DocumentFragment} node
+         */
+        ;
+
+        _proto.append = function append(node) {
+          this.element.appendChild(node);
+        }
+        /**
+         * @param {string} selector
+         * @returns {Element | null}
+         */
+        ;
+
+        _proto.getChild = function getChild(selector) {
+          return this.element.querySelector(selector);
+        }
+        /**
+         * @returns {boolean}
+         */
+        ;
+
+        _proto.hasChildren = function hasChildren() {
+          return this.element.hasChildNodes();
+        };
+
+        _proto.scrollToTop = function scrollToTop() {
+          this.element.scrollTop = 0;
+        }
+        /**
+         * @param {Element} element
+         * @param {1 | -1} direction
+         */
+        ;
+
+        _proto.scrollToChildElement = function scrollToChildElement(element, direction) {
+          var _this = this;
+
+          if (!element) {
+            return;
+          }
+
+          var listHeight = this.element.offsetHeight; // Scroll position of dropdown
+
+          var listScrollPosition = this.element.scrollTop + listHeight;
+          var elementHeight = element.offsetHeight; // Distance from bottom of element to top of parent
+
+          var elementPos = element.offsetTop + elementHeight; // Difference between the element and scroll position
+
+          var destination = direction > 0 ? this.element.scrollTop + elementPos - listScrollPosition : element.offsetTop;
+          requestAnimationFrame(function () {
+            _this._animateScroll(destination, direction);
+          });
+        }
+        /**
+         * @param {number} scrollPos
+         * @param {number} strength
+         * @param {number} destination
+         */
+        ;
+
+        _proto._scrollDown = function _scrollDown(scrollPos, strength, destination) {
+          var easing = (destination - scrollPos) / strength;
+          var distance = easing > 1 ? easing : 1;
+          this.element.scrollTop = scrollPos + distance;
+        }
+        /**
+         * @param {number} scrollPos
+         * @param {number} strength
+         * @param {number} destination
+         */
+        ;
+
+        _proto._scrollUp = function _scrollUp(scrollPos, strength, destination) {
+          var easing = (scrollPos - destination) / strength;
+          var distance = easing > 1 ? easing : 1;
+          this.element.scrollTop = scrollPos - distance;
+        }
+        /**
+         * @param {*} destination
+         * @param {*} direction
+         */
+        ;
+
+        _proto._animateScroll = function _animateScroll(destination, direction) {
+          var _this2 = this;
+
+          var strength = SCROLLING_SPEED;
+          var choiceListScrollTop = this.element.scrollTop;
+          var continueAnimation = false;
+
+          if (direction > 0) {
+            this._scrollDown(choiceListScrollTop, strength, destination);
+
+            if (choiceListScrollTop < destination) {
+              continueAnimation = true;
+            }
+          } else {
+            this._scrollUp(choiceListScrollTop, strength, destination);
+
+            if (choiceListScrollTop > destination) {
+              continueAnimation = true;
+            }
+          }
+
+          if (continueAnimation) {
+            requestAnimationFrame(function () {
+              _this2._animateScroll(destination, direction);
+            });
+          }
+        };
+
+        return List;
+      }(); // CONCATENATED MODULE: ./src/scripts/components/wrapped-element.js
+
+
+      function wrapped_element_defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function wrapped_element_createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) wrapped_element_defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) wrapped_element_defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+      /**
+       * @typedef {import('../../../types/index').Choices.passedElement} passedElement
+       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
+       */
+
+
+      var wrapped_element_WrappedElement = /*#__PURE__*/function () {
+        /**
+         * @param {{
+         *  element: HTMLInputElement | HTMLSelectElement,
+         *  classNames: ClassNames,
+         * }} args
+         */
+        function WrappedElement(_ref) {
+          var element = _ref.element,
+              classNames = _ref.classNames;
+          this.element = element;
+          this.classNames = classNames;
+
+          if (!(element instanceof HTMLInputElement) && !(element instanceof HTMLSelectElement)) {
+            throw new TypeError('Invalid element passed');
+          }
+
+          this.isDisabled = false;
+        }
+
+        var _proto = WrappedElement.prototype;
+
+        _proto.conceal = function conceal() {
+          // Hide passed input
+          this.element.classList.add(this.classNames.input);
+          this.element.hidden = true; // Remove element from tab index
+
+          this.element.tabIndex = -1; // Backup original styles if any
+
+          var origStyle = this.element.getAttribute('style');
+
+          if (origStyle) {
+            this.element.setAttribute('data-choice-orig-style', origStyle);
+          }
+
+          this.element.setAttribute('data-choice', 'active');
+        };
+
+        _proto.reveal = function reveal() {
+          // Reinstate passed element
+          this.element.classList.remove(this.classNames.input);
+          this.element.hidden = false;
+          this.element.removeAttribute('tabindex'); // Recover original styles if any
+
+          var origStyle = this.element.getAttribute('data-choice-orig-style');
+
+          if (origStyle) {
+            this.element.removeAttribute('data-choice-orig-style');
+            this.element.setAttribute('style', origStyle);
+          } else {
+            this.element.removeAttribute('style');
+          }
+
+          this.element.removeAttribute('data-choice'); // Re-assign values - this is weird, I know
+          // @todo Figure out why we need to do this
+
+          this.element.value = this.element.value; // eslint-disable-line no-self-assign
+        };
+
+        _proto.enable = function enable() {
+          this.element.removeAttribute('disabled');
+          this.element.disabled = false;
+          this.isDisabled = false;
+        };
+
+        _proto.disable = function disable() {
+          this.element.setAttribute('disabled', '');
+          this.element.disabled = true;
+          this.isDisabled = true;
+        };
+
+        _proto.triggerEvent = function triggerEvent(eventType, data) {
+          dispatchEvent(this.element, eventType, data);
+        };
+
+        wrapped_element_createClass(WrappedElement, [{
+          key: "isActive",
+          get: function get() {
+            return this.element.dataset.choice === 'active';
+          }
+        }, {
+          key: "dir",
+          get: function get() {
+            return this.element.dir;
+          }
+        }, {
+          key: "value",
+          get: function get() {
+            return this.element.value;
+          },
+          set: function set(value) {
+            // you must define setter here otherwise it will be readonly property
+            this.element.value = value;
+          }
+        }]);
+        return WrappedElement;
+      }(); // CONCATENATED MODULE: ./src/scripts/components/wrapped-input.js
+
+
+      function wrapped_input_defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function wrapped_input_createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) wrapped_input_defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) wrapped_input_defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+
+      function _inheritsLoose(subClass, superClass) {
+        subClass.prototype = Object.create(superClass.prototype);
+        subClass.prototype.constructor = subClass;
+        subClass.__proto__ = superClass;
+      }
+      /**
+       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
+       * @typedef {import('../../../types/index').Choices.Item} Item
+       */
+
+
+      var WrappedInput = /*#__PURE__*/function (_WrappedElement) {
+        _inheritsLoose(WrappedInput, _WrappedElement);
+        /**
+         * @param {{
+         *  element: HTMLInputElement,
+         *  classNames: ClassNames,
+         *  delimiter: string
+         * }} args
+         */
+
+
+        function WrappedInput(_ref) {
+          var _this;
+
+          var element = _ref.element,
+              classNames = _ref.classNames,
+              delimiter = _ref.delimiter;
+          _this = _WrappedElement.call(this, {
+            element: element,
+            classNames: classNames
+          }) || this;
+          _this.delimiter = delimiter;
+          return _this;
+        }
+        /**
+         * @returns {string}
+         */
+
+
+        wrapped_input_createClass(WrappedInput, [{
+          key: "value",
+          get: function get() {
+            return this.element.value;
+          }
+          /**
+           * @param {Item[]} items
+           */
+          ,
+          set: function set(items) {
+            var itemValues = items.map(function (_ref2) {
+              var value = _ref2.value;
+              return value;
+            });
+            var joinedValues = itemValues.join(this.delimiter);
+            this.element.setAttribute('value', joinedValues);
+            this.element.value = joinedValues;
+          }
+        }]);
+        return WrappedInput;
+      }(wrapped_element_WrappedElement); // CONCATENATED MODULE: ./src/scripts/components/wrapped-select.js
+
+
+      function wrapped_select_defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function wrapped_select_createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) wrapped_select_defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) wrapped_select_defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+
+      function wrapped_select_inheritsLoose(subClass, superClass) {
+        subClass.prototype = Object.create(superClass.prototype);
+        subClass.prototype.constructor = subClass;
+        subClass.__proto__ = superClass;
+      }
+      /**
+       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
+       * @typedef {import('../../../types/index').Choices.Item} Item
+       * @typedef {import('../../../types/index').Choices.Choice} Choice
+       */
+
+
+      var WrappedSelect = /*#__PURE__*/function (_WrappedElement) {
+        wrapped_select_inheritsLoose(WrappedSelect, _WrappedElement);
+        /**
+         * @param {{
+         *  element: HTMLSelectElement,
+         *  classNames: ClassNames,
+         *  delimiter: string
+         *  template: function
+         * }} args
+         */
+
+        function WrappedSelect(_ref) {
+          var _this;
+
+          var element = _ref.element,
+              classNames = _ref.classNames,
+              template = _ref.template;
+          _this = _WrappedElement.call(this, {
+            element: element,
+            classNames: classNames
+          }) || this;
+          _this.template = template;
+          return _this;
+        }
+
+        var _proto = WrappedSelect.prototype;
+        /**
+         * @param {DocumentFragment} fragment
+         */
+
+        _proto.appendDocFragment = function appendDocFragment(fragment) {
+          this.element.innerHTML = '';
+          this.element.appendChild(fragment);
+        };
+
+        wrapped_select_createClass(WrappedSelect, [{
+          key: "placeholderOption",
+          get: function get() {
+            return this.element.querySelector('option[value=""]') || // Backward compatibility layer for the non-standard placeholder attribute supported in older versions.
+            this.element.querySelector('option[placeholder]');
+          }
+          /**
+           * @returns {Element[]}
+           */
+
+        }, {
+          key: "optionGroups",
+          get: function get() {
+            return Array.from(this.element.getElementsByTagName('OPTGROUP'));
+          }
+          /**
+           * @returns {Item[] | Choice[]}
+           */
+
+        }, {
+          key: "options",
+          get: function get() {
+            return Array.from(this.element.options);
+          }
+          /**
+           * @param {Item[] | Choice[]} options
+           */
+          ,
+          set: function set(options) {
+            var _this2 = this;
+
+            var fragment = document.createDocumentFragment();
+
+            var addOptionToFragment = function addOptionToFragment(data) {
+              // Create a standard select option
+              var option = _this2.template(data); // Append it to fragment
+
+
+              fragment.appendChild(option);
+            }; // Add each list item to list
+
+
+            options.forEach(function (optionData) {
+              return addOptionToFragment(optionData);
+            });
+            this.appendDocFragment(fragment);
+          }
+        }]);
+        return WrappedSelect;
+      }(wrapped_element_WrappedElement); // CONCATENATED MODULE: ./src/scripts/components/index.js
+      // CONCATENATED MODULE: ./src/scripts/templates.js
+
+      /**
+       * Helpers to create HTML elements used by Choices
+       * Can be overridden by providing `callbackOnCreateTemplates` option
+       * @typedef {import('../../types/index').Choices.Templates} Templates
+       * @typedef {import('../../types/index').Choices.ClassNames} ClassNames
+       * @typedef {import('../../types/index').Choices.Options} Options
+       * @typedef {import('../../types/index').Choices.Item} Item
+       * @typedef {import('../../types/index').Choices.Choice} Choice
+       * @typedef {import('../../types/index').Choices.Group} Group
+       */
+
+
+      var TEMPLATES =
+      /** @type {Templates} */
+      {
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {"ltr" | "rtl" | "auto"} dir
+         * @param {boolean} isSelectElement
+         * @param {boolean} isSelectOneElement
+         * @param {boolean} searchEnabled
+         * @param {"select-one" | "select-multiple" | "text"} passedElementType
+         */
+        containerOuter: function containerOuter(_ref, dir, isSelectElement, isSelectOneElement, searchEnabled, passedElementType) {
+          var _containerOuter = _ref.containerOuter;
+          var div = Object.assign(document.createElement('div'), {
+            className: _containerOuter
+          });
+          div.dataset.type = passedElementType;
+
+          if (dir) {
+            div.dir = dir;
+          }
+
+          if (isSelectOneElement) {
+            div.tabIndex = 0;
+          }
+
+          if (isSelectElement) {
+            div.setAttribute('role', searchEnabled ? 'combobox' : 'listbox');
+
+            if (searchEnabled) {
+              div.setAttribute('aria-autocomplete', 'list');
+            }
+          }
+
+          div.setAttribute('aria-haspopup', 'true');
+          div.setAttribute('aria-expanded', 'false');
+          return div;
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         */
+        containerInner: function containerInner(_ref2) {
+          var _containerInner = _ref2.containerInner;
+          return Object.assign(document.createElement('div'), {
+            className: _containerInner
+          });
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {boolean} isSelectOneElement
+         */
+        itemList: function itemList(_ref3, isSelectOneElement) {
+          var list = _ref3.list,
+              listSingle = _ref3.listSingle,
+              listItems = _ref3.listItems;
+          return Object.assign(document.createElement('div'), {
+            className: list + " " + (isSelectOneElement ? listSingle : listItems)
+          });
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {string} value
+         */
+        placeholder: function placeholder(_ref4, value) {
+          var _placeholder = _ref4.placeholder;
+          return Object.assign(document.createElement('div'), {
+            className: _placeholder,
+            innerHTML: value
+          });
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {Item} item
+         * @param {boolean} removeItemButton
+         */
+        item: function item(_ref5, _ref6, removeItemButton) {
+          var _item = _ref5.item,
+              button = _ref5.button,
+              highlightedState = _ref5.highlightedState,
+              itemSelectable = _ref5.itemSelectable,
+              placeholder = _ref5.placeholder;
+          var id = _ref6.id,
+              value = _ref6.value,
+              label = _ref6.label,
+              customProperties = _ref6.customProperties,
+              active = _ref6.active,
+              disabled = _ref6.disabled,
+              highlighted = _ref6.highlighted,
+              isPlaceholder = _ref6.placeholder;
+          var div = Object.assign(document.createElement('div'), {
+            className: _item,
+            innerHTML: label
+          });
+          Object.assign(div.dataset, {
+            item: '',
+            id: id,
+            value: value,
+            customProperties: customProperties
+          });
+
+          if (active) {
+            div.setAttribute('aria-selected', 'true');
+          }
+
+          if (disabled) {
+            div.setAttribute('aria-disabled', 'true');
+          }
+
+          if (isPlaceholder) {
+            div.classList.add(placeholder);
+          }
+
+          div.classList.add(highlighted ? highlightedState : itemSelectable);
+
+          if (removeItemButton) {
+            if (disabled) {
+              div.classList.remove(itemSelectable);
+            }
+
+            div.dataset.deletable = '';
+            /** @todo This MUST be localizable, not hardcoded! */
+
+            var REMOVE_ITEM_TEXT = 'Remove item';
+            var removeButton = Object.assign(document.createElement('button'), {
+              type: 'button',
+              className: button,
+              innerHTML: REMOVE_ITEM_TEXT
+            });
+            removeButton.setAttribute('aria-label', REMOVE_ITEM_TEXT + ": '" + value + "'");
+            removeButton.dataset.button = '';
+            div.appendChild(removeButton);
+          }
+
+          return div;
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {boolean} isSelectOneElement
+         */
+        choiceList: function choiceList(_ref7, isSelectOneElement) {
+          var list = _ref7.list;
+          var div = Object.assign(document.createElement('div'), {
+            className: list
+          });
+
+          if (!isSelectOneElement) {
+            div.setAttribute('aria-multiselectable', 'true');
+          }
+
+          div.setAttribute('role', 'listbox');
+          return div;
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {Group} group
+         */
+        choiceGroup: function choiceGroup(_ref8, _ref9) {
+          var group = _ref8.group,
+              groupHeading = _ref8.groupHeading,
+              itemDisabled = _ref8.itemDisabled;
+          var id = _ref9.id,
+              value = _ref9.value,
+              disabled = _ref9.disabled;
+          var div = Object.assign(document.createElement('div'), {
+            className: group + " " + (disabled ? itemDisabled : '')
+          });
+          div.setAttribute('role', 'group');
+          Object.assign(div.dataset, {
+            group: '',
+            id: id,
+            value: value
+          });
+
+          if (disabled) {
+            div.setAttribute('aria-disabled', 'true');
+          }
+
+          div.appendChild(Object.assign(document.createElement('div'), {
+            className: groupHeading,
+            innerHTML: value
+          }));
+          return div;
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {Choice} choice
+         * @param {Options['itemSelectText']} selectText
+         */
+        choice: function choice(_ref10, _ref11, selectText) {
+          var item = _ref10.item,
+              itemChoice = _ref10.itemChoice,
+              itemSelectable = _ref10.itemSelectable,
+              selectedState = _ref10.selectedState,
+              itemDisabled = _ref10.itemDisabled,
+              placeholder = _ref10.placeholder;
+          var id = _ref11.id,
+              value = _ref11.value,
+              label = _ref11.label,
+              groupId = _ref11.groupId,
+              elementId = _ref11.elementId,
+              isDisabled = _ref11.disabled,
+              isSelected = _ref11.selected,
+              isPlaceholder = _ref11.placeholder;
+          var div = Object.assign(document.createElement('div'), {
+            id: elementId,
+            innerHTML: label,
+            className: item + " " + itemChoice
+          });
+
+          if (isSelected) {
+            div.classList.add(selectedState);
+          }
+
+          if (isPlaceholder) {
+            div.classList.add(placeholder);
+          }
+
+          div.setAttribute('role', groupId > 0 ? 'treeitem' : 'option');
+          Object.assign(div.dataset, {
+            choice: '',
+            id: id,
+            value: value,
+            selectText: selectText
+          });
+
+          if (isDisabled) {
+            div.classList.add(itemDisabled);
+            div.dataset.choiceDisabled = '';
+            div.setAttribute('aria-disabled', 'true');
+          } else {
+            div.classList.add(itemSelectable);
+            div.dataset.choiceSelectable = '';
+          }
+
+          return div;
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {string} placeholderValue
+         */
+        input: function input(_ref12, placeholderValue) {
+          var _input = _ref12.input,
+              inputCloned = _ref12.inputCloned;
+          var inp = Object.assign(document.createElement('input'), {
+            type: 'text',
+            className: _input + " " + inputCloned,
+            autocomplete: 'off',
+            autocapitalize: 'off',
+            spellcheck: false
+          });
+          inp.setAttribute('role', 'textbox');
+          inp.setAttribute('aria-autocomplete', 'list');
+          inp.setAttribute('aria-label', placeholderValue);
+          return inp;
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         */
+        dropdown: function dropdown(_ref13) {
+          var list = _ref13.list,
+              listDropdown = _ref13.listDropdown;
+          var div = document.createElement('div');
+          div.classList.add(list, listDropdown);
+          div.setAttribute('aria-expanded', 'false');
+          return div;
+        },
+
+        /**
+         *
+         * @param {Partial<ClassNames>} classNames
+         * @param {string} innerHTML
+         * @param {"no-choices" | "no-results" | ""} type
+         */
+        notice: function notice(_ref14, innerHTML, type) {
+          var item = _ref14.item,
+              itemChoice = _ref14.itemChoice,
+              noResults = _ref14.noResults,
+              noChoices = _ref14.noChoices;
+
+          if (type === void 0) {
+            type = '';
+          }
+
+          var classes = [item, itemChoice];
+
+          if (type === 'no-choices') {
+            classes.push(noChoices);
+          } else if (type === 'no-results') {
+            classes.push(noResults);
+          }
+
+          return Object.assign(document.createElement('div'), {
+            innerHTML: innerHTML,
+            className: classes.join(' ')
+          });
+        },
+
+        /**
+         * @param {Item} option
+         */
+        option: function option(_ref15) {
+          var label = _ref15.label,
+              value = _ref15.value,
+              customProperties = _ref15.customProperties,
+              active = _ref15.active,
+              disabled = _ref15.disabled;
+          var opt = new Option(label, value, false, active);
+
+          if (customProperties) {
+            opt.dataset.customProperties = customProperties;
+          }
+
+          opt.disabled = disabled;
+          return opt;
+        }
+      };
+
+      /**
+       * @typedef {import('redux').Action} Action
+       * @typedef {import('../../../types/index').Choices.Choice} Choice
+       */
+
+      /**
+       * @argument {Choice} choice
+       * @returns {Action & Choice}
+       */
+
+      var choices_addChoice = function addChoice(_ref) {
+        var value = _ref.value,
+            label = _ref.label,
+            id = _ref.id,
+            groupId = _ref.groupId,
+            disabled = _ref.disabled,
+            elementId = _ref.elementId,
+            customProperties = _ref.customProperties,
+            placeholder = _ref.placeholder,
+            keyCode = _ref.keyCode;
+        return {
+          type: ACTION_TYPES.ADD_CHOICE,
+          value: value,
+          label: label,
+          id: id,
+          groupId: groupId,
+          disabled: disabled,
+          elementId: elementId,
+          customProperties: customProperties,
+          placeholder: placeholder,
+          keyCode: keyCode
+        };
+      };
+      /**
+       * @argument {Choice[]} results
+       * @returns {Action & { results: Choice[] }}
+       */
+
+
+      var choices_filterChoices = function filterChoices(results) {
+        return {
+          type: ACTION_TYPES.FILTER_CHOICES,
+          results: results
+        };
+      };
+      /**
+       * @argument {boolean} active
+       * @returns {Action & { active: boolean }}
+       */
+
+
+      var choices_activateChoices = function activateChoices(active) {
+        if (active === void 0) {
+          active = true;
+        }
+
+        return {
+          type: ACTION_TYPES.ACTIVATE_CHOICES,
+          active: active
+        };
+      };
+      /**
+       * @returns {Action}
+       */
+
+
+      var choices_clearChoices = function clearChoices() {
+        return {
+          type: ACTION_TYPES.CLEAR_CHOICES
+        };
+      }; // CONCATENATED MODULE: ./src/scripts/actions/items.js
+
+      /**
+       * @typedef {import('redux').Action} Action
+       * @typedef {import('../../../types/index').Choices.Item} Item
+       */
+
+      /**
+       * @param {Item} item
+       * @returns {Action & Item}
+       */
+
+
+      var items_addItem = function addItem(_ref) {
+        var value = _ref.value,
+            label = _ref.label,
+            id = _ref.id,
+            choiceId = _ref.choiceId,
+            groupId = _ref.groupId,
+            customProperties = _ref.customProperties,
+            placeholder = _ref.placeholder,
+            keyCode = _ref.keyCode;
+        return {
+          type: ACTION_TYPES.ADD_ITEM,
+          value: value,
+          label: label,
+          id: id,
+          choiceId: choiceId,
+          groupId: groupId,
+          customProperties: customProperties,
+          placeholder: placeholder,
+          keyCode: keyCode
+        };
+      };
+      /**
+       * @param {string} id
+       * @param {string} choiceId
+       * @returns {Action & { id: string, choiceId: string }}
+       */
+
+
+      var items_removeItem = function removeItem(id, choiceId) {
+        return {
+          type: ACTION_TYPES.REMOVE_ITEM,
+          id: id,
+          choiceId: choiceId
+        };
+      };
+      /**
+       * @param {string} id
+       * @param {boolean} highlighted
+       * @returns {Action & { id: string, highlighted: boolean }}
+       */
+
+
+      var items_highlightItem = function highlightItem(id, highlighted) {
+        return {
+          type: ACTION_TYPES.HIGHLIGHT_ITEM,
+          id: id,
+          highlighted: highlighted
+        };
+      }; // CONCATENATED MODULE: ./src/scripts/actions/groups.js
+
+      /**
+       * @typedef {import('redux').Action} Action
+       * @typedef {import('../../../types/index').Choices.Group} Group
+       */
+
+      /**
+       * @param {Group} group
+       * @returns {Action & Group}
+       */
+
+
+      var groups_addGroup = function addGroup(_ref) {
+        var value = _ref.value,
+            id = _ref.id,
+            active = _ref.active,
+            disabled = _ref.disabled;
+        return {
+          type: ACTION_TYPES.ADD_GROUP,
+          value: value,
+          id: id,
+          active: active,
+          disabled: disabled
+        };
+      }; // CONCATENATED MODULE: ./src/scripts/actions/misc.js
+
+      /**
+       * @typedef {import('redux').Action} Action
+       */
+
+      /**
+       * @returns {Action}
+       */
+
+
+      var clearAll = function clearAll() {
+        return {
+          type: 'CLEAR_ALL'
+        };
+      };
+      /**
+       * @param {any} state
+       * @returns {Action & { state: object }}
+       */
+
+
+      var resetTo = function resetTo(state) {
+        return {
+          type: 'RESET_TO',
+          state: state
+        };
+      };
+      /**
+       * @param {boolean} isLoading
+       * @returns {Action & { isLoading: boolean }}
+       */
+
+
+      var setIsLoading = function setIsLoading(isLoading) {
+        return {
+          type: 'SET_IS_LOADING',
+          isLoading: isLoading
+        };
+      }; // CONCATENATED MODULE: ./src/scripts/choices.js
+
+
+      function choices_defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function choices_createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) choices_defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) choices_defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+      /** @see {@link http://browserhacks.com/#hack-acea075d0ac6954f275a70023906050c} */
+
+
+      var IS_IE11 = '-ms-scroll-limit' in document.documentElement.style && '-ms-ime-align' in document.documentElement.style;
+      /**
+       * @typedef {import('../../types/index').Choices.Choice} Choice
+       * @typedef {import('../../types/index').Choices.Item} Item
+       * @typedef {import('../../types/index').Choices.Group} Group
+       * @typedef {import('../../types/index').Choices.Options} Options
+       */
+
+      /** @type {Partial<Options>} */
+
+      var USER_DEFAULTS = {};
+      /**
+       * Choices
+       * @author Josh Johnson<josh@joshuajohnson.co.uk>
+       */
+
+      var choices_Choices = /*#__PURE__*/function () {
+        choices_createClass(Choices, null, [{
+          key: "defaults",
+          get: function get() {
+            return Object.preventExtensions({
+              get options() {
+                return USER_DEFAULTS;
+              },
+
+              get templates() {
+                return TEMPLATES;
+              }
+
+            });
+          }
+          /**
+           * @param {string | HTMLInputElement | HTMLSelectElement} element
+           * @param {Partial<Options>} userConfig
+           */
+
+        }]);
+
+        function Choices(element, userConfig) {
+          var _this = this;
+
+          if (element === void 0) {
+            element = '[data-choice]';
+          }
+
+          if (userConfig === void 0) {
+            userConfig = {};
+          }
+          /** @type {Partial<Options>} */
+
+
+          this.config = cjs_default.a.all([DEFAULT_CONFIG, Choices.defaults.options, userConfig], // When merging array configs, replace with a copy of the userConfig array,
+          // instead of concatenating with the default array
+          {
+            arrayMerge: function arrayMerge(_, sourceArray) {
+              return [].concat(sourceArray);
+            }
+          });
+          var invalidConfigOptions = diff(this.config, DEFAULT_CONFIG);
+
+          if (invalidConfigOptions.length) {
+            console.warn('Unknown config option(s) passed', invalidConfigOptions.join(', '));
+          }
+
+          var passedElement = typeof element === 'string' ? document.querySelector(element) : element;
+
+          if (!(passedElement instanceof HTMLInputElement || passedElement instanceof HTMLSelectElement)) {
+            throw TypeError('Expected one of the following types text|select-one|select-multiple');
+          }
+
+          this._isTextElement = passedElement.type === TEXT_TYPE;
+          this._isSelectOneElement = passedElement.type === SELECT_ONE_TYPE;
+          this._isSelectMultipleElement = passedElement.type === SELECT_MULTIPLE_TYPE;
+          this._isSelectElement = this._isSelectOneElement || this._isSelectMultipleElement;
+          this.config.searchEnabled = this._isSelectMultipleElement || this.config.searchEnabled;
+
+          if (!['auto', 'always'].includes(this.config.renderSelectedChoices)) {
+            this.config.renderSelectedChoices = 'auto';
+          }
+
+          if (userConfig.addItemFilter && typeof userConfig.addItemFilter !== 'function') {
+            var re = userConfig.addItemFilter instanceof RegExp ? userConfig.addItemFilter : new RegExp(userConfig.addItemFilter);
+            this.config.addItemFilter = re.test.bind(re);
+          }
+
+          if (this._isTextElement) {
+            this.passedElement = new WrappedInput({
+              element: passedElement,
+              classNames: this.config.classNames,
+              delimiter: this.config.delimiter
+            });
+          } else {
+            this.passedElement = new WrappedSelect({
+              element: passedElement,
+              classNames: this.config.classNames,
+              template: function template(data) {
+                return _this._templates.option(data);
+              }
+            });
+          }
+
+          this.initialised = false;
+          this._store = new store_Store();
+          this._initialState = {};
+          this._currentState = {};
+          this._prevState = {};
+          this._currentValue = '';
+          this._canSearch = this.config.searchEnabled;
+          this._isScrollingOnIe = false;
+          this._highlightPosition = 0;
+          this._wasTap = true;
+          this._placeholderValue = this._generatePlaceholderValue();
+          this._baseId = generateId(this.passedElement.element, 'choices-');
+          /**
+           * setting direction in cases where it's explicitly set on passedElement
+           * or when calculated direction is different from the document
+           * @type {HTMLElement['dir']}
+           */
+
+          this._direction = this.passedElement.dir;
+
+          if (!this._direction) {
+            var _window$getComputedSt = window.getComputedStyle(this.passedElement.element),
+                elementDirection = _window$getComputedSt.direction;
+
+            var _window$getComputedSt2 = window.getComputedStyle(document.documentElement),
+                documentDirection = _window$getComputedSt2.direction;
+
+            if (elementDirection !== documentDirection) {
+              this._direction = elementDirection;
+            }
+          }
+
+          this._idNames = {
+            itemChoice: 'item-choice'
+          }; // Assign preset groups from passed element
+
+          this._presetGroups = this.passedElement.optionGroups; // Assign preset options from passed element
+
+          this._presetOptions = this.passedElement.options; // Assign preset choices from passed object
+
+          this._presetChoices = this.config.choices; // Assign preset items from passed object first
+
+          this._presetItems = this.config.items; // Add any values passed from attribute
+
+          if (this.passedElement.value) {
+            this._presetItems = this._presetItems.concat(this.passedElement.value.split(this.config.delimiter));
+          } // Create array of choices from option elements
+
+
+          if (this.passedElement.options) {
+            this.passedElement.options.forEach(function (o) {
+              _this._presetChoices.push({
+                value: o.value,
+                label: o.innerHTML,
+                selected: o.selected,
+                disabled: o.disabled || o.parentNode.disabled,
+                placeholder: o.value === '' || o.hasAttribute('placeholder'),
+                customProperties: o.getAttribute('data-custom-properties')
+              });
+            });
+          }
+
+          this._render = this._render.bind(this);
+          this._onFocus = this._onFocus.bind(this);
+          this._onBlur = this._onBlur.bind(this);
+          this._onKeyUp = this._onKeyUp.bind(this);
+          this._onKeyDown = this._onKeyDown.bind(this);
+          this._onClick = this._onClick.bind(this);
+          this._onTouchMove = this._onTouchMove.bind(this);
+          this._onTouchEnd = this._onTouchEnd.bind(this);
+          this._onMouseDown = this._onMouseDown.bind(this);
+          this._onMouseOver = this._onMouseOver.bind(this);
+          this._onFormReset = this._onFormReset.bind(this);
+          this._onAKey = this._onAKey.bind(this);
+          this._onEnterKey = this._onEnterKey.bind(this);
+          this._onEscapeKey = this._onEscapeKey.bind(this);
+          this._onDirectionKey = this._onDirectionKey.bind(this);
+          this._onDeleteKey = this._onDeleteKey.bind(this); // If element has already been initialised with Choices, fail silently
+
+          if (this.passedElement.isActive) {
+            if (!this.config.silent) {
+              console.warn('Trying to initialise Choices on element already initialised');
+            }
+
+            this.initialised = true;
+            return;
+          } // Let's go
+
+
+          this.init();
+        }
+
+        var _proto = Choices.prototype;
+
+        _proto.init = function init() {
+          if (this.initialised) {
+            return;
+          }
+
+          this._createTemplates();
+
+          this._createElements();
+
+          this._createStructure(); // Set initial state (We need to clone the state because some reducers
+          // modify the inner objects properties in the state) 🤢
+
+
+          this._initialState = cloneObject(this._store.state);
+
+          this._store.subscribe(this._render);
+
+          this._render();
+
+          this._addEventListeners();
+
+          var shouldDisable = !this.config.addItems || this.passedElement.element.hasAttribute('disabled');
+
+          if (shouldDisable) {
+            this.disable();
+          }
+
+          this.initialised = true;
+          var callbackOnInit = this.config.callbackOnInit; // Run callback if it is a function
+
+          if (callbackOnInit && typeof callbackOnInit === 'function') {
+            callbackOnInit.call(this);
+          }
+        };
+
+        _proto.destroy = function destroy() {
+          if (!this.initialised) {
+            return;
+          }
+
+          this._removeEventListeners();
+
+          this.passedElement.reveal();
+          this.containerOuter.unwrap(this.passedElement.element);
+          this.clearStore();
+
+          if (this._isSelectElement) {
+            this.passedElement.options = this._presetOptions;
+          }
+
+          this._templates = null;
+          this.initialised = false;
+        };
+
+        _proto.enable = function enable() {
+          if (this.passedElement.isDisabled) {
+            this.passedElement.enable();
+          }
+
+          if (this.containerOuter.isDisabled) {
+            this._addEventListeners();
+
+            this.input.enable();
+            this.containerOuter.enable();
+          }
+
+          return this;
+        };
+
+        _proto.disable = function disable() {
+          if (!this.passedElement.isDisabled) {
+            this.passedElement.disable();
+          }
+
+          if (!this.containerOuter.isDisabled) {
+            this._removeEventListeners();
+
+            this.input.disable();
+            this.containerOuter.disable();
+          }
+
+          return this;
+        };
+
+        _proto.highlightItem = function highlightItem(item, runEvent) {
+          if (runEvent === void 0) {
+            runEvent = true;
+          }
+
+          if (!item) {
+            return this;
+          }
+
+          var id = item.id,
+              _item$groupId = item.groupId,
+              groupId = _item$groupId === void 0 ? -1 : _item$groupId,
+              _item$value = item.value,
+              value = _item$value === void 0 ? '' : _item$value,
+              _item$label = item.label,
+              label = _item$label === void 0 ? '' : _item$label;
+          var group = groupId >= 0 ? this._store.getGroupById(groupId) : null;
+
+          this._store.dispatch(items_highlightItem(id, true));
+
+          if (runEvent) {
+            this.passedElement.triggerEvent(EVENTS.highlightItem, {
+              id: id,
+              value: value,
+              label: label,
+              groupValue: group && group.value ? group.value : null
+            });
+          }
+
+          return this;
+        };
+
+        _proto.unhighlightItem = function unhighlightItem(item) {
+          if (!item) {
+            return this;
+          }
+
+          var id = item.id,
+              _item$groupId2 = item.groupId,
+              groupId = _item$groupId2 === void 0 ? -1 : _item$groupId2,
+              _item$value2 = item.value,
+              value = _item$value2 === void 0 ? '' : _item$value2,
+              _item$label2 = item.label,
+              label = _item$label2 === void 0 ? '' : _item$label2;
+          var group = groupId >= 0 ? this._store.getGroupById(groupId) : null;
+
+          this._store.dispatch(items_highlightItem(id, false));
+
+          this.passedElement.triggerEvent(EVENTS.highlightItem, {
+            id: id,
+            value: value,
+            label: label,
+            groupValue: group && group.value ? group.value : null
+          });
+          return this;
+        };
+
+        _proto.highlightAll = function highlightAll() {
+          var _this2 = this;
+
+          this._store.items.forEach(function (item) {
+            return _this2.highlightItem(item);
+          });
+
+          return this;
+        };
+
+        _proto.unhighlightAll = function unhighlightAll() {
+          var _this3 = this;
+
+          this._store.items.forEach(function (item) {
+            return _this3.unhighlightItem(item);
+          });
+
+          return this;
+        };
+
+        _proto.removeActiveItemsByValue = function removeActiveItemsByValue(value) {
+          var _this4 = this;
+
+          this._store.activeItems.filter(function (item) {
+            return item.value === value;
+          }).forEach(function (item) {
+            return _this4._removeItem(item);
+          });
+
+          return this;
+        };
+
+        _proto.removeActiveItems = function removeActiveItems(excludedId) {
+          var _this5 = this;
+
+          this._store.activeItems.filter(function (_ref) {
+            var id = _ref.id;
+            return id !== excludedId;
+          }).forEach(function (item) {
+            return _this5._removeItem(item);
+          });
+
+          return this;
+        };
+
+        _proto.removeHighlightedItems = function removeHighlightedItems(runEvent) {
+          var _this6 = this;
+
+          if (runEvent === void 0) {
+            runEvent = false;
+          }
+
+          this._store.highlightedActiveItems.forEach(function (item) {
+            _this6._removeItem(item); // If this action was performed by the user
+            // trigger the event
+
+
+            if (runEvent) {
+              _this6._triggerChange(item.value);
+            }
+          });
+
+          return this;
+        };
+
+        _proto.showDropdown = function showDropdown(preventInputFocus) {
+          var _this7 = this;
+
+          if (this.dropdown.isActive) {
+            return this;
+          }
+
+          requestAnimationFrame(function () {
+            _this7.dropdown.show();
+
+            _this7.containerOuter.open(_this7.dropdown.distanceFromTopWindow);
+
+            if (!preventInputFocus && _this7._canSearch) {
+              _this7.input.focus();
+            }
+
+            _this7.passedElement.triggerEvent(EVENTS.showDropdown, {});
+          });
+          return this;
+        };
+
+        _proto.hideDropdown = function hideDropdown(preventInputBlur) {
+          var _this8 = this;
+
+          if (!this.dropdown.isActive) {
+            return this;
+          }
+
+          requestAnimationFrame(function () {
+            _this8.dropdown.hide();
+
+            _this8.containerOuter.close();
+
+            if (!preventInputBlur && _this8._canSearch) {
+              _this8.input.removeActiveDescendant();
+
+              _this8.input.blur();
+            }
+
+            _this8.passedElement.triggerEvent(EVENTS.hideDropdown, {});
+          });
+          return this;
+        };
+
+        _proto.getValue = function getValue(valueOnly) {
+          if (valueOnly === void 0) {
+            valueOnly = false;
+          }
+
+          var values = this._store.activeItems.reduce(function (selectedItems, item) {
+            var itemValue = valueOnly ? item.value : item;
+            selectedItems.push(itemValue);
+            return selectedItems;
+          }, []);
+
+          return this._isSelectOneElement ? values[0] : values;
+        }
+        /**
+         * @param {string[] | import('../../types/index').Choices.Item[]} items
+         */
+        ;
+
+        _proto.setValue = function setValue(items) {
+          var _this9 = this;
+
+          if (!this.initialised) {
+            return this;
+          }
+
+          items.forEach(function (value) {
+            return _this9._setChoiceOrItem(value);
+          });
+          return this;
+        };
+
+        _proto.setChoiceByValue = function setChoiceByValue(value) {
+          var _this10 = this;
+
+          if (!this.initialised || this._isTextElement) {
+            return this;
+          } // If only one value has been passed, convert to array
+
+
+          var choiceValue = Array.isArray(value) ? value : [value]; // Loop through each value and
+
+          choiceValue.forEach(function (val) {
+            return _this10._findAndSelectChoiceByValue(val);
+          });
+          return this;
+        }
+        /**
+         * Set choices of select input via an array of objects (or function that returns array of object or promise of it),
+         * a value field name and a label field name.
+         * This behaves the same as passing items via the choices option but can be called after initialising Choices.
+         * This can also be used to add groups of choices (see example 2); Optionally pass a true `replaceChoices` value to remove any existing choices.
+         * Optionally pass a `customProperties` object to add additional data to your choices (useful when searching/filtering etc).
+         *
+         * **Input types affected:** select-one, select-multiple
+         *
+         * @template {Choice[] | ((instance: Choices) => object[] | Promise<object[]>)} T
+         * @param {T} [choicesArrayOrFetcher]
+         * @param {string} [value = 'value'] - name of `value` field
+         * @param {string} [label = 'label'] - name of 'label' field
+         * @param {boolean} [replaceChoices = false] - whether to replace of add choices
+         * @returns {this | Promise<this>}
+         *
+         * @example
+         * ```js
+         * const example = new Choices(element);
+         *
+         * example.setChoices([
+         *   {value: 'One', label: 'Label One', disabled: true},
+         *   {value: 'Two', label: 'Label Two', selected: true},
+         *   {value: 'Three', label: 'Label Three'},
+         * ], 'value', 'label', false);
+         * ```
+         *
+         * @example
+         * ```js
+         * const example = new Choices(element);
+         *
+         * example.setChoices(async () => {
+         *   try {
+         *      const items = await fetch('/items');
+         *      return items.json()
+         *   } catch(err) {
+         *      console.error(err)
+         *   }
+         * });
+         * ```
+         *
+         * @example
+         * ```js
+         * const example = new Choices(element);
+         *
+         * example.setChoices([{
+         *   label: 'Group one',
+         *   id: 1,
+         *   disabled: false,
+         *   choices: [
+         *     {value: 'Child One', label: 'Child One', selected: true},
+         *     {value: 'Child Two', label: 'Child Two',  disabled: true},
+         *     {value: 'Child Three', label: 'Child Three'},
+         *   ]
+         * },
+         * {
+         *   label: 'Group two',
+         *   id: 2,
+         *   disabled: false,
+         *   choices: [
+         *     {value: 'Child Four', label: 'Child Four', disabled: true},
+         *     {value: 'Child Five', label: 'Child Five'},
+         *     {value: 'Child Six', label: 'Child Six', customProperties: {
+         *       description: 'Custom description about child six',
+         *       random: 'Another random custom property'
+         *     }},
+         *   ]
+         * }], 'value', 'label', false);
+         * ```
+         */
+        ;
+
+        _proto.setChoices = function setChoices(choicesArrayOrFetcher, value, label, replaceChoices) {
+          var _this11 = this;
+
+          if (choicesArrayOrFetcher === void 0) {
+            choicesArrayOrFetcher = [];
+          }
+
+          if (value === void 0) {
+            value = 'value';
+          }
+
+          if (label === void 0) {
+            label = 'label';
+          }
+
+          if (replaceChoices === void 0) {
+            replaceChoices = false;
+          }
+
+          if (!this.initialised) {
+            throw new ReferenceError("setChoices was called on a non-initialized instance of Choices");
+          }
+
+          if (!this._isSelectElement) {
+            throw new TypeError("setChoices can't be used with INPUT based Choices");
+          }
+
+          if (typeof value !== 'string' || !value) {
+            throw new TypeError("value parameter must be a name of 'value' field in passed objects");
+          } // Clear choices if needed
+
+
+          if (replaceChoices) {
+            this.clearChoices();
+          }
+
+          if (typeof choicesArrayOrFetcher === 'function') {
+            // it's a choices fetcher function
+            var fetcher = choicesArrayOrFetcher(this);
+
+            if (typeof Promise === 'function' && fetcher instanceof Promise) {
+              // that's a promise
+              // eslint-disable-next-line compat/compat
+              return new Promise(function (resolve) {
+                return requestAnimationFrame(resolve);
+              }).then(function () {
+                return _this11._handleLoadingState(true);
+              }).then(function () {
+                return fetcher;
+              }).then(function (data) {
+                return _this11.setChoices(data, value, label, replaceChoices);
+              }).catch(function (err) {
+                if (!_this11.config.silent) {
+                  console.error(err);
+                }
+              }).then(function () {
+                return _this11._handleLoadingState(false);
+              }).then(function () {
+                return _this11;
+              });
+            } // function returned something else than promise, let's check if it's an array of choices
+
+
+            if (!Array.isArray(fetcher)) {
+              throw new TypeError(".setChoices first argument function must return either array of choices or Promise, got: " + typeof fetcher);
+            } // recursion with results, it's sync and choices were cleared already
+
+
+            return this.setChoices(fetcher, value, label, false);
+          }
+
+          if (!Array.isArray(choicesArrayOrFetcher)) {
+            throw new TypeError(".setChoices must be called either with array of choices with a function resulting into Promise of array of choices");
+          }
+
+          this.containerOuter.removeLoadingState();
+
+          this._startLoading();
+
+          choicesArrayOrFetcher.forEach(function (groupOrChoice) {
+            if (groupOrChoice.choices) {
+              _this11._addGroup({
+                id: parseInt(groupOrChoice.id, 10) || null,
+                group: groupOrChoice,
+                valueKey: value,
+                labelKey: label
+              });
+            } else {
+              _this11._addChoice({
+                value: groupOrChoice[value],
+                label: groupOrChoice[label],
+                isSelected: groupOrChoice.selected,
+                isDisabled: groupOrChoice.disabled,
+                customProperties: groupOrChoice.customProperties,
+                placeholder: groupOrChoice.placeholder
+              });
+            }
+          });
+
+          this._stopLoading();
+
+          return this;
+        };
+
+        _proto.clearChoices = function clearChoices() {
+          this._store.dispatch(choices_clearChoices());
+
+          return this;
+        };
+
+        _proto.clearStore = function clearStore() {
+          this._store.dispatch(clearAll());
+
+          return this;
+        };
+
+        _proto.clearInput = function clearInput() {
+          var shouldSetInputWidth = !this._isSelectOneElement;
+          this.input.clear(shouldSetInputWidth);
+
+          if (!this._isTextElement && this._canSearch) {
+            this._isSearching = false;
+
+            this._store.dispatch(choices_activateChoices(true));
+          }
+
+          return this;
+        };
+
+        _proto._render = function _render() {
+          if (this._store.isLoading()) {
+            return;
+          }
+
+          this._currentState = this._store.state;
+          var stateChanged = this._currentState.choices !== this._prevState.choices || this._currentState.groups !== this._prevState.groups || this._currentState.items !== this._prevState.items;
+          var shouldRenderChoices = this._isSelectElement;
+          var shouldRenderItems = this._currentState.items !== this._prevState.items;
+
+          if (!stateChanged) {
+            return;
+          }
+
+          if (shouldRenderChoices) {
+            this._renderChoices();
+          }
+
+          if (shouldRenderItems) {
+            this._renderItems();
+          }
+
+          this._prevState = this._currentState;
+        };
+
+        _proto._renderChoices = function _renderChoices() {
+          var _this12 = this;
+
+          var _this$_store = this._store,
+              activeGroups = _this$_store.activeGroups,
+              activeChoices = _this$_store.activeChoices;
+          var choiceListFragment = document.createDocumentFragment();
+          this.choiceList.clear();
+
+          if (this.config.resetScrollPosition) {
+            requestAnimationFrame(function () {
+              return _this12.choiceList.scrollToTop();
+            });
+          } // If we have grouped options
+
+
+          if (activeGroups.length >= 1 && !this._isSearching) {
+            // If we have a placeholder choice along with groups
+            var activePlaceholders = activeChoices.filter(function (activeChoice) {
+              return activeChoice.placeholder === true && activeChoice.groupId === -1;
+            });
+
+            if (activePlaceholders.length >= 1) {
+              choiceListFragment = this._createChoicesFragment(activePlaceholders, choiceListFragment);
+            }
+
+            choiceListFragment = this._createGroupsFragment(activeGroups, activeChoices, choiceListFragment);
+          } else if (activeChoices.length >= 1) {
+            choiceListFragment = this._createChoicesFragment(activeChoices, choiceListFragment);
+          } // If we have choices to show
+
+
+          if (choiceListFragment.childNodes && choiceListFragment.childNodes.length > 0) {
+            var activeItems = this._store.activeItems;
+
+            var canAddItem = this._canAddItem(activeItems, this.input.value); // ...and we can select them
+
+
+            if (canAddItem.response) {
+              // ...append them and highlight the first choice
+              this.choiceList.append(choiceListFragment);
+
+              this._highlightChoice();
+            } else {
+              // ...otherwise show a notice
+              this.choiceList.append(this._getTemplate('notice', canAddItem.notice));
+            }
+          } else {
+            // Otherwise show a notice
+            var dropdownItem;
+            var notice;
+
+            if (this._isSearching) {
+              notice = typeof this.config.noResultsText === 'function' ? this.config.noResultsText() : this.config.noResultsText;
+              dropdownItem = this._getTemplate('notice', notice, 'no-results');
+            } else {
+              notice = typeof this.config.noChoicesText === 'function' ? this.config.noChoicesText() : this.config.noChoicesText;
+              dropdownItem = this._getTemplate('notice', notice, 'no-choices');
+            }
+
+            this.choiceList.append(dropdownItem);
+          }
+        };
+
+        _proto._renderItems = function _renderItems() {
+          var activeItems = this._store.activeItems || [];
+          this.itemList.clear(); // Create a fragment to store our list items
+          // (so we don't have to update the DOM for each item)
+
+          var itemListFragment = this._createItemsFragment(activeItems); // If we have items to add, append them
+
+
+          if (itemListFragment.childNodes) {
+            this.itemList.append(itemListFragment);
+          }
+        };
+
+        _proto._createGroupsFragment = function _createGroupsFragment(groups, choices, fragment) {
+          var _this13 = this;
+
+          if (fragment === void 0) {
+            fragment = document.createDocumentFragment();
+          }
+
+          var getGroupChoices = function getGroupChoices(group) {
+            return choices.filter(function (choice) {
+              if (_this13._isSelectOneElement) {
+                return choice.groupId === group.id;
+              }
+
+              return choice.groupId === group.id && (_this13.config.renderSelectedChoices === 'always' || !choice.selected);
+            });
+          }; // If sorting is enabled, filter groups
+
+
+          if (this.config.shouldSort) {
+            groups.sort(this.config.sorter);
+          }
+
+          groups.forEach(function (group) {
+            var groupChoices = getGroupChoices(group);
+
+            if (groupChoices.length >= 1) {
+              var dropdownGroup = _this13._getTemplate('choiceGroup', group);
+
+              fragment.appendChild(dropdownGroup);
+
+              _this13._createChoicesFragment(groupChoices, fragment, true);
+            }
+          });
+          return fragment;
+        };
+
+        _proto._createChoicesFragment = function _createChoicesFragment(choices, fragment, withinGroup) {
+          var _this14 = this;
+
+          if (fragment === void 0) {
+            fragment = document.createDocumentFragment();
+          }
+
+          if (withinGroup === void 0) {
+            withinGroup = false;
+          } // Create a fragment to store our list items (so we don't have to update the DOM for each item)
+
+
+          var _this$config = this.config,
+              renderSelectedChoices = _this$config.renderSelectedChoices,
+              searchResultLimit = _this$config.searchResultLimit,
+              renderChoiceLimit = _this$config.renderChoiceLimit;
+          var filter = this._isSearching ? sortByScore : this.config.sorter;
+
+          var appendChoice = function appendChoice(choice) {
+            var shouldRender = renderSelectedChoices === 'auto' ? _this14._isSelectOneElement || !choice.selected : true;
+
+            if (shouldRender) {
+              var dropdownItem = _this14._getTemplate('choice', choice, _this14.config.itemSelectText);
+
+              fragment.appendChild(dropdownItem);
+            }
+          };
+
+          var rendererableChoices = choices;
+
+          if (renderSelectedChoices === 'auto' && !this._isSelectOneElement) {
+            rendererableChoices = choices.filter(function (choice) {
+              return !choice.selected;
+            });
+          } // Split array into placeholders and "normal" choices
+
+
+          var _rendererableChoices$ = rendererableChoices.reduce(function (acc, choice) {
+            if (choice.placeholder) {
+              acc.placeholderChoices.push(choice);
+            } else {
+              acc.normalChoices.push(choice);
+            }
+
+            return acc;
+          }, {
+            placeholderChoices: [],
+            normalChoices: []
+          }),
+              placeholderChoices = _rendererableChoices$.placeholderChoices,
+              normalChoices = _rendererableChoices$.normalChoices; // If sorting is enabled or the user is searching, filter choices
+
+
+          if (this.config.shouldSort || this._isSearching) {
+            normalChoices.sort(filter);
+          }
+
+          var choiceLimit = rendererableChoices.length; // Prepend placeholeder
+
+          var sortedChoices = this._isSelectOneElement ? [].concat(placeholderChoices, normalChoices) : normalChoices;
+
+          if (this._isSearching) {
+            choiceLimit = searchResultLimit;
+          } else if (renderChoiceLimit && renderChoiceLimit > 0 && !withinGroup) {
+            choiceLimit = renderChoiceLimit;
+          } // Add each choice to dropdown within range
+
+
+          for (var i = 0; i < choiceLimit; i += 1) {
+            if (sortedChoices[i]) {
+              appendChoice(sortedChoices[i]);
+            }
+          }
+
+          return fragment;
+        };
+
+        _proto._createItemsFragment = function _createItemsFragment(items, fragment) {
+          var _this15 = this;
+
+          if (fragment === void 0) {
+            fragment = document.createDocumentFragment();
+          } // Create fragment to add elements to
+
+
+          var _this$config2 = this.config,
+              shouldSortItems = _this$config2.shouldSortItems,
+              sorter = _this$config2.sorter,
+              removeItemButton = _this$config2.removeItemButton; // If sorting is enabled, filter items
+
+          if (shouldSortItems && !this._isSelectOneElement) {
+            items.sort(sorter);
+          }
+
+          if (this._isTextElement) {
+            // Update the value of the hidden input
+            this.passedElement.value = items;
+          } else {
+            // Update the options of the hidden input
+            this.passedElement.options = items;
+          }
+
+          var addItemToFragment = function addItemToFragment(item) {
+            // Create new list element
+            var listItem = _this15._getTemplate('item', item, removeItemButton); // Append it to list
+
+
+            fragment.appendChild(listItem);
+          }; // Add each list item to list
+
+
+          items.forEach(addItemToFragment);
+          return fragment;
+        };
+
+        _proto._triggerChange = function _triggerChange(value) {
+          if (value === undefined || value === null) {
+            return;
+          }
+
+          this.passedElement.triggerEvent(EVENTS.change, {
+            value: value
+          });
+        };
+
+        _proto._selectPlaceholderChoice = function _selectPlaceholderChoice() {
+          var placeholderChoice = this._store.placeholderChoice;
+
+          if (placeholderChoice) {
+            this._addItem({
+              value: placeholderChoice.value,
+              label: placeholderChoice.label,
+              choiceId: placeholderChoice.id,
+              groupId: placeholderChoice.groupId,
+              placeholder: placeholderChoice.placeholder
+            });
+
+            this._triggerChange(placeholderChoice.value);
+          }
+        };
+
+        _proto._handleButtonAction = function _handleButtonAction(activeItems, element) {
+          if (!activeItems || !element || !this.config.removeItems || !this.config.removeItemButton) {
+            return;
+          }
+
+          var itemId = element.parentNode.getAttribute('data-id');
+          var itemToRemove = activeItems.find(function (item) {
+            return item.id === parseInt(itemId, 10);
+          }); // Remove item associated with button
+
+          this._removeItem(itemToRemove);
+
+          this._triggerChange(itemToRemove.value);
+
+          if (this._isSelectOneElement) {
+            this._selectPlaceholderChoice();
+          }
+        };
+
+        _proto._handleItemAction = function _handleItemAction(activeItems, element, hasShiftKey) {
+          var _this16 = this;
+
+          if (hasShiftKey === void 0) {
+            hasShiftKey = false;
+          }
+
+          if (!activeItems || !element || !this.config.removeItems || this._isSelectOneElement) {
+            return;
+          }
+
+          var passedId = element.getAttribute('data-id'); // We only want to select one item with a click
+          // so we deselect any items that aren't the target
+          // unless shift is being pressed
+
+          activeItems.forEach(function (item) {
+            if (item.id === parseInt(passedId, 10) && !item.highlighted) {
+              _this16.highlightItem(item);
+            } else if (!hasShiftKey && item.highlighted) {
+              _this16.unhighlightItem(item);
+            }
+          }); // Focus input as without focus, a user cannot do anything with a
+          // highlighted item
+
+          this.input.focus();
+        };
+
+        _proto._handleChoiceAction = function _handleChoiceAction(activeItems, element) {
+          if (!activeItems || !element) {
+            return;
+          } // If we are clicking on an option
+
+
+          var id = element.dataset.id;
+
+          var choice = this._store.getChoiceById(id);
+
+          if (!choice) {
+            return;
+          }
+
+          var passedKeyCode = activeItems[0] && activeItems[0].keyCode ? activeItems[0].keyCode : null;
+          var hasActiveDropdown = this.dropdown.isActive; // Update choice keyCode
+
+          choice.keyCode = passedKeyCode;
+          this.passedElement.triggerEvent(EVENTS.choice, {
+            choice: choice
+          });
+
+          if (!choice.selected && !choice.disabled) {
+            var canAddItem = this._canAddItem(activeItems, choice.value);
+
+            if (canAddItem.response) {
+              this._addItem({
+                value: choice.value,
+                label: choice.label,
+                choiceId: choice.id,
+                groupId: choice.groupId,
+                customProperties: choice.customProperties,
+                placeholder: choice.placeholder,
+                keyCode: choice.keyCode
+              });
+
+              this._triggerChange(choice.value);
+            }
+          }
+
+          this.clearInput(); // We want to close the dropdown if we are dealing with a single select box
+
+          if (hasActiveDropdown && this._isSelectOneElement) {
+            this.hideDropdown(true);
+            this.containerOuter.focus();
+          }
+        };
+
+        _proto._handleBackspace = function _handleBackspace(activeItems) {
+          if (!this.config.removeItems || !activeItems) {
+            return;
+          }
+
+          var lastItem = activeItems[activeItems.length - 1];
+          var hasHighlightedItems = activeItems.some(function (item) {
+            return item.highlighted;
+          }); // If editing the last item is allowed and there are not other selected items,
+          // we can edit the item value. Otherwise if we can remove items, remove all selected items
+
+          if (this.config.editItems && !hasHighlightedItems && lastItem) {
+            this.input.value = lastItem.value;
+            this.input.setWidth();
+
+            this._removeItem(lastItem);
+
+            this._triggerChange(lastItem.value);
+          } else {
+            if (!hasHighlightedItems) {
+              // Highlight last item if none already highlighted
+              this.highlightItem(lastItem, false);
+            }
+
+            this.removeHighlightedItems(true);
+          }
+        };
+
+        _proto._startLoading = function _startLoading() {
+          this._store.dispatch(setIsLoading(true));
+        };
+
+        _proto._stopLoading = function _stopLoading() {
+          this._store.dispatch(setIsLoading(false));
+        };
+
+        _proto._handleLoadingState = function _handleLoadingState(setLoading) {
+          if (setLoading === void 0) {
+            setLoading = true;
+          }
+
+          var placeholderItem = this.itemList.getChild("." + this.config.classNames.placeholder);
+
+          if (setLoading) {
+            this.disable();
+            this.containerOuter.addLoadingState();
+
+            if (this._isSelectOneElement) {
+              if (!placeholderItem) {
+                placeholderItem = this._getTemplate('placeholder', this.config.loadingText);
+                this.itemList.append(placeholderItem);
+              } else {
+                placeholderItem.innerHTML = this.config.loadingText;
+              }
+            } else {
+              this.input.placeholder = this.config.loadingText;
+            }
+          } else {
+            this.enable();
+            this.containerOuter.removeLoadingState();
+
+            if (this._isSelectOneElement) {
+              placeholderItem.innerHTML = this._placeholderValue || '';
+            } else {
+              this.input.placeholder = this._placeholderValue || '';
+            }
+          }
+        };
+
+        _proto._handleSearch = function _handleSearch(value) {
+          if (!value || !this.input.isFocussed) {
+            return;
+          }
+
+          var choices = this._store.choices;
+          var _this$config3 = this.config,
+              searchFloor = _this$config3.searchFloor,
+              searchChoices = _this$config3.searchChoices;
+          var hasUnactiveChoices = choices.some(function (option) {
+            return !option.active;
+          }); // Check that we have a value to search and the input was an alphanumeric character
+
+          if (value && value.length >= searchFloor) {
+            var resultCount = searchChoices ? this._searchChoices(value) : 0; // Trigger search event
+
+            this.passedElement.triggerEvent(EVENTS.search, {
+              value: value,
+              resultCount: resultCount
+            });
+          } else if (hasUnactiveChoices) {
+            // Otherwise reset choices to active
+            this._isSearching = false;
+
+            this._store.dispatch(choices_activateChoices(true));
+          }
+        };
+
+        _proto._canAddItem = function _canAddItem(activeItems, value) {
+          var canAddItem = true;
+          var notice = typeof this.config.addItemText === 'function' ? this.config.addItemText(value) : this.config.addItemText;
+
+          if (!this._isSelectOneElement) {
+            var isDuplicateValue = existsInArray(activeItems, value);
+
+            if (this.config.maxItemCount > 0 && this.config.maxItemCount <= activeItems.length) {
+              // If there is a max entry limit and we have reached that limit
+              // don't update
+              canAddItem = false;
+              notice = typeof this.config.maxItemText === 'function' ? this.config.maxItemText(this.config.maxItemCount) : this.config.maxItemText;
+            }
+
+            if (!this.config.duplicateItemsAllowed && isDuplicateValue && canAddItem) {
+              canAddItem = false;
+              notice = typeof this.config.uniqueItemText === 'function' ? this.config.uniqueItemText(value) : this.config.uniqueItemText;
+            }
+
+            if (this._isTextElement && this.config.addItems && canAddItem && typeof this.config.addItemFilter === 'function' && !this.config.addItemFilter(value)) {
+              canAddItem = false;
+              notice = typeof this.config.customAddItemText === 'function' ? this.config.customAddItemText(value) : this.config.customAddItemText;
+            }
+          }
+
+          return {
+            response: canAddItem,
+            notice: notice
+          };
+        };
+
+        _proto._searchChoices = function _searchChoices(value) {
+          var newValue = typeof value === 'string' ? value.trim() : value;
+          var currentValue = typeof this._currentValue === 'string' ? this._currentValue.trim() : this._currentValue;
+
+          if (newValue.length < 1 && newValue === currentValue + " ") {
+            return 0;
+          } // If new value matches the desired length and is not the same as the current value with a space
+
+
+          var haystack = this._store.searchableChoices;
+          var needle = newValue;
+          var keys = [].concat(this.config.searchFields);
+          var options = Object.assign(this.config.fuseOptions, {
+            keys: keys
+          });
+          var fuse = new fuse_default.a(haystack, options);
+          var results = fuse.search(needle);
+          this._currentValue = newValue;
+          this._highlightPosition = 0;
+          this._isSearching = true;
+
+          this._store.dispatch(choices_filterChoices(results));
+
+          return results.length;
+        };
+
+        _proto._addEventListeners = function _addEventListeners() {
+          var _document = document,
+              documentElement = _document.documentElement; // capture events - can cancel event processing or propagation
+
+          documentElement.addEventListener('touchend', this._onTouchEnd, true);
+          this.containerOuter.element.addEventListener('keydown', this._onKeyDown, true);
+          this.containerOuter.element.addEventListener('mousedown', this._onMouseDown, true); // passive events - doesn't call `preventDefault` or `stopPropagation`
+
+          documentElement.addEventListener('click', this._onClick, {
+            passive: true
+          });
+          documentElement.addEventListener('touchmove', this._onTouchMove, {
+            passive: true
+          });
+          this.dropdown.element.addEventListener('mouseover', this._onMouseOver, {
+            passive: true
+          });
+
+          if (this._isSelectOneElement) {
+            this.containerOuter.element.addEventListener('focus', this._onFocus, {
+              passive: true
+            });
+            this.containerOuter.element.addEventListener('blur', this._onBlur, {
+              passive: true
+            });
+          }
+
+          this.input.element.addEventListener('keyup', this._onKeyUp, {
+            passive: true
+          });
+          this.input.element.addEventListener('focus', this._onFocus, {
+            passive: true
+          });
+          this.input.element.addEventListener('blur', this._onBlur, {
+            passive: true
+          });
+
+          if (this.input.element.form) {
+            this.input.element.form.addEventListener('reset', this._onFormReset, {
+              passive: true
+            });
+          }
+
+          this.input.addEventListeners();
+        };
+
+        _proto._removeEventListeners = function _removeEventListeners() {
+          var _document2 = document,
+              documentElement = _document2.documentElement;
+          documentElement.removeEventListener('touchend', this._onTouchEnd, true);
+          this.containerOuter.element.removeEventListener('keydown', this._onKeyDown, true);
+          this.containerOuter.element.removeEventListener('mousedown', this._onMouseDown, true);
+          documentElement.removeEventListener('click', this._onClick);
+          documentElement.removeEventListener('touchmove', this._onTouchMove);
+          this.dropdown.element.removeEventListener('mouseover', this._onMouseOver);
+
+          if (this._isSelectOneElement) {
+            this.containerOuter.element.removeEventListener('focus', this._onFocus);
+            this.containerOuter.element.removeEventListener('blur', this._onBlur);
+          }
+
+          this.input.element.removeEventListener('keyup', this._onKeyUp);
+          this.input.element.removeEventListener('focus', this._onFocus);
+          this.input.element.removeEventListener('blur', this._onBlur);
+
+          if (this.input.element.form) {
+            this.input.element.form.removeEventListener('reset', this._onFormReset);
+          }
+
+          this.input.removeEventListeners();
+        }
+        /**
+         * @param {KeyboardEvent} event
+         */
+        ;
+
+        _proto._onKeyDown = function _onKeyDown(event) {
+          var _keyDownActions;
+
+          var target = event.target,
+              keyCode = event.keyCode,
+              ctrlKey = event.ctrlKey,
+              metaKey = event.metaKey;
+          var activeItems = this._store.activeItems;
+          var hasFocusedInput = this.input.isFocussed;
+          var hasActiveDropdown = this.dropdown.isActive;
+          var hasItems = this.itemList.hasChildren();
+          var keyString = String.fromCharCode(keyCode);
+          var BACK_KEY = KEY_CODES.BACK_KEY,
+              DELETE_KEY = KEY_CODES.DELETE_KEY,
+              ENTER_KEY = KEY_CODES.ENTER_KEY,
+              A_KEY = KEY_CODES.A_KEY,
+              ESC_KEY = KEY_CODES.ESC_KEY,
+              UP_KEY = KEY_CODES.UP_KEY,
+              DOWN_KEY = KEY_CODES.DOWN_KEY,
+              PAGE_UP_KEY = KEY_CODES.PAGE_UP_KEY,
+              PAGE_DOWN_KEY = KEY_CODES.PAGE_DOWN_KEY;
+          var hasCtrlDownKeyPressed = ctrlKey || metaKey; // If a user is typing and the dropdown is not active
+
+          if (!this._isTextElement && /[a-zA-Z0-9-_ ]/.test(keyString)) {
+            this.showDropdown();
+          } // Map keys to key actions
+
+
+          var keyDownActions = (_keyDownActions = {}, _keyDownActions[A_KEY] = this._onAKey, _keyDownActions[ENTER_KEY] = this._onEnterKey, _keyDownActions[ESC_KEY] = this._onEscapeKey, _keyDownActions[UP_KEY] = this._onDirectionKey, _keyDownActions[PAGE_UP_KEY] = this._onDirectionKey, _keyDownActions[DOWN_KEY] = this._onDirectionKey, _keyDownActions[PAGE_DOWN_KEY] = this._onDirectionKey, _keyDownActions[DELETE_KEY] = this._onDeleteKey, _keyDownActions[BACK_KEY] = this._onDeleteKey, _keyDownActions); // If keycode has a function, run it
+
+          if (keyDownActions[keyCode]) {
+            keyDownActions[keyCode]({
+              event: event,
+              target: target,
+              keyCode: keyCode,
+              metaKey: metaKey,
+              activeItems: activeItems,
+              hasFocusedInput: hasFocusedInput,
+              hasActiveDropdown: hasActiveDropdown,
+              hasItems: hasItems,
+              hasCtrlDownKeyPressed: hasCtrlDownKeyPressed
+            });
+          }
+        };
+
+        _proto._onKeyUp = function _onKeyUp(_ref2) {
+          var target = _ref2.target,
+              keyCode = _ref2.keyCode;
+          var value = this.input.value;
+          var activeItems = this._store.activeItems;
+
+          var canAddItem = this._canAddItem(activeItems, value);
+
+          var backKey = KEY_CODES.BACK_KEY,
+              deleteKey = KEY_CODES.DELETE_KEY; // We are typing into a text input and have a value, we want to show a dropdown
+          // notice. Otherwise hide the dropdown
+
+          if (this._isTextElement) {
+            var canShowDropdownNotice = canAddItem.notice && value;
+
+            if (canShowDropdownNotice) {
+              var dropdownItem = this._getTemplate('notice', canAddItem.notice);
+
+              this.dropdown.element.innerHTML = dropdownItem.outerHTML;
+              this.showDropdown(true);
+            } else {
+              this.hideDropdown(true);
+            }
+          } else {
+            var userHasRemovedValue = (keyCode === backKey || keyCode === deleteKey) && !target.value;
+            var canReactivateChoices = !this._isTextElement && this._isSearching;
+            var canSearch = this._canSearch && canAddItem.response;
+
+            if (userHasRemovedValue && canReactivateChoices) {
+              this._isSearching = false;
+
+              this._store.dispatch(choices_activateChoices(true));
+            } else if (canSearch) {
+              this._handleSearch(this.input.value);
+            }
+          }
+
+          this._canSearch = this.config.searchEnabled;
+        };
+
+        _proto._onAKey = function _onAKey(_ref3) {
+          var hasItems = _ref3.hasItems,
+              hasCtrlDownKeyPressed = _ref3.hasCtrlDownKeyPressed; // If CTRL + A or CMD + A have been pressed and there are items to select
+
+          if (hasCtrlDownKeyPressed && hasItems) {
+            this._canSearch = false;
+            var shouldHightlightAll = this.config.removeItems && !this.input.value && this.input.element === document.activeElement;
+
+            if (shouldHightlightAll) {
+              this.highlightAll();
+            }
+          }
+        };
+
+        _proto._onEnterKey = function _onEnterKey(_ref4) {
+          var event = _ref4.event,
+              target = _ref4.target,
+              activeItems = _ref4.activeItems,
+              hasActiveDropdown = _ref4.hasActiveDropdown;
+          var enterKey = KEY_CODES.ENTER_KEY;
+          var targetWasButton = target.hasAttribute('data-button');
+
+          if (this._isTextElement && target.value) {
+            var value = this.input.value;
+
+            var canAddItem = this._canAddItem(activeItems, value);
+
+            if (canAddItem.response) {
+              this.hideDropdown(true);
+
+              this._addItem({
+                value: value
+              });
+
+              this._triggerChange(value);
+
+              this.clearInput();
+            }
+          }
+
+          if (targetWasButton) {
+            this._handleButtonAction(activeItems, target);
+
+            event.preventDefault();
+          }
+
+          if (hasActiveDropdown) {
+            var highlightedChoice = this.dropdown.getChild("." + this.config.classNames.highlightedState);
+
+            if (highlightedChoice) {
+              // add enter keyCode value
+              if (activeItems[0]) {
+                activeItems[0].keyCode = enterKey; // eslint-disable-line no-param-reassign
+              }
+
+              this._handleChoiceAction(activeItems, highlightedChoice);
+            }
+
+            event.preventDefault();
+          } else if (this._isSelectOneElement) {
+            this.showDropdown();
+            event.preventDefault();
+          }
+        };
+
+        _proto._onEscapeKey = function _onEscapeKey(_ref5) {
+          var hasActiveDropdown = _ref5.hasActiveDropdown;
+
+          if (hasActiveDropdown) {
+            this.hideDropdown(true);
+            this.containerOuter.focus();
+          }
+        };
+
+        _proto._onDirectionKey = function _onDirectionKey(_ref6) {
+          var event = _ref6.event,
+              hasActiveDropdown = _ref6.hasActiveDropdown,
+              keyCode = _ref6.keyCode,
+              metaKey = _ref6.metaKey;
+          var downKey = KEY_CODES.DOWN_KEY,
+              pageUpKey = KEY_CODES.PAGE_UP_KEY,
+              pageDownKey = KEY_CODES.PAGE_DOWN_KEY; // If up or down key is pressed, traverse through options
+
+          if (hasActiveDropdown || this._isSelectOneElement) {
+            this.showDropdown();
+            this._canSearch = false;
+            var directionInt = keyCode === downKey || keyCode === pageDownKey ? 1 : -1;
+            var skipKey = metaKey || keyCode === pageDownKey || keyCode === pageUpKey;
+            var selectableChoiceIdentifier = '[data-choice-selectable]';
+            var nextEl;
+
+            if (skipKey) {
+              if (directionInt > 0) {
+                nextEl = this.dropdown.element.querySelector(selectableChoiceIdentifier + ":last-of-type");
+              } else {
+                nextEl = this.dropdown.element.querySelector(selectableChoiceIdentifier);
+              }
+            } else {
+              var currentEl = this.dropdown.element.querySelector("." + this.config.classNames.highlightedState);
+
+              if (currentEl) {
+                nextEl = getAdjacentEl(currentEl, selectableChoiceIdentifier, directionInt);
+              } else {
+                nextEl = this.dropdown.element.querySelector(selectableChoiceIdentifier);
+              }
+            }
+
+            if (nextEl) {
+              // We prevent default to stop the cursor moving
+              // when pressing the arrow
+              if (!isScrolledIntoView(nextEl, this.choiceList.element, directionInt)) {
+                this.choiceList.scrollToChildElement(nextEl, directionInt);
+              }
+
+              this._highlightChoice(nextEl);
+            } // Prevent default to maintain cursor position whilst
+            // traversing dropdown options
+
+
+            event.preventDefault();
+          }
+        };
+
+        _proto._onDeleteKey = function _onDeleteKey(_ref7) {
+          var event = _ref7.event,
+              target = _ref7.target,
+              hasFocusedInput = _ref7.hasFocusedInput,
+              activeItems = _ref7.activeItems; // If backspace or delete key is pressed and the input has no value
+
+          if (hasFocusedInput && !target.value && !this._isSelectOneElement) {
+            this._handleBackspace(activeItems);
+
+            event.preventDefault();
+          }
+        };
+
+        _proto._onTouchMove = function _onTouchMove() {
+          if (this._wasTap) {
+            this._wasTap = false;
+          }
+        };
+
+        _proto._onTouchEnd = function _onTouchEnd(event) {
+          var _ref8 = event || event.touches[0],
+              target = _ref8.target;
+
+          var touchWasWithinContainer = this._wasTap && this.containerOuter.element.contains(target);
+
+          if (touchWasWithinContainer) {
+            var containerWasExactTarget = target === this.containerOuter.element || target === this.containerInner.element;
+
+            if (containerWasExactTarget) {
+              if (this._isTextElement) {
+                this.input.focus();
+              } else if (this._isSelectMultipleElement) {
+                this.showDropdown();
+              }
+            } // Prevents focus event firing
+
+
+            event.stopPropagation();
+          }
+
+          this._wasTap = true;
+        }
+        /**
+         * Handles mousedown event in capture mode for containetOuter.element
+         * @param {MouseEvent} event
+         */
+        ;
+
+        _proto._onMouseDown = function _onMouseDown(event) {
+          var target = event.target;
+
+          if (!(target instanceof HTMLElement)) {
+            return;
+          } // If we have our mouse down on the scrollbar and are on IE11...
+
+
+          if (IS_IE11 && this.choiceList.element.contains(target)) {
+            // check if click was on a scrollbar area
+            var firstChoice =
+            /** @type {HTMLElement} */
+            this.choiceList.element.firstElementChild;
+            var isOnScrollbar = this._direction === 'ltr' ? event.offsetX >= firstChoice.offsetWidth : event.offsetX < firstChoice.offsetLeft;
+            this._isScrollingOnIe = isOnScrollbar;
+          }
+
+          if (target === this.input.element) {
+            return;
+          }
+
+          var item = target.closest('[data-button],[data-item],[data-choice]');
+
+          if (item instanceof HTMLElement) {
+            var hasShiftKey = event.shiftKey;
+            var activeItems = this._store.activeItems;
+            var dataset = item.dataset;
+
+            if ('button' in dataset) {
+              this._handleButtonAction(activeItems, item);
+            } else if ('item' in dataset) {
+              this._handleItemAction(activeItems, item, hasShiftKey);
+            } else if ('choice' in dataset) {
+              this._handleChoiceAction(activeItems, item);
+            }
+          }
+
+          event.preventDefault();
+        }
+        /**
+         * Handles mouseover event over this.dropdown
+         * @param {MouseEvent} event
+         */
+        ;
+
+        _proto._onMouseOver = function _onMouseOver(_ref9) {
+          var target = _ref9.target;
+
+          if (target instanceof HTMLElement && 'choice' in target.dataset) {
+            this._highlightChoice(target);
+          }
+        };
+
+        _proto._onClick = function _onClick(_ref10) {
+          var target = _ref10.target;
+          var clickWasWithinContainer = this.containerOuter.element.contains(target);
+
+          if (clickWasWithinContainer) {
+            if (!this.dropdown.isActive && !this.containerOuter.isDisabled) {
+              if (this._isTextElement) {
+                if (document.activeElement !== this.input.element) {
+                  this.input.focus();
+                }
+              } else {
+                this.showDropdown();
+                this.containerOuter.focus();
+              }
+            } else if (this._isSelectOneElement && target !== this.input.element && !this.dropdown.element.contains(target)) {
+              this.hideDropdown();
+            }
+          } else {
+            var hasHighlightedItems = this._store.highlightedActiveItems.length > 0;
+
+            if (hasHighlightedItems) {
+              this.unhighlightAll();
+            }
+
+            this.containerOuter.removeFocusState();
+            this.hideDropdown(true);
+          }
+        };
+
+        _proto._onFocus = function _onFocus(_ref11) {
+          var _this17 = this,
+              _focusActions;
+
+          var target = _ref11.target;
+          var focusWasWithinContainer = this.containerOuter.element.contains(target);
+
+          if (!focusWasWithinContainer) {
+            return;
+          }
+
+          var focusActions = (_focusActions = {}, _focusActions[TEXT_TYPE] = function () {
+            if (target === _this17.input.element) {
+              _this17.containerOuter.addFocusState();
+            }
+          }, _focusActions[SELECT_ONE_TYPE] = function () {
+            _this17.containerOuter.addFocusState();
+
+            if (target === _this17.input.element) {
+              _this17.showDropdown(true);
+            }
+          }, _focusActions[SELECT_MULTIPLE_TYPE] = function () {
+            if (target === _this17.input.element) {
+              _this17.showDropdown(true); // If element is a select box, the focused element is the container and the dropdown
+              // isn't already open, focus and show dropdown
+
+
+              _this17.containerOuter.addFocusState();
+            }
+          }, _focusActions);
+          focusActions[this.passedElement.element.type]();
+        };
+
+        _proto._onBlur = function _onBlur(_ref12) {
+          var _this18 = this;
+
+          var target = _ref12.target;
+          var blurWasWithinContainer = this.containerOuter.element.contains(target);
+
+          if (blurWasWithinContainer && !this._isScrollingOnIe) {
+            var _blurActions;
+
+            var activeItems = this._store.activeItems;
+            var hasHighlightedItems = activeItems.some(function (item) {
+              return item.highlighted;
+            });
+            var blurActions = (_blurActions = {}, _blurActions[TEXT_TYPE] = function () {
+              if (target === _this18.input.element) {
+                _this18.containerOuter.removeFocusState();
+
+                if (hasHighlightedItems) {
+                  _this18.unhighlightAll();
+                }
+
+                _this18.hideDropdown(true);
+              }
+            }, _blurActions[SELECT_ONE_TYPE] = function () {
+              _this18.containerOuter.removeFocusState();
+
+              if (target === _this18.input.element || target === _this18.containerOuter.element && !_this18._canSearch) {
+                _this18.hideDropdown(true);
+              }
+            }, _blurActions[SELECT_MULTIPLE_TYPE] = function () {
+              if (target === _this18.input.element) {
+                _this18.containerOuter.removeFocusState();
+
+                _this18.hideDropdown(true);
+
+                if (hasHighlightedItems) {
+                  _this18.unhighlightAll();
+                }
+              }
+            }, _blurActions);
+            blurActions[this.passedElement.element.type]();
+          } else {
+            // On IE11, clicking the scollbar blurs our input and thus
+            // closes the dropdown. To stop this, we refocus our input
+            // if we know we are on IE *and* are scrolling.
+            this._isScrollingOnIe = false;
+            this.input.element.focus();
+          }
+        };
+
+        _proto._onFormReset = function _onFormReset() {
+          this._store.dispatch(resetTo(this._initialState));
+        };
+
+        _proto._highlightChoice = function _highlightChoice(el) {
+          var _this19 = this;
+
+          if (el === void 0) {
+            el = null;
+          }
+
+          var choices = Array.from(this.dropdown.element.querySelectorAll('[data-choice-selectable]'));
+
+          if (!choices.length) {
+            return;
+          }
+
+          var passedEl = el;
+          var highlightedChoices = Array.from(this.dropdown.element.querySelectorAll("." + this.config.classNames.highlightedState)); // Remove any highlighted choices
+
+          highlightedChoices.forEach(function (choice) {
+            choice.classList.remove(_this19.config.classNames.highlightedState);
+            choice.setAttribute('aria-selected', 'false');
+          });
+
+          if (passedEl) {
+            this._highlightPosition = choices.indexOf(passedEl);
+          } else {
+            // Highlight choice based on last known highlight location
+            if (choices.length > this._highlightPosition) {
+              // If we have an option to highlight
+              passedEl = choices[this._highlightPosition];
+            } else {
+              // Otherwise highlight the option before
+              passedEl = choices[choices.length - 1];
+            }
+
+            if (!passedEl) {
+              passedEl = choices[0];
+            }
+          }
+
+          passedEl.classList.add(this.config.classNames.highlightedState);
+          passedEl.setAttribute('aria-selected', 'true');
+          this.passedElement.triggerEvent(EVENTS.highlightChoice, {
+            el: passedEl
+          });
+
+          if (this.dropdown.isActive) {
+            // IE11 ignores aria-label and blocks virtual keyboard
+            // if aria-activedescendant is set without a dropdown
+            this.input.setActiveDescendant(passedEl.id);
+            this.containerOuter.setActiveDescendant(passedEl.id);
+          }
+        };
+
+        _proto._addItem = function _addItem(_ref13) {
+          var value = _ref13.value,
+              _ref13$label = _ref13.label,
+              label = _ref13$label === void 0 ? null : _ref13$label,
+              _ref13$choiceId = _ref13.choiceId,
+              choiceId = _ref13$choiceId === void 0 ? -1 : _ref13$choiceId,
+              _ref13$groupId = _ref13.groupId,
+              groupId = _ref13$groupId === void 0 ? -1 : _ref13$groupId,
+              _ref13$customProperti = _ref13.customProperties,
+              customProperties = _ref13$customProperti === void 0 ? null : _ref13$customProperti,
+              _ref13$placeholder = _ref13.placeholder,
+              placeholder = _ref13$placeholder === void 0 ? false : _ref13$placeholder,
+              _ref13$keyCode = _ref13.keyCode,
+              keyCode = _ref13$keyCode === void 0 ? null : _ref13$keyCode;
+          var passedValue = typeof value === 'string' ? value.trim() : value;
+          var passedKeyCode = keyCode;
+          var passedCustomProperties = customProperties;
+          var items = this._store.items;
+          var passedLabel = label || passedValue;
+          var passedOptionId = choiceId || -1;
+          var group = groupId >= 0 ? this._store.getGroupById(groupId) : null;
+          var id = items ? items.length + 1 : 1; // If a prepended value has been passed, prepend it
+
+          if (this.config.prependValue) {
+            passedValue = this.config.prependValue + passedValue.toString();
+          } // If an appended value has been passed, append it
+
+
+          if (this.config.appendValue) {
+            passedValue += this.config.appendValue.toString();
+          }
+
+          this._store.dispatch(items_addItem({
+            value: passedValue,
+            label: passedLabel,
+            id: id,
+            choiceId: passedOptionId,
+            groupId: groupId,
+            customProperties: customProperties,
+            placeholder: placeholder,
+            keyCode: passedKeyCode
+          }));
+
+          if (this._isSelectOneElement) {
+            this.removeActiveItems(id);
+          } // Trigger change event
+
+
+          this.passedElement.triggerEvent(EVENTS.addItem, {
+            id: id,
+            value: passedValue,
+            label: passedLabel,
+            customProperties: passedCustomProperties,
+            groupValue: group && group.value ? group.value : undefined,
+            keyCode: passedKeyCode
+          });
+          return this;
+        };
+
+        _proto._removeItem = function _removeItem(item) {
+          if (!item || !isType('Object', item)) {
+            return this;
+          }
+
+          var id = item.id,
+              value = item.value,
+              label = item.label,
+              choiceId = item.choiceId,
+              groupId = item.groupId;
+          var group = groupId >= 0 ? this._store.getGroupById(groupId) : null;
+
+          this._store.dispatch(items_removeItem(id, choiceId));
+
+          if (group && group.value) {
+            this.passedElement.triggerEvent(EVENTS.removeItem, {
+              id: id,
+              value: value,
+              label: label,
+              groupValue: group.value
+            });
+          } else {
+            this.passedElement.triggerEvent(EVENTS.removeItem, {
+              id: id,
+              value: value,
+              label: label
+            });
+          }
+
+          return this;
+        };
+
+        _proto._addChoice = function _addChoice(_ref14) {
+          var value = _ref14.value,
+              _ref14$label = _ref14.label,
+              label = _ref14$label === void 0 ? null : _ref14$label,
+              _ref14$isSelected = _ref14.isSelected,
+              isSelected = _ref14$isSelected === void 0 ? false : _ref14$isSelected,
+              _ref14$isDisabled = _ref14.isDisabled,
+              isDisabled = _ref14$isDisabled === void 0 ? false : _ref14$isDisabled,
+              _ref14$groupId = _ref14.groupId,
+              groupId = _ref14$groupId === void 0 ? -1 : _ref14$groupId,
+              _ref14$customProperti = _ref14.customProperties,
+              customProperties = _ref14$customProperti === void 0 ? null : _ref14$customProperti,
+              _ref14$placeholder = _ref14.placeholder,
+              placeholder = _ref14$placeholder === void 0 ? false : _ref14$placeholder,
+              _ref14$keyCode = _ref14.keyCode,
+              keyCode = _ref14$keyCode === void 0 ? null : _ref14$keyCode;
+
+          if (typeof value === 'undefined' || value === null) {
+            return;
+          } // Generate unique id
+
+
+          var choices = this._store.choices;
+          var choiceLabel = label || value;
+          var choiceId = choices ? choices.length + 1 : 1;
+          var choiceElementId = this._baseId + "-" + this._idNames.itemChoice + "-" + choiceId;
+
+          this._store.dispatch(choices_addChoice({
+            id: choiceId,
+            groupId: groupId,
+            elementId: choiceElementId,
+            value: value,
+            label: choiceLabel,
+            disabled: isDisabled,
+            customProperties: customProperties,
+            placeholder: placeholder,
+            keyCode: keyCode
+          }));
+
+          if (isSelected) {
+            this._addItem({
+              value: value,
+              label: choiceLabel,
+              choiceId: choiceId,
+              customProperties: customProperties,
+              placeholder: placeholder,
+              keyCode: keyCode
+            });
+          }
+        };
+
+        _proto._addGroup = function _addGroup(_ref15) {
+          var _this20 = this;
+
+          var group = _ref15.group,
+              id = _ref15.id,
+              _ref15$valueKey = _ref15.valueKey,
+              valueKey = _ref15$valueKey === void 0 ? 'value' : _ref15$valueKey,
+              _ref15$labelKey = _ref15.labelKey,
+              labelKey = _ref15$labelKey === void 0 ? 'label' : _ref15$labelKey;
+          var groupChoices = isType('Object', group) ? group.choices : Array.from(group.getElementsByTagName('OPTION'));
+          var groupId = id || Math.floor(new Date().valueOf() * Math.random());
+          var isDisabled = group.disabled ? group.disabled : false;
+
+          if (groupChoices) {
+            this._store.dispatch(groups_addGroup({
+              value: group.label,
+              id: groupId,
+              active: true,
+              disabled: isDisabled
+            }));
+
+            var addGroupChoices = function addGroupChoices(choice) {
+              var isOptDisabled = choice.disabled || choice.parentNode && choice.parentNode.disabled;
+
+              _this20._addChoice({
+                value: choice[valueKey],
+                label: isType('Object', choice) ? choice[labelKey] : choice.innerHTML,
+                isSelected: choice.selected,
+                isDisabled: isOptDisabled,
+                groupId: groupId,
+                customProperties: choice.customProperties,
+                placeholder: choice.placeholder
+              });
+            };
+
+            groupChoices.forEach(addGroupChoices);
+          } else {
+            this._store.dispatch(groups_addGroup({
+              value: group.label,
+              id: group.id,
+              active: false,
+              disabled: group.disabled
+            }));
+          }
+        };
+
+        _proto._getTemplate = function _getTemplate(template) {
+          var _this$_templates$temp;
+
+          if (!template) {
+            return null;
+          }
+
+          var classNames = this.config.classNames;
+
+          for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+            args[_key - 1] = arguments[_key];
+          }
+
+          return (_this$_templates$temp = this._templates[template]).call.apply(_this$_templates$temp, [this, classNames].concat(args));
+        };
+
+        _proto._createTemplates = function _createTemplates() {
+          var callbackOnCreateTemplates = this.config.callbackOnCreateTemplates;
+          var userTemplates = {};
+
+          if (callbackOnCreateTemplates && typeof callbackOnCreateTemplates === 'function') {
+            userTemplates = callbackOnCreateTemplates.call(this, strToEl);
+          }
+
+          this._templates = cjs_default()(TEMPLATES, userTemplates);
+        };
+
+        _proto._createElements = function _createElements() {
+          this.containerOuter = new container_Container({
+            element: this._getTemplate('containerOuter', this._direction, this._isSelectElement, this._isSelectOneElement, this.config.searchEnabled, this.passedElement.element.type),
+            classNames: this.config.classNames,
+            type: this.passedElement.element.type,
+            position: this.config.position
+          });
+          this.containerInner = new container_Container({
+            element: this._getTemplate('containerInner'),
+            classNames: this.config.classNames,
+            type: this.passedElement.element.type,
+            position: this.config.position
+          });
+          this.input = new input_Input({
+            element: this._getTemplate('input', this._placeholderValue),
+            classNames: this.config.classNames,
+            type: this.passedElement.element.type,
+            preventPaste: !this.config.paste
+          });
+          this.choiceList = new list_List({
+            element: this._getTemplate('choiceList', this._isSelectOneElement)
+          });
+          this.itemList = new list_List({
+            element: this._getTemplate('itemList', this._isSelectOneElement)
+          });
+          this.dropdown = new Dropdown({
+            element: this._getTemplate('dropdown'),
+            classNames: this.config.classNames,
+            type: this.passedElement.element.type
+          });
+        };
+
+        _proto._createStructure = function _createStructure() {
+          // Hide original element
+          this.passedElement.conceal(); // Wrap input in container preserving DOM ordering
+
+          this.containerInner.wrap(this.passedElement.element); // Wrapper inner container with outer container
+
+          this.containerOuter.wrap(this.containerInner.element);
+
+          if (this._isSelectOneElement) {
+            this.input.placeholder = this.config.searchPlaceholderValue || '';
+          } else if (this._placeholderValue) {
+            this.input.placeholder = this._placeholderValue;
+            this.input.setWidth();
+          }
+
+          this.containerOuter.element.appendChild(this.containerInner.element);
+          this.containerOuter.element.appendChild(this.dropdown.element);
+          this.containerInner.element.appendChild(this.itemList.element);
+
+          if (!this._isTextElement) {
+            this.dropdown.element.appendChild(this.choiceList.element);
+          }
+
+          if (!this._isSelectOneElement) {
+            this.containerInner.element.appendChild(this.input.element);
+          } else if (this.config.searchEnabled) {
+            this.dropdown.element.insertBefore(this.input.element, this.dropdown.element.firstChild);
+          }
+
+          if (this._isSelectElement) {
+            this._highlightPosition = 0;
+            this._isSearching = false;
+
+            this._startLoading();
+
+            if (this._presetGroups.length) {
+              this._addPredefinedGroups(this._presetGroups);
+            } else {
+              this._addPredefinedChoices(this._presetChoices);
+            }
+
+            this._stopLoading();
+          }
+
+          if (this._isTextElement) {
+            this._addPredefinedItems(this._presetItems);
+          }
+        };
+
+        _proto._addPredefinedGroups = function _addPredefinedGroups(groups) {
+          var _this21 = this; // If we have a placeholder option
+
+
+          var placeholderChoice = this.passedElement.placeholderOption;
+
+          if (placeholderChoice && placeholderChoice.parentNode.tagName === 'SELECT') {
+            this._addChoice({
+              value: placeholderChoice.value,
+              label: placeholderChoice.innerHTML,
+              isSelected: placeholderChoice.selected,
+              isDisabled: placeholderChoice.disabled,
+              placeholder: true
+            });
+          }
+
+          groups.forEach(function (group) {
+            return _this21._addGroup({
+              group: group,
+              id: group.id || null
+            });
+          });
+        };
+
+        _proto._addPredefinedChoices = function _addPredefinedChoices(choices) {
+          var _this22 = this; // If sorting is enabled or the user is searching, filter choices
+
+
+          if (this.config.shouldSort) {
+            choices.sort(this.config.sorter);
+          }
+
+          var hasSelectedChoice = choices.some(function (choice) {
+            return choice.selected;
+          });
+          var firstEnabledChoiceIndex = choices.findIndex(function (choice) {
+            return choice.disabled === undefined || !choice.disabled;
+          });
+          choices.forEach(function (choice, index) {
+            var value = choice.value,
+                label = choice.label,
+                customProperties = choice.customProperties,
+                placeholder = choice.placeholder;
+
+            if (_this22._isSelectElement) {
+              // If the choice is actually a group
+              if (choice.choices) {
+                _this22._addGroup({
+                  group: choice,
+                  id: choice.id || null
+                });
+              } else {
+                /**
+                 * If there is a selected choice already or the choice is not the first in
+                 * the array, add each choice normally.
+                 *
+                 * Otherwise we pre-select the first enabled choice in the array ("select-one" only)
+                 */
+                var shouldPreselect = _this22._isSelectOneElement && !hasSelectedChoice && index === firstEnabledChoiceIndex;
+                var isSelected = shouldPreselect ? true : choice.selected;
+                var isDisabled = choice.disabled;
+
+                _this22._addChoice({
+                  value: value,
+                  label: label,
+                  isSelected: isSelected,
+                  isDisabled: isDisabled,
+                  customProperties: customProperties,
+                  placeholder: placeholder
+                });
+              }
+            } else {
+              _this22._addChoice({
+                value: value,
+                label: label,
+                isSelected: choice.selected,
+                isDisabled: choice.disabled,
+                customProperties: customProperties,
+                placeholder: placeholder
+              });
+            }
+          });
+        }
+        /**
+         * @param {Item[]} items
+         */
+        ;
+
+        _proto._addPredefinedItems = function _addPredefinedItems(items) {
+          var _this23 = this;
+
+          items.forEach(function (item) {
+            if (typeof item === 'object' && item.value) {
+              _this23._addItem({
+                value: item.value,
+                label: item.label,
+                choiceId: item.id,
+                customProperties: item.customProperties,
+                placeholder: item.placeholder
+              });
+            }
+
+            if (typeof item === 'string') {
+              _this23._addItem({
+                value: item
+              });
+            }
+          });
+        };
+
+        _proto._setChoiceOrItem = function _setChoiceOrItem(item) {
+          var _this24 = this;
+
+          var itemType = getType(item).toLowerCase();
+          var handleType = {
+            object: function object() {
+              if (!item.value) {
+                return;
+              } // If we are dealing with a select input, we need to create an option first
+              // that is then selected. For text inputs we can just add items normally.
+
+
+              if (!_this24._isTextElement) {
+                _this24._addChoice({
+                  value: item.value,
+                  label: item.label,
+                  isSelected: true,
+                  isDisabled: false,
+                  customProperties: item.customProperties,
+                  placeholder: item.placeholder
+                });
+              } else {
+                _this24._addItem({
+                  value: item.value,
+                  label: item.label,
+                  choiceId: item.id,
+                  customProperties: item.customProperties,
+                  placeholder: item.placeholder
+                });
+              }
+            },
+            string: function string() {
+              if (!_this24._isTextElement) {
+                _this24._addChoice({
+                  value: item,
+                  label: item,
+                  isSelected: true,
+                  isDisabled: false
+                });
+              } else {
+                _this24._addItem({
+                  value: item
+                });
+              }
+            }
+          };
+          handleType[itemType]();
+        };
+
+        _proto._findAndSelectChoiceByValue = function _findAndSelectChoiceByValue(val) {
+          var _this25 = this;
+
+          var choices = this._store.choices; // Check 'value' property exists and the choice isn't already selected
+
+          var foundChoice = choices.find(function (choice) {
+            return _this25.config.valueComparer(choice.value, val);
+          });
+
+          if (foundChoice && !foundChoice.selected) {
+            this._addItem({
+              value: foundChoice.value,
+              label: foundChoice.label,
+              choiceId: foundChoice.id,
+              groupId: foundChoice.groupId,
+              customProperties: foundChoice.customProperties,
+              placeholder: foundChoice.placeholder,
+              keyCode: foundChoice.keyCode
+            });
+          }
+        };
+
+        _proto._generatePlaceholderValue = function _generatePlaceholderValue() {
+          if (this._isSelectElement) {
+            var placeholderOption = this.passedElement.placeholderOption;
+            return placeholderOption ? placeholderOption.text : false;
+          }
+
+          var _this$config4 = this.config,
+              placeholder = _this$config4.placeholder,
+              placeholderValue = _this$config4.placeholderValue;
+          var dataset = this.passedElement.element.dataset;
+
+          if (placeholder) {
+            if (placeholderValue) {
+              return placeholderValue;
+            }
+
+            if (dataset.placeholder) {
+              return dataset.placeholder;
+            }
+          }
+
+          return false;
+        };
+
+        return Choices;
+      }();
+      /* harmony default export */
+
+
+      __webpack_exports__["default"] = choices_Choices;
+      /***/
+    }
+    /******/
+    ])["default"]
+  );
+});
+});
+
+var Choices = /*@__PURE__*/getDefaultExportFromCjs(choices);
+
+function getFolderChoices(app) {
+    const folderList = [];
+    obsidian.Vault.recurseChildren(app.vault.getRoot(), (f) => {
+        if (f instanceof obsidian.TFolder) {
+            folderList.push({
+                value: f.path,
+                label: f.path,
+                selected: false,
+                disabled: false,
+            });
+        }
+    });
+    return folderList;
+}
+function getTemplateChoices(app, folderStr) {
+    const fileList = [];
+    let folder = folderStr ? app.vault.getAbstractFileByPath(folderStr) : null;
+    if (!folder || !(folder instanceof obsidian.TFolder)) {
+        folder = app.vault.getRoot();
+    }
+    obsidian.Vault.recurseChildren(folder, (f) => {
+        if (f instanceof obsidian.TFile) {
+            fileList.push({
+                value: f.path,
+                label: f.basename,
+                selected: false,
+                disabled: false,
+            });
+        }
+    });
+    return fileList;
+}
+function getListOptions(app, plugin) {
+    const { templateFolder, templatesEnabled, templaterPlugin, } = plugin.getTemplatePlugins();
+    const templateFiles = getTemplateChoices(app, templateFolder);
+    const vaultFolders = getFolderChoices(app);
+    let templateWarning = "";
+    if (!templatesEnabled && !templaterPlugin) {
+        templateWarning = "Note: No template plugins are currently enabled.";
+    }
+    return {
+        templateFiles,
+        vaultFolders,
+        templateWarning,
+    };
+}
+class SettingsManager {
+    constructor(app, plugin, config, settings) {
+        this.cleanupFns = [];
+        this.app = app;
+        this.plugin = plugin;
+        this.config = config;
+        this.settings = settings;
+    }
+    applySettingsUpdate(spec) {
+        this.settings = update$2(this.settings, spec);
+        this.config.onSettingsChange(this.settings);
+    }
+    getSetting(key, local) {
+        if (local) {
+            return [this.settings[key], this.plugin.settings[key]];
+        }
+        return [this.settings[key], null];
+    }
+    constructUI(contentEl, heading, local) {
+        const { templateFiles, vaultFolders, templateWarning } = getListOptions(this.app, this.plugin);
+        contentEl.createEl("h3", { text: heading });
+        if (local) {
+            contentEl.createEl("p", {
+                text: "These settings will take precedence over the default Kanban board settings.",
+            });
+        }
+        else {
+            contentEl.createEl("p", {
+                text: "Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.",
+            });
+        }
+        new obsidian.Setting(contentEl)
+            .setName("Note template")
+            .setDesc("This template will be used when creating new notes from Kanban cards.")
+            .then((setting) => {
+            setting.controlEl.createEl("select", {}, (el) => {
+                // el must be in the dom, so we setTimeout
+                setTimeout(() => {
+                    let list = templateFiles;
+                    const [value, defaultVal] = this.getSetting("new-note-template", local);
+                    if (defaultVal) {
+                        const index = templateFiles.findIndex((f) => f.value === defaultVal);
+                        const choice = templateFiles[index];
+                        list = update$2(list, {
+                            $splice: [[index, 1]],
+                            $unshift: [
+                                update$2(choice, {
+                                    placeholder: {
+                                        $set: true,
+                                    },
+                                    value: {
+                                        $set: "",
+                                    },
+                                    label: {
+                                        $apply: (v) => `${v} (default)`,
+                                    },
+                                }),
+                            ],
+                        });
+                    }
+                    else {
+                        list = update$2(list, {
+                            $unshift: [
+                                {
+                                    placeholder: true,
+                                    value: "",
+                                    label: "No template",
+                                    selected: false,
+                                    disabled: false,
+                                },
+                            ],
+                        });
+                    }
+                    const c = new Choices(el, {
+                        placeholder: true,
+                        position: "bottom",
+                        searchPlaceholderValue: "Search...",
+                        searchEnabled: list.length > 10,
+                        choices: list,
+                    }).setChoiceByValue("");
+                    if (value) {
+                        c.setChoiceByValue(value);
+                    }
+                    const onChange = (e) => {
+                        const val = e.detail.value;
+                        if (val) {
+                            this.applySettingsUpdate({
+                                "new-note-template": {
+                                    $set: val,
+                                },
+                            });
+                        }
+                        else {
+                            this.applySettingsUpdate({
+                                $unset: ["new-note-template"],
+                            });
+                        }
+                    };
+                    el.addEventListener("change", onChange);
+                    this.cleanupFns.push(() => {
+                        c.destroy();
+                        el.removeEventListener("change", onChange);
+                    });
+                });
+                if (templateWarning) {
+                    setting.descEl.createDiv({}, (div) => {
+                        div.createEl("strong", { text: templateWarning });
+                    });
+                }
+            });
+        });
+        new obsidian.Setting(contentEl)
+            .setName("Note folder")
+            .setDesc("Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.")
+            .then((setting) => {
+            let list = vaultFolders;
+            const [value, defaultVal] = this.getSetting("new-note-folder", local);
+            if (defaultVal) {
+                const index = vaultFolders.findIndex((f) => f.value === defaultVal);
+                const choice = vaultFolders[index];
+                list = update$2(list, {
+                    $splice: [[index, 1]],
+                    $unshift: [
+                        update$2(choice, {
+                            placeholder: {
+                                $set: true,
+                            },
+                            value: {
+                                $set: "",
+                            },
+                            label: {
+                                $apply: (v) => `${v} (default)`,
+                            },
+                        }),
+                    ],
+                });
+            }
+            else {
+                list = update$2(list, {
+                    $unshift: [
+                        {
+                            placeholder: true,
+                            value: "",
+                            label: "Default folder",
+                            selected: false,
+                            disabled: false,
+                        },
+                    ],
+                });
+            }
+            setting.controlEl.createEl("select", {}, (el) => {
+                // el must be in the dom, so we setTimeout
+                setTimeout(() => {
+                    const c = new Choices(el, {
+                        placeholder: true,
+                        position: "bottom",
+                        searchPlaceholderValue: "Search...",
+                        searchEnabled: list.length > 10,
+                        choices: list,
+                    }).setChoiceByValue("");
+                    if (value) {
+                        c.setChoiceByValue(value);
+                    }
+                    const onChange = (e) => {
+                        const val = e.detail.value;
+                        if (val) {
+                            this.applySettingsUpdate({
+                                "new-note-folder": {
+                                    $set: val,
+                                },
+                            });
+                        }
+                        else {
+                            this.applySettingsUpdate({
+                                $unset: ["new-note-folder"],
+                            });
+                        }
+                    };
+                    el.addEventListener("change", onChange);
+                    this.cleanupFns.push(() => {
+                        c.destroy();
+                        el.removeEventListener("change", onChange);
+                    });
+                });
+            });
+        });
+    }
+    cleanUp() {
+        this.cleanupFns.forEach((fn) => fn());
+        this.cleanupFns = [];
+    }
+}
+class SettingsModal extends obsidian.Modal {
+    constructor(view, config, settings) {
+        super(view.app);
+        this.view = view;
+        this.settingsManager = new SettingsManager(view.app, view.plugin, config, settings);
+    }
+    onOpen() {
+        let { contentEl, modalEl } = this;
+        modalEl.addClass(c$2("board-settings-modal"));
+        this.settingsManager.constructUI(contentEl, this.view.file.basename, true);
+    }
+    onClose() {
+        let { contentEl } = this;
+        this.settingsManager.cleanUp();
+        contentEl.empty();
+    }
+}
+class KanbanSettingsTab extends obsidian.PluginSettingTab {
+    constructor(app, plugin, config, settings) {
+        super(app, plugin);
+        this.plugin = plugin;
+        this.settingsManager = new SettingsManager(app, plugin, config, settings);
+    }
+    display() {
+        let { containerEl } = this;
+        containerEl.empty();
+        containerEl.addClass(c$2("board-settings-modal"));
+        this.settingsManager.constructUI(containerEl, "Kanban Plugin", false);
+    }
+}
+
 const kanbanViewType = "kanban";
 const kanbanIcon = "blocks";
 class KanbanView extends obsidian.TextFileView {
-    constructor(leaf) {
+    constructor(leaf, plugin) {
         super(leaf);
         this.dataBridge = new DataBridge();
+        this.plugin = plugin;
     }
     getViewType() {
         return kanbanViewType;
@@ -23703,6 +34086,47 @@ class KanbanView extends obsidian.TextFileView {
             reactDom.unmountComponentAtNode(this.contentEl);
         });
     }
+    getSetting(key) {
+        const localSetting = this.dataBridge.getData().settings[key];
+        if (localSetting)
+            return localSetting;
+        const globalSetting = this.plugin.settings[key];
+        if (globalSetting)
+            return globalSetting;
+        return null;
+    }
+    onMoreOptionsMenu(menu) {
+        // Add a menu item to force the board to markdown view
+        menu
+            .addItem((item) => {
+            item
+                .setTitle("Open as markdown")
+                .setIcon("document")
+                .onClick(() => {
+                this.plugin.kanbanFileModes[this.leaf.id || this.file.path] = "markdown";
+                this.plugin.setMarkdownView(this.leaf);
+            });
+        })
+            .addItem((item) => {
+            item
+                .setTitle("Open board settings")
+                .setIcon("gear")
+                .onClick(() => {
+                const board = this.dataBridge.getData();
+                new SettingsModal(this, {
+                    onSettingsChange: (settings) => {
+                        this.dataBridge.setExternal(update$2(board, {
+                            settings: {
+                                $set: settings,
+                            },
+                        }));
+                    },
+                }, board.settings).open();
+            });
+        })
+            .addSeparator();
+        super.onMoreOptionsMenu(menu);
+    }
     clear() {
         this.dataBridge.reset();
     }
@@ -23713,7 +34137,7 @@ class KanbanView extends obsidian.TextFileView {
         const trimmedContent = data.trim();
         const board = trimmedContent
             ? mdToBoard(trimmedContent)
-            : { lanes: [], archive: [] };
+            : { lanes: [], archive: [], settings: { "kanban-plugin": "basic" } };
         if (clear) {
             this.clear();
             // Tell react we have a new board
@@ -23737,10 +34161,10 @@ class KanbanView extends obsidian.TextFileView {
     }
 }
 
-const DEFAULT_SETTINGS = {};
 class KanbanPlugin extends obsidian.Plugin {
     constructor() {
         super(...arguments);
+        this.settings = {};
         this.kanbanFileModes = {};
         this.dbTimers = {};
         this.hasSet = {};
@@ -23748,6 +34172,14 @@ class KanbanPlugin extends obsidian.Plugin {
     onload() {
         return __awaiter(this, void 0, void 0, function* () {
             const self = this;
+            yield this.loadSettings();
+            this.settingsTab = new KanbanSettingsTab(this.app, this, {
+                onSettingsChange: (newSettings) => __awaiter(this, void 0, void 0, function* () {
+                    this.settings = newSettings;
+                    yield this.saveSettings();
+                }),
+            }, this.settings);
+            this.addSettingTab(this.settingsTab);
             // @ts-ignore
             this.app.workspace.registerHoverLinkSource(frontMatterKey, {
                 display: "Kanban",
@@ -23774,17 +34206,17 @@ class KanbanPlugin extends obsidian.Plugin {
             this.register(around(obsidian.WorkspaceLeaf.prototype, {
                 // Kanbans can be viewed as markdown or kanban, and we keep track of the mode
                 // while the file is open. When the file closes, we no longer need to keep track of it.
-                detach(originalDetach) {
+                detach(next) {
                     return function () {
                         var _a;
                         const state = (_a = this.view) === null || _a === void 0 ? void 0 : _a.getState();
-                        if ((state === null || state === void 0 ? void 0 : state.file) && self.kanbanFileModes[state.file]) {
-                            delete self.kanbanFileModes[state.file];
+                        if ((state === null || state === void 0 ? void 0 : state.file) && self.kanbanFileModes[this.id || state.file]) {
+                            delete self.kanbanFileModes[this.id || state.file];
                         }
-                        return originalDetach.apply(this);
+                        return next.apply(this);
                     };
                 },
-                setViewState(originalSetViewState) {
+                setViewState(next) {
                     return function (state, ...rest) {
                         var _a;
                         if (
@@ -23792,56 +34224,74 @@ class KanbanPlugin extends obsidian.Plugin {
                         state.type === "markdown" &&
                             ((_a = state.state) === null || _a === void 0 ? void 0 : _a.file) &&
                             // And the current mode of the file is not set to markdown
-                            self.kanbanFileModes[state.state.file] !== "markdown") {
+                            self.kanbanFileModes[this.id || state.state.file] !== "markdown") {
                             // Then check for the kanban frontMatterKey
                             const cache = self.app.metadataCache.getCache(state.state.file);
                             if ((cache === null || cache === void 0 ? void 0 : cache.frontmatter) && cache.frontmatter[frontMatterKey]) {
                                 // If we have it, force the view type to kanban
                                 const newState = Object.assign(Object.assign({}, state), { type: kanbanViewType });
                                 self.kanbanFileModes[state.state.file] = kanbanViewType;
-                                return originalSetViewState.apply(this, [newState, ...rest]);
+                                return next.apply(this, [newState, ...rest]);
                             }
                         }
-                        return originalSetViewState.apply(this, [state, ...rest]);
+                        return next.apply(this, [state, ...rest]);
                     };
                 },
             }));
-            this.registerView(kanbanViewType, (leaf) => new KanbanView(leaf));
+            // Add a menu item to go back to kanban view
+            this.register(around(obsidian.MarkdownView.prototype, {
+                onMoreOptionsMenu(next) {
+                    return function (menu) {
+                        const file = this.file;
+                        const cache = file
+                            ? self.app.metadataCache.getFileCache(file)
+                            : null;
+                        if (!file ||
+                            !(cache === null || cache === void 0 ? void 0 : cache.frontmatter) ||
+                            !cache.frontmatter[frontMatterKey]) {
+                            return next.call(this, menu);
+                        }
+                        menu
+                            .addItem((item) => {
+                            item
+                                .setTitle("Open as kanban board")
+                                .setIcon(kanbanIcon)
+                                .onClick(() => {
+                                self.kanbanFileModes[this.leaf.id || file.path] = kanbanViewType;
+                                self.setKanbanView(this.leaf);
+                            });
+                        })
+                            .addSeparator();
+                        next.call(this, menu);
+                    };
+                },
+            }));
+            this.registerView(kanbanViewType, (leaf) => new KanbanView(leaf, this));
             this.addCommand({
                 id: "create-new-kanban-board",
                 name: "Create new board",
                 callback: () => this.newKanban(),
             });
             this.registerEvent(this.app.workspace.on("file-menu", (menu, file, source, leaf) => {
-                // Add a menu item to force the board to markdown view
-                if ((leaf === null || leaf === void 0 ? void 0 : leaf.view.getViewType()) === kanbanViewType) {
-                    menu.addItem((item) => {
-                        item
-                            .setTitle("Open as markdown")
-                            .setIcon("document")
-                            .onClick(() => {
-                            this.kanbanFileModes[file.path] = "markdown";
-                            this.setMarkdownView(leaf);
-                        });
-                    });
-                    return;
-                }
-                // Add a menu item to go back to kanban view
-                if ((leaf === null || leaf === void 0 ? void 0 : leaf.view.getViewType()) === "markdown") {
-                    const cache = this.app.metadataCache.getFileCache(file);
-                    if ((cache === null || cache === void 0 ? void 0 : cache.frontmatter) && cache.frontmatter[frontMatterKey]) {
-                        menu.addItem((item) => {
-                            item
-                                .setTitle("Open as kanban board")
-                                .setIcon(kanbanIcon)
-                                .onClick(() => {
-                                this.kanbanFileModes[file.path] = kanbanViewType;
-                                this.setKanbanView(leaf);
-                            });
-                        });
-                    }
-                    return;
-                }
+                // if (leaf?.view.getViewType() === "markdown") {
+                //   const cache = this.app.metadataCache.getFileCache(file);
+                //   if (cache?.frontmatter && cache.frontmatter[frontMatterKey]) {
+                //     setTimeout(() =>
+                //       menu.addSeparator().addItem((item) => {
+                //         item
+                //           .setTitle("Open as kanban board")
+                //           .setIcon(kanbanIcon)
+                //           .onClick(() => {
+                //             this.kanbanFileModes[
+                //               (leaf as any).id || file.path
+                //             ] = kanbanViewType;
+                //             this.setKanbanView(leaf);
+                //           });
+                //       })
+                //     );
+                //   }
+                //   return;
+                // }
                 // Add a menu item to the folder context menu to create a board
                 if (file instanceof obsidian.TFolder) {
                     menu.addItem((item) => {
@@ -23889,7 +34339,7 @@ class KanbanPlugin extends obsidian.Plugin {
                 // @ts-ignore
                 const kanban = yield this.app.fileManager.createNewMarkdownFile(targetFolder, "Untitled Kanban");
                 yield this.app.vault.modify(kanban, frontmatter);
-                const view = new KanbanView(this.app.workspace.activeLeaf);
+                const view = new KanbanView(this.app.workspace.activeLeaf, this);
                 yield view.setState({ file: kanban.path }, {});
                 yield this.app.workspace.activeLeaf.open(view);
             }
@@ -23908,13 +34358,31 @@ class KanbanPlugin extends obsidian.Plugin {
     }
     loadSettings() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.settings = Object.assign({}, DEFAULT_SETTINGS, yield this.loadData());
+            this.settings = Object.assign({}, yield this.loadData());
         });
     }
     saveSettings() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.saveData(this.settings);
         });
+    }
+    getTemplatePlugins() {
+        // @ts-ignore
+        const templatesPlugin = this.app.internalPlugins.plugins.templates;
+        const templatesEnabled = templatesPlugin.enabled;
+        // @ts-ignore
+        const templaterPlugin = this.app.plugins.plugins["templater-obsidian"];
+        const templateFolder = templatesEnabled
+            ? templatesPlugin.instance.options.folder
+            : templaterPlugin
+                ? templaterPlugin.settings.template_folder
+                : undefined;
+        return {
+            templatesPlugin,
+            templaterPlugin,
+            templatesEnabled,
+            templateFolder,
+        };
     }
 }
 

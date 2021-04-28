@@ -1,3 +1,5 @@
+import { KanbanSettings } from "src/Settings";
+
 export interface LaneData {
   shouldMarkItemsComplete?: boolean;
 }
@@ -20,6 +22,7 @@ export interface Item {
 }
 
 export interface Board {
+  settings: KanbanSettings;
   lanes: Lane[];
   archive: Item[];
 }

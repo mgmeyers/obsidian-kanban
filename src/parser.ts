@@ -1,8 +1,11 @@
 import { generateInstanceId } from "./components/helpers";
 import { Board, Item, Lane } from "./components/types";
+import { KanbanSettings } from "./Settings";
+import yaml from "js-yaml";
 
-export const frontMatterKey = 'kanban-plugin'
+export const frontMatterKey = "kanban-plugin";
 
+const frontmatterRegEx = /^---([\w\W]+)---/;
 const newLineRegex = /[\r\n]+/g;
 
 // Begins with one or more # followed by a space
@@ -75,19 +78,32 @@ function archiveToMd(archive: Item[]) {
   return "";
 }
 
-export function boardToMd(board: Board) {
-  const frontmatter = ["---", "", `${frontMatterKey}: basic`, "", "---", "", ""].join("\n");
+export function settingsToFrontmatter(settings: KanbanSettings): string {
+  return ["---", "", yaml.dump(settings), "---", "", ""].join("\n");
+}
 
+export function boardToMd(board: Board) {
   const lanes = board.lanes.reduce((md, lane) => {
     return md + laneToMd(lane);
   }, "");
 
-  const archive = archiveToMd(board.archive);
+  return (
+    settingsToFrontmatter(board.settings) + lanes + archiveToMd(board.archive)
+  );
+}
 
-  return frontmatter + lanes + archive;
+export function mdToSettings(boardMd: string): KanbanSettings {
+  const match = boardMd.match(frontmatterRegEx);
+
+  if (match) {
+    return yaml.load(match[1].trim()) as KanbanSettings;
+  }
+
+  return { "kanban-plugin": "basic" };
 }
 
 export function mdToBoard(boardMd: string): Board {
+  const settings = mdToSettings(boardMd);
   const lines = boardMd.split(newLineRegex);
   const lanes: Lane[] = [];
   const archive: Item[] = [];
@@ -141,6 +157,7 @@ export function mdToBoard(boardMd: string): Board {
   }
 
   return {
+    settings,
     lanes,
     archive,
   };
