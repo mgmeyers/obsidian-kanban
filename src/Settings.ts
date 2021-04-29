@@ -116,8 +116,6 @@ export class SettingsManager {
       .addText((text) => {
         const [value, globalValue] = this.getSetting("lane-width", local);
 
-        console.log("lane-width", value);
-
         text.inputEl.setAttr("type", "number");
         text.inputEl.placeholder = `${
           globalValue ? globalValue : "272"

@@ -128,6 +128,10 @@ button.kanban-plugin__new-lane-button:hover {
   width: 100%;
 }
 
+.kanban-plugin__lane-title-count {
+  display: none;
+}
+
 .kanban-plugin__item button.kanban-plugin__item-edit-button,
 .kanban-plugin__lane button.kanban-plugin__lane-settings-button {
   font-size: 13px;

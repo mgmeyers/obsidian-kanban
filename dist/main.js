@@ -33987,7 +33987,6 @@ class SettingsManager {
             .setDesc("Enter a number to set the lane width in pixels.")
             .addText((text) => {
             const [value, globalValue] = this.getSetting("lane-width", local);
-            console.log("lane-width", value);
             text.inputEl.setAttr("type", "number");
             text.inputEl.placeholder = `${globalValue ? globalValue : "272"} (default)`;
             text.inputEl.value = value ? value.toString() : "";
