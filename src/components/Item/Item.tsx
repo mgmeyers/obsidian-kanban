@@ -28,9 +28,10 @@ export function draggableItemFactory({
     snapshot: DraggableStateSnapshot,
     rubric: DraggableRubric
   ) => {
-    const { boardModifiers } = React.useContext(KanbanContext);
+    const { boardModifiers, board } = React.useContext(KanbanContext);
     const itemIndex = rubric.source.index;
     const item = items[itemIndex];
+    const lane = board.lanes[laneIndex];
     const [isEditing, setIsEditing] = React.useState(false);
 
     const settingsMenu = useItemMenu({
@@ -49,6 +50,19 @@ export function draggableItemFactory({
         {...provided.dragHandleProps}
       >
         <div className={c("item-content-wrapper")}>
+          {lane.data.shouldMarkItemsComplete && (
+            <div className={c("item-prefix-button-wrapper")}>
+              <button
+                onClick={() => {
+                  boardModifiers.archiveItem(laneIndex, itemIndex, item);
+                }}
+                className={c("item-prefix-button")}
+                aria-label="Archive item"
+              >
+                <Icon name="sheets-in-box" />
+              </button>
+            </div>
+          )}
           <ItemContent
             isSettingsVisible={isEditing}
             setIsSettingsVisible={setIsEditing}
@@ -61,13 +75,13 @@ export function draggableItemFactory({
               )
             }
           />
-          <div className={c("item-edit-button-wrapper")}>
+          <div className={c("item-postfix-button-wrapper")}>
             {isEditing ? (
               <button
                 onClick={() => {
                   setIsEditing(false);
                 }}
-                className={`${c("item-edit-button")} is-enabled`}
+                className={`${c("item-postfix-button")} is-enabled`}
                 aria-label="Cancel"
               >
                 <Icon name="cross" />
@@ -77,7 +91,7 @@ export function draggableItemFactory({
                 onClick={(e) => {
                   settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
                 }}
-                className={c("item-edit-button")}
+                className={c("item-postfix-button")}
                 aria-label="More options"
               >
                 <Icon name="vertical-three-dots" />

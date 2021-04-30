@@ -27029,9 +27029,10 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
 
 function draggableItemFactory({ items, laneIndex, }) {
     return (provided, snapshot, rubric) => {
-        const { boardModifiers } = react.useContext(KanbanContext);
+        const { boardModifiers, board } = react.useContext(KanbanContext);
         const itemIndex = rubric.source.index;
         const item = items[itemIndex];
+        const lane = board.lanes[laneIndex];
         const [isEditing, setIsEditing] = react.useState(false);
         const settingsMenu = useItemMenu({
             setIsEditing,
@@ -27042,13 +27043,18 @@ function draggableItemFactory({ items, laneIndex, }) {
         });
         return (react.createElement("div", Object.assign({ className: `${c$2("item")} ${snapshot.isDragging ? "is-dragging" : ""}`, ref: provided.innerRef }, provided.draggableProps, provided.dragHandleProps),
             react.createElement("div", { className: c$2("item-content-wrapper") },
+                lane.data.shouldMarkItemsComplete && (react.createElement("div", { className: c$2("item-prefix-button-wrapper") },
+                    react.createElement("button", { onClick: () => {
+                            boardModifiers.archiveItem(laneIndex, itemIndex, item);
+                        }, className: c$2("item-prefix-button"), "aria-label": "Archive item" },
+                        react.createElement(Icon, { name: "sheets-in-box" })))),
                 react.createElement(ItemContent, { isSettingsVisible: isEditing, setIsSettingsVisible: setIsEditing, item: item, onChange: (e) => boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, { title: { $set: e.target.value } })) }),
-                react.createElement("div", { className: c$2("item-edit-button-wrapper") }, isEditing ? (react.createElement("button", { onClick: () => {
+                react.createElement("div", { className: c$2("item-postfix-button-wrapper") }, isEditing ? (react.createElement("button", { onClick: () => {
                         setIsEditing(false);
-                    }, className: `${c$2("item-edit-button")} is-enabled`, "aria-label": "Cancel" },
+                    }, className: `${c$2("item-postfix-button")} is-enabled`, "aria-label": "Cancel" },
                     react.createElement(Icon, { name: "cross" }))) : (react.createElement("button", { onClick: (e) => {
                         settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
-                    }, className: c$2("item-edit-button"), "aria-label": "More options" },
+                    }, className: c$2("item-postfix-button"), "aria-label": "More options" },
                     react.createElement(Icon, { name: "vertical-three-dots" })))))));
     };
 }

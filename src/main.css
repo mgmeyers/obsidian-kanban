@@ -132,7 +132,8 @@ button.kanban-plugin__new-lane-button:hover {
   display: none;
 }
 
-.kanban-plugin__item button.kanban-plugin__item-edit-button,
+.kanban-plugin__item button.kanban-plugin__item-prefix-button,
+.kanban-plugin__item button.kanban-plugin__item-postfix-button,
 .kanban-plugin__lane button.kanban-plugin__lane-settings-button {
   font-size: 13px;
   line-height: 1;
@@ -144,12 +145,19 @@ button.kanban-plugin__new-lane-button:hover {
   margin-right: -4px;
 }
 
-.kanban-plugin__item button.kanban-plugin__item-edit-button.is-enabled,
+.kanban-plugin__item button.kanban-plugin__item-prefix-button {
+  margin-right: 5px;
+  margin-left: 0;
+}
+
+.kanban-plugin__item button.kanban-plugin__item-prefix-button.is-enabled,
+.kanban-plugin__item button.kanban-plugin__item-postfix-button.is-enabled,
 .kanban-plugin__lane button.kanban-plugin__lane-settings-button.is-enabled {
   color: var(--text-accent);
 }
 
-.kanban-plugin__item button.kanban-plugin__item-edit-button:hover,
+.kanban-plugin__item button.kanban-plugin__item-prefix-button:hover,
+.kanban-plugin__item button.kanban-plugin__item-postfix-button:hover,
 .kanban-plugin__lane button.kanban-plugin__lane-settings-button:hover {
   background-color: transparent;
   color: var(--text-normal);
@@ -157,9 +165,10 @@ button.kanban-plugin__new-lane-button:hover {
 
 .kanban-plugin__lane-action-wrapper,
 .kanban-plugin__item-edit-archive-button,
-.kanban-plugin__item-settings-actions > .kanban-plugin__icon,
+.kanban-plugin__item-settings-actions .kanban-plugin__icon,
 .kanban-plugin__item-edit-archive-button > .kanban-plugin__icon,
-.kanban-plugin__item-edit-button > .kanban-plugin__icon,
+.kanban-plugin__item-prefix-button > .kanban-plugin__icon,
+.kanban-plugin__item-postfix-button > .kanban-plugin__icon,
 .kanban-plugin__lane-settings-button > .kanban-plugin__icon {
   display: flex;
 }
@@ -266,33 +275,22 @@ button.kanban-plugin__lane-settings-button
   -webkit-user-select: unset;
 }
 
-.kanban-plugin__item-edit-button-wrapper {
+.kanban-plugin__item-prefix-button-wrapper,
+.kanban-plugin__item-postfix-button-wrapper {
   display: flex;
   flex-grow: 0;
   flex-shrink: 0;
 }
 
-.kanban-plugin__item-edit-button-wrapper > button + button {
-  margin-left: 5px;
-}
-
-button.kanban-plugin__item-edit-button {
+button.kanban-plugin__item-postfix-button {
   visibility: hidden;
   opacity: 0;
   transition: 100ms opacity;
   display: flex;
 }
 
-.kanban-plugin__lane-action-wrapper,
-button.kanban-plugin__item-edit-archive-button,
-.kanban-plugin__item-settings-actions > button .kanban-plugin__icon,
-button.kanban-plugin__item-edit-archive-button .kanban-plugin__icon,
-button.kanban-plugin__item-edit-button .kanban-plugin__icon {
-  display: flex;
-}
-
-button.kanban-plugin__item-edit-button.is-enabled,
-.kanban-plugin__item:hover button.kanban-plugin__item-edit-button {
+button.kanban-plugin__item-postfix-button.is-enabled,
+.kanban-plugin__item:hover button.kanban-plugin__item-postfix-button {
   visibility: visible;
   opacity: 1;
 }
@@ -547,14 +545,18 @@ button.kanban-plugin__cancel-action-button {
   text-align: left;
 }
 
-.kanban-plugin__board-settings-modal .choices[data-type*="select-one"] .choices__inner {
+.kanban-plugin__board-settings-modal
+  .choices[data-type*="select-one"]
+  .choices__inner {
   background-color: var(--background-primary);
   border-color: var(--background-modifier-border);
   padding: 0;
   min-height: 0;
 }
 
-.kanban-plugin__board-settings-modal .choices[data-type*='select-one'] .choices__input {
+.kanban-plugin__board-settings-modal
+  .choices[data-type*="select-one"]
+  .choices__input {
   background-color: var(--background-primary);
   border-bottom-color: var(--background-modifier-border);
   font-size: 14px;
@@ -579,15 +581,21 @@ button.kanban-plugin__cancel-action-button {
   max-height: 200px;
 }
 
-.kanban-plugin__board-settings-modal .choices__list--dropdown .choices__item--selectable:after {
+.kanban-plugin__board-settings-modal
+  .choices__list--dropdown
+  .choices__item--selectable:after {
   display: none;
 }
 
-.kanban-plugin__board-settings-modal .choices__list--dropdown .choices__item--selectable {
+.kanban-plugin__board-settings-modal
+  .choices__list--dropdown
+  .choices__item--selectable {
   padding: 4px 6px;
 }
 
-.kanban-plugin__board-settings-modal .choices__list--dropdown .choices__item.is-highlighted {
+.kanban-plugin__board-settings-modal
+  .choices__list--dropdown
+  .choices__item.is-highlighted {
   background-color: var(--background-primary-alt);
 }
 
