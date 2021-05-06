@@ -1,5 +1,5 @@
 import update, { Spec } from "immutability-helper";
-import { App, Modal, PluginSettingTab, Setting, debounce } from "obsidian";
+import { App, Modal, PluginSettingTab, Setting } from "obsidian";
 import {
   c,
   getDefaultDateFormat,

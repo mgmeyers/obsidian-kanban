@@ -1,7 +1,7 @@
 import { TFile, moment } from "obsidian";
 import React from "react";
 
-import { Textcomplete } from "@textcomplete/core";
+import { StrategyProps, Textcomplete } from "@textcomplete/core";
 import { TextareaEditor } from "@textcomplete/textarea";
 import Fuse from "fuse.js";
 import {
@@ -18,14 +18,9 @@ import { KanbanView } from "src/KanbanView";
 import { defaultDateTrigger, defaultTimeTrigger } from "src/settingHelpers";
 import { getDefaultLocale } from "./datePickerLocale";
 
-const tagRegex = /(^|\s)#([^\s]*)$/;
-const linkRegex = /(^|\s)\[\[([^\]]*)$/;
-
-export interface ConstructAutocompleteParams {
-  inputRef: React.MutableRefObject<HTMLTextAreaElement>;
-  isAutocompleteVisibleRef: React.MutableRefObject<boolean>;
-  obsidianContext: ObsidianContextProps;
-}
+const tagRegex = /\B#([^\s]*)?$/;
+const linkRegex = /\B\[\[([^\]]*)?$/;
+const embedRegex = /\B!\[\[([^\]]*)?$/;
 
 function forceChangeEvent(input: HTMLTextAreaElement, value: string) {
   Object.getOwnPropertyDescriptor(
@@ -83,7 +78,10 @@ function constructDatePicker({
   });
 }
 
-function getTagSearchConfig(tagSearch: Fuse<string>) {
+function getTagSearchConfig(
+  tags: string[],
+  tagSearch: Fuse<string>
+): StrategyProps<Fuse.FuseResult<string>> {
   return {
     id: "tag",
     match: tagRegex,
@@ -92,7 +90,13 @@ function getTagSearchConfig(tagSearch: Fuse<string>) {
       term: string,
       callback: (results: Fuse.FuseResult<string>[]) => void
     ) => {
-      callback(tagSearch.search(term));
+      if (!term) {
+        callback(
+          tags.slice(0, 10).map((tag, i) => ({ item: tag, refIndex: i }))
+        );
+      } else {
+        callback(tagSearch.search(term));
+      }
     },
     template: (result: Fuse.FuseResult<string>) => {
       return result.item;
@@ -102,13 +106,15 @@ function getTagSearchConfig(tagSearch: Fuse<string>) {
 }
 
 function getFileSearchConfig(
+  files: TFile[],
   fileSearch: Fuse<TFile>,
   filePath: string,
-  view: KanbanView
-) {
+  view: KanbanView,
+  isEmbed: boolean
+): StrategyProps<Fuse.FuseResult<TFile>> {
   return {
     id: "link",
-    match: linkRegex,
+    match: isEmbed ? embedRegex : linkRegex,
     index: 1,
     template: (res: Fuse.FuseResult<TFile>) => {
       return view.app.metadataCache.fileToLinktext(res.item, filePath);
@@ -117,10 +123,19 @@ function getFileSearchConfig(
       term: string,
       callback: (results: Fuse.FuseResult<TFile>[]) => void
     ) => {
-      callback(fileSearch.search(term));
+      if (!term) {
+        callback(
+          files.slice(0, 10).map((file, i) => ({ item: file, refIndex: i }))
+        );
+      } else {
+        callback(fileSearch.search(term));
+      }
     },
     replace: (result: Fuse.FuseResult<TFile>): string =>
-      `[[${view.app.metadataCache.fileToLinktext(result.item, filePath)}]] `,
+      `${isEmbed ? "!" : ""}[[${view.app.metadataCache.fileToLinktext(
+        result.item,
+        filePath
+      )}]] `,
   };
 }
 
@@ -158,6 +173,12 @@ function toNextMonth(date: moment.Moment) {
   return date;
 }
 
+export interface ConstructAutocompleteParams {
+  inputRef: React.MutableRefObject<HTMLTextAreaElement>;
+  isAutocompleteVisibleRef: React.MutableRefObject<boolean>;
+  obsidianContext: ObsidianContextProps;
+}
+
 export function constructAutocomplete({
   inputRef,
   isAutocompleteVisibleRef,
@@ -186,11 +207,11 @@ export function constructAutocomplete({
     `(?:^|\\s)${escapeRegExpStr(timeTrigger as string)}$`
   );
 
-  const tagSearch = new Fuse(
-    Object.keys((view.app.metadataCache as any).getTags()).sort()
-  );
+  const tags = Object.keys((view.app.metadataCache as any).getTags()).sort();
+  const tagSearch = new Fuse(tags);
 
-  const fileSearch = new Fuse(view.app.vault.getMarkdownFiles(), {
+  const files = view.app.vault.getFiles();
+  const fileSearch = new Fuse(files, {
     keys: ["name"],
   });
 
@@ -198,8 +219,9 @@ export function constructAutocomplete({
   const autocomplete = new Textcomplete(
     editor,
     [
-      getTagSearchConfig(tagSearch),
-      getFileSearchConfig(fileSearch, filePath, view),
+      getTagSearchConfig(tags, tagSearch),
+      getFileSearchConfig(files, fileSearch, filePath, view, false),
+      getFileSearchConfig(files, fileSearch, filePath, view, true),
     ],
     {
       dropdown: {
@@ -317,7 +339,7 @@ export function constructAutocomplete({
                 datePickerInstance = picker;
                 isAutocompleteVisibleRef.current = true;
               },
-            })
+            });
           }
         );
       }
@@ -330,7 +352,7 @@ export function constructAutocomplete({
     if (inputRef.current) {
       inputRef.current.removeEventListener("keydown", keydownHandler);
     }
-    
+
     if (datePickerEl) {
       destroyDatePicker();
     }
