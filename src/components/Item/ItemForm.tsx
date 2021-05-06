@@ -3,6 +3,8 @@ import React from "react";
 import { Item } from "../types";
 import { c, generateInstanceId } from "../helpers";
 import { useAutocompleteInputProps } from "./autocomplete";
+import { ObsidianContext } from "../context";
+import { processTitle } from "src/parser";
 
 interface ItemFormProps {
   addItem: (item: Item) => void;
@@ -11,6 +13,7 @@ interface ItemFormProps {
 export function ItemForm({ addItem }: ItemFormProps) {
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const [itemTitle, setItemTitle] = React.useState("");
+  const { view } = React.useContext(ObsidianContext);
 
   const clear = () => {
     setItemTitle("");
@@ -19,12 +22,17 @@ export function ItemForm({ addItem }: ItemFormProps) {
 
   const createItem = () => {
     const title = itemTitle.trim();
+    const processed = processTitle(title, view);
 
     if (title) {
       const newItem: Item = {
         id: generateInstanceId(),
-        title,
+        title: processed.title,
+        titleRaw: title,
         data: {},
+        metadata: {
+          date: processed.date,
+        },
       };
 
       addItem(newItem);

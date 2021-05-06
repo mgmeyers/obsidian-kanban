@@ -1,10 +1,18 @@
 import update, { Spec } from "immutability-helper";
 import { App, Modal, PluginSettingTab, Setting, debounce } from "obsidian";
-import { c } from "./components/helpers";
+import {
+  c,
+  getDefaultDateFormat,
+  getDefaultTimeFormat,
+} from "./components/helpers";
 import { KanbanView } from "./KanbanView";
 import { frontMatterKey } from "./parser";
 import KanbanPlugin from "./main";
-import { createSearchSelect, getListOptions } from "./settingHelpers";
+import {
+  createSearchSelect,
+  defaultDateTrigger,
+  getListOptions,
+} from "./settingHelpers";
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
@@ -16,6 +24,13 @@ export interface KanbanSettings {
   "new-note-template"?: string;
   "lane-width"?: number;
   "display-tags"?: boolean;
+  "date-format"?: string;
+  "date-display-format"?: string;
+  "time-format"?: string;
+  "date-trigger"?: string;
+  "time-trigger"?: string;
+  "link-date-to-daily-note"?: boolean;
+  "hide-date-in-title"?: boolean;
 }
 
 export interface SettingsManagerConfig {
@@ -48,7 +63,7 @@ export class SettingsManager {
     this.applyDebounceTimer = window.setTimeout(() => {
       this.settings = update(this.settings, spec);
       this.config.onSettingsChange(this.settings);
-    }, 100);
+    }, 200);
   }
 
   getSetting(key: keyof KanbanSettings, local: boolean) {
@@ -139,6 +154,287 @@ export class SettingsManager {
             });
           }
         });
+      });
+
+    contentEl.createEl("h4", { text: "Date & Time" });
+
+    new Setting(contentEl)
+      .setName("Date trigger")
+      .setDesc("When this is typed, it will trigger the date selector")
+      .addText((text) => {
+        const [value, globalValue] = this.getSetting("date-trigger", local);
+
+        if (value || globalValue) {
+          text.setValue((value || globalValue) as string);
+        }
+
+        text.setPlaceholder((globalValue as string) || defaultDateTrigger);
+
+        text.onChange((newValue) => {
+          if (newValue) {
+            this.applySettingsUpdate({
+              "date-trigger": {
+                $set: newValue,
+              },
+            });
+          } else {
+            this.applySettingsUpdate({
+              $unset: ["date-trigger"],
+            });
+          }
+        });
+      });
+
+    new Setting(contentEl).setName("Date format").then((setting) => {
+      setting.addMomentFormat((mf) => {
+        setting.descEl.appendChild(
+          createFragment((frag) => {
+            frag.appendText(
+              "This format will be used when saving dates in markdown."
+            );
+            frag.createEl("br");
+            frag.appendText("For more syntax, refer to ");
+            frag.createEl(
+              "a",
+              {
+                text: "format reference",
+                href: "https://momentjs.com/docs/#/displaying/format/",
+              },
+              (a) => {
+                a.setAttr("target", "_blank");
+              }
+            );
+            frag.createEl("br");
+            frag.appendText("Your current syntax looks like this: ");
+            mf.setSampleEl(frag.createEl("b", { cls: "u-pop" }));
+            frag.createEl("br");
+          })
+        );
+
+        const [value, globalValue] = this.getSetting("date-format", local);
+        const defaultFormat = getDefaultDateFormat(this.app);
+
+        mf.setPlaceholder(defaultFormat);
+        mf.setDefaultFormat(defaultFormat);
+
+        if (value || globalValue) {
+          mf.setValue((value || globalValue) as string);
+        }
+
+        mf.onChange((newValue) => {
+          if (newValue) {
+            this.applySettingsUpdate({
+              "date-format": {
+                $set: newValue,
+              },
+            });
+          } else {
+            this.applySettingsUpdate({
+              $unset: ["date-format"],
+            });
+          }
+        });
+      });
+    });
+
+    new Setting(contentEl).setName("Date display format").then((setting) => {
+      setting.addMomentFormat((mf) => {
+        setting.descEl.appendChild(
+          createFragment((frag) => {
+            frag.appendText(
+              "This format will be used when displaying dates in Kanban cards."
+            );
+            frag.createEl("br");
+            frag.appendText("For more syntax, refer to ");
+            frag.createEl(
+              "a",
+              {
+                text: "format reference",
+                href: "https://momentjs.com/docs/#/displaying/format/",
+              },
+              (a) => {
+                a.setAttr("target", "_blank");
+              }
+            );
+            frag.createEl("br");
+            frag.appendText("Your current syntax looks like this: ");
+            mf.setSampleEl(frag.createEl("b", { cls: "u-pop" }));
+            frag.createEl("br");
+          })
+        );
+
+        const [value, globalValue] = this.getSetting(
+          "date-display-format",
+          local
+        );
+        const defaultFormat = getDefaultDateFormat(this.app);
+
+        mf.setPlaceholder(defaultFormat);
+        mf.setDefaultFormat(defaultFormat);
+
+        if (value || globalValue) {
+          mf.setValue((value || globalValue) as string);
+        }
+
+        mf.onChange((newValue) => {
+          if (newValue) {
+            this.applySettingsUpdate({
+              "date-display-format": {
+                $set: newValue,
+              },
+            });
+          } else {
+            this.applySettingsUpdate({
+              $unset: ["date-display-format"],
+            });
+          }
+        });
+      });
+    });
+
+    // new Setting(contentEl).setName("Time output format").then((setting) => {
+    //   setting.addMomentFormat((mf) => {
+    //     setting.descEl.appendChild(
+    //       createFragment((frag) => {
+    //         frag.appendText("For more syntax, refer to ");
+    //         frag.createEl(
+    //           "a",
+    //           {
+    //             text: "format reference",
+    //             href: "https://momentjs.com/docs/#/displaying/format/",
+    //           },
+    //           (a) => {
+    //             a.setAttr("target", "_blank");
+    //           }
+    //         );
+    //         frag.createEl("br");
+    //         frag.appendText("Your current syntax looks like this: ");
+    //         mf.setSampleEl(frag.createEl("b", { cls: "u-pop" }));
+    //         frag.createEl("br");
+    //       })
+    //     );
+
+    //     const [value, globalValue] = this.getSetting("time-format", local);
+    //     const defaultFormat = getDefaultTimeFormat(this.app);
+
+    //     mf.setPlaceholder(defaultFormat);
+    //     mf.setDefaultFormat(defaultFormat);
+
+    //     if (value || globalValue) {
+    //       mf.setValue((value || globalValue) as string);
+    //     }
+
+    //     mf.onChange((newValue) => {
+    //       if (newValue) {
+    //         this.applySettingsUpdate({
+    //           "time-format": {
+    //             $set: newValue,
+    //           },
+    //         });
+    //       } else {
+    //         this.applySettingsUpdate({
+    //           $unset: ["time-format"],
+    //         });
+    //       }
+    //     });
+    //   });
+    // });
+
+    // new Setting(contentEl)
+    //   .setName("Time trigger")
+    //   .setDesc("When this is typed, it will trigger the time selector")
+    //   .addText((text) => {
+    //     const [value, globalValue] = this.getSetting("time-trigger", local);
+
+    //     if (value || globalValue) {
+    //       text.setValue((value || globalValue) as string);
+    //     }
+
+    //     text.setPlaceholder((globalValue as string) || defaultTimeTrigger);
+
+    //     text.onChange((newValue) => {
+    //       if (newValue) {
+    //         this.applySettingsUpdate({
+    //           "time-trigger": {
+    //             $set: newValue,
+    //           },
+    //         });
+    //       } else {
+    //         this.applySettingsUpdate({
+    //           $unset: ["time-trigger"],
+    //         });
+    //       }
+    //     });
+    //   });
+
+    new Setting(contentEl)
+      .setName("Hide dates in card titles")
+      .setDesc(
+        "When toggled, dates and times will be hidden card titles. This will prevent dates from being included in the title when creating new notes."
+      )
+      .addToggle((toggle) => {
+        const [value, globalValue] = this.getSetting(
+          "hide-date-in-title",
+          local
+        );
+
+        if (value !== undefined) {
+          toggle.setValue(value as boolean);
+        } else if (globalValue !== undefined) {
+          toggle.setValue(globalValue as boolean);
+        }
+
+        toggle.onChange((newValue) => {
+          this.applySettingsUpdate({
+            "hide-date-in-title": {
+              $set: newValue,
+            },
+          });
+        });
+      })
+      .addExtraButton((b) => {
+        b.setIcon("reset")
+          .setTooltip(`Revert to ${local ? "global" : "default"} setting`)
+          .onClick(() => {
+            this.applySettingsUpdate({
+              $unset: ["hide-date-in-title"],
+            });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName("Link dates to daily notes")
+      .setDesc(
+        "When toggled, dates will link to daily notes. Eg. [[2021-04-26]]"
+      )
+      .addToggle((toggle) => {
+        const [value, globalValue] = this.getSetting(
+          "link-date-to-daily-note",
+          local
+        );
+
+        if (value !== undefined) {
+          toggle.setValue(value as boolean);
+        } else if (globalValue !== undefined) {
+          toggle.setValue(globalValue as boolean);
+        }
+
+        toggle.onChange((newValue) => {
+          this.applySettingsUpdate({
+            "link-date-to-daily-note": {
+              $set: newValue,
+            },
+          });
+        });
+      })
+      .addExtraButton((b) => {
+        b.setIcon("reset")
+          .setTooltip(`Revert to ${local ? "global" : "default"} setting`)
+          .onClick(() => {
+            this.applySettingsUpdate({
+              $unset: ["link-date-to-daily-note"],
+            });
+          });
       });
   }
 

@@ -46,16 +46,18 @@ export class KanbanView extends TextFileView implements HoverParent {
     ReactDOM.unmountComponentAtNode(this.contentEl);
   }
 
-  getSetting(key: keyof KanbanSettings) {
-    const localSetting = this.dataBridge.getData().settings[key]
+  getSetting(key: keyof KanbanSettings, local?: KanbanSettings) {
+    const localSetting = local
+      ? local[key]
+      : this.dataBridge.getData().settings[key];
 
     if (localSetting) return localSetting;
-    
+
     const globalSetting = this.plugin.settings[key];
 
     if (globalSetting) return globalSetting;
 
-    return null
+    return null;
   }
 
   onMoreOptionsMenu(menu: Menu) {
@@ -90,6 +92,10 @@ export class KanbanView extends TextFileView implements HoverParent {
                       },
                     })
                   );
+
+                  setTimeout(() => {
+                    this.setViewData(this.data, true);
+                  }, 100)
                 },
               },
               board.settings
@@ -112,7 +118,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   setViewData(data: string, clear: boolean) {
     const trimmedContent = data.trim();
     const board: Board = trimmedContent
-      ? mdToBoard(trimmedContent)
+      ? mdToBoard(trimmedContent, this)
       : { lanes: [], archive: [], settings: { "kanban-plugin": "basic" } };
 
     if (clear) {

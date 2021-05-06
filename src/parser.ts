@@ -1,7 +1,14 @@
-import { generateInstanceId } from "./components/helpers";
+import { moment } from "obsidian";
+import {
+  escapeRegExpStr,
+  generateInstanceId,
+  getDefaultDateFormat,
+} from "./components/helpers";
 import { Board, Item, Lane } from "./components/types";
-import { KanbanSettings } from "./Settings";
+import {KanbanSettings} from "./Settings";
+import { defaultDateTrigger } from "./settingHelpers";
 import yaml from "js-yaml";
+import { KanbanView } from "./KanbanView";
 
 export const frontMatterKey = "kanban-plugin";
 
@@ -27,17 +34,63 @@ const archiveString = "***";
 const archiveMarkerRegex = /^\*\*\*$/;
 
 function itemToMd(item: Item) {
-  return `- [${item.data.isComplete ? "x" : " "}] ${item.title}`;
+  return `- [${item.data.isComplete ? "x" : " "}] ${item.titleRaw}`;
 }
 
-function mdToItem(itemMd: string): Item {
+export function processTitle(
+  title: string,
+  view: KanbanView,
+  settings?: KanbanSettings
+) {
+  const dateFormat =
+    view.getSetting("date-format", settings) || getDefaultDateFormat(view.app);
+  const dateTrigger = view.getSetting("date-trigger", settings) || defaultDateTrigger;
+  const shouldHideDate = view.getSetting("hide-date-in-title", settings);
+  const shouldLinkDate = view.getSetting("link-date-to-daily-note", settings);
+
+  let date: undefined | moment.Moment = undefined;
+  let processedTitle = title;
+
+  const contentMatch = shouldLinkDate ? "\\[\\[([^}]+)\\]\\]" : "{([^}]+)}";
+  const dateRegEx = new RegExp(
+    `(?:^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`,
+    "g"
+  );
+
+  const match = dateRegEx.exec(title);
+
+  if (match) {
+    date = moment(match[1], dateFormat as string);
+  }
+
+
+  if (shouldHideDate) {
+    processedTitle = processedTitle.replace(dateRegEx, "");
+  }
+
+  return {
+    title: processedTitle,
+    date,
+  };
+}
+
+function mdToItem(
+  itemMd: string,
+  view: KanbanView,
+  settings: KanbanSettings
+): Item {
   const match = itemMd.match(taskRegex);
+  const processed = processTitle(match[4], view, settings);
 
   return {
     id: generateInstanceId(),
-    title: match[4],
+    title: processed.title,
+    titleRaw: match[4],
     data: {
       isComplete: match[3] !== " ",
+    },
+    metadata: {
+      date: processed.date,
     },
   };
 }
@@ -102,7 +155,7 @@ export function mdToSettings(boardMd: string): KanbanSettings {
   return { "kanban-plugin": "basic" };
 }
 
-export function mdToBoard(boardMd: string): Board {
+export function mdToBoard(boardMd: string, view: KanbanView): Board {
   const settings = mdToSettings(boardMd);
   const lines = boardMd.split(newLineRegex);
   const lanes: Lane[] = [];
@@ -144,9 +197,9 @@ export function mdToBoard(boardMd: string): Board {
     // Create an item from tasks
     if (taskRegex.test(line)) {
       if (haveSeenArchiveMarker) {
-        archive.push(mdToItem(line));
+        archive.push(mdToItem(line, view, settings));
       } else {
-        currentLane.items.push(mdToItem(line));
+        currentLane.items.push(mdToItem(line, view, settings));
       }
     }
   });

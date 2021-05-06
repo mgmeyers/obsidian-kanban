@@ -3,7 +3,8 @@ import update from "immutability-helper";
 import { DropResult } from "react-beautiful-dnd";
 import { Board, Item, Lane } from "./types";
 import { KanbanView } from "src/KanbanView";
-import { TFile } from "obsidian";
+import { App, TFile } from "obsidian";
+import { SettingsManager } from "src/Settings";
 
 export const baseClassName = "kanban-plugin";
 
@@ -157,10 +158,52 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
     }
 
     if (templaterPlugin) {
-      return await templaterPlugin.parser.replace_templates_and_append(templateFile);
+      return await templaterPlugin.parser.replace_templates_and_append(
+        templateFile
+      );
     }
 
     // No template plugins enabled so we can just append the template to the doc
-    await view.app.vault.modify(view.app.workspace.getActiveFile(), templateContent);
+    await view.app.vault.modify(
+      view.app.workspace.getActiveFile(),
+      templateContent
+    );
   }
+}
+
+export function getDefaultDateFormat(app: App) {
+  const internalPlugins = (app as any).internalPlugins.plugins;
+  const dailyNotesEnabled = internalPlugins["daily-notes"]?.enabled;
+  const dailyNotesValue =
+    internalPlugins["daily-notes"]?.instance.options.format;
+  const nlDatesValue = (app as any).plugins.plugins["nldates-obsidian"]
+    ?.settings.format;
+  const templatesEnabled = internalPlugins.templates?.enabled;
+  const templatesValue = internalPlugins.templates?.instance.options.dateFormat;
+
+  return (
+    (dailyNotesEnabled && dailyNotesValue) ||
+    nlDatesValue ||
+    (templatesEnabled && templatesValue) ||
+    "YYYY-MM-DD"
+  );
+}
+
+export function getDefaultTimeFormat(app: App) {
+  const internalPlugins = (app as any).internalPlugins.plugins;
+  const nlDatesValue = (app as any).plugins.plugins["nldates-obsidian"]
+    ?.settings.timeFormat;
+  const templatesEnabled = internalPlugins.templates?.enabled;
+  const templatesValue = internalPlugins.templates?.instance.options.timeFormat;
+
+  return nlDatesValue || (templatesEnabled && templatesValue) || "HH:mm";
+}
+
+const reRegExChar = /[\\^$.*+?()[\]{}|]/g;
+const reHasRegExChar = RegExp(reRegExChar.source);
+
+export function escapeRegExpStr(str: string) {
+  return str && reHasRegExChar.test(str)
+    ? str.replace(reRegExChar, "\\$&")
+    : str || "";
 }

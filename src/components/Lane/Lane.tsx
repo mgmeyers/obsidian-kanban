@@ -11,7 +11,7 @@ import {
 } from "react-beautiful-dnd";
 import { Item, Lane } from "../types";
 import { c } from "../helpers";
-import { draggableItemFactory } from "../Item/Item";
+import { draggableItemFactory, GhostItem } from "../Item/Item";
 import { ItemContent } from "../Item/ItemContent";
 import { ItemForm } from "../Item/ItemForm";
 import { LaneHeader } from "./LaneHeader";
@@ -48,21 +48,10 @@ function LaneItems({
       <div className={c("lane-items")}>
         {items.map((item, i) => {
           return (
-            <div key={i} className={c("item")}>
-              <div className={c("item-content-wrapper")}>
-                <ItemContent isSettingsVisible={false} item={item} />
-                <div className={c("item-edit-button-wrapper")}>
-                  {shouldShowArchiveButton && (
-                    <button className={`${c("item-edit-button")}`}>
-                      <Icon name="sheets-in-box" />
-                    </button>
-                  )}
-                  <button className={`${c("item-edit-button")}`}>
-                    <Icon name="pencil" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            <GhostItem
+              item={item}
+              shouldShowArchiveButton={shouldShowArchiveButton}
+            />
           );
         })}
       </div>
@@ -108,11 +97,11 @@ export function draggableLaneFactory({
     const shouldShowArchiveButton = !!lane.data.shouldMarkItemsComplete;
     const laneWidth = view.getSetting("lane-width");
 
-    const settingStyles = laneWidth ? { width: `${laneWidth}px` } : undefined
+    const settingStyles = laneWidth ? { width: `${laneWidth}px` } : undefined;
     const style = {
       ...provided.draggableProps.style,
       ...settingStyles,
-    }
+    };
 
     return (
       <div

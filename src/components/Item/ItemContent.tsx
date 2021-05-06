@@ -1,8 +1,8 @@
-import { MarkdownRenderer } from "obsidian";
+import { MarkdownRenderer, getLinkpath } from "obsidian";
 import React from "react";
 import { Item } from "../types";
-import { c } from "../helpers";
-import { ObsidianContext } from "../context";
+import { c, getDefaultDateFormat } from "../helpers";
+import { KanbanContext, ObsidianContext } from "../context";
 import { useAutocompleteInputProps } from "./autocomplete";
 
 export interface ItemContentProps {
@@ -23,6 +23,11 @@ export function ItemContent({
   const inputRef = React.useRef<HTMLTextAreaElement>();
 
   const { view, filePath } = obsidianContext;
+  const dateFormat =
+    view.getSetting("date-format") || getDefaultDateFormat(view.app);
+  const dateDisplayFormat =
+    view.getSetting("date-display-format") || dateFormat;
+  const shouldLinkDate = view.getSetting("link-date-to-daily-note");
 
   const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false);
 
@@ -34,20 +39,21 @@ export function ItemContent({
 
   const markdownContent = React.useMemo(() => {
     const tempEl = createDiv();
-
     MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
 
-    return { __html: tempEl.innerHTML.toString() };
-  }, [item.title, filePath, view]);
+    return {
+      innerHTML: { __html: tempEl.innerHTML.toString() },
+    };
+  }, [item, filePath, dateFormat, view]);
 
   if (isSettingsVisible) {
     return (
-      <div data-replicated-value={item.title} className={c("grow-wrap")}>
+      <div data-replicated-value={item.titleRaw} className={c("grow-wrap")}>
         <textarea
           rows={1}
           ref={inputRef}
           className={c("item-input")}
-          value={item.title}
+          value={item.titleRaw}
           onChange={onChange}
           {...autocompleteProps}
         />
@@ -55,12 +61,37 @@ export function ItemContent({
     );
   }
 
+  const dateStr = item.metadata.date?.format(dateFormat);
+  const dateDisplayStr = item.metadata.date?.format(dateDisplayFormat);
+
+  const datePath = dateStr ? getLinkpath(dateStr) : null;
+  const isResolved = dateStr
+    ? view.app.metadataCache.getFirstLinkpathDest(datePath, filePath)
+    : null;
+  const date =
+    datePath && shouldLinkDate ? (
+      <a
+        href={datePath}
+        data-href={datePath}
+        className={`internal-link ${isResolved ? "" : "is-unresolved"}`}
+        target="blank"
+        rel="noopener"
+      >
+        {dateDisplayStr}
+      </a>
+    ) : (
+      dateDisplayStr
+    );
+
   return (
     <div className={c("item-title")}>
       <div
         className={`markdown-preview-view ${c("item-markdown")}`}
-        dangerouslySetInnerHTML={markdownContent}
+        dangerouslySetInnerHTML={markdownContent.innerHTML}
       />
+      <div className={c("item-metadata")}>
+        {dateStr && <span className={c("item-metadata-date")}>{date}</span>}
+      </div>
     </div>
   );
 }

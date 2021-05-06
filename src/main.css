@@ -275,6 +275,17 @@ button.kanban-plugin__lane-settings-button
   -webkit-user-select: unset;
 }
 
+.kanban-plugin__item-metadata:not(:empty) {
+  padding-top: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.kanban-plugin__item-metadata a {
+  text-decoration: none;
+}
+
 .kanban-plugin__item-prefix-button-wrapper,
 .kanban-plugin__item-postfix-button-wrapper {
   display: flex;
@@ -531,6 +542,21 @@ button.kanban-plugin__cancel-action-button {
   background-color: var(--interactive-accent-hover);
 }
 
+.modal.kanban-plugin__board-settings-modal {
+  max-height: 90vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal.kanban-plugin__board-settings-modal .modal-content {
+  padding: 30px 50px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin: 0;
+}
+
 .kanban-plugin__board-settings-modal .setting-item-info {
   width: 100%;
 }
@@ -606,4 +632,206 @@ button.kanban-plugin__cancel-action-button {
 
 .kanban-plugin__board-settings-modal .error {
   border-color: var(--background-modifier-error-hover) !important;
+}
+
+.kanban-plugin__date-picker {
+  position: absolute;
+  z-index: var(--layer-popover);
+
+  --cell-size: 2.4em;
+}
+
+.kanban-plugin__date-picker .flatpickr-input {
+  width: 0;
+  height: 0;
+  opacity: 0;
+  border: none;
+  padding: 0;
+  display: block;
+  margin-bottom: -1px;
+}
+
+.kanban-plugin__date-picker .flatpickr-current-month {
+  color: var(--text-normal);
+  font-weight: 600;
+  font-size: inherit;
+  width: 100%;
+  position: static;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.kanban-plugin__date-picker
+  .flatpickr-current-month
+  .numInputWrapper
+  span.arrowUp:after {
+  border-bottom-color: var(--text-normal);
+}
+
+.kanban-plugin__date-picker
+  .flatpickr-current-month
+  .numInputWrapper
+  span.arrowDown:after {
+  border-top-color: var(--text-normal);
+}
+
+.flatpickr-months .flatpickr-prev-month svg path,
+.flatpickr-months .flatpickr-next-month svg path {
+  fill: currentColor;
+}
+
+.kanban-plugin__date-picker .flatpickr-calendar {
+  font-size: 13px;
+  overflow: hidden;
+  background-color: var(--background-primary);
+  width: calc(var(--cell-size) * 7 + 8px);
+  box-shadow: 0 0 0 1px var(--background-modifier-border),
+    0px 15px 25px rgba(0, 0, 0, 0.2);
+}
+
+.kanban-plugin__date-picker .flatpickr-months {
+  font-size: 13px;
+  padding: 2px 2px 4px;
+  align-items: center;
+}
+
+.kanban-plugin__date-picker
+  .flatpickr-months
+  .flatpickr-current-month
+  input.cur-year,
+.kanban-plugin__date-picker .flatpickr-months select {
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.kanban-plugin__date-picker .flatpickr-months .numInputWrapper {
+  border-radius: 4px;
+}
+
+.kanban-plugin__date-picker .flatpickr-months .flatpickr-month {
+  width: 100%;
+  height: auto;
+}
+
+.kanban-plugin__date-picker .flatpickr-months .flatpickr-prev-month,
+.kanban-plugin__date-picker .flatpickr-months .flatpickr-next-month {
+  color: var(--text-normal);
+  fill: currentColor;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  height: auto;
+  padding: 5px;
+  position: static;
+  flex-shrink: 0;
+}
+
+.kanban-plugin__date-picker .flatpickr-months .flatpickr-prev-month:hover,
+.kanban-plugin__date-picker .flatpickr-months .flatpickr-next-month:hover {
+  background-color: var(--background-primary-alt);
+  color: var(--text-normal);
+}
+
+.kanban-plugin__date-picker .flatpickr-months .flatpickr-prev-month:hover svg,
+.kanban-plugin__date-picker .flatpickr-months .flatpickr-next-month:hover svg {
+  fill: currentColor;
+}
+
+.kanban-plugin__date-picker
+  .flatpickr-current-month
+  .flatpickr-monthDropdown-months {
+  color: var(--text-normal);
+  font-weight: inherit;
+  margin-right: 5px;
+}
+
+.kanban-plugin__date-picker .flatpickr-current-month input.cur-year {
+  color: var(--text-normal);
+  font-weight: inherit;
+}
+
+.kanban-plugin__date-picker .flatpickr-weekdays {
+  height: auto;
+  padding: 8px 0 12px;
+}
+
+.kanban-plugin__date-picker span.flatpickr-weekday {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.kanban-plugin__date-picker .flatpickr-innerContainer {
+  padding: 4px;
+}
+
+.kanban-plugin__date-picker .flatpickr-day {
+  color: var(--text-normal);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cell-size);
+  height: var(--cell-size);
+  line-height: 1;
+  border-radius: 6px;
+}
+
+.kanban-plugin__date-picker .flatpickr-day.today {
+  border-color: var(--interactive-accent);
+}
+
+.kanban-plugin__date-picker .flatpickr-day.today:hover {
+  border-color: var(--interactive-accent);
+  background-color: var(--background-primary-alt);
+}
+
+.kanban-plugin__date-picker .flatpickr-day.selected {
+  border-color: var(--interactive-accent);
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.kanban-plugin__date-picker .flatpickr-day.selected:hover {
+  border-color: var(--interactive-accent);
+  background-color: var(--interactive-accent);
+}
+
+.kanban-plugin__date-picker .flatpickr-days {
+  width: calc(var(--cell-size) * 7);
+}
+
+.kanban-plugin__date-picker .dayContainer {
+  width: calc(var(--cell-size) * 7);
+  min-width: calc(var(--cell-size) * 7);
+  max-width: calc(var(--cell-size) * 7);
+}
+
+.kanban-plugin__date-picker .flatpickr-day.inRange,
+.kanban-plugin__date-picker .flatpickr-day.prevMonthDay.inRange,
+.kanban-plugin__date-picker .flatpickr-day.nextMonthDay.inRange,
+.kanban-plugin__date-picker .flatpickr-day.today.inRange,
+.kanban-plugin__date-picker .flatpickr-day.prevMonthDay.today.inRange,
+.kanban-plugin__date-picker .flatpickr-day.nextMonthDay.today.inRange,
+.kanban-plugin__date-picker .flatpickr-day:hover,
+.kanban-plugin__date-picker .flatpickr-day.prevMonthDay:hover,
+.kanban-plugin__date-picker .flatpickr-day.nextMonthDay:hover,
+.kanban-plugin__date-picker .flatpickr-day:focus,
+.kanban-plugin__date-picker .flatpickr-day.prevMonthDay:focus,
+.kanban-plugin__date-picker .flatpickr-day.nextMonthDay:focus {
+  background-color: var(--background-primary-alt);
+  border-color: var(--background-primary-alt);
+}
+
+.kanban-plugin__date-picker .flatpickr-day.flatpickr-disabled,
+.kanban-plugin__date-picker .flatpickr-day.flatpickr-disabled:hover,
+.kanban-plugin__date-picker .flatpickr-day.prevMonthDay,
+.kanban-plugin__date-picker .flatpickr-day.nextMonthDay,
+.kanban-plugin__date-picker .flatpickr-day.notAllowed,
+.kanban-plugin__date-picker .flatpickr-day.notAllowed.prevMonthDay,
+.kanban-plugin__date-picker .flatpickr-day.notAllowed.nextMonthDay {
+  color: var(--text-faint);
 }

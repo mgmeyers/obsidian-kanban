@@ -8992,6 +8992,6373 @@ function applyTemplate(view, templatePath) {
         }
     });
 }
+function getDefaultDateFormat(app) {
+    var _a, _b, _c, _d, _e;
+    const internalPlugins = app.internalPlugins.plugins;
+    const dailyNotesEnabled = (_a = internalPlugins["daily-notes"]) === null || _a === void 0 ? void 0 : _a.enabled;
+    const dailyNotesValue = (_b = internalPlugins["daily-notes"]) === null || _b === void 0 ? void 0 : _b.instance.options.format;
+    const nlDatesValue = (_c = app.plugins.plugins["nldates-obsidian"]) === null || _c === void 0 ? void 0 : _c.settings.format;
+    const templatesEnabled = (_d = internalPlugins.templates) === null || _d === void 0 ? void 0 : _d.enabled;
+    const templatesValue = (_e = internalPlugins.templates) === null || _e === void 0 ? void 0 : _e.instance.options.dateFormat;
+    return ((dailyNotesEnabled && dailyNotesValue) ||
+        nlDatesValue ||
+        (templatesEnabled && templatesValue) ||
+        "YYYY-MM-DD");
+}
+const reRegExChar = /[\\^$.*+?()[\]{}|]/g;
+const reHasRegExChar = RegExp(reRegExChar.source);
+function escapeRegExpStr(str) {
+    return str && reHasRegExChar.test(str)
+        ? str.replace(reRegExChar, "\\$&")
+        : str || "";
+}
+
+/*! choices.js v9.0.1 | © 2019 Josh Johnson | https://github.com/jshjohnson/Choices#readme */
+
+var choices = createCommonjsModule(function (module, exports) {
+(function webpackUniversalModuleDefinition(root, factory) {
+  module.exports = factory();
+})(window, function () {
+  return (
+    /******/
+    function (modules) {
+      // webpackBootstrap
+
+      /******/
+      // The module cache
+
+      /******/
+      var installedModules = {};
+      /******/
+
+      /******/
+      // The require function
+
+      /******/
+
+      function __webpack_require__(moduleId) {
+        /******/
+
+        /******/
+        // Check if module is in cache
+
+        /******/
+        if (installedModules[moduleId]) {
+          /******/
+          return installedModules[moduleId].exports;
+          /******/
+        }
+        /******/
+        // Create a new module (and put it into the cache)
+
+        /******/
+
+
+        var module = installedModules[moduleId] = {
+          /******/
+          i: moduleId,
+
+          /******/
+          l: false,
+
+          /******/
+          exports: {}
+          /******/
+
+        };
+        /******/
+
+        /******/
+        // Execute the module function
+
+        /******/
+
+        modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+        /******/
+
+        /******/
+        // Flag the module as loaded
+
+        /******/
+
+        module.l = true;
+        /******/
+
+        /******/
+        // Return the exports of the module
+
+        /******/
+
+        return module.exports;
+        /******/
+      }
+      /******/
+
+      /******/
+
+      /******/
+      // expose the modules object (__webpack_modules__)
+
+      /******/
+
+
+      __webpack_require__.m = modules;
+      /******/
+
+      /******/
+      // expose the module cache
+
+      /******/
+
+      __webpack_require__.c = installedModules;
+      /******/
+
+      /******/
+      // define getter function for harmony exports
+
+      /******/
+
+      __webpack_require__.d = function (exports, name, getter) {
+        /******/
+        if (!__webpack_require__.o(exports, name)) {
+          /******/
+          Object.defineProperty(exports, name, {
+            enumerable: true,
+            get: getter
+          });
+          /******/
+        }
+        /******/
+
+      };
+      /******/
+
+      /******/
+      // define __esModule on exports
+
+      /******/
+
+
+      __webpack_require__.r = function (exports) {
+        /******/
+        if (typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+          /******/
+          Object.defineProperty(exports, Symbol.toStringTag, {
+            value: 'Module'
+          });
+          /******/
+        }
+        /******/
+
+
+        Object.defineProperty(exports, '__esModule', {
+          value: true
+        });
+        /******/
+      };
+      /******/
+
+      /******/
+      // create a fake namespace object
+
+      /******/
+      // mode & 1: value is a module id, require it
+
+      /******/
+      // mode & 2: merge all properties of value into the ns
+
+      /******/
+      // mode & 4: return value when already ns object
+
+      /******/
+      // mode & 8|1: behave like require
+
+      /******/
+
+
+      __webpack_require__.t = function (value, mode) {
+        /******/
+        if (mode & 1) value = __webpack_require__(value);
+        /******/
+
+        if (mode & 8) return value;
+        /******/
+
+        if (mode & 4 && typeof value === 'object' && value && value.__esModule) return value;
+        /******/
+
+        var ns = Object.create(null);
+        /******/
+
+        __webpack_require__.r(ns);
+        /******/
+
+
+        Object.defineProperty(ns, 'default', {
+          enumerable: true,
+          value: value
+        });
+        /******/
+
+        if (mode & 2 && typeof value != 'string') for (var key in value) __webpack_require__.d(ns, key, function (key) {
+          return value[key];
+        }.bind(null, key));
+        /******/
+
+        return ns;
+        /******/
+      };
+      /******/
+
+      /******/
+      // getDefaultExport function for compatibility with non-harmony modules
+
+      /******/
+
+
+      __webpack_require__.n = function (module) {
+        /******/
+        var getter = module && module.__esModule ?
+        /******/
+        function getDefault() {
+          return module['default'];
+        } :
+        /******/
+        function getModuleExports() {
+          return module;
+        };
+        /******/
+
+        __webpack_require__.d(getter, 'a', getter);
+        /******/
+
+
+        return getter;
+        /******/
+      };
+      /******/
+
+      /******/
+      // Object.prototype.hasOwnProperty.call
+
+      /******/
+
+
+      __webpack_require__.o = function (object, property) {
+        return Object.prototype.hasOwnProperty.call(object, property);
+      };
+      /******/
+
+      /******/
+      // __webpack_public_path__
+
+      /******/
+
+
+      __webpack_require__.p = "/public/assets/scripts/";
+      /******/
+
+      /******/
+
+      /******/
+      // Load entry module and return exports
+
+      /******/
+
+      return __webpack_require__(__webpack_require__.s = 4);
+      /******/
+    }(
+    /************************************************************************/
+
+    /******/
+    [
+    /* 0 */
+
+    /***/
+    function (module, exports, __webpack_require__) {
+
+      var isMergeableObject = function isMergeableObject(value) {
+        return isNonNullObject(value) && !isSpecial(value);
+      };
+
+      function isNonNullObject(value) {
+        return !!value && typeof value === 'object';
+      }
+
+      function isSpecial(value) {
+        var stringValue = Object.prototype.toString.call(value);
+        return stringValue === '[object RegExp]' || stringValue === '[object Date]' || isReactElement(value);
+      } // see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
+
+
+      var canUseSymbol = typeof Symbol === 'function' && Symbol.for;
+      var REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for('react.element') : 0xeac7;
+
+      function isReactElement(value) {
+        return value.$$typeof === REACT_ELEMENT_TYPE;
+      }
+
+      function emptyTarget(val) {
+        return Array.isArray(val) ? [] : {};
+      }
+
+      function cloneUnlessOtherwiseSpecified(value, options) {
+        return options.clone !== false && options.isMergeableObject(value) ? deepmerge(emptyTarget(value), value, options) : value;
+      }
+
+      function defaultArrayMerge(target, source, options) {
+        return target.concat(source).map(function (element) {
+          return cloneUnlessOtherwiseSpecified(element, options);
+        });
+      }
+
+      function getMergeFunction(key, options) {
+        if (!options.customMerge) {
+          return deepmerge;
+        }
+
+        var customMerge = options.customMerge(key);
+        return typeof customMerge === 'function' ? customMerge : deepmerge;
+      }
+
+      function getEnumerableOwnPropertySymbols(target) {
+        return Object.getOwnPropertySymbols ? Object.getOwnPropertySymbols(target).filter(function (symbol) {
+          return target.propertyIsEnumerable(symbol);
+        }) : [];
+      }
+
+      function getKeys(target) {
+        return Object.keys(target).concat(getEnumerableOwnPropertySymbols(target));
+      } // Protects from prototype poisoning and unexpected merging up the prototype chain.
+
+
+      function propertyIsUnsafe(target, key) {
+        try {
+          return key in target && // Properties are safe to merge if they don't exist in the target yet,
+          !(Object.hasOwnProperty.call(target, key) // unsafe if they exist up the prototype chain,
+          && Object.propertyIsEnumerable.call(target, key)); // and also unsafe if they're nonenumerable.
+        } catch (unused) {
+          // Counterintuitively, it's safe to merge any property on a target that causes the `in` operator to throw.
+          // This happens when trying to copy an object in the source over a plain string in the target.
+          return false;
+        }
+      }
+
+      function mergeObject(target, source, options) {
+        var destination = {};
+
+        if (options.isMergeableObject(target)) {
+          getKeys(target).forEach(function (key) {
+            destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
+          });
+        }
+
+        getKeys(source).forEach(function (key) {
+          if (propertyIsUnsafe(target, key)) {
+            return;
+          }
+
+          if (!options.isMergeableObject(source[key]) || !target[key]) {
+            destination[key] = cloneUnlessOtherwiseSpecified(source[key], options);
+          } else {
+            destination[key] = getMergeFunction(key, options)(target[key], source[key], options);
+          }
+        });
+        return destination;
+      }
+
+      function deepmerge(target, source, options) {
+        options = options || {};
+        options.arrayMerge = options.arrayMerge || defaultArrayMerge;
+        options.isMergeableObject = options.isMergeableObject || isMergeableObject; // cloneUnlessOtherwiseSpecified is added to `options` so that custom arrayMerge()
+        // implementations can use it. The caller may not replace it.
+
+        options.cloneUnlessOtherwiseSpecified = cloneUnlessOtherwiseSpecified;
+        var sourceIsArray = Array.isArray(source);
+        var targetIsArray = Array.isArray(target);
+        var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
+
+        if (!sourceAndTargetTypesMatch) {
+          return cloneUnlessOtherwiseSpecified(source, options);
+        } else if (sourceIsArray) {
+          return options.arrayMerge(target, source, options);
+        } else {
+          return mergeObject(target, source, options);
+        }
+      }
+
+      deepmerge.all = function deepmergeAll(array, options) {
+        if (!Array.isArray(array)) {
+          throw new Error('first argument should be an array');
+        }
+
+        return array.reduce(function (prev, next) {
+          return deepmerge(prev, next, options);
+        }, {});
+      };
+
+      var deepmerge_1 = deepmerge;
+      module.exports = deepmerge_1;
+      /***/
+    },
+    /* 1 */
+
+    /***/
+    function (module, __webpack_exports__, __webpack_require__) {
+      /* WEBPACK VAR INJECTION */
+
+      (function (global, module) {
+        /* harmony import */
+        var _ponyfill_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3);
+        /* global window */
+
+
+        var root;
+
+        if (typeof self !== 'undefined') {
+          root = self;
+        } else if (typeof window !== 'undefined') {
+          root = window;
+        } else if (typeof global !== 'undefined') {
+          root = global;
+        } else {
+          root = module;
+        }
+
+        var result = Object(_ponyfill_js__WEBPACK_IMPORTED_MODULE_0__[
+        /* default */
+        "a"])(root);
+        /* harmony default export */
+
+        __webpack_exports__["a"] = result;
+        /* WEBPACK VAR INJECTION */
+      }).call(this, __webpack_require__(5), __webpack_require__(6)(module));
+      /***/
+    },
+    /* 2 */
+
+    /***/
+    function (module, exports, __webpack_require__) {
+      /*!
+       * Fuse.js v3.4.5 - Lightweight fuzzy-search (http://fusejs.io)
+       * 
+       * Copyright (c) 2012-2017 Kirollos Risk (http://kiro.me)
+       * All Rights Reserved. Apache Software License 2.0
+       * 
+       * http://www.apache.org/licenses/LICENSE-2.0
+       */
+      !function (e, t) {
+        module.exports = t() ;
+      }(this, function () {
+        return function (e) {
+          var t = {};
+
+          function n(r) {
+            if (t[r]) return t[r].exports;
+            var o = t[r] = {
+              i: r,
+              l: !1,
+              exports: {}
+            };
+            return e[r].call(o.exports, o, o.exports, n), o.l = !0, o.exports;
+          }
+
+          return n.m = e, n.c = t, n.d = function (e, t, r) {
+            n.o(e, t) || Object.defineProperty(e, t, {
+              enumerable: !0,
+              get: r
+            });
+          }, n.r = function (e) {
+            "undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(e, Symbol.toStringTag, {
+              value: "Module"
+            }), Object.defineProperty(e, "__esModule", {
+              value: !0
+            });
+          }, n.t = function (e, t) {
+            if (1 & t && (e = n(e)), 8 & t) return e;
+            if (4 & t && "object" == typeof e && e && e.__esModule) return e;
+            var r = Object.create(null);
+            if (n.r(r), Object.defineProperty(r, "default", {
+              enumerable: !0,
+              value: e
+            }), 2 & t && "string" != typeof e) for (var o in e) n.d(r, o, function (t) {
+              return e[t];
+            }.bind(null, o));
+            return r;
+          }, n.n = function (e) {
+            var t = e && e.__esModule ? function () {
+              return e.default;
+            } : function () {
+              return e;
+            };
+            return n.d(t, "a", t), t;
+          }, n.o = function (e, t) {
+            return Object.prototype.hasOwnProperty.call(e, t);
+          }, n.p = "", n(n.s = 1);
+        }([function (e, t) {
+          e.exports = function (e) {
+            return Array.isArray ? Array.isArray(e) : "[object Array]" === Object.prototype.toString.call(e);
+          };
+        }, function (e, t, n) {
+          function r(e) {
+            return (r = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (e) {
+              return typeof e;
+            } : function (e) {
+              return e && "function" == typeof Symbol && e.constructor === Symbol && e !== Symbol.prototype ? "symbol" : typeof e;
+            })(e);
+          }
+
+          function o(e, t) {
+            for (var n = 0; n < t.length; n++) {
+              var r = t[n];
+              r.enumerable = r.enumerable || !1, r.configurable = !0, "value" in r && (r.writable = !0), Object.defineProperty(e, r.key, r);
+            }
+          }
+
+          var i = n(2),
+              a = n(8),
+              s = n(0),
+              c = function () {
+            function e(t, n) {
+              var r = n.location,
+                  o = void 0 === r ? 0 : r,
+                  i = n.distance,
+                  s = void 0 === i ? 100 : i,
+                  c = n.threshold,
+                  h = void 0 === c ? .6 : c,
+                  l = n.maxPatternLength,
+                  u = void 0 === l ? 32 : l,
+                  f = n.caseSensitive,
+                  d = void 0 !== f && f,
+                  v = n.tokenSeparator,
+                  p = void 0 === v ? / +/g : v,
+                  g = n.findAllMatches,
+                  y = void 0 !== g && g,
+                  m = n.minMatchCharLength,
+                  k = void 0 === m ? 1 : m,
+                  S = n.id,
+                  x = void 0 === S ? null : S,
+                  b = n.keys,
+                  M = void 0 === b ? [] : b,
+                  _ = n.shouldSort,
+                  L = void 0 === _ || _,
+                  w = n.getFn,
+                  A = void 0 === w ? a : w,
+                  C = n.sortFn,
+                  I = void 0 === C ? function (e, t) {
+                return e.score - t.score;
+              } : C,
+                  O = n.tokenize,
+                  j = void 0 !== O && O,
+                  P = n.matchAllTokens,
+                  F = void 0 !== P && P,
+                  T = n.includeMatches,
+                  z = void 0 !== T && T,
+                  E = n.includeScore,
+                  K = void 0 !== E && E,
+                  $ = n.verbose,
+                  J = void 0 !== $ && $;
+              !function (e, t) {
+                if (!(e instanceof t)) throw new TypeError("Cannot call a class as a function");
+              }(this, e), this.options = {
+                location: o,
+                distance: s,
+                threshold: h,
+                maxPatternLength: u,
+                isCaseSensitive: d,
+                tokenSeparator: p,
+                findAllMatches: y,
+                minMatchCharLength: k,
+                id: x,
+                keys: M,
+                includeMatches: z,
+                includeScore: K,
+                shouldSort: L,
+                getFn: A,
+                sortFn: I,
+                verbose: J,
+                tokenize: j,
+                matchAllTokens: F
+              }, this.setCollection(t);
+            }
+
+            var t, n;
+            return t = e, (n = [{
+              key: "setCollection",
+              value: function (e) {
+                return this.list = e, e;
+              }
+            }, {
+              key: "search",
+              value: function (e) {
+                var t = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : {
+                  limit: !1
+                };
+
+                this._log('---------\nSearch pattern: "'.concat(e, '"'));
+
+                var n = this._prepareSearchers(e),
+                    r = n.tokenSearchers,
+                    o = n.fullSearcher,
+                    i = this._search(r, o),
+                    a = i.weights,
+                    s = i.results;
+
+                return this._computeScore(a, s), this.options.shouldSort && this._sort(s), t.limit && "number" == typeof t.limit && (s = s.slice(0, t.limit)), this._format(s);
+              }
+            }, {
+              key: "_prepareSearchers",
+              value: function () {
+                var e = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : "",
+                    t = [];
+                if (this.options.tokenize) for (var n = e.split(this.options.tokenSeparator), r = 0, o = n.length; r < o; r += 1) t.push(new i(n[r], this.options));
+                return {
+                  tokenSearchers: t,
+                  fullSearcher: new i(e, this.options)
+                };
+              }
+            }, {
+              key: "_search",
+              value: function () {
+                var e = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : [],
+                    t = arguments.length > 1 ? arguments[1] : void 0,
+                    n = this.list,
+                    r = {},
+                    o = [];
+
+                if ("string" == typeof n[0]) {
+                  for (var i = 0, a = n.length; i < a; i += 1) this._analyze({
+                    key: "",
+                    value: n[i],
+                    record: i,
+                    index: i
+                  }, {
+                    resultMap: r,
+                    results: o,
+                    tokenSearchers: e,
+                    fullSearcher: t
+                  });
+
+                  return {
+                    weights: null,
+                    results: o
+                  };
+                }
+
+                for (var s = {}, c = 0, h = n.length; c < h; c += 1) for (var l = n[c], u = 0, f = this.options.keys.length; u < f; u += 1) {
+                  var d = this.options.keys[u];
+
+                  if ("string" != typeof d) {
+                    if (s[d.name] = {
+                      weight: 1 - d.weight || 1
+                    }, d.weight <= 0 || d.weight > 1) throw new Error("Key weight has to be > 0 and <= 1");
+                    d = d.name;
+                  } else s[d] = {
+                    weight: 1
+                  };
+
+                  this._analyze({
+                    key: d,
+                    value: this.options.getFn(l, d),
+                    record: l,
+                    index: c
+                  }, {
+                    resultMap: r,
+                    results: o,
+                    tokenSearchers: e,
+                    fullSearcher: t
+                  });
+                }
+
+                return {
+                  weights: s,
+                  results: o
+                };
+              }
+            }, {
+              key: "_analyze",
+              value: function (e, t) {
+                var n = e.key,
+                    r = e.arrayIndex,
+                    o = void 0 === r ? -1 : r,
+                    i = e.value,
+                    a = e.record,
+                    c = e.index,
+                    h = t.tokenSearchers,
+                    l = void 0 === h ? [] : h,
+                    u = t.fullSearcher,
+                    f = void 0 === u ? [] : u,
+                    d = t.resultMap,
+                    v = void 0 === d ? {} : d,
+                    p = t.results,
+                    g = void 0 === p ? [] : p;
+
+                if (null != i) {
+                  var y = !1,
+                      m = -1,
+                      k = 0;
+
+                  if ("string" == typeof i) {
+                    this._log("\nKey: ".concat("" === n ? "-" : n));
+
+                    var S = f.search(i);
+
+                    if (this._log('Full text: "'.concat(i, '", score: ').concat(S.score)), this.options.tokenize) {
+                      for (var x = i.split(this.options.tokenSeparator), b = [], M = 0; M < l.length; M += 1) {
+                        var _ = l[M];
+
+                        this._log('\nPattern: "'.concat(_.pattern, '"'));
+
+                        for (var L = !1, w = 0; w < x.length; w += 1) {
+                          var A = x[w],
+                              C = _.search(A),
+                              I = {};
+
+                          C.isMatch ? (I[A] = C.score, y = !0, L = !0, b.push(C.score)) : (I[A] = 1, this.options.matchAllTokens || b.push(1)), this._log('Token: "'.concat(A, '", score: ').concat(I[A]));
+                        }
+
+                        L && (k += 1);
+                      }
+
+                      m = b[0];
+
+                      for (var O = b.length, j = 1; j < O; j += 1) m += b[j];
+
+                      m /= O, this._log("Token score average:", m);
+                    }
+
+                    var P = S.score;
+                    m > -1 && (P = (P + m) / 2), this._log("Score average:", P);
+                    var F = !this.options.tokenize || !this.options.matchAllTokens || k >= l.length;
+
+                    if (this._log("\nCheck Matches: ".concat(F)), (y || S.isMatch) && F) {
+                      var T = v[c];
+                      T ? T.output.push({
+                        key: n,
+                        arrayIndex: o,
+                        value: i,
+                        score: P,
+                        matchedIndices: S.matchedIndices
+                      }) : (v[c] = {
+                        item: a,
+                        output: [{
+                          key: n,
+                          arrayIndex: o,
+                          value: i,
+                          score: P,
+                          matchedIndices: S.matchedIndices
+                        }]
+                      }, g.push(v[c]));
+                    }
+                  } else if (s(i)) for (var z = 0, E = i.length; z < E; z += 1) this._analyze({
+                    key: n,
+                    arrayIndex: z,
+                    value: i[z],
+                    record: a,
+                    index: c
+                  }, {
+                    resultMap: v,
+                    results: g,
+                    tokenSearchers: l,
+                    fullSearcher: f
+                  });
+                }
+              }
+            }, {
+              key: "_computeScore",
+              value: function (e, t) {
+                this._log("\n\nComputing score:\n");
+
+                for (var n = 0, r = t.length; n < r; n += 1) {
+                  for (var o = t[n].output, i = o.length, a = 1, s = 1, c = 0; c < i; c += 1) {
+                    var h = e ? e[o[c].key].weight : 1,
+                        l = (1 === h ? o[c].score : o[c].score || .001) * h;
+                    1 !== h ? s = Math.min(s, l) : (o[c].nScore = l, a *= l);
+                  }
+
+                  t[n].score = 1 === s ? a : s, this._log(t[n]);
+                }
+              }
+            }, {
+              key: "_sort",
+              value: function (e) {
+                this._log("\n\nSorting...."), e.sort(this.options.sortFn);
+              }
+            }, {
+              key: "_format",
+              value: function (e) {
+                var t = [];
+
+                if (this.options.verbose) {
+                  var n = [];
+                  this._log("\n\nOutput:\n\n", JSON.stringify(e, function (e, t) {
+                    if ("object" === r(t) && null !== t) {
+                      if (-1 !== n.indexOf(t)) return;
+                      n.push(t);
+                    }
+
+                    return t;
+                  })), n = null;
+                }
+
+                var o = [];
+                this.options.includeMatches && o.push(function (e, t) {
+                  var n = e.output;
+                  t.matches = [];
+
+                  for (var r = 0, o = n.length; r < o; r += 1) {
+                    var i = n[r];
+
+                    if (0 !== i.matchedIndices.length) {
+                      var a = {
+                        indices: i.matchedIndices,
+                        value: i.value
+                      };
+                      i.key && (a.key = i.key), i.hasOwnProperty("arrayIndex") && i.arrayIndex > -1 && (a.arrayIndex = i.arrayIndex), t.matches.push(a);
+                    }
+                  }
+                }), this.options.includeScore && o.push(function (e, t) {
+                  t.score = e.score;
+                });
+
+                for (var i = 0, a = e.length; i < a; i += 1) {
+                  var s = e[i];
+
+                  if (this.options.id && (s.item = this.options.getFn(s.item, this.options.id)[0]), o.length) {
+                    for (var c = {
+                      item: s.item
+                    }, h = 0, l = o.length; h < l; h += 1) o[h](s, c);
+
+                    t.push(c);
+                  } else t.push(s.item);
+                }
+
+                return t;
+              }
+            }, {
+              key: "_log",
+              value: function () {
+                var e;
+                this.options.verbose && (e = console).log.apply(e, arguments);
+              }
+            }]) && o(t.prototype, n), e;
+          }();
+
+          e.exports = c;
+        }, function (e, t, n) {
+          function r(e, t) {
+            for (var n = 0; n < t.length; n++) {
+              var r = t[n];
+              r.enumerable = r.enumerable || !1, r.configurable = !0, "value" in r && (r.writable = !0), Object.defineProperty(e, r.key, r);
+            }
+          }
+
+          var o = n(3),
+              i = n(4),
+              a = n(7),
+              s = function () {
+            function e(t, n) {
+              var r = n.location,
+                  o = void 0 === r ? 0 : r,
+                  i = n.distance,
+                  s = void 0 === i ? 100 : i,
+                  c = n.threshold,
+                  h = void 0 === c ? .6 : c,
+                  l = n.maxPatternLength,
+                  u = void 0 === l ? 32 : l,
+                  f = n.isCaseSensitive,
+                  d = void 0 !== f && f,
+                  v = n.tokenSeparator,
+                  p = void 0 === v ? / +/g : v,
+                  g = n.findAllMatches,
+                  y = void 0 !== g && g,
+                  m = n.minMatchCharLength,
+                  k = void 0 === m ? 1 : m;
+              !function (e, t) {
+                if (!(e instanceof t)) throw new TypeError("Cannot call a class as a function");
+              }(this, e), this.options = {
+                location: o,
+                distance: s,
+                threshold: h,
+                maxPatternLength: u,
+                isCaseSensitive: d,
+                tokenSeparator: p,
+                findAllMatches: y,
+                minMatchCharLength: k
+              }, this.pattern = this.options.isCaseSensitive ? t : t.toLowerCase(), this.pattern.length <= u && (this.patternAlphabet = a(this.pattern));
+            }
+
+            var t, n;
+            return t = e, (n = [{
+              key: "search",
+              value: function (e) {
+                if (this.options.isCaseSensitive || (e = e.toLowerCase()), this.pattern === e) return {
+                  isMatch: !0,
+                  score: 0,
+                  matchedIndices: [[0, e.length - 1]]
+                };
+                var t = this.options,
+                    n = t.maxPatternLength,
+                    r = t.tokenSeparator;
+                if (this.pattern.length > n) return o(e, this.pattern, r);
+                var a = this.options,
+                    s = a.location,
+                    c = a.distance,
+                    h = a.threshold,
+                    l = a.findAllMatches,
+                    u = a.minMatchCharLength;
+                return i(e, this.pattern, this.patternAlphabet, {
+                  location: s,
+                  distance: c,
+                  threshold: h,
+                  findAllMatches: l,
+                  minMatchCharLength: u
+                });
+              }
+            }]) && r(t.prototype, n), e;
+          }();
+
+          e.exports = s;
+        }, function (e, t) {
+          var n = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
+
+          e.exports = function (e, t) {
+            var r = arguments.length > 2 && void 0 !== arguments[2] ? arguments[2] : / +/g,
+                o = new RegExp(t.replace(n, "\\$&").replace(r, "|")),
+                i = e.match(o),
+                a = !!i,
+                s = [];
+            if (a) for (var c = 0, h = i.length; c < h; c += 1) {
+              var l = i[c];
+              s.push([e.indexOf(l), l.length - 1]);
+            }
+            return {
+              score: a ? .5 : 1,
+              isMatch: a,
+              matchedIndices: s
+            };
+          };
+        }, function (e, t, n) {
+          var r = n(5),
+              o = n(6);
+
+          e.exports = function (e, t, n, i) {
+            for (var a = i.location, s = void 0 === a ? 0 : a, c = i.distance, h = void 0 === c ? 100 : c, l = i.threshold, u = void 0 === l ? .6 : l, f = i.findAllMatches, d = void 0 !== f && f, v = i.minMatchCharLength, p = void 0 === v ? 1 : v, g = s, y = e.length, m = u, k = e.indexOf(t, g), S = t.length, x = [], b = 0; b < y; b += 1) x[b] = 0;
+
+            if (-1 !== k) {
+              var M = r(t, {
+                errors: 0,
+                currentLocation: k,
+                expectedLocation: g,
+                distance: h
+              });
+
+              if (m = Math.min(M, m), -1 !== (k = e.lastIndexOf(t, g + S))) {
+                var _ = r(t, {
+                  errors: 0,
+                  currentLocation: k,
+                  expectedLocation: g,
+                  distance: h
+                });
+
+                m = Math.min(_, m);
+              }
+            }
+
+            k = -1;
+
+            for (var L = [], w = 1, A = S + y, C = 1 << S - 1, I = 0; I < S; I += 1) {
+              for (var O = 0, j = A; O < j;) {
+                r(t, {
+                  errors: I,
+                  currentLocation: g + j,
+                  expectedLocation: g,
+                  distance: h
+                }) <= m ? O = j : A = j, j = Math.floor((A - O) / 2 + O);
+              }
+
+              A = j;
+              var P = Math.max(1, g - j + 1),
+                  F = d ? y : Math.min(g + j, y) + S,
+                  T = Array(F + 2);
+              T[F + 1] = (1 << I) - 1;
+
+              for (var z = F; z >= P; z -= 1) {
+                var E = z - 1,
+                    K = n[e.charAt(E)];
+
+                if (K && (x[E] = 1), T[z] = (T[z + 1] << 1 | 1) & K, 0 !== I && (T[z] |= (L[z + 1] | L[z]) << 1 | 1 | L[z + 1]), T[z] & C && (w = r(t, {
+                  errors: I,
+                  currentLocation: E,
+                  expectedLocation: g,
+                  distance: h
+                })) <= m) {
+                  if (m = w, (k = E) <= g) break;
+                  P = Math.max(1, 2 * g - k);
+                }
+              }
+
+              if (r(t, {
+                errors: I + 1,
+                currentLocation: g,
+                expectedLocation: g,
+                distance: h
+              }) > m) break;
+              L = T;
+            }
+
+            return {
+              isMatch: k >= 0,
+              score: 0 === w ? .001 : w,
+              matchedIndices: o(x, p)
+            };
+          };
+        }, function (e, t) {
+          e.exports = function (e, t) {
+            var n = t.errors,
+                r = void 0 === n ? 0 : n,
+                o = t.currentLocation,
+                i = void 0 === o ? 0 : o,
+                a = t.expectedLocation,
+                s = void 0 === a ? 0 : a,
+                c = t.distance,
+                h = void 0 === c ? 100 : c,
+                l = r / e.length,
+                u = Math.abs(s - i);
+            return h ? l + u / h : u ? 1 : l;
+          };
+        }, function (e, t) {
+          e.exports = function () {
+            for (var e = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : [], t = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : 1, n = [], r = -1, o = -1, i = 0, a = e.length; i < a; i += 1) {
+              var s = e[i];
+              s && -1 === r ? r = i : s || -1 === r || ((o = i - 1) - r + 1 >= t && n.push([r, o]), r = -1);
+            }
+
+            return e[i - 1] && i - r >= t && n.push([r, i - 1]), n;
+          };
+        }, function (e, t) {
+          e.exports = function (e) {
+            for (var t = {}, n = e.length, r = 0; r < n; r += 1) t[e.charAt(r)] = 0;
+
+            for (var o = 0; o < n; o += 1) t[e.charAt(o)] |= 1 << n - o - 1;
+
+            return t;
+          };
+        }, function (e, t, n) {
+          var r = n(0);
+
+          e.exports = function (e, t) {
+            return function e(t, n, o) {
+              if (n) {
+                var i = n.indexOf("."),
+                    a = n,
+                    s = null;
+                -1 !== i && (a = n.slice(0, i), s = n.slice(i + 1));
+                var c = t[a];
+                if (null != c) if (s || "string" != typeof c && "number" != typeof c) {
+                  if (r(c)) for (var h = 0, l = c.length; h < l; h += 1) e(c[h], s, o);else s && e(c, s, o);
+                } else o.push(c.toString());
+              } else o.push(t);
+
+              return o;
+            }(e, t, []);
+          };
+        }]);
+      });
+      /***/
+    },
+    /* 3 */
+
+    /***/
+    function (module, __webpack_exports__, __webpack_require__) {
+      /* harmony export (binding) */
+
+      __webpack_require__.d(__webpack_exports__, "a", function () {
+        return symbolObservablePonyfill;
+      });
+
+      function symbolObservablePonyfill(root) {
+        var result;
+        var Symbol = root.Symbol;
+
+        if (typeof Symbol === 'function') {
+          if (Symbol.observable) {
+            result = Symbol.observable;
+          } else {
+            result = Symbol('observable');
+            Symbol.observable = result;
+          }
+        } else {
+          result = '@@observable';
+        }
+
+        return result;
+      }
+      /***/
+    },
+    /* 4 */
+
+    /***/
+    function (module, exports, __webpack_require__) {
+      module.exports = __webpack_require__(7);
+      /***/
+    },
+    /* 5 */
+
+    /***/
+    function (module, exports) {
+      var g; // This works in non-strict mode
+
+      g = function () {
+        return this;
+      }();
+
+      try {
+        // This works if eval is allowed (see CSP)
+        g = g || new Function("return this")();
+      } catch (e) {
+        // This works if the window reference is available
+        if (typeof window === "object") g = window;
+      } // g can still be undefined, but nothing to do about it...
+      // We return undefined, instead of nothing here, so it's
+      // easier to handle this case. if(!global) { ...}
+
+
+      module.exports = g;
+      /***/
+    },
+    /* 6 */
+
+    /***/
+    function (module, exports) {
+      module.exports = function (originalModule) {
+        if (!originalModule.webpackPolyfill) {
+          var module = Object.create(originalModule); // module.parent = undefined by default
+
+          if (!module.children) module.children = [];
+          Object.defineProperty(module, "loaded", {
+            enumerable: true,
+            get: function () {
+              return module.l;
+            }
+          });
+          Object.defineProperty(module, "id", {
+            enumerable: true,
+            get: function () {
+              return module.i;
+            }
+          });
+          Object.defineProperty(module, "exports", {
+            enumerable: true
+          });
+          module.webpackPolyfill = 1;
+        }
+
+        return module;
+      };
+      /***/
+
+    },
+    /* 7 */
+
+    /***/
+    function (module, __webpack_exports__, __webpack_require__) {
+
+      __webpack_require__.r(__webpack_exports__); // EXTERNAL MODULE: ./node_modules/fuse.js/dist/fuse.js
+
+
+      var dist_fuse = __webpack_require__(2);
+
+      var fuse_default = /*#__PURE__*/__webpack_require__.n(dist_fuse); // EXTERNAL MODULE: ./node_modules/deepmerge/dist/cjs.js
+
+
+      var cjs = __webpack_require__(0);
+
+      var cjs_default = /*#__PURE__*/__webpack_require__.n(cjs); // EXTERNAL MODULE: ./node_modules/symbol-observable/es/index.js
+
+
+      var es = __webpack_require__(1); // CONCATENATED MODULE: ./node_modules/redux/es/redux.js
+
+      /**
+       * These are private action types reserved by Redux.
+       * For any unknown actions, you must return the current state.
+       * If the current state is undefined, you must return the initial state.
+       * Do not reference these action types directly in your code.
+       */
+
+
+      var randomString = function randomString() {
+        return Math.random().toString(36).substring(7).split('').join('.');
+      };
+
+      var ActionTypes = {
+        INIT: "@@redux/INIT" + randomString(),
+        REPLACE: "@@redux/REPLACE" + randomString(),
+        PROBE_UNKNOWN_ACTION: function PROBE_UNKNOWN_ACTION() {
+          return "@@redux/PROBE_UNKNOWN_ACTION" + randomString();
+        }
+      };
+      /**
+       * @param {any} obj The object to inspect.
+       * @returns {boolean} True if the argument appears to be a plain object.
+       */
+
+      function isPlainObject(obj) {
+        if (typeof obj !== 'object' || obj === null) return false;
+        var proto = obj;
+
+        while (Object.getPrototypeOf(proto) !== null) {
+          proto = Object.getPrototypeOf(proto);
+        }
+
+        return Object.getPrototypeOf(obj) === proto;
+      }
+      /**
+       * Creates a Redux store that holds the state tree.
+       * The only way to change the data in the store is to call `dispatch()` on it.
+       *
+       * There should only be a single store in your app. To specify how different
+       * parts of the state tree respond to actions, you may combine several reducers
+       * into a single reducer function by using `combineReducers`.
+       *
+       * @param {Function} reducer A function that returns the next state tree, given
+       * the current state tree and the action to handle.
+       *
+       * @param {any} [preloadedState] The initial state. You may optionally specify it
+       * to hydrate the state from the server in universal apps, or to restore a
+       * previously serialized user session.
+       * If you use `combineReducers` to produce the root reducer function, this must be
+       * an object with the same shape as `combineReducers` keys.
+       *
+       * @param {Function} [enhancer] The store enhancer. You may optionally specify it
+       * to enhance the store with third-party capabilities such as middleware,
+       * time travel, persistence, etc. The only store enhancer that ships with Redux
+       * is `applyMiddleware()`.
+       *
+       * @returns {Store} A Redux store that lets you read the state, dispatch actions
+       * and subscribe to changes.
+       */
+
+
+      function createStore(reducer, preloadedState, enhancer) {
+        var _ref2;
+
+        if (typeof preloadedState === 'function' && typeof enhancer === 'function' || typeof enhancer === 'function' && typeof arguments[3] === 'function') {
+          throw new Error('It looks like you are passing several store enhancers to ' + 'createStore(). This is not supported. Instead, compose them ' + 'together to a single function.');
+        }
+
+        if (typeof preloadedState === 'function' && typeof enhancer === 'undefined') {
+          enhancer = preloadedState;
+          preloadedState = undefined;
+        }
+
+        if (typeof enhancer !== 'undefined') {
+          if (typeof enhancer !== 'function') {
+            throw new Error('Expected the enhancer to be a function.');
+          }
+
+          return enhancer(createStore)(reducer, preloadedState);
+        }
+
+        if (typeof reducer !== 'function') {
+          throw new Error('Expected the reducer to be a function.');
+        }
+
+        var currentReducer = reducer;
+        var currentState = preloadedState;
+        var currentListeners = [];
+        var nextListeners = currentListeners;
+        var isDispatching = false;
+        /**
+         * This makes a shallow copy of currentListeners so we can use
+         * nextListeners as a temporary list while dispatching.
+         *
+         * This prevents any bugs around consumers calling
+         * subscribe/unsubscribe in the middle of a dispatch.
+         */
+
+        function ensureCanMutateNextListeners() {
+          if (nextListeners === currentListeners) {
+            nextListeners = currentListeners.slice();
+          }
+        }
+        /**
+         * Reads the state tree managed by the store.
+         *
+         * @returns {any} The current state tree of your application.
+         */
+
+
+        function getState() {
+          if (isDispatching) {
+            throw new Error('You may not call store.getState() while the reducer is executing. ' + 'The reducer has already received the state as an argument. ' + 'Pass it down from the top reducer instead of reading it from the store.');
+          }
+
+          return currentState;
+        }
+        /**
+         * Adds a change listener. It will be called any time an action is dispatched,
+         * and some part of the state tree may potentially have changed. You may then
+         * call `getState()` to read the current state tree inside the callback.
+         *
+         * You may call `dispatch()` from a change listener, with the following
+         * caveats:
+         *
+         * 1. The subscriptions are snapshotted just before every `dispatch()` call.
+         * If you subscribe or unsubscribe while the listeners are being invoked, this
+         * will not have any effect on the `dispatch()` that is currently in progress.
+         * However, the next `dispatch()` call, whether nested or not, will use a more
+         * recent snapshot of the subscription list.
+         *
+         * 2. The listener should not expect to see all state changes, as the state
+         * might have been updated multiple times during a nested `dispatch()` before
+         * the listener is called. It is, however, guaranteed that all subscribers
+         * registered before the `dispatch()` started will be called with the latest
+         * state by the time it exits.
+         *
+         * @param {Function} listener A callback to be invoked on every dispatch.
+         * @returns {Function} A function to remove this change listener.
+         */
+
+
+        function subscribe(listener) {
+          if (typeof listener !== 'function') {
+            throw new Error('Expected the listener to be a function.');
+          }
+
+          if (isDispatching) {
+            throw new Error('You may not call store.subscribe() while the reducer is executing. ' + 'If you would like to be notified after the store has been updated, subscribe from a ' + 'component and invoke store.getState() in the callback to access the latest state. ' + 'See https://redux.js.org/api-reference/store#subscribe(listener) for more details.');
+          }
+
+          var isSubscribed = true;
+          ensureCanMutateNextListeners();
+          nextListeners.push(listener);
+          return function unsubscribe() {
+            if (!isSubscribed) {
+              return;
+            }
+
+            if (isDispatching) {
+              throw new Error('You may not unsubscribe from a store listener while the reducer is executing. ' + 'See https://redux.js.org/api-reference/store#subscribe(listener) for more details.');
+            }
+
+            isSubscribed = false;
+            ensureCanMutateNextListeners();
+            var index = nextListeners.indexOf(listener);
+            nextListeners.splice(index, 1);
+          };
+        }
+        /**
+         * Dispatches an action. It is the only way to trigger a state change.
+         *
+         * The `reducer` function, used to create the store, will be called with the
+         * current state tree and the given `action`. Its return value will
+         * be considered the **next** state of the tree, and the change listeners
+         * will be notified.
+         *
+         * The base implementation only supports plain object actions. If you want to
+         * dispatch a Promise, an Observable, a thunk, or something else, you need to
+         * wrap your store creating function into the corresponding middleware. For
+         * example, see the documentation for the `redux-thunk` package. Even the
+         * middleware will eventually dispatch plain object actions using this method.
+         *
+         * @param {Object} action A plain object representing “what changed”. It is
+         * a good idea to keep actions serializable so you can record and replay user
+         * sessions, or use the time travelling `redux-devtools`. An action must have
+         * a `type` property which may not be `undefined`. It is a good idea to use
+         * string constants for action types.
+         *
+         * @returns {Object} For convenience, the same action object you dispatched.
+         *
+         * Note that, if you use a custom middleware, it may wrap `dispatch()` to
+         * return something else (for example, a Promise you can await).
+         */
+
+
+        function dispatch(action) {
+          if (!isPlainObject(action)) {
+            throw new Error('Actions must be plain objects. ' + 'Use custom middleware for async actions.');
+          }
+
+          if (typeof action.type === 'undefined') {
+            throw new Error('Actions may not have an undefined "type" property. ' + 'Have you misspelled a constant?');
+          }
+
+          if (isDispatching) {
+            throw new Error('Reducers may not dispatch actions.');
+          }
+
+          try {
+            isDispatching = true;
+            currentState = currentReducer(currentState, action);
+          } finally {
+            isDispatching = false;
+          }
+
+          var listeners = currentListeners = nextListeners;
+
+          for (var i = 0; i < listeners.length; i++) {
+            var listener = listeners[i];
+            listener();
+          }
+
+          return action;
+        }
+        /**
+         * Replaces the reducer currently used by the store to calculate the state.
+         *
+         * You might need this if your app implements code splitting and you want to
+         * load some of the reducers dynamically. You might also need this if you
+         * implement a hot reloading mechanism for Redux.
+         *
+         * @param {Function} nextReducer The reducer for the store to use instead.
+         * @returns {void}
+         */
+
+
+        function replaceReducer(nextReducer) {
+          if (typeof nextReducer !== 'function') {
+            throw new Error('Expected the nextReducer to be a function.');
+          }
+
+          currentReducer = nextReducer; // This action has a similiar effect to ActionTypes.INIT.
+          // Any reducers that existed in both the new and old rootReducer
+          // will receive the previous state. This effectively populates
+          // the new state tree with any relevant data from the old one.
+
+          dispatch({
+            type: ActionTypes.REPLACE
+          });
+        }
+        /**
+         * Interoperability point for observable/reactive libraries.
+         * @returns {observable} A minimal observable of state changes.
+         * For more information, see the observable proposal:
+         * https://github.com/tc39/proposal-observable
+         */
+
+
+        function observable() {
+          var _ref;
+
+          var outerSubscribe = subscribe;
+          return _ref = {
+            /**
+             * The minimal observable subscription method.
+             * @param {Object} observer Any object that can be used as an observer.
+             * The observer object should have a `next` method.
+             * @returns {subscription} An object with an `unsubscribe` method that can
+             * be used to unsubscribe the observable from the store, and prevent further
+             * emission of values from the observable.
+             */
+            subscribe: function subscribe(observer) {
+              if (typeof observer !== 'object' || observer === null) {
+                throw new TypeError('Expected the observer to be an object.');
+              }
+
+              function observeState() {
+                if (observer.next) {
+                  observer.next(getState());
+                }
+              }
+
+              observeState();
+              var unsubscribe = outerSubscribe(observeState);
+              return {
+                unsubscribe: unsubscribe
+              };
+            }
+          }, _ref[es["a"
+          /* default */
+          ]] = function () {
+            return this;
+          }, _ref;
+        } // When a store is created, an "INIT" action is dispatched so that every
+        // reducer returns their initial state. This effectively populates
+        // the initial state tree.
+
+
+        dispatch({
+          type: ActionTypes.INIT
+        });
+        return _ref2 = {
+          dispatch: dispatch,
+          subscribe: subscribe,
+          getState: getState,
+          replaceReducer: replaceReducer
+        }, _ref2[es["a"
+        /* default */
+        ]] = observable, _ref2;
+      }
+
+      function getUndefinedStateErrorMessage(key, action) {
+        var actionType = action && action.type;
+        var actionDescription = actionType && "action \"" + String(actionType) + "\"" || 'an action';
+        return "Given " + actionDescription + ", reducer \"" + key + "\" returned undefined. " + "To ignore an action, you must explicitly return the previous state. " + "If you want this reducer to hold no value, you can return null instead of undefined.";
+      }
+
+      function assertReducerShape(reducers) {
+        Object.keys(reducers).forEach(function (key) {
+          var reducer = reducers[key];
+          var initialState = reducer(undefined, {
+            type: ActionTypes.INIT
+          });
+
+          if (typeof initialState === 'undefined') {
+            throw new Error("Reducer \"" + key + "\" returned undefined during initialization. " + "If the state passed to the reducer is undefined, you must " + "explicitly return the initial state. The initial state may " + "not be undefined. If you don't want to set a value for this reducer, " + "you can use null instead of undefined.");
+          }
+
+          if (typeof reducer(undefined, {
+            type: ActionTypes.PROBE_UNKNOWN_ACTION()
+          }) === 'undefined') {
+            throw new Error("Reducer \"" + key + "\" returned undefined when probed with a random type. " + ("Don't try to handle " + ActionTypes.INIT + " or other actions in \"redux/*\" ") + "namespace. They are considered private. Instead, you must return the " + "current state for any unknown actions, unless it is undefined, " + "in which case you must return the initial state, regardless of the " + "action type. The initial state may not be undefined, but can be null.");
+          }
+        });
+      }
+      /**
+       * Turns an object whose values are different reducer functions, into a single
+       * reducer function. It will call every child reducer, and gather their results
+       * into a single state object, whose keys correspond to the keys of the passed
+       * reducer functions.
+       *
+       * @param {Object} reducers An object whose values correspond to different
+       * reducer functions that need to be combined into one. One handy way to obtain
+       * it is to use ES6 `import * as reducers` syntax. The reducers may never return
+       * undefined for any action. Instead, they should return their initial state
+       * if the state passed to them was undefined, and the current state for any
+       * unrecognized action.
+       *
+       * @returns {Function} A reducer function that invokes every reducer inside the
+       * passed object, and builds a state object with the same shape.
+       */
+
+
+      function combineReducers(reducers) {
+        var reducerKeys = Object.keys(reducers);
+        var finalReducers = {};
+
+        for (var i = 0; i < reducerKeys.length; i++) {
+          var key = reducerKeys[i];
+
+          if (typeof reducers[key] === 'function') {
+            finalReducers[key] = reducers[key];
+          }
+        }
+
+        var finalReducerKeys = Object.keys(finalReducers); // This is used to make sure we don't warn about the same
+
+        var shapeAssertionError;
+
+        try {
+          assertReducerShape(finalReducers);
+        } catch (e) {
+          shapeAssertionError = e;
+        }
+
+        return function combination(state, action) {
+          if (state === void 0) {
+            state = {};
+          }
+
+          if (shapeAssertionError) {
+            throw shapeAssertionError;
+          }
+
+          var hasChanged = false;
+          var nextState = {};
+
+          for (var _i = 0; _i < finalReducerKeys.length; _i++) {
+            var _key = finalReducerKeys[_i];
+            var reducer = finalReducers[_key];
+            var previousStateForKey = state[_key];
+            var nextStateForKey = reducer(previousStateForKey, action);
+
+            if (typeof nextStateForKey === 'undefined') {
+              var errorMessage = getUndefinedStateErrorMessage(_key, action);
+              throw new Error(errorMessage);
+            }
+
+            nextState[_key] = nextStateForKey;
+            hasChanged = hasChanged || nextStateForKey !== previousStateForKey;
+          }
+
+          return hasChanged ? nextState : state;
+        };
+      }
+
+
+      var defaultState = [];
+
+      function items_items(state, action) {
+        if (state === void 0) {
+          state = defaultState;
+        }
+
+        switch (action.type) {
+          case 'ADD_ITEM':
+            {
+              // Add object to items array
+              var newState = [].concat(state, [{
+                id: action.id,
+                choiceId: action.choiceId,
+                groupId: action.groupId,
+                value: action.value,
+                label: action.label,
+                active: true,
+                highlighted: false,
+                customProperties: action.customProperties,
+                placeholder: action.placeholder || false,
+                keyCode: null
+              }]);
+              return newState.map(function (obj) {
+                var item = obj;
+                item.highlighted = false;
+                return item;
+              });
+            }
+
+          case 'REMOVE_ITEM':
+            {
+              // Set item to inactive
+              return state.map(function (obj) {
+                var item = obj;
+
+                if (item.id === action.id) {
+                  item.active = false;
+                }
+
+                return item;
+              });
+            }
+
+          case 'HIGHLIGHT_ITEM':
+            {
+              return state.map(function (obj) {
+                var item = obj;
+
+                if (item.id === action.id) {
+                  item.highlighted = action.highlighted;
+                }
+
+                return item;
+              });
+            }
+
+          default:
+            {
+              return state;
+            }
+        }
+      } // CONCATENATED MODULE: ./src/scripts/reducers/groups.js
+
+
+      var groups_defaultState = [];
+
+      function groups(state, action) {
+        if (state === void 0) {
+          state = groups_defaultState;
+        }
+
+        switch (action.type) {
+          case 'ADD_GROUP':
+            {
+              return [].concat(state, [{
+                id: action.id,
+                value: action.value,
+                active: action.active,
+                disabled: action.disabled
+              }]);
+            }
+
+          case 'CLEAR_CHOICES':
+            {
+              return [];
+            }
+
+          default:
+            {
+              return state;
+            }
+        }
+      } // CONCATENATED MODULE: ./src/scripts/reducers/choices.js
+
+
+      var choices_defaultState = [];
+
+      function choices_choices(state, action) {
+        if (state === void 0) {
+          state = choices_defaultState;
+        }
+
+        switch (action.type) {
+          case 'ADD_CHOICE':
+            {
+              /*
+                  A disabled choice appears in the choice dropdown but cannot be selected
+                  A selected choice has been added to the passed input's value (added as an item)
+                  An active choice appears within the choice dropdown
+               */
+              return [].concat(state, [{
+                id: action.id,
+                elementId: action.elementId,
+                groupId: action.groupId,
+                value: action.value,
+                label: action.label || action.value,
+                disabled: action.disabled || false,
+                selected: false,
+                active: true,
+                score: 9999,
+                customProperties: action.customProperties,
+                placeholder: action.placeholder || false,
+                keyCode: null
+              }]);
+            }
+
+          case 'ADD_ITEM':
+            {
+              // If all choices need to be activated
+              if (action.activateOptions) {
+                return state.map(function (obj) {
+                  var choice = obj;
+                  choice.active = action.active;
+                  return choice;
+                });
+              } // When an item is added and it has an associated choice,
+              // we want to disable it so it can't be chosen again
+
+
+              if (action.choiceId > -1) {
+                return state.map(function (obj) {
+                  var choice = obj;
+
+                  if (choice.id === parseInt(action.choiceId, 10)) {
+                    choice.selected = true;
+                  }
+
+                  return choice;
+                });
+              }
+
+              return state;
+            }
+
+          case 'REMOVE_ITEM':
+            {
+              // When an item is removed and it has an associated choice,
+              // we want to re-enable it so it can be chosen again
+              if (action.choiceId > -1) {
+                return state.map(function (obj) {
+                  var choice = obj;
+
+                  if (choice.id === parseInt(action.choiceId, 10)) {
+                    choice.selected = false;
+                  }
+
+                  return choice;
+                });
+              }
+
+              return state;
+            }
+
+          case 'FILTER_CHOICES':
+            {
+              return state.map(function (obj) {
+                var choice = obj; // Set active state based on whether choice is
+                // within filtered results
+
+                choice.active = action.results.some(function (_ref) {
+                  var item = _ref.item,
+                      score = _ref.score;
+
+                  if (item.id === choice.id) {
+                    choice.score = score;
+                    return true;
+                  }
+
+                  return false;
+                });
+                return choice;
+              });
+            }
+
+          case 'ACTIVATE_CHOICES':
+            {
+              return state.map(function (obj) {
+                var choice = obj;
+                choice.active = action.active;
+                return choice;
+              });
+            }
+
+          case 'CLEAR_CHOICES':
+            {
+              return choices_defaultState;
+            }
+
+          default:
+            {
+              return state;
+            }
+        }
+      } // CONCATENATED MODULE: ./src/scripts/reducers/general.js
+
+
+      var general_defaultState = {
+        loading: false
+      };
+
+      var general = function general(state, action) {
+        if (state === void 0) {
+          state = general_defaultState;
+        }
+
+        switch (action.type) {
+          case 'SET_IS_LOADING':
+            {
+              return {
+                loading: action.isLoading
+              };
+            }
+
+          default:
+            {
+              return state;
+            }
+        }
+      };
+      /* harmony default export */
+
+
+      var reducers_general = general; // CONCATENATED MODULE: ./src/scripts/lib/utils.js
+
+      /**
+       * @param {number} min
+       * @param {number} max
+       * @returns {number}
+       */
+
+      var getRandomNumber = function getRandomNumber(min, max) {
+        return Math.floor(Math.random() * (max - min) + min);
+      };
+      /**
+       * @param {number} length
+       * @returns {string}
+       */
+
+
+      var generateChars = function generateChars(length) {
+        return Array.from({
+          length: length
+        }, function () {
+          return getRandomNumber(0, 36).toString(36);
+        }).join('');
+      };
+      /**
+       * @param {HTMLInputElement | HTMLSelectElement} element
+       * @param {string} prefix
+       * @returns {string}
+       */
+
+
+      var generateId = function generateId(element, prefix) {
+        var id = element.id || element.name && element.name + "-" + generateChars(2) || generateChars(4);
+        id = id.replace(/(:|\.|\[|\]|,)/g, '');
+        id = prefix + "-" + id;
+        return id;
+      };
+      /**
+       * @param {any} obj
+       * @returns {string}
+       */
+
+
+      var getType = function getType(obj) {
+        return Object.prototype.toString.call(obj).slice(8, -1);
+      };
+      /**
+       * @param {string} type
+       * @param {any} obj
+       * @returns {boolean}
+       */
+
+
+      var isType = function isType(type, obj) {
+        return obj !== undefined && obj !== null && getType(obj) === type;
+      };
+      /**
+       * @param {HTMLElement} element
+       * @param {HTMLElement} [wrapper={HTMLDivElement}]
+       * @returns {HTMLElement}
+       */
+
+
+      var utils_wrap = function wrap(element, wrapper) {
+        if (wrapper === void 0) {
+          wrapper = document.createElement('div');
+        }
+
+        if (element.nextSibling) {
+          element.parentNode.insertBefore(wrapper, element.nextSibling);
+        } else {
+          element.parentNode.appendChild(wrapper);
+        }
+
+        return wrapper.appendChild(element);
+      };
+      /**
+       * @param {Element} startEl
+       * @param {string} selector
+       * @param {1 | -1} direction
+       * @returns {Element | undefined}
+       */
+
+
+      var getAdjacentEl = function getAdjacentEl(startEl, selector, direction) {
+        if (direction === void 0) {
+          direction = 1;
+        }
+
+        if (!(startEl instanceof Element) || typeof selector !== 'string') {
+          return undefined;
+        }
+
+        var prop = (direction > 0 ? 'next' : 'previous') + "ElementSibling";
+        var sibling = startEl[prop];
+
+        while (sibling) {
+          if (sibling.matches(selector)) {
+            return sibling;
+          }
+
+          sibling = sibling[prop];
+        }
+
+        return sibling;
+      };
+      /**
+       * @param {Element} element
+       * @param {Element} parent
+       * @param {-1 | 1} direction
+       * @returns {boolean}
+       */
+
+
+      var isScrolledIntoView = function isScrolledIntoView(element, parent, direction) {
+        if (direction === void 0) {
+          direction = 1;
+        }
+
+        if (!element) {
+          return false;
+        }
+
+        var isVisible;
+
+        if (direction > 0) {
+          // In view from bottom
+          isVisible = parent.scrollTop + parent.offsetHeight >= element.offsetTop + element.offsetHeight;
+        } else {
+          // In view from top
+          isVisible = element.offsetTop >= parent.scrollTop;
+        }
+
+        return isVisible;
+      };
+      /**
+       * @param {any} value
+       * @returns {any}
+       */
+
+
+      var sanitise = function sanitise(value) {
+        if (typeof value !== 'string') {
+          return value;
+        }
+
+        return value.replace(/&/g, '&amp;').replace(/>/g, '&rt;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+      };
+      /**
+       * @returns {() => (str: string) => Element}
+       */
+
+
+      var strToEl = function () {
+        var tmpEl = document.createElement('div');
+        return function (str) {
+          var cleanedInput = str.trim();
+          tmpEl.innerHTML = cleanedInput;
+          var firldChild = tmpEl.children[0];
+
+          while (tmpEl.firstChild) {
+            tmpEl.removeChild(tmpEl.firstChild);
+          }
+
+          return firldChild;
+        };
+      }();
+      /**
+       * @param {{ label?: string, value: string }} a
+       * @param {{ label?: string, value: string }} b
+       * @returns {number}
+       */
+
+
+      var sortByAlpha = function sortByAlpha(_ref, _ref2) {
+        var value = _ref.value,
+            _ref$label = _ref.label,
+            label = _ref$label === void 0 ? value : _ref$label;
+        var value2 = _ref2.value,
+            _ref2$label = _ref2.label,
+            label2 = _ref2$label === void 0 ? value2 : _ref2$label;
+        return label.localeCompare(label2, [], {
+          sensitivity: 'base',
+          ignorePunctuation: true,
+          numeric: true
+        });
+      };
+      /**
+       * @param {{ score: number }} a
+       * @param {{ score: number }} b
+       */
+
+
+      var sortByScore = function sortByScore(a, b) {
+        return a.score - b.score;
+      };
+      /**
+       * @param {HTMLElement} element
+       * @param {string} type
+       * @param {object} customArgs
+       */
+
+
+      var dispatchEvent = function dispatchEvent(element, type, customArgs) {
+        if (customArgs === void 0) {
+          customArgs = null;
+        }
+
+        var event = new CustomEvent(type, {
+          detail: customArgs,
+          bubbles: true,
+          cancelable: true
+        });
+        return element.dispatchEvent(event);
+      };
+      /**
+       * @param {array} array
+       * @param {any} value
+       * @param {string} [key="value"]
+       * @returns {boolean}
+       */
+
+
+      var existsInArray = function existsInArray(array, value, key) {
+        if (key === void 0) {
+          key = 'value';
+        }
+
+        return array.some(function (item) {
+          if (typeof value === 'string') {
+            return item[key] === value.trim();
+          }
+
+          return item[key] === value;
+        });
+      };
+      /**
+       * @param {any} obj
+       * @returns {any}
+       */
+
+
+      var cloneObject = function cloneObject(obj) {
+        return JSON.parse(JSON.stringify(obj));
+      };
+      /**
+       * Returns an array of keys present on the first but missing on the second object
+       * @param {object} a
+       * @param {object} b
+       * @returns {string[]}
+       */
+
+
+      var diff = function diff(a, b) {
+        var aKeys = Object.keys(a).sort();
+        var bKeys = Object.keys(b).sort();
+        return aKeys.filter(function (i) {
+          return bKeys.indexOf(i) < 0;
+        });
+      }; // CONCATENATED MODULE: ./src/scripts/reducers/index.js
+
+
+      var appReducer = combineReducers({
+        items: items_items,
+        groups: groups,
+        choices: choices_choices,
+        general: reducers_general
+      });
+
+      var reducers_rootReducer = function rootReducer(passedState, action) {
+        var state = passedState; // If we are clearing all items, groups and options we reassign
+        // state and then pass that state to our proper reducer. This isn't
+        // mutating our actual state
+        // See: http://stackoverflow.com/a/35641992
+
+        if (action.type === 'CLEAR_ALL') {
+          state = undefined;
+        } else if (action.type === 'RESET_TO') {
+          return cloneObject(action.state);
+        }
+
+        return appReducer(state, action);
+      };
+      /* harmony default export */
+
+
+      var reducers = reducers_rootReducer; // CONCATENATED MODULE: ./src/scripts/store/store.js
+
+      function _defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function _createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) _defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+      /**
+       * @typedef {import('../../../types/index').Choices.Choice} Choice
+       * @typedef {import('../../../types/index').Choices.Group} Group
+       * @typedef {import('../../../types/index').Choices.Item} Item
+       */
+
+
+      var store_Store = /*#__PURE__*/function () {
+        function Store() {
+          this._store = createStore(reducers, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
+        }
+        /**
+         * Subscribe store to function call (wrapped Redux method)
+         * @param  {Function} onChange Function to trigger when state changes
+         * @return
+         */
+
+
+        var _proto = Store.prototype;
+
+        _proto.subscribe = function subscribe(onChange) {
+          this._store.subscribe(onChange);
+        }
+        /**
+         * Dispatch event to store (wrapped Redux method)
+         * @param  {{ type: string, [x: string]: any }} action Action to trigger
+         * @return
+         */
+        ;
+
+        _proto.dispatch = function dispatch(action) {
+          this._store.dispatch(action);
+        }
+        /**
+         * Get store object (wrapping Redux method)
+         * @returns {object} State
+         */
+        ;
+        /**
+         * Get loading state from store
+         * @returns {boolean} Loading State
+         */
+
+
+        _proto.isLoading = function isLoading() {
+          return this.state.general.loading;
+        }
+        /**
+         * Get single choice by it's ID
+         * @param {string} id
+         * @returns {Choice | undefined} Found choice
+         */
+        ;
+
+        _proto.getChoiceById = function getChoiceById(id) {
+          return this.activeChoices.find(function (choice) {
+            return choice.id === parseInt(id, 10);
+          });
+        }
+        /**
+         * Get group by group id
+         * @param  {number} id Group ID
+         * @returns {Group | undefined} Group data
+         */
+        ;
+
+        _proto.getGroupById = function getGroupById(id) {
+          return this.groups.find(function (group) {
+            return group.id === id;
+          });
+        };
+
+        _createClass(Store, [{
+          key: "state",
+          get: function get() {
+            return this._store.getState();
+          }
+          /**
+           * Get items from store
+           * @returns {Item[]} Item objects
+           */
+
+        }, {
+          key: "items",
+          get: function get() {
+            return this.state.items;
+          }
+          /**
+           * Get active items from store
+           * @returns {Item[]} Item objects
+           */
+
+        }, {
+          key: "activeItems",
+          get: function get() {
+            return this.items.filter(function (item) {
+              return item.active === true;
+            });
+          }
+          /**
+           * Get highlighted items from store
+           * @returns {Item[]} Item objects
+           */
+
+        }, {
+          key: "highlightedActiveItems",
+          get: function get() {
+            return this.items.filter(function (item) {
+              return item.active && item.highlighted;
+            });
+          }
+          /**
+           * Get choices from store
+           * @returns {Choice[]} Option objects
+           */
+
+        }, {
+          key: "choices",
+          get: function get() {
+            return this.state.choices;
+          }
+          /**
+           * Get active choices from store
+           * @returns {Choice[]} Option objects
+           */
+
+        }, {
+          key: "activeChoices",
+          get: function get() {
+            return this.choices.filter(function (choice) {
+              return choice.active === true;
+            });
+          }
+          /**
+           * Get selectable choices from store
+           * @returns {Choice[]} Option objects
+           */
+
+        }, {
+          key: "selectableChoices",
+          get: function get() {
+            return this.choices.filter(function (choice) {
+              return choice.disabled !== true;
+            });
+          }
+          /**
+           * Get choices that can be searched (excluding placeholders)
+           * @returns {Choice[]} Option objects
+           */
+
+        }, {
+          key: "searchableChoices",
+          get: function get() {
+            return this.selectableChoices.filter(function (choice) {
+              return choice.placeholder !== true;
+            });
+          }
+          /**
+           * Get placeholder choice from store
+           * @returns {Choice | undefined} Found placeholder
+           */
+
+        }, {
+          key: "placeholderChoice",
+          get: function get() {
+            return [].concat(this.choices).reverse().find(function (choice) {
+              return choice.placeholder === true;
+            });
+          }
+          /**
+           * Get groups from store
+           * @returns {Group[]} Group objects
+           */
+
+        }, {
+          key: "groups",
+          get: function get() {
+            return this.state.groups;
+          }
+          /**
+           * Get active groups from store
+           * @returns {Group[]} Group objects
+           */
+
+        }, {
+          key: "activeGroups",
+          get: function get() {
+            var groups = this.groups,
+                choices = this.choices;
+            return groups.filter(function (group) {
+              var isActive = group.active === true && group.disabled === false;
+              var hasActiveOptions = choices.some(function (choice) {
+                return choice.active === true && choice.disabled === false;
+              });
+              return isActive && hasActiveOptions;
+            }, []);
+          }
+        }]);
+
+        return Store;
+      }(); // CONCATENATED MODULE: ./src/scripts/components/dropdown.js
+
+
+      function dropdown_defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function dropdown_createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) dropdown_defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) dropdown_defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+      /**
+       * @typedef {import('../../../types/index').Choices.passedElement} passedElement
+       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
+       */
+
+
+      var Dropdown = /*#__PURE__*/function () {
+        /**
+         * @param {{
+         *  element: HTMLElement,
+         *  type: passedElement['type'],
+         *  classNames: ClassNames,
+         * }} args
+         */
+        function Dropdown(_ref) {
+          var element = _ref.element,
+              type = _ref.type,
+              classNames = _ref.classNames;
+          this.element = element;
+          this.classNames = classNames;
+          this.type = type;
+          this.isActive = false;
+        }
+        /**
+         * Bottom position of dropdown in viewport coordinates
+         * @returns {number} Vertical position
+         */
+
+
+        var _proto = Dropdown.prototype;
+        /**
+         * Find element that matches passed selector
+         * @param {string} selector
+         * @returns {HTMLElement | null}
+         */
+
+        _proto.getChild = function getChild(selector) {
+          return this.element.querySelector(selector);
+        }
+        /**
+         * Show dropdown to user by adding active state class
+         * @returns {this}
+         */
+        ;
+
+        _proto.show = function show() {
+          this.element.classList.add(this.classNames.activeState);
+          this.element.setAttribute('aria-expanded', 'true');
+          this.isActive = true;
+          return this;
+        }
+        /**
+         * Hide dropdown from user
+         * @returns {this}
+         */
+        ;
+
+        _proto.hide = function hide() {
+          this.element.classList.remove(this.classNames.activeState);
+          this.element.setAttribute('aria-expanded', 'false');
+          this.isActive = false;
+          return this;
+        };
+
+        dropdown_createClass(Dropdown, [{
+          key: "distanceFromTopWindow",
+          get: function get() {
+            return this.element.getBoundingClientRect().bottom;
+          }
+        }]);
+        return Dropdown;
+      }(); // CONCATENATED MODULE: ./src/scripts/constants.js
+
+      /**
+       * @typedef {import('../../types/index').Choices.ClassNames} ClassNames
+       * @typedef {import('../../types/index').Choices.Options} Options
+       */
+
+      /** @type {ClassNames} */
+
+
+      var DEFAULT_CLASSNAMES = {
+        containerOuter: 'choices',
+        containerInner: 'choices__inner',
+        input: 'choices__input',
+        inputCloned: 'choices__input--cloned',
+        list: 'choices__list',
+        listItems: 'choices__list--multiple',
+        listSingle: 'choices__list--single',
+        listDropdown: 'choices__list--dropdown',
+        item: 'choices__item',
+        itemSelectable: 'choices__item--selectable',
+        itemDisabled: 'choices__item--disabled',
+        itemChoice: 'choices__item--choice',
+        placeholder: 'choices__placeholder',
+        group: 'choices__group',
+        groupHeading: 'choices__heading',
+        button: 'choices__button',
+        activeState: 'is-active',
+        focusState: 'is-focused',
+        openState: 'is-open',
+        disabledState: 'is-disabled',
+        highlightedState: 'is-highlighted',
+        selectedState: 'is-selected',
+        flippedState: 'is-flipped',
+        loadingState: 'is-loading',
+        noResults: 'has-no-results',
+        noChoices: 'has-no-choices'
+      };
+      /** @type {Options} */
+
+      var DEFAULT_CONFIG = {
+        items: [],
+        choices: [],
+        silent: false,
+        renderChoiceLimit: -1,
+        maxItemCount: -1,
+        addItems: true,
+        addItemFilter: null,
+        removeItems: true,
+        removeItemButton: false,
+        editItems: false,
+        duplicateItemsAllowed: true,
+        delimiter: ',',
+        paste: true,
+        searchEnabled: true,
+        searchChoices: true,
+        searchFloor: 1,
+        searchResultLimit: 4,
+        searchFields: ['label', 'value'],
+        position: 'auto',
+        resetScrollPosition: true,
+        shouldSort: true,
+        shouldSortItems: false,
+        sorter: sortByAlpha,
+        placeholder: true,
+        placeholderValue: null,
+        searchPlaceholderValue: null,
+        prependValue: null,
+        appendValue: null,
+        renderSelectedChoices: 'auto',
+        loadingText: 'Loading...',
+        noResultsText: 'No results found',
+        noChoicesText: 'No choices to choose from',
+        itemSelectText: 'Press to select',
+        uniqueItemText: 'Only unique values can be added',
+        customAddItemText: 'Only values matching specific conditions can be added',
+        addItemText: function addItemText(value) {
+          return "Press Enter to add <b>\"" + sanitise(value) + "\"</b>";
+        },
+        maxItemText: function maxItemText(maxItemCount) {
+          return "Only " + maxItemCount + " values can be added";
+        },
+        valueComparer: function valueComparer(value1, value2) {
+          return value1 === value2;
+        },
+        fuseOptions: {
+          includeScore: true
+        },
+        callbackOnInit: null,
+        callbackOnCreateTemplates: null,
+        classNames: DEFAULT_CLASSNAMES
+      };
+      var EVENTS = {
+        showDropdown: 'showDropdown',
+        hideDropdown: 'hideDropdown',
+        change: 'change',
+        choice: 'choice',
+        search: 'search',
+        addItem: 'addItem',
+        removeItem: 'removeItem',
+        highlightItem: 'highlightItem',
+        highlightChoice: 'highlightChoice'
+      };
+      var ACTION_TYPES = {
+        ADD_CHOICE: 'ADD_CHOICE',
+        FILTER_CHOICES: 'FILTER_CHOICES',
+        ACTIVATE_CHOICES: 'ACTIVATE_CHOICES',
+        CLEAR_CHOICES: 'CLEAR_CHOICES',
+        ADD_GROUP: 'ADD_GROUP',
+        ADD_ITEM: 'ADD_ITEM',
+        REMOVE_ITEM: 'REMOVE_ITEM',
+        HIGHLIGHT_ITEM: 'HIGHLIGHT_ITEM',
+        CLEAR_ALL: 'CLEAR_ALL'
+      };
+      var KEY_CODES = {
+        BACK_KEY: 46,
+        DELETE_KEY: 8,
+        ENTER_KEY: 13,
+        A_KEY: 65,
+        ESC_KEY: 27,
+        UP_KEY: 38,
+        DOWN_KEY: 40,
+        PAGE_UP_KEY: 33,
+        PAGE_DOWN_KEY: 34
+      };
+      var TEXT_TYPE = 'text';
+      var SELECT_ONE_TYPE = 'select-one';
+      var SELECT_MULTIPLE_TYPE = 'select-multiple';
+      var SCROLLING_SPEED = 4; // CONCATENATED MODULE: ./src/scripts/components/container.js
+
+      /**
+       * @typedef {import('../../../types/index').Choices.passedElement} passedElement
+       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
+       */
+
+      var container_Container = /*#__PURE__*/function () {
+        /**
+         * @param {{
+         *  element: HTMLElement,
+         *  type: passedElement['type'],
+         *  classNames: ClassNames,
+         *  position
+         * }} args
+         */
+        function Container(_ref) {
+          var element = _ref.element,
+              type = _ref.type,
+              classNames = _ref.classNames,
+              position = _ref.position;
+          this.element = element;
+          this.classNames = classNames;
+          this.type = type;
+          this.position = position;
+          this.isOpen = false;
+          this.isFlipped = false;
+          this.isFocussed = false;
+          this.isDisabled = false;
+          this.isLoading = false;
+          this._onFocus = this._onFocus.bind(this);
+          this._onBlur = this._onBlur.bind(this);
+        }
+
+        var _proto = Container.prototype;
+
+        _proto.addEventListeners = function addEventListeners() {
+          this.element.addEventListener('focus', this._onFocus);
+          this.element.addEventListener('blur', this._onBlur);
+        };
+
+        _proto.removeEventListeners = function removeEventListeners() {
+          this.element.removeEventListener('focus', this._onFocus);
+          this.element.removeEventListener('blur', this._onBlur);
+        }
+        /**
+         * Determine whether container should be flipped based on passed
+         * dropdown position
+         * @param {number} dropdownPos
+         * @returns {boolean}
+         */
+        ;
+
+        _proto.shouldFlip = function shouldFlip(dropdownPos) {
+          if (typeof dropdownPos !== 'number') {
+            return false;
+          } // If flip is enabled and the dropdown bottom position is
+          // greater than the window height flip the dropdown.
+
+
+          var shouldFlip = false;
+
+          if (this.position === 'auto') {
+            shouldFlip = !window.matchMedia("(min-height: " + (dropdownPos + 1) + "px)").matches;
+          } else if (this.position === 'top') {
+            shouldFlip = true;
+          }
+
+          return shouldFlip;
+        }
+        /**
+         * @param {string} activeDescendantID
+         */
+        ;
+
+        _proto.setActiveDescendant = function setActiveDescendant(activeDescendantID) {
+          this.element.setAttribute('aria-activedescendant', activeDescendantID);
+        };
+
+        _proto.removeActiveDescendant = function removeActiveDescendant() {
+          this.element.removeAttribute('aria-activedescendant');
+        }
+        /**
+         * @param {number} dropdownPos
+         */
+        ;
+
+        _proto.open = function open(dropdownPos) {
+          this.element.classList.add(this.classNames.openState);
+          this.element.setAttribute('aria-expanded', 'true');
+          this.isOpen = true;
+
+          if (this.shouldFlip(dropdownPos)) {
+            this.element.classList.add(this.classNames.flippedState);
+            this.isFlipped = true;
+          }
+        };
+
+        _proto.close = function close() {
+          this.element.classList.remove(this.classNames.openState);
+          this.element.setAttribute('aria-expanded', 'false');
+          this.removeActiveDescendant();
+          this.isOpen = false; // A dropdown flips if it does not have space within the page
+
+          if (this.isFlipped) {
+            this.element.classList.remove(this.classNames.flippedState);
+            this.isFlipped = false;
+          }
+        };
+
+        _proto.focus = function focus() {
+          if (!this.isFocussed) {
+            this.element.focus();
+          }
+        };
+
+        _proto.addFocusState = function addFocusState() {
+          this.element.classList.add(this.classNames.focusState);
+        };
+
+        _proto.removeFocusState = function removeFocusState() {
+          this.element.classList.remove(this.classNames.focusState);
+        };
+
+        _proto.enable = function enable() {
+          this.element.classList.remove(this.classNames.disabledState);
+          this.element.removeAttribute('aria-disabled');
+
+          if (this.type === SELECT_ONE_TYPE) {
+            this.element.setAttribute('tabindex', '0');
+          }
+
+          this.isDisabled = false;
+        };
+
+        _proto.disable = function disable() {
+          this.element.classList.add(this.classNames.disabledState);
+          this.element.setAttribute('aria-disabled', 'true');
+
+          if (this.type === SELECT_ONE_TYPE) {
+            this.element.setAttribute('tabindex', '-1');
+          }
+
+          this.isDisabled = true;
+        }
+        /**
+         * @param {HTMLElement} element
+         */
+        ;
+
+        _proto.wrap = function wrap(element) {
+          utils_wrap(element, this.element);
+        }
+        /**
+         * @param {Element} element
+         */
+        ;
+
+        _proto.unwrap = function unwrap(element) {
+          // Move passed element outside this element
+          this.element.parentNode.insertBefore(element, this.element); // Remove this element
+
+          this.element.parentNode.removeChild(this.element);
+        };
+
+        _proto.addLoadingState = function addLoadingState() {
+          this.element.classList.add(this.classNames.loadingState);
+          this.element.setAttribute('aria-busy', 'true');
+          this.isLoading = true;
+        };
+
+        _proto.removeLoadingState = function removeLoadingState() {
+          this.element.classList.remove(this.classNames.loadingState);
+          this.element.removeAttribute('aria-busy');
+          this.isLoading = false;
+        };
+
+        _proto._onFocus = function _onFocus() {
+          this.isFocussed = true;
+        };
+
+        _proto._onBlur = function _onBlur() {
+          this.isFocussed = false;
+        };
+
+        return Container;
+      }(); // CONCATENATED MODULE: ./src/scripts/components/input.js
+
+
+      function input_defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function input_createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) input_defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) input_defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+      /**
+       * @typedef {import('../../../types/index').Choices.passedElement} passedElement
+       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
+       */
+
+
+      var input_Input = /*#__PURE__*/function () {
+        /**
+         * @param {{
+         *  element: HTMLInputElement,
+         *  type: passedElement['type'],
+         *  classNames: ClassNames,
+         *  preventPaste: boolean
+         * }} args
+         */
+        function Input(_ref) {
+          var element = _ref.element,
+              type = _ref.type,
+              classNames = _ref.classNames,
+              preventPaste = _ref.preventPaste;
+          this.element = element;
+          this.type = type;
+          this.classNames = classNames;
+          this.preventPaste = preventPaste;
+          this.isFocussed = this.element === document.activeElement;
+          this.isDisabled = element.disabled;
+          this._onPaste = this._onPaste.bind(this);
+          this._onInput = this._onInput.bind(this);
+          this._onFocus = this._onFocus.bind(this);
+          this._onBlur = this._onBlur.bind(this);
+        }
+        /**
+         * @param {string} placeholder
+         */
+
+
+        var _proto = Input.prototype;
+
+        _proto.addEventListeners = function addEventListeners() {
+          this.element.addEventListener('paste', this._onPaste);
+          this.element.addEventListener('input', this._onInput, {
+            passive: true
+          });
+          this.element.addEventListener('focus', this._onFocus, {
+            passive: true
+          });
+          this.element.addEventListener('blur', this._onBlur, {
+            passive: true
+          });
+        };
+
+        _proto.removeEventListeners = function removeEventListeners() {
+          this.element.removeEventListener('input', this._onInput, {
+            passive: true
+          });
+          this.element.removeEventListener('paste', this._onPaste);
+          this.element.removeEventListener('focus', this._onFocus, {
+            passive: true
+          });
+          this.element.removeEventListener('blur', this._onBlur, {
+            passive: true
+          });
+        };
+
+        _proto.enable = function enable() {
+          this.element.removeAttribute('disabled');
+          this.isDisabled = false;
+        };
+
+        _proto.disable = function disable() {
+          this.element.setAttribute('disabled', '');
+          this.isDisabled = true;
+        };
+
+        _proto.focus = function focus() {
+          if (!this.isFocussed) {
+            this.element.focus();
+          }
+        };
+
+        _proto.blur = function blur() {
+          if (this.isFocussed) {
+            this.element.blur();
+          }
+        }
+        /**
+         * Set value of input to blank
+         * @param {boolean} setWidth
+         * @returns {this}
+         */
+        ;
+
+        _proto.clear = function clear(setWidth) {
+          if (setWidth === void 0) {
+            setWidth = true;
+          }
+
+          if (this.element.value) {
+            this.element.value = '';
+          }
+
+          if (setWidth) {
+            this.setWidth();
+          }
+
+          return this;
+        }
+        /**
+         * Set the correct input width based on placeholder
+         * value or input value
+         */
+        ;
+
+        _proto.setWidth = function setWidth() {
+          // Resize input to contents or placeholder
+          var _this$element = this.element,
+              style = _this$element.style,
+              value = _this$element.value,
+              placeholder = _this$element.placeholder;
+          style.minWidth = placeholder.length + 1 + "ch";
+          style.width = value.length + 1 + "ch";
+        }
+        /**
+         * @param {string} activeDescendantID
+         */
+        ;
+
+        _proto.setActiveDescendant = function setActiveDescendant(activeDescendantID) {
+          this.element.setAttribute('aria-activedescendant', activeDescendantID);
+        };
+
+        _proto.removeActiveDescendant = function removeActiveDescendant() {
+          this.element.removeAttribute('aria-activedescendant');
+        };
+
+        _proto._onInput = function _onInput() {
+          if (this.type !== SELECT_ONE_TYPE) {
+            this.setWidth();
+          }
+        }
+        /**
+         * @param {Event} event
+         */
+        ;
+
+        _proto._onPaste = function _onPaste(event) {
+          if (this.preventPaste) {
+            event.preventDefault();
+          }
+        };
+
+        _proto._onFocus = function _onFocus() {
+          this.isFocussed = true;
+        };
+
+        _proto._onBlur = function _onBlur() {
+          this.isFocussed = false;
+        };
+
+        input_createClass(Input, [{
+          key: "placeholder",
+          set: function set(placeholder) {
+            this.element.placeholder = placeholder;
+          }
+          /**
+           * @returns {string}
+           */
+
+        }, {
+          key: "value",
+          get: function get() {
+            return sanitise(this.element.value);
+          }
+          /**
+           * @param {string} value
+           */
+          ,
+          set: function set(value) {
+            this.element.value = value;
+          }
+        }]);
+        return Input;
+      }(); // CONCATENATED MODULE: ./src/scripts/components/list.js
+
+      /**
+       * @typedef {import('../../../types/index').Choices.Choice} Choice
+       */
+
+
+      var list_List = /*#__PURE__*/function () {
+        /**
+         * @param {{ element: HTMLElement }} args
+         */
+        function List(_ref) {
+          var element = _ref.element;
+          this.element = element;
+          this.scrollPos = this.element.scrollTop;
+          this.height = this.element.offsetHeight;
+        }
+
+        var _proto = List.prototype;
+
+        _proto.clear = function clear() {
+          this.element.innerHTML = '';
+        }
+        /**
+         * @param {Element | DocumentFragment} node
+         */
+        ;
+
+        _proto.append = function append(node) {
+          this.element.appendChild(node);
+        }
+        /**
+         * @param {string} selector
+         * @returns {Element | null}
+         */
+        ;
+
+        _proto.getChild = function getChild(selector) {
+          return this.element.querySelector(selector);
+        }
+        /**
+         * @returns {boolean}
+         */
+        ;
+
+        _proto.hasChildren = function hasChildren() {
+          return this.element.hasChildNodes();
+        };
+
+        _proto.scrollToTop = function scrollToTop() {
+          this.element.scrollTop = 0;
+        }
+        /**
+         * @param {Element} element
+         * @param {1 | -1} direction
+         */
+        ;
+
+        _proto.scrollToChildElement = function scrollToChildElement(element, direction) {
+          var _this = this;
+
+          if (!element) {
+            return;
+          }
+
+          var listHeight = this.element.offsetHeight; // Scroll position of dropdown
+
+          var listScrollPosition = this.element.scrollTop + listHeight;
+          var elementHeight = element.offsetHeight; // Distance from bottom of element to top of parent
+
+          var elementPos = element.offsetTop + elementHeight; // Difference between the element and scroll position
+
+          var destination = direction > 0 ? this.element.scrollTop + elementPos - listScrollPosition : element.offsetTop;
+          requestAnimationFrame(function () {
+            _this._animateScroll(destination, direction);
+          });
+        }
+        /**
+         * @param {number} scrollPos
+         * @param {number} strength
+         * @param {number} destination
+         */
+        ;
+
+        _proto._scrollDown = function _scrollDown(scrollPos, strength, destination) {
+          var easing = (destination - scrollPos) / strength;
+          var distance = easing > 1 ? easing : 1;
+          this.element.scrollTop = scrollPos + distance;
+        }
+        /**
+         * @param {number} scrollPos
+         * @param {number} strength
+         * @param {number} destination
+         */
+        ;
+
+        _proto._scrollUp = function _scrollUp(scrollPos, strength, destination) {
+          var easing = (scrollPos - destination) / strength;
+          var distance = easing > 1 ? easing : 1;
+          this.element.scrollTop = scrollPos - distance;
+        }
+        /**
+         * @param {*} destination
+         * @param {*} direction
+         */
+        ;
+
+        _proto._animateScroll = function _animateScroll(destination, direction) {
+          var _this2 = this;
+
+          var strength = SCROLLING_SPEED;
+          var choiceListScrollTop = this.element.scrollTop;
+          var continueAnimation = false;
+
+          if (direction > 0) {
+            this._scrollDown(choiceListScrollTop, strength, destination);
+
+            if (choiceListScrollTop < destination) {
+              continueAnimation = true;
+            }
+          } else {
+            this._scrollUp(choiceListScrollTop, strength, destination);
+
+            if (choiceListScrollTop > destination) {
+              continueAnimation = true;
+            }
+          }
+
+          if (continueAnimation) {
+            requestAnimationFrame(function () {
+              _this2._animateScroll(destination, direction);
+            });
+          }
+        };
+
+        return List;
+      }(); // CONCATENATED MODULE: ./src/scripts/components/wrapped-element.js
+
+
+      function wrapped_element_defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function wrapped_element_createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) wrapped_element_defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) wrapped_element_defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+      /**
+       * @typedef {import('../../../types/index').Choices.passedElement} passedElement
+       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
+       */
+
+
+      var wrapped_element_WrappedElement = /*#__PURE__*/function () {
+        /**
+         * @param {{
+         *  element: HTMLInputElement | HTMLSelectElement,
+         *  classNames: ClassNames,
+         * }} args
+         */
+        function WrappedElement(_ref) {
+          var element = _ref.element,
+              classNames = _ref.classNames;
+          this.element = element;
+          this.classNames = classNames;
+
+          if (!(element instanceof HTMLInputElement) && !(element instanceof HTMLSelectElement)) {
+            throw new TypeError('Invalid element passed');
+          }
+
+          this.isDisabled = false;
+        }
+
+        var _proto = WrappedElement.prototype;
+
+        _proto.conceal = function conceal() {
+          // Hide passed input
+          this.element.classList.add(this.classNames.input);
+          this.element.hidden = true; // Remove element from tab index
+
+          this.element.tabIndex = -1; // Backup original styles if any
+
+          var origStyle = this.element.getAttribute('style');
+
+          if (origStyle) {
+            this.element.setAttribute('data-choice-orig-style', origStyle);
+          }
+
+          this.element.setAttribute('data-choice', 'active');
+        };
+
+        _proto.reveal = function reveal() {
+          // Reinstate passed element
+          this.element.classList.remove(this.classNames.input);
+          this.element.hidden = false;
+          this.element.removeAttribute('tabindex'); // Recover original styles if any
+
+          var origStyle = this.element.getAttribute('data-choice-orig-style');
+
+          if (origStyle) {
+            this.element.removeAttribute('data-choice-orig-style');
+            this.element.setAttribute('style', origStyle);
+          } else {
+            this.element.removeAttribute('style');
+          }
+
+          this.element.removeAttribute('data-choice'); // Re-assign values - this is weird, I know
+          // @todo Figure out why we need to do this
+
+          this.element.value = this.element.value; // eslint-disable-line no-self-assign
+        };
+
+        _proto.enable = function enable() {
+          this.element.removeAttribute('disabled');
+          this.element.disabled = false;
+          this.isDisabled = false;
+        };
+
+        _proto.disable = function disable() {
+          this.element.setAttribute('disabled', '');
+          this.element.disabled = true;
+          this.isDisabled = true;
+        };
+
+        _proto.triggerEvent = function triggerEvent(eventType, data) {
+          dispatchEvent(this.element, eventType, data);
+        };
+
+        wrapped_element_createClass(WrappedElement, [{
+          key: "isActive",
+          get: function get() {
+            return this.element.dataset.choice === 'active';
+          }
+        }, {
+          key: "dir",
+          get: function get() {
+            return this.element.dir;
+          }
+        }, {
+          key: "value",
+          get: function get() {
+            return this.element.value;
+          },
+          set: function set(value) {
+            // you must define setter here otherwise it will be readonly property
+            this.element.value = value;
+          }
+        }]);
+        return WrappedElement;
+      }(); // CONCATENATED MODULE: ./src/scripts/components/wrapped-input.js
+
+
+      function wrapped_input_defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function wrapped_input_createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) wrapped_input_defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) wrapped_input_defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+
+      function _inheritsLoose(subClass, superClass) {
+        subClass.prototype = Object.create(superClass.prototype);
+        subClass.prototype.constructor = subClass;
+        subClass.__proto__ = superClass;
+      }
+      /**
+       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
+       * @typedef {import('../../../types/index').Choices.Item} Item
+       */
+
+
+      var WrappedInput = /*#__PURE__*/function (_WrappedElement) {
+        _inheritsLoose(WrappedInput, _WrappedElement);
+        /**
+         * @param {{
+         *  element: HTMLInputElement,
+         *  classNames: ClassNames,
+         *  delimiter: string
+         * }} args
+         */
+
+
+        function WrappedInput(_ref) {
+          var _this;
+
+          var element = _ref.element,
+              classNames = _ref.classNames,
+              delimiter = _ref.delimiter;
+          _this = _WrappedElement.call(this, {
+            element: element,
+            classNames: classNames
+          }) || this;
+          _this.delimiter = delimiter;
+          return _this;
+        }
+        /**
+         * @returns {string}
+         */
+
+
+        wrapped_input_createClass(WrappedInput, [{
+          key: "value",
+          get: function get() {
+            return this.element.value;
+          }
+          /**
+           * @param {Item[]} items
+           */
+          ,
+          set: function set(items) {
+            var itemValues = items.map(function (_ref2) {
+              var value = _ref2.value;
+              return value;
+            });
+            var joinedValues = itemValues.join(this.delimiter);
+            this.element.setAttribute('value', joinedValues);
+            this.element.value = joinedValues;
+          }
+        }]);
+        return WrappedInput;
+      }(wrapped_element_WrappedElement); // CONCATENATED MODULE: ./src/scripts/components/wrapped-select.js
+
+
+      function wrapped_select_defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function wrapped_select_createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) wrapped_select_defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) wrapped_select_defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+
+      function wrapped_select_inheritsLoose(subClass, superClass) {
+        subClass.prototype = Object.create(superClass.prototype);
+        subClass.prototype.constructor = subClass;
+        subClass.__proto__ = superClass;
+      }
+      /**
+       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
+       * @typedef {import('../../../types/index').Choices.Item} Item
+       * @typedef {import('../../../types/index').Choices.Choice} Choice
+       */
+
+
+      var WrappedSelect = /*#__PURE__*/function (_WrappedElement) {
+        wrapped_select_inheritsLoose(WrappedSelect, _WrappedElement);
+        /**
+         * @param {{
+         *  element: HTMLSelectElement,
+         *  classNames: ClassNames,
+         *  delimiter: string
+         *  template: function
+         * }} args
+         */
+
+        function WrappedSelect(_ref) {
+          var _this;
+
+          var element = _ref.element,
+              classNames = _ref.classNames,
+              template = _ref.template;
+          _this = _WrappedElement.call(this, {
+            element: element,
+            classNames: classNames
+          }) || this;
+          _this.template = template;
+          return _this;
+        }
+
+        var _proto = WrappedSelect.prototype;
+        /**
+         * @param {DocumentFragment} fragment
+         */
+
+        _proto.appendDocFragment = function appendDocFragment(fragment) {
+          this.element.innerHTML = '';
+          this.element.appendChild(fragment);
+        };
+
+        wrapped_select_createClass(WrappedSelect, [{
+          key: "placeholderOption",
+          get: function get() {
+            return this.element.querySelector('option[value=""]') || // Backward compatibility layer for the non-standard placeholder attribute supported in older versions.
+            this.element.querySelector('option[placeholder]');
+          }
+          /**
+           * @returns {Element[]}
+           */
+
+        }, {
+          key: "optionGroups",
+          get: function get() {
+            return Array.from(this.element.getElementsByTagName('OPTGROUP'));
+          }
+          /**
+           * @returns {Item[] | Choice[]}
+           */
+
+        }, {
+          key: "options",
+          get: function get() {
+            return Array.from(this.element.options);
+          }
+          /**
+           * @param {Item[] | Choice[]} options
+           */
+          ,
+          set: function set(options) {
+            var _this2 = this;
+
+            var fragment = document.createDocumentFragment();
+
+            var addOptionToFragment = function addOptionToFragment(data) {
+              // Create a standard select option
+              var option = _this2.template(data); // Append it to fragment
+
+
+              fragment.appendChild(option);
+            }; // Add each list item to list
+
+
+            options.forEach(function (optionData) {
+              return addOptionToFragment(optionData);
+            });
+            this.appendDocFragment(fragment);
+          }
+        }]);
+        return WrappedSelect;
+      }(wrapped_element_WrappedElement); // CONCATENATED MODULE: ./src/scripts/components/index.js
+      // CONCATENATED MODULE: ./src/scripts/templates.js
+
+      /**
+       * Helpers to create HTML elements used by Choices
+       * Can be overridden by providing `callbackOnCreateTemplates` option
+       * @typedef {import('../../types/index').Choices.Templates} Templates
+       * @typedef {import('../../types/index').Choices.ClassNames} ClassNames
+       * @typedef {import('../../types/index').Choices.Options} Options
+       * @typedef {import('../../types/index').Choices.Item} Item
+       * @typedef {import('../../types/index').Choices.Choice} Choice
+       * @typedef {import('../../types/index').Choices.Group} Group
+       */
+
+
+      var TEMPLATES =
+      /** @type {Templates} */
+      {
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {"ltr" | "rtl" | "auto"} dir
+         * @param {boolean} isSelectElement
+         * @param {boolean} isSelectOneElement
+         * @param {boolean} searchEnabled
+         * @param {"select-one" | "select-multiple" | "text"} passedElementType
+         */
+        containerOuter: function containerOuter(_ref, dir, isSelectElement, isSelectOneElement, searchEnabled, passedElementType) {
+          var _containerOuter = _ref.containerOuter;
+          var div = Object.assign(document.createElement('div'), {
+            className: _containerOuter
+          });
+          div.dataset.type = passedElementType;
+
+          if (dir) {
+            div.dir = dir;
+          }
+
+          if (isSelectOneElement) {
+            div.tabIndex = 0;
+          }
+
+          if (isSelectElement) {
+            div.setAttribute('role', searchEnabled ? 'combobox' : 'listbox');
+
+            if (searchEnabled) {
+              div.setAttribute('aria-autocomplete', 'list');
+            }
+          }
+
+          div.setAttribute('aria-haspopup', 'true');
+          div.setAttribute('aria-expanded', 'false');
+          return div;
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         */
+        containerInner: function containerInner(_ref2) {
+          var _containerInner = _ref2.containerInner;
+          return Object.assign(document.createElement('div'), {
+            className: _containerInner
+          });
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {boolean} isSelectOneElement
+         */
+        itemList: function itemList(_ref3, isSelectOneElement) {
+          var list = _ref3.list,
+              listSingle = _ref3.listSingle,
+              listItems = _ref3.listItems;
+          return Object.assign(document.createElement('div'), {
+            className: list + " " + (isSelectOneElement ? listSingle : listItems)
+          });
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {string} value
+         */
+        placeholder: function placeholder(_ref4, value) {
+          var _placeholder = _ref4.placeholder;
+          return Object.assign(document.createElement('div'), {
+            className: _placeholder,
+            innerHTML: value
+          });
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {Item} item
+         * @param {boolean} removeItemButton
+         */
+        item: function item(_ref5, _ref6, removeItemButton) {
+          var _item = _ref5.item,
+              button = _ref5.button,
+              highlightedState = _ref5.highlightedState,
+              itemSelectable = _ref5.itemSelectable,
+              placeholder = _ref5.placeholder;
+          var id = _ref6.id,
+              value = _ref6.value,
+              label = _ref6.label,
+              customProperties = _ref6.customProperties,
+              active = _ref6.active,
+              disabled = _ref6.disabled,
+              highlighted = _ref6.highlighted,
+              isPlaceholder = _ref6.placeholder;
+          var div = Object.assign(document.createElement('div'), {
+            className: _item,
+            innerHTML: label
+          });
+          Object.assign(div.dataset, {
+            item: '',
+            id: id,
+            value: value,
+            customProperties: customProperties
+          });
+
+          if (active) {
+            div.setAttribute('aria-selected', 'true');
+          }
+
+          if (disabled) {
+            div.setAttribute('aria-disabled', 'true');
+          }
+
+          if (isPlaceholder) {
+            div.classList.add(placeholder);
+          }
+
+          div.classList.add(highlighted ? highlightedState : itemSelectable);
+
+          if (removeItemButton) {
+            if (disabled) {
+              div.classList.remove(itemSelectable);
+            }
+
+            div.dataset.deletable = '';
+            /** @todo This MUST be localizable, not hardcoded! */
+
+            var REMOVE_ITEM_TEXT = 'Remove item';
+            var removeButton = Object.assign(document.createElement('button'), {
+              type: 'button',
+              className: button,
+              innerHTML: REMOVE_ITEM_TEXT
+            });
+            removeButton.setAttribute('aria-label', REMOVE_ITEM_TEXT + ": '" + value + "'");
+            removeButton.dataset.button = '';
+            div.appendChild(removeButton);
+          }
+
+          return div;
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {boolean} isSelectOneElement
+         */
+        choiceList: function choiceList(_ref7, isSelectOneElement) {
+          var list = _ref7.list;
+          var div = Object.assign(document.createElement('div'), {
+            className: list
+          });
+
+          if (!isSelectOneElement) {
+            div.setAttribute('aria-multiselectable', 'true');
+          }
+
+          div.setAttribute('role', 'listbox');
+          return div;
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {Group} group
+         */
+        choiceGroup: function choiceGroup(_ref8, _ref9) {
+          var group = _ref8.group,
+              groupHeading = _ref8.groupHeading,
+              itemDisabled = _ref8.itemDisabled;
+          var id = _ref9.id,
+              value = _ref9.value,
+              disabled = _ref9.disabled;
+          var div = Object.assign(document.createElement('div'), {
+            className: group + " " + (disabled ? itemDisabled : '')
+          });
+          div.setAttribute('role', 'group');
+          Object.assign(div.dataset, {
+            group: '',
+            id: id,
+            value: value
+          });
+
+          if (disabled) {
+            div.setAttribute('aria-disabled', 'true');
+          }
+
+          div.appendChild(Object.assign(document.createElement('div'), {
+            className: groupHeading,
+            innerHTML: value
+          }));
+          return div;
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {Choice} choice
+         * @param {Options['itemSelectText']} selectText
+         */
+        choice: function choice(_ref10, _ref11, selectText) {
+          var item = _ref10.item,
+              itemChoice = _ref10.itemChoice,
+              itemSelectable = _ref10.itemSelectable,
+              selectedState = _ref10.selectedState,
+              itemDisabled = _ref10.itemDisabled,
+              placeholder = _ref10.placeholder;
+          var id = _ref11.id,
+              value = _ref11.value,
+              label = _ref11.label,
+              groupId = _ref11.groupId,
+              elementId = _ref11.elementId,
+              isDisabled = _ref11.disabled,
+              isSelected = _ref11.selected,
+              isPlaceholder = _ref11.placeholder;
+          var div = Object.assign(document.createElement('div'), {
+            id: elementId,
+            innerHTML: label,
+            className: item + " " + itemChoice
+          });
+
+          if (isSelected) {
+            div.classList.add(selectedState);
+          }
+
+          if (isPlaceholder) {
+            div.classList.add(placeholder);
+          }
+
+          div.setAttribute('role', groupId > 0 ? 'treeitem' : 'option');
+          Object.assign(div.dataset, {
+            choice: '',
+            id: id,
+            value: value,
+            selectText: selectText
+          });
+
+          if (isDisabled) {
+            div.classList.add(itemDisabled);
+            div.dataset.choiceDisabled = '';
+            div.setAttribute('aria-disabled', 'true');
+          } else {
+            div.classList.add(itemSelectable);
+            div.dataset.choiceSelectable = '';
+          }
+
+          return div;
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         * @param {string} placeholderValue
+         */
+        input: function input(_ref12, placeholderValue) {
+          var _input = _ref12.input,
+              inputCloned = _ref12.inputCloned;
+          var inp = Object.assign(document.createElement('input'), {
+            type: 'text',
+            className: _input + " " + inputCloned,
+            autocomplete: 'off',
+            autocapitalize: 'off',
+            spellcheck: false
+          });
+          inp.setAttribute('role', 'textbox');
+          inp.setAttribute('aria-autocomplete', 'list');
+          inp.setAttribute('aria-label', placeholderValue);
+          return inp;
+        },
+
+        /**
+         * @param {Partial<ClassNames>} classNames
+         */
+        dropdown: function dropdown(_ref13) {
+          var list = _ref13.list,
+              listDropdown = _ref13.listDropdown;
+          var div = document.createElement('div');
+          div.classList.add(list, listDropdown);
+          div.setAttribute('aria-expanded', 'false');
+          return div;
+        },
+
+        /**
+         *
+         * @param {Partial<ClassNames>} classNames
+         * @param {string} innerHTML
+         * @param {"no-choices" | "no-results" | ""} type
+         */
+        notice: function notice(_ref14, innerHTML, type) {
+          var item = _ref14.item,
+              itemChoice = _ref14.itemChoice,
+              noResults = _ref14.noResults,
+              noChoices = _ref14.noChoices;
+
+          if (type === void 0) {
+            type = '';
+          }
+
+          var classes = [item, itemChoice];
+
+          if (type === 'no-choices') {
+            classes.push(noChoices);
+          } else if (type === 'no-results') {
+            classes.push(noResults);
+          }
+
+          return Object.assign(document.createElement('div'), {
+            innerHTML: innerHTML,
+            className: classes.join(' ')
+          });
+        },
+
+        /**
+         * @param {Item} option
+         */
+        option: function option(_ref15) {
+          var label = _ref15.label,
+              value = _ref15.value,
+              customProperties = _ref15.customProperties,
+              active = _ref15.active,
+              disabled = _ref15.disabled;
+          var opt = new Option(label, value, false, active);
+
+          if (customProperties) {
+            opt.dataset.customProperties = customProperties;
+          }
+
+          opt.disabled = disabled;
+          return opt;
+        }
+      };
+
+      /**
+       * @typedef {import('redux').Action} Action
+       * @typedef {import('../../../types/index').Choices.Choice} Choice
+       */
+
+      /**
+       * @argument {Choice} choice
+       * @returns {Action & Choice}
+       */
+
+      var choices_addChoice = function addChoice(_ref) {
+        var value = _ref.value,
+            label = _ref.label,
+            id = _ref.id,
+            groupId = _ref.groupId,
+            disabled = _ref.disabled,
+            elementId = _ref.elementId,
+            customProperties = _ref.customProperties,
+            placeholder = _ref.placeholder,
+            keyCode = _ref.keyCode;
+        return {
+          type: ACTION_TYPES.ADD_CHOICE,
+          value: value,
+          label: label,
+          id: id,
+          groupId: groupId,
+          disabled: disabled,
+          elementId: elementId,
+          customProperties: customProperties,
+          placeholder: placeholder,
+          keyCode: keyCode
+        };
+      };
+      /**
+       * @argument {Choice[]} results
+       * @returns {Action & { results: Choice[] }}
+       */
+
+
+      var choices_filterChoices = function filterChoices(results) {
+        return {
+          type: ACTION_TYPES.FILTER_CHOICES,
+          results: results
+        };
+      };
+      /**
+       * @argument {boolean} active
+       * @returns {Action & { active: boolean }}
+       */
+
+
+      var choices_activateChoices = function activateChoices(active) {
+        if (active === void 0) {
+          active = true;
+        }
+
+        return {
+          type: ACTION_TYPES.ACTIVATE_CHOICES,
+          active: active
+        };
+      };
+      /**
+       * @returns {Action}
+       */
+
+
+      var choices_clearChoices = function clearChoices() {
+        return {
+          type: ACTION_TYPES.CLEAR_CHOICES
+        };
+      }; // CONCATENATED MODULE: ./src/scripts/actions/items.js
+
+      /**
+       * @typedef {import('redux').Action} Action
+       * @typedef {import('../../../types/index').Choices.Item} Item
+       */
+
+      /**
+       * @param {Item} item
+       * @returns {Action & Item}
+       */
+
+
+      var items_addItem = function addItem(_ref) {
+        var value = _ref.value,
+            label = _ref.label,
+            id = _ref.id,
+            choiceId = _ref.choiceId,
+            groupId = _ref.groupId,
+            customProperties = _ref.customProperties,
+            placeholder = _ref.placeholder,
+            keyCode = _ref.keyCode;
+        return {
+          type: ACTION_TYPES.ADD_ITEM,
+          value: value,
+          label: label,
+          id: id,
+          choiceId: choiceId,
+          groupId: groupId,
+          customProperties: customProperties,
+          placeholder: placeholder,
+          keyCode: keyCode
+        };
+      };
+      /**
+       * @param {string} id
+       * @param {string} choiceId
+       * @returns {Action & { id: string, choiceId: string }}
+       */
+
+
+      var items_removeItem = function removeItem(id, choiceId) {
+        return {
+          type: ACTION_TYPES.REMOVE_ITEM,
+          id: id,
+          choiceId: choiceId
+        };
+      };
+      /**
+       * @param {string} id
+       * @param {boolean} highlighted
+       * @returns {Action & { id: string, highlighted: boolean }}
+       */
+
+
+      var items_highlightItem = function highlightItem(id, highlighted) {
+        return {
+          type: ACTION_TYPES.HIGHLIGHT_ITEM,
+          id: id,
+          highlighted: highlighted
+        };
+      }; // CONCATENATED MODULE: ./src/scripts/actions/groups.js
+
+      /**
+       * @typedef {import('redux').Action} Action
+       * @typedef {import('../../../types/index').Choices.Group} Group
+       */
+
+      /**
+       * @param {Group} group
+       * @returns {Action & Group}
+       */
+
+
+      var groups_addGroup = function addGroup(_ref) {
+        var value = _ref.value,
+            id = _ref.id,
+            active = _ref.active,
+            disabled = _ref.disabled;
+        return {
+          type: ACTION_TYPES.ADD_GROUP,
+          value: value,
+          id: id,
+          active: active,
+          disabled: disabled
+        };
+      }; // CONCATENATED MODULE: ./src/scripts/actions/misc.js
+
+      /**
+       * @typedef {import('redux').Action} Action
+       */
+
+      /**
+       * @returns {Action}
+       */
+
+
+      var clearAll = function clearAll() {
+        return {
+          type: 'CLEAR_ALL'
+        };
+      };
+      /**
+       * @param {any} state
+       * @returns {Action & { state: object }}
+       */
+
+
+      var resetTo = function resetTo(state) {
+        return {
+          type: 'RESET_TO',
+          state: state
+        };
+      };
+      /**
+       * @param {boolean} isLoading
+       * @returns {Action & { isLoading: boolean }}
+       */
+
+
+      var setIsLoading = function setIsLoading(isLoading) {
+        return {
+          type: 'SET_IS_LOADING',
+          isLoading: isLoading
+        };
+      }; // CONCATENATED MODULE: ./src/scripts/choices.js
+
+
+      function choices_defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+          var descriptor = props[i];
+          descriptor.enumerable = descriptor.enumerable || false;
+          descriptor.configurable = true;
+          if ("value" in descriptor) descriptor.writable = true;
+          Object.defineProperty(target, descriptor.key, descriptor);
+        }
+      }
+
+      function choices_createClass(Constructor, protoProps, staticProps) {
+        if (protoProps) choices_defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) choices_defineProperties(Constructor, staticProps);
+        return Constructor;
+      }
+      /** @see {@link http://browserhacks.com/#hack-acea075d0ac6954f275a70023906050c} */
+
+
+      var IS_IE11 = '-ms-scroll-limit' in document.documentElement.style && '-ms-ime-align' in document.documentElement.style;
+      /**
+       * @typedef {import('../../types/index').Choices.Choice} Choice
+       * @typedef {import('../../types/index').Choices.Item} Item
+       * @typedef {import('../../types/index').Choices.Group} Group
+       * @typedef {import('../../types/index').Choices.Options} Options
+       */
+
+      /** @type {Partial<Options>} */
+
+      var USER_DEFAULTS = {};
+      /**
+       * Choices
+       * @author Josh Johnson<josh@joshuajohnson.co.uk>
+       */
+
+      var choices_Choices = /*#__PURE__*/function () {
+        choices_createClass(Choices, null, [{
+          key: "defaults",
+          get: function get() {
+            return Object.preventExtensions({
+              get options() {
+                return USER_DEFAULTS;
+              },
+
+              get templates() {
+                return TEMPLATES;
+              }
+
+            });
+          }
+          /**
+           * @param {string | HTMLInputElement | HTMLSelectElement} element
+           * @param {Partial<Options>} userConfig
+           */
+
+        }]);
+
+        function Choices(element, userConfig) {
+          var _this = this;
+
+          if (element === void 0) {
+            element = '[data-choice]';
+          }
+
+          if (userConfig === void 0) {
+            userConfig = {};
+          }
+          /** @type {Partial<Options>} */
+
+
+          this.config = cjs_default.a.all([DEFAULT_CONFIG, Choices.defaults.options, userConfig], // When merging array configs, replace with a copy of the userConfig array,
+          // instead of concatenating with the default array
+          {
+            arrayMerge: function arrayMerge(_, sourceArray) {
+              return [].concat(sourceArray);
+            }
+          });
+          var invalidConfigOptions = diff(this.config, DEFAULT_CONFIG);
+
+          if (invalidConfigOptions.length) {
+            console.warn('Unknown config option(s) passed', invalidConfigOptions.join(', '));
+          }
+
+          var passedElement = typeof element === 'string' ? document.querySelector(element) : element;
+
+          if (!(passedElement instanceof HTMLInputElement || passedElement instanceof HTMLSelectElement)) {
+            throw TypeError('Expected one of the following types text|select-one|select-multiple');
+          }
+
+          this._isTextElement = passedElement.type === TEXT_TYPE;
+          this._isSelectOneElement = passedElement.type === SELECT_ONE_TYPE;
+          this._isSelectMultipleElement = passedElement.type === SELECT_MULTIPLE_TYPE;
+          this._isSelectElement = this._isSelectOneElement || this._isSelectMultipleElement;
+          this.config.searchEnabled = this._isSelectMultipleElement || this.config.searchEnabled;
+
+          if (!['auto', 'always'].includes(this.config.renderSelectedChoices)) {
+            this.config.renderSelectedChoices = 'auto';
+          }
+
+          if (userConfig.addItemFilter && typeof userConfig.addItemFilter !== 'function') {
+            var re = userConfig.addItemFilter instanceof RegExp ? userConfig.addItemFilter : new RegExp(userConfig.addItemFilter);
+            this.config.addItemFilter = re.test.bind(re);
+          }
+
+          if (this._isTextElement) {
+            this.passedElement = new WrappedInput({
+              element: passedElement,
+              classNames: this.config.classNames,
+              delimiter: this.config.delimiter
+            });
+          } else {
+            this.passedElement = new WrappedSelect({
+              element: passedElement,
+              classNames: this.config.classNames,
+              template: function template(data) {
+                return _this._templates.option(data);
+              }
+            });
+          }
+
+          this.initialised = false;
+          this._store = new store_Store();
+          this._initialState = {};
+          this._currentState = {};
+          this._prevState = {};
+          this._currentValue = '';
+          this._canSearch = this.config.searchEnabled;
+          this._isScrollingOnIe = false;
+          this._highlightPosition = 0;
+          this._wasTap = true;
+          this._placeholderValue = this._generatePlaceholderValue();
+          this._baseId = generateId(this.passedElement.element, 'choices-');
+          /**
+           * setting direction in cases where it's explicitly set on passedElement
+           * or when calculated direction is different from the document
+           * @type {HTMLElement['dir']}
+           */
+
+          this._direction = this.passedElement.dir;
+
+          if (!this._direction) {
+            var _window$getComputedSt = window.getComputedStyle(this.passedElement.element),
+                elementDirection = _window$getComputedSt.direction;
+
+            var _window$getComputedSt2 = window.getComputedStyle(document.documentElement),
+                documentDirection = _window$getComputedSt2.direction;
+
+            if (elementDirection !== documentDirection) {
+              this._direction = elementDirection;
+            }
+          }
+
+          this._idNames = {
+            itemChoice: 'item-choice'
+          }; // Assign preset groups from passed element
+
+          this._presetGroups = this.passedElement.optionGroups; // Assign preset options from passed element
+
+          this._presetOptions = this.passedElement.options; // Assign preset choices from passed object
+
+          this._presetChoices = this.config.choices; // Assign preset items from passed object first
+
+          this._presetItems = this.config.items; // Add any values passed from attribute
+
+          if (this.passedElement.value) {
+            this._presetItems = this._presetItems.concat(this.passedElement.value.split(this.config.delimiter));
+          } // Create array of choices from option elements
+
+
+          if (this.passedElement.options) {
+            this.passedElement.options.forEach(function (o) {
+              _this._presetChoices.push({
+                value: o.value,
+                label: o.innerHTML,
+                selected: o.selected,
+                disabled: o.disabled || o.parentNode.disabled,
+                placeholder: o.value === '' || o.hasAttribute('placeholder'),
+                customProperties: o.getAttribute('data-custom-properties')
+              });
+            });
+          }
+
+          this._render = this._render.bind(this);
+          this._onFocus = this._onFocus.bind(this);
+          this._onBlur = this._onBlur.bind(this);
+          this._onKeyUp = this._onKeyUp.bind(this);
+          this._onKeyDown = this._onKeyDown.bind(this);
+          this._onClick = this._onClick.bind(this);
+          this._onTouchMove = this._onTouchMove.bind(this);
+          this._onTouchEnd = this._onTouchEnd.bind(this);
+          this._onMouseDown = this._onMouseDown.bind(this);
+          this._onMouseOver = this._onMouseOver.bind(this);
+          this._onFormReset = this._onFormReset.bind(this);
+          this._onAKey = this._onAKey.bind(this);
+          this._onEnterKey = this._onEnterKey.bind(this);
+          this._onEscapeKey = this._onEscapeKey.bind(this);
+          this._onDirectionKey = this._onDirectionKey.bind(this);
+          this._onDeleteKey = this._onDeleteKey.bind(this); // If element has already been initialised with Choices, fail silently
+
+          if (this.passedElement.isActive) {
+            if (!this.config.silent) {
+              console.warn('Trying to initialise Choices on element already initialised');
+            }
+
+            this.initialised = true;
+            return;
+          } // Let's go
+
+
+          this.init();
+        }
+
+        var _proto = Choices.prototype;
+
+        _proto.init = function init() {
+          if (this.initialised) {
+            return;
+          }
+
+          this._createTemplates();
+
+          this._createElements();
+
+          this._createStructure(); // Set initial state (We need to clone the state because some reducers
+          // modify the inner objects properties in the state) 🤢
+
+
+          this._initialState = cloneObject(this._store.state);
+
+          this._store.subscribe(this._render);
+
+          this._render();
+
+          this._addEventListeners();
+
+          var shouldDisable = !this.config.addItems || this.passedElement.element.hasAttribute('disabled');
+
+          if (shouldDisable) {
+            this.disable();
+          }
+
+          this.initialised = true;
+          var callbackOnInit = this.config.callbackOnInit; // Run callback if it is a function
+
+          if (callbackOnInit && typeof callbackOnInit === 'function') {
+            callbackOnInit.call(this);
+          }
+        };
+
+        _proto.destroy = function destroy() {
+          if (!this.initialised) {
+            return;
+          }
+
+          this._removeEventListeners();
+
+          this.passedElement.reveal();
+          this.containerOuter.unwrap(this.passedElement.element);
+          this.clearStore();
+
+          if (this._isSelectElement) {
+            this.passedElement.options = this._presetOptions;
+          }
+
+          this._templates = null;
+          this.initialised = false;
+        };
+
+        _proto.enable = function enable() {
+          if (this.passedElement.isDisabled) {
+            this.passedElement.enable();
+          }
+
+          if (this.containerOuter.isDisabled) {
+            this._addEventListeners();
+
+            this.input.enable();
+            this.containerOuter.enable();
+          }
+
+          return this;
+        };
+
+        _proto.disable = function disable() {
+          if (!this.passedElement.isDisabled) {
+            this.passedElement.disable();
+          }
+
+          if (!this.containerOuter.isDisabled) {
+            this._removeEventListeners();
+
+            this.input.disable();
+            this.containerOuter.disable();
+          }
+
+          return this;
+        };
+
+        _proto.highlightItem = function highlightItem(item, runEvent) {
+          if (runEvent === void 0) {
+            runEvent = true;
+          }
+
+          if (!item) {
+            return this;
+          }
+
+          var id = item.id,
+              _item$groupId = item.groupId,
+              groupId = _item$groupId === void 0 ? -1 : _item$groupId,
+              _item$value = item.value,
+              value = _item$value === void 0 ? '' : _item$value,
+              _item$label = item.label,
+              label = _item$label === void 0 ? '' : _item$label;
+          var group = groupId >= 0 ? this._store.getGroupById(groupId) : null;
+
+          this._store.dispatch(items_highlightItem(id, true));
+
+          if (runEvent) {
+            this.passedElement.triggerEvent(EVENTS.highlightItem, {
+              id: id,
+              value: value,
+              label: label,
+              groupValue: group && group.value ? group.value : null
+            });
+          }
+
+          return this;
+        };
+
+        _proto.unhighlightItem = function unhighlightItem(item) {
+          if (!item) {
+            return this;
+          }
+
+          var id = item.id,
+              _item$groupId2 = item.groupId,
+              groupId = _item$groupId2 === void 0 ? -1 : _item$groupId2,
+              _item$value2 = item.value,
+              value = _item$value2 === void 0 ? '' : _item$value2,
+              _item$label2 = item.label,
+              label = _item$label2 === void 0 ? '' : _item$label2;
+          var group = groupId >= 0 ? this._store.getGroupById(groupId) : null;
+
+          this._store.dispatch(items_highlightItem(id, false));
+
+          this.passedElement.triggerEvent(EVENTS.highlightItem, {
+            id: id,
+            value: value,
+            label: label,
+            groupValue: group && group.value ? group.value : null
+          });
+          return this;
+        };
+
+        _proto.highlightAll = function highlightAll() {
+          var _this2 = this;
+
+          this._store.items.forEach(function (item) {
+            return _this2.highlightItem(item);
+          });
+
+          return this;
+        };
+
+        _proto.unhighlightAll = function unhighlightAll() {
+          var _this3 = this;
+
+          this._store.items.forEach(function (item) {
+            return _this3.unhighlightItem(item);
+          });
+
+          return this;
+        };
+
+        _proto.removeActiveItemsByValue = function removeActiveItemsByValue(value) {
+          var _this4 = this;
+
+          this._store.activeItems.filter(function (item) {
+            return item.value === value;
+          }).forEach(function (item) {
+            return _this4._removeItem(item);
+          });
+
+          return this;
+        };
+
+        _proto.removeActiveItems = function removeActiveItems(excludedId) {
+          var _this5 = this;
+
+          this._store.activeItems.filter(function (_ref) {
+            var id = _ref.id;
+            return id !== excludedId;
+          }).forEach(function (item) {
+            return _this5._removeItem(item);
+          });
+
+          return this;
+        };
+
+        _proto.removeHighlightedItems = function removeHighlightedItems(runEvent) {
+          var _this6 = this;
+
+          if (runEvent === void 0) {
+            runEvent = false;
+          }
+
+          this._store.highlightedActiveItems.forEach(function (item) {
+            _this6._removeItem(item); // If this action was performed by the user
+            // trigger the event
+
+
+            if (runEvent) {
+              _this6._triggerChange(item.value);
+            }
+          });
+
+          return this;
+        };
+
+        _proto.showDropdown = function showDropdown(preventInputFocus) {
+          var _this7 = this;
+
+          if (this.dropdown.isActive) {
+            return this;
+          }
+
+          requestAnimationFrame(function () {
+            _this7.dropdown.show();
+
+            _this7.containerOuter.open(_this7.dropdown.distanceFromTopWindow);
+
+            if (!preventInputFocus && _this7._canSearch) {
+              _this7.input.focus();
+            }
+
+            _this7.passedElement.triggerEvent(EVENTS.showDropdown, {});
+          });
+          return this;
+        };
+
+        _proto.hideDropdown = function hideDropdown(preventInputBlur) {
+          var _this8 = this;
+
+          if (!this.dropdown.isActive) {
+            return this;
+          }
+
+          requestAnimationFrame(function () {
+            _this8.dropdown.hide();
+
+            _this8.containerOuter.close();
+
+            if (!preventInputBlur && _this8._canSearch) {
+              _this8.input.removeActiveDescendant();
+
+              _this8.input.blur();
+            }
+
+            _this8.passedElement.triggerEvent(EVENTS.hideDropdown, {});
+          });
+          return this;
+        };
+
+        _proto.getValue = function getValue(valueOnly) {
+          if (valueOnly === void 0) {
+            valueOnly = false;
+          }
+
+          var values = this._store.activeItems.reduce(function (selectedItems, item) {
+            var itemValue = valueOnly ? item.value : item;
+            selectedItems.push(itemValue);
+            return selectedItems;
+          }, []);
+
+          return this._isSelectOneElement ? values[0] : values;
+        }
+        /**
+         * @param {string[] | import('../../types/index').Choices.Item[]} items
+         */
+        ;
+
+        _proto.setValue = function setValue(items) {
+          var _this9 = this;
+
+          if (!this.initialised) {
+            return this;
+          }
+
+          items.forEach(function (value) {
+            return _this9._setChoiceOrItem(value);
+          });
+          return this;
+        };
+
+        _proto.setChoiceByValue = function setChoiceByValue(value) {
+          var _this10 = this;
+
+          if (!this.initialised || this._isTextElement) {
+            return this;
+          } // If only one value has been passed, convert to array
+
+
+          var choiceValue = Array.isArray(value) ? value : [value]; // Loop through each value and
+
+          choiceValue.forEach(function (val) {
+            return _this10._findAndSelectChoiceByValue(val);
+          });
+          return this;
+        }
+        /**
+         * Set choices of select input via an array of objects (or function that returns array of object or promise of it),
+         * a value field name and a label field name.
+         * This behaves the same as passing items via the choices option but can be called after initialising Choices.
+         * This can also be used to add groups of choices (see example 2); Optionally pass a true `replaceChoices` value to remove any existing choices.
+         * Optionally pass a `customProperties` object to add additional data to your choices (useful when searching/filtering etc).
+         *
+         * **Input types affected:** select-one, select-multiple
+         *
+         * @template {Choice[] | ((instance: Choices) => object[] | Promise<object[]>)} T
+         * @param {T} [choicesArrayOrFetcher]
+         * @param {string} [value = 'value'] - name of `value` field
+         * @param {string} [label = 'label'] - name of 'label' field
+         * @param {boolean} [replaceChoices = false] - whether to replace of add choices
+         * @returns {this | Promise<this>}
+         *
+         * @example
+         * ```js
+         * const example = new Choices(element);
+         *
+         * example.setChoices([
+         *   {value: 'One', label: 'Label One', disabled: true},
+         *   {value: 'Two', label: 'Label Two', selected: true},
+         *   {value: 'Three', label: 'Label Three'},
+         * ], 'value', 'label', false);
+         * ```
+         *
+         * @example
+         * ```js
+         * const example = new Choices(element);
+         *
+         * example.setChoices(async () => {
+         *   try {
+         *      const items = await fetch('/items');
+         *      return items.json()
+         *   } catch(err) {
+         *      console.error(err)
+         *   }
+         * });
+         * ```
+         *
+         * @example
+         * ```js
+         * const example = new Choices(element);
+         *
+         * example.setChoices([{
+         *   label: 'Group one',
+         *   id: 1,
+         *   disabled: false,
+         *   choices: [
+         *     {value: 'Child One', label: 'Child One', selected: true},
+         *     {value: 'Child Two', label: 'Child Two',  disabled: true},
+         *     {value: 'Child Three', label: 'Child Three'},
+         *   ]
+         * },
+         * {
+         *   label: 'Group two',
+         *   id: 2,
+         *   disabled: false,
+         *   choices: [
+         *     {value: 'Child Four', label: 'Child Four', disabled: true},
+         *     {value: 'Child Five', label: 'Child Five'},
+         *     {value: 'Child Six', label: 'Child Six', customProperties: {
+         *       description: 'Custom description about child six',
+         *       random: 'Another random custom property'
+         *     }},
+         *   ]
+         * }], 'value', 'label', false);
+         * ```
+         */
+        ;
+
+        _proto.setChoices = function setChoices(choicesArrayOrFetcher, value, label, replaceChoices) {
+          var _this11 = this;
+
+          if (choicesArrayOrFetcher === void 0) {
+            choicesArrayOrFetcher = [];
+          }
+
+          if (value === void 0) {
+            value = 'value';
+          }
+
+          if (label === void 0) {
+            label = 'label';
+          }
+
+          if (replaceChoices === void 0) {
+            replaceChoices = false;
+          }
+
+          if (!this.initialised) {
+            throw new ReferenceError("setChoices was called on a non-initialized instance of Choices");
+          }
+
+          if (!this._isSelectElement) {
+            throw new TypeError("setChoices can't be used with INPUT based Choices");
+          }
+
+          if (typeof value !== 'string' || !value) {
+            throw new TypeError("value parameter must be a name of 'value' field in passed objects");
+          } // Clear choices if needed
+
+
+          if (replaceChoices) {
+            this.clearChoices();
+          }
+
+          if (typeof choicesArrayOrFetcher === 'function') {
+            // it's a choices fetcher function
+            var fetcher = choicesArrayOrFetcher(this);
+
+            if (typeof Promise === 'function' && fetcher instanceof Promise) {
+              // that's a promise
+              // eslint-disable-next-line compat/compat
+              return new Promise(function (resolve) {
+                return requestAnimationFrame(resolve);
+              }).then(function () {
+                return _this11._handleLoadingState(true);
+              }).then(function () {
+                return fetcher;
+              }).then(function (data) {
+                return _this11.setChoices(data, value, label, replaceChoices);
+              }).catch(function (err) {
+                if (!_this11.config.silent) {
+                  console.error(err);
+                }
+              }).then(function () {
+                return _this11._handleLoadingState(false);
+              }).then(function () {
+                return _this11;
+              });
+            } // function returned something else than promise, let's check if it's an array of choices
+
+
+            if (!Array.isArray(fetcher)) {
+              throw new TypeError(".setChoices first argument function must return either array of choices or Promise, got: " + typeof fetcher);
+            } // recursion with results, it's sync and choices were cleared already
+
+
+            return this.setChoices(fetcher, value, label, false);
+          }
+
+          if (!Array.isArray(choicesArrayOrFetcher)) {
+            throw new TypeError(".setChoices must be called either with array of choices with a function resulting into Promise of array of choices");
+          }
+
+          this.containerOuter.removeLoadingState();
+
+          this._startLoading();
+
+          choicesArrayOrFetcher.forEach(function (groupOrChoice) {
+            if (groupOrChoice.choices) {
+              _this11._addGroup({
+                id: parseInt(groupOrChoice.id, 10) || null,
+                group: groupOrChoice,
+                valueKey: value,
+                labelKey: label
+              });
+            } else {
+              _this11._addChoice({
+                value: groupOrChoice[value],
+                label: groupOrChoice[label],
+                isSelected: groupOrChoice.selected,
+                isDisabled: groupOrChoice.disabled,
+                customProperties: groupOrChoice.customProperties,
+                placeholder: groupOrChoice.placeholder
+              });
+            }
+          });
+
+          this._stopLoading();
+
+          return this;
+        };
+
+        _proto.clearChoices = function clearChoices() {
+          this._store.dispatch(choices_clearChoices());
+
+          return this;
+        };
+
+        _proto.clearStore = function clearStore() {
+          this._store.dispatch(clearAll());
+
+          return this;
+        };
+
+        _proto.clearInput = function clearInput() {
+          var shouldSetInputWidth = !this._isSelectOneElement;
+          this.input.clear(shouldSetInputWidth);
+
+          if (!this._isTextElement && this._canSearch) {
+            this._isSearching = false;
+
+            this._store.dispatch(choices_activateChoices(true));
+          }
+
+          return this;
+        };
+
+        _proto._render = function _render() {
+          if (this._store.isLoading()) {
+            return;
+          }
+
+          this._currentState = this._store.state;
+          var stateChanged = this._currentState.choices !== this._prevState.choices || this._currentState.groups !== this._prevState.groups || this._currentState.items !== this._prevState.items;
+          var shouldRenderChoices = this._isSelectElement;
+          var shouldRenderItems = this._currentState.items !== this._prevState.items;
+
+          if (!stateChanged) {
+            return;
+          }
+
+          if (shouldRenderChoices) {
+            this._renderChoices();
+          }
+
+          if (shouldRenderItems) {
+            this._renderItems();
+          }
+
+          this._prevState = this._currentState;
+        };
+
+        _proto._renderChoices = function _renderChoices() {
+          var _this12 = this;
+
+          var _this$_store = this._store,
+              activeGroups = _this$_store.activeGroups,
+              activeChoices = _this$_store.activeChoices;
+          var choiceListFragment = document.createDocumentFragment();
+          this.choiceList.clear();
+
+          if (this.config.resetScrollPosition) {
+            requestAnimationFrame(function () {
+              return _this12.choiceList.scrollToTop();
+            });
+          } // If we have grouped options
+
+
+          if (activeGroups.length >= 1 && !this._isSearching) {
+            // If we have a placeholder choice along with groups
+            var activePlaceholders = activeChoices.filter(function (activeChoice) {
+              return activeChoice.placeholder === true && activeChoice.groupId === -1;
+            });
+
+            if (activePlaceholders.length >= 1) {
+              choiceListFragment = this._createChoicesFragment(activePlaceholders, choiceListFragment);
+            }
+
+            choiceListFragment = this._createGroupsFragment(activeGroups, activeChoices, choiceListFragment);
+          } else if (activeChoices.length >= 1) {
+            choiceListFragment = this._createChoicesFragment(activeChoices, choiceListFragment);
+          } // If we have choices to show
+
+
+          if (choiceListFragment.childNodes && choiceListFragment.childNodes.length > 0) {
+            var activeItems = this._store.activeItems;
+
+            var canAddItem = this._canAddItem(activeItems, this.input.value); // ...and we can select them
+
+
+            if (canAddItem.response) {
+              // ...append them and highlight the first choice
+              this.choiceList.append(choiceListFragment);
+
+              this._highlightChoice();
+            } else {
+              // ...otherwise show a notice
+              this.choiceList.append(this._getTemplate('notice', canAddItem.notice));
+            }
+          } else {
+            // Otherwise show a notice
+            var dropdownItem;
+            var notice;
+
+            if (this._isSearching) {
+              notice = typeof this.config.noResultsText === 'function' ? this.config.noResultsText() : this.config.noResultsText;
+              dropdownItem = this._getTemplate('notice', notice, 'no-results');
+            } else {
+              notice = typeof this.config.noChoicesText === 'function' ? this.config.noChoicesText() : this.config.noChoicesText;
+              dropdownItem = this._getTemplate('notice', notice, 'no-choices');
+            }
+
+            this.choiceList.append(dropdownItem);
+          }
+        };
+
+        _proto._renderItems = function _renderItems() {
+          var activeItems = this._store.activeItems || [];
+          this.itemList.clear(); // Create a fragment to store our list items
+          // (so we don't have to update the DOM for each item)
+
+          var itemListFragment = this._createItemsFragment(activeItems); // If we have items to add, append them
+
+
+          if (itemListFragment.childNodes) {
+            this.itemList.append(itemListFragment);
+          }
+        };
+
+        _proto._createGroupsFragment = function _createGroupsFragment(groups, choices, fragment) {
+          var _this13 = this;
+
+          if (fragment === void 0) {
+            fragment = document.createDocumentFragment();
+          }
+
+          var getGroupChoices = function getGroupChoices(group) {
+            return choices.filter(function (choice) {
+              if (_this13._isSelectOneElement) {
+                return choice.groupId === group.id;
+              }
+
+              return choice.groupId === group.id && (_this13.config.renderSelectedChoices === 'always' || !choice.selected);
+            });
+          }; // If sorting is enabled, filter groups
+
+
+          if (this.config.shouldSort) {
+            groups.sort(this.config.sorter);
+          }
+
+          groups.forEach(function (group) {
+            var groupChoices = getGroupChoices(group);
+
+            if (groupChoices.length >= 1) {
+              var dropdownGroup = _this13._getTemplate('choiceGroup', group);
+
+              fragment.appendChild(dropdownGroup);
+
+              _this13._createChoicesFragment(groupChoices, fragment, true);
+            }
+          });
+          return fragment;
+        };
+
+        _proto._createChoicesFragment = function _createChoicesFragment(choices, fragment, withinGroup) {
+          var _this14 = this;
+
+          if (fragment === void 0) {
+            fragment = document.createDocumentFragment();
+          }
+
+          if (withinGroup === void 0) {
+            withinGroup = false;
+          } // Create a fragment to store our list items (so we don't have to update the DOM for each item)
+
+
+          var _this$config = this.config,
+              renderSelectedChoices = _this$config.renderSelectedChoices,
+              searchResultLimit = _this$config.searchResultLimit,
+              renderChoiceLimit = _this$config.renderChoiceLimit;
+          var filter = this._isSearching ? sortByScore : this.config.sorter;
+
+          var appendChoice = function appendChoice(choice) {
+            var shouldRender = renderSelectedChoices === 'auto' ? _this14._isSelectOneElement || !choice.selected : true;
+
+            if (shouldRender) {
+              var dropdownItem = _this14._getTemplate('choice', choice, _this14.config.itemSelectText);
+
+              fragment.appendChild(dropdownItem);
+            }
+          };
+
+          var rendererableChoices = choices;
+
+          if (renderSelectedChoices === 'auto' && !this._isSelectOneElement) {
+            rendererableChoices = choices.filter(function (choice) {
+              return !choice.selected;
+            });
+          } // Split array into placeholders and "normal" choices
+
+
+          var _rendererableChoices$ = rendererableChoices.reduce(function (acc, choice) {
+            if (choice.placeholder) {
+              acc.placeholderChoices.push(choice);
+            } else {
+              acc.normalChoices.push(choice);
+            }
+
+            return acc;
+          }, {
+            placeholderChoices: [],
+            normalChoices: []
+          }),
+              placeholderChoices = _rendererableChoices$.placeholderChoices,
+              normalChoices = _rendererableChoices$.normalChoices; // If sorting is enabled or the user is searching, filter choices
+
+
+          if (this.config.shouldSort || this._isSearching) {
+            normalChoices.sort(filter);
+          }
+
+          var choiceLimit = rendererableChoices.length; // Prepend placeholeder
+
+          var sortedChoices = this._isSelectOneElement ? [].concat(placeholderChoices, normalChoices) : normalChoices;
+
+          if (this._isSearching) {
+            choiceLimit = searchResultLimit;
+          } else if (renderChoiceLimit && renderChoiceLimit > 0 && !withinGroup) {
+            choiceLimit = renderChoiceLimit;
+          } // Add each choice to dropdown within range
+
+
+          for (var i = 0; i < choiceLimit; i += 1) {
+            if (sortedChoices[i]) {
+              appendChoice(sortedChoices[i]);
+            }
+          }
+
+          return fragment;
+        };
+
+        _proto._createItemsFragment = function _createItemsFragment(items, fragment) {
+          var _this15 = this;
+
+          if (fragment === void 0) {
+            fragment = document.createDocumentFragment();
+          } // Create fragment to add elements to
+
+
+          var _this$config2 = this.config,
+              shouldSortItems = _this$config2.shouldSortItems,
+              sorter = _this$config2.sorter,
+              removeItemButton = _this$config2.removeItemButton; // If sorting is enabled, filter items
+
+          if (shouldSortItems && !this._isSelectOneElement) {
+            items.sort(sorter);
+          }
+
+          if (this._isTextElement) {
+            // Update the value of the hidden input
+            this.passedElement.value = items;
+          } else {
+            // Update the options of the hidden input
+            this.passedElement.options = items;
+          }
+
+          var addItemToFragment = function addItemToFragment(item) {
+            // Create new list element
+            var listItem = _this15._getTemplate('item', item, removeItemButton); // Append it to list
+
+
+            fragment.appendChild(listItem);
+          }; // Add each list item to list
+
+
+          items.forEach(addItemToFragment);
+          return fragment;
+        };
+
+        _proto._triggerChange = function _triggerChange(value) {
+          if (value === undefined || value === null) {
+            return;
+          }
+
+          this.passedElement.triggerEvent(EVENTS.change, {
+            value: value
+          });
+        };
+
+        _proto._selectPlaceholderChoice = function _selectPlaceholderChoice() {
+          var placeholderChoice = this._store.placeholderChoice;
+
+          if (placeholderChoice) {
+            this._addItem({
+              value: placeholderChoice.value,
+              label: placeholderChoice.label,
+              choiceId: placeholderChoice.id,
+              groupId: placeholderChoice.groupId,
+              placeholder: placeholderChoice.placeholder
+            });
+
+            this._triggerChange(placeholderChoice.value);
+          }
+        };
+
+        _proto._handleButtonAction = function _handleButtonAction(activeItems, element) {
+          if (!activeItems || !element || !this.config.removeItems || !this.config.removeItemButton) {
+            return;
+          }
+
+          var itemId = element.parentNode.getAttribute('data-id');
+          var itemToRemove = activeItems.find(function (item) {
+            return item.id === parseInt(itemId, 10);
+          }); // Remove item associated with button
+
+          this._removeItem(itemToRemove);
+
+          this._triggerChange(itemToRemove.value);
+
+          if (this._isSelectOneElement) {
+            this._selectPlaceholderChoice();
+          }
+        };
+
+        _proto._handleItemAction = function _handleItemAction(activeItems, element, hasShiftKey) {
+          var _this16 = this;
+
+          if (hasShiftKey === void 0) {
+            hasShiftKey = false;
+          }
+
+          if (!activeItems || !element || !this.config.removeItems || this._isSelectOneElement) {
+            return;
+          }
+
+          var passedId = element.getAttribute('data-id'); // We only want to select one item with a click
+          // so we deselect any items that aren't the target
+          // unless shift is being pressed
+
+          activeItems.forEach(function (item) {
+            if (item.id === parseInt(passedId, 10) && !item.highlighted) {
+              _this16.highlightItem(item);
+            } else if (!hasShiftKey && item.highlighted) {
+              _this16.unhighlightItem(item);
+            }
+          }); // Focus input as without focus, a user cannot do anything with a
+          // highlighted item
+
+          this.input.focus();
+        };
+
+        _proto._handleChoiceAction = function _handleChoiceAction(activeItems, element) {
+          if (!activeItems || !element) {
+            return;
+          } // If we are clicking on an option
+
+
+          var id = element.dataset.id;
+
+          var choice = this._store.getChoiceById(id);
+
+          if (!choice) {
+            return;
+          }
+
+          var passedKeyCode = activeItems[0] && activeItems[0].keyCode ? activeItems[0].keyCode : null;
+          var hasActiveDropdown = this.dropdown.isActive; // Update choice keyCode
+
+          choice.keyCode = passedKeyCode;
+          this.passedElement.triggerEvent(EVENTS.choice, {
+            choice: choice
+          });
+
+          if (!choice.selected && !choice.disabled) {
+            var canAddItem = this._canAddItem(activeItems, choice.value);
+
+            if (canAddItem.response) {
+              this._addItem({
+                value: choice.value,
+                label: choice.label,
+                choiceId: choice.id,
+                groupId: choice.groupId,
+                customProperties: choice.customProperties,
+                placeholder: choice.placeholder,
+                keyCode: choice.keyCode
+              });
+
+              this._triggerChange(choice.value);
+            }
+          }
+
+          this.clearInput(); // We want to close the dropdown if we are dealing with a single select box
+
+          if (hasActiveDropdown && this._isSelectOneElement) {
+            this.hideDropdown(true);
+            this.containerOuter.focus();
+          }
+        };
+
+        _proto._handleBackspace = function _handleBackspace(activeItems) {
+          if (!this.config.removeItems || !activeItems) {
+            return;
+          }
+
+          var lastItem = activeItems[activeItems.length - 1];
+          var hasHighlightedItems = activeItems.some(function (item) {
+            return item.highlighted;
+          }); // If editing the last item is allowed and there are not other selected items,
+          // we can edit the item value. Otherwise if we can remove items, remove all selected items
+
+          if (this.config.editItems && !hasHighlightedItems && lastItem) {
+            this.input.value = lastItem.value;
+            this.input.setWidth();
+
+            this._removeItem(lastItem);
+
+            this._triggerChange(lastItem.value);
+          } else {
+            if (!hasHighlightedItems) {
+              // Highlight last item if none already highlighted
+              this.highlightItem(lastItem, false);
+            }
+
+            this.removeHighlightedItems(true);
+          }
+        };
+
+        _proto._startLoading = function _startLoading() {
+          this._store.dispatch(setIsLoading(true));
+        };
+
+        _proto._stopLoading = function _stopLoading() {
+          this._store.dispatch(setIsLoading(false));
+        };
+
+        _proto._handleLoadingState = function _handleLoadingState(setLoading) {
+          if (setLoading === void 0) {
+            setLoading = true;
+          }
+
+          var placeholderItem = this.itemList.getChild("." + this.config.classNames.placeholder);
+
+          if (setLoading) {
+            this.disable();
+            this.containerOuter.addLoadingState();
+
+            if (this._isSelectOneElement) {
+              if (!placeholderItem) {
+                placeholderItem = this._getTemplate('placeholder', this.config.loadingText);
+                this.itemList.append(placeholderItem);
+              } else {
+                placeholderItem.innerHTML = this.config.loadingText;
+              }
+            } else {
+              this.input.placeholder = this.config.loadingText;
+            }
+          } else {
+            this.enable();
+            this.containerOuter.removeLoadingState();
+
+            if (this._isSelectOneElement) {
+              placeholderItem.innerHTML = this._placeholderValue || '';
+            } else {
+              this.input.placeholder = this._placeholderValue || '';
+            }
+          }
+        };
+
+        _proto._handleSearch = function _handleSearch(value) {
+          if (!value || !this.input.isFocussed) {
+            return;
+          }
+
+          var choices = this._store.choices;
+          var _this$config3 = this.config,
+              searchFloor = _this$config3.searchFloor,
+              searchChoices = _this$config3.searchChoices;
+          var hasUnactiveChoices = choices.some(function (option) {
+            return !option.active;
+          }); // Check that we have a value to search and the input was an alphanumeric character
+
+          if (value && value.length >= searchFloor) {
+            var resultCount = searchChoices ? this._searchChoices(value) : 0; // Trigger search event
+
+            this.passedElement.triggerEvent(EVENTS.search, {
+              value: value,
+              resultCount: resultCount
+            });
+          } else if (hasUnactiveChoices) {
+            // Otherwise reset choices to active
+            this._isSearching = false;
+
+            this._store.dispatch(choices_activateChoices(true));
+          }
+        };
+
+        _proto._canAddItem = function _canAddItem(activeItems, value) {
+          var canAddItem = true;
+          var notice = typeof this.config.addItemText === 'function' ? this.config.addItemText(value) : this.config.addItemText;
+
+          if (!this._isSelectOneElement) {
+            var isDuplicateValue = existsInArray(activeItems, value);
+
+            if (this.config.maxItemCount > 0 && this.config.maxItemCount <= activeItems.length) {
+              // If there is a max entry limit and we have reached that limit
+              // don't update
+              canAddItem = false;
+              notice = typeof this.config.maxItemText === 'function' ? this.config.maxItemText(this.config.maxItemCount) : this.config.maxItemText;
+            }
+
+            if (!this.config.duplicateItemsAllowed && isDuplicateValue && canAddItem) {
+              canAddItem = false;
+              notice = typeof this.config.uniqueItemText === 'function' ? this.config.uniqueItemText(value) : this.config.uniqueItemText;
+            }
+
+            if (this._isTextElement && this.config.addItems && canAddItem && typeof this.config.addItemFilter === 'function' && !this.config.addItemFilter(value)) {
+              canAddItem = false;
+              notice = typeof this.config.customAddItemText === 'function' ? this.config.customAddItemText(value) : this.config.customAddItemText;
+            }
+          }
+
+          return {
+            response: canAddItem,
+            notice: notice
+          };
+        };
+
+        _proto._searchChoices = function _searchChoices(value) {
+          var newValue = typeof value === 'string' ? value.trim() : value;
+          var currentValue = typeof this._currentValue === 'string' ? this._currentValue.trim() : this._currentValue;
+
+          if (newValue.length < 1 && newValue === currentValue + " ") {
+            return 0;
+          } // If new value matches the desired length and is not the same as the current value with a space
+
+
+          var haystack = this._store.searchableChoices;
+          var needle = newValue;
+          var keys = [].concat(this.config.searchFields);
+          var options = Object.assign(this.config.fuseOptions, {
+            keys: keys
+          });
+          var fuse = new fuse_default.a(haystack, options);
+          var results = fuse.search(needle);
+          this._currentValue = newValue;
+          this._highlightPosition = 0;
+          this._isSearching = true;
+
+          this._store.dispatch(choices_filterChoices(results));
+
+          return results.length;
+        };
+
+        _proto._addEventListeners = function _addEventListeners() {
+          var _document = document,
+              documentElement = _document.documentElement; // capture events - can cancel event processing or propagation
+
+          documentElement.addEventListener('touchend', this._onTouchEnd, true);
+          this.containerOuter.element.addEventListener('keydown', this._onKeyDown, true);
+          this.containerOuter.element.addEventListener('mousedown', this._onMouseDown, true); // passive events - doesn't call `preventDefault` or `stopPropagation`
+
+          documentElement.addEventListener('click', this._onClick, {
+            passive: true
+          });
+          documentElement.addEventListener('touchmove', this._onTouchMove, {
+            passive: true
+          });
+          this.dropdown.element.addEventListener('mouseover', this._onMouseOver, {
+            passive: true
+          });
+
+          if (this._isSelectOneElement) {
+            this.containerOuter.element.addEventListener('focus', this._onFocus, {
+              passive: true
+            });
+            this.containerOuter.element.addEventListener('blur', this._onBlur, {
+              passive: true
+            });
+          }
+
+          this.input.element.addEventListener('keyup', this._onKeyUp, {
+            passive: true
+          });
+          this.input.element.addEventListener('focus', this._onFocus, {
+            passive: true
+          });
+          this.input.element.addEventListener('blur', this._onBlur, {
+            passive: true
+          });
+
+          if (this.input.element.form) {
+            this.input.element.form.addEventListener('reset', this._onFormReset, {
+              passive: true
+            });
+          }
+
+          this.input.addEventListeners();
+        };
+
+        _proto._removeEventListeners = function _removeEventListeners() {
+          var _document2 = document,
+              documentElement = _document2.documentElement;
+          documentElement.removeEventListener('touchend', this._onTouchEnd, true);
+          this.containerOuter.element.removeEventListener('keydown', this._onKeyDown, true);
+          this.containerOuter.element.removeEventListener('mousedown', this._onMouseDown, true);
+          documentElement.removeEventListener('click', this._onClick);
+          documentElement.removeEventListener('touchmove', this._onTouchMove);
+          this.dropdown.element.removeEventListener('mouseover', this._onMouseOver);
+
+          if (this._isSelectOneElement) {
+            this.containerOuter.element.removeEventListener('focus', this._onFocus);
+            this.containerOuter.element.removeEventListener('blur', this._onBlur);
+          }
+
+          this.input.element.removeEventListener('keyup', this._onKeyUp);
+          this.input.element.removeEventListener('focus', this._onFocus);
+          this.input.element.removeEventListener('blur', this._onBlur);
+
+          if (this.input.element.form) {
+            this.input.element.form.removeEventListener('reset', this._onFormReset);
+          }
+
+          this.input.removeEventListeners();
+        }
+        /**
+         * @param {KeyboardEvent} event
+         */
+        ;
+
+        _proto._onKeyDown = function _onKeyDown(event) {
+          var _keyDownActions;
+
+          var target = event.target,
+              keyCode = event.keyCode,
+              ctrlKey = event.ctrlKey,
+              metaKey = event.metaKey;
+          var activeItems = this._store.activeItems;
+          var hasFocusedInput = this.input.isFocussed;
+          var hasActiveDropdown = this.dropdown.isActive;
+          var hasItems = this.itemList.hasChildren();
+          var keyString = String.fromCharCode(keyCode);
+          var BACK_KEY = KEY_CODES.BACK_KEY,
+              DELETE_KEY = KEY_CODES.DELETE_KEY,
+              ENTER_KEY = KEY_CODES.ENTER_KEY,
+              A_KEY = KEY_CODES.A_KEY,
+              ESC_KEY = KEY_CODES.ESC_KEY,
+              UP_KEY = KEY_CODES.UP_KEY,
+              DOWN_KEY = KEY_CODES.DOWN_KEY,
+              PAGE_UP_KEY = KEY_CODES.PAGE_UP_KEY,
+              PAGE_DOWN_KEY = KEY_CODES.PAGE_DOWN_KEY;
+          var hasCtrlDownKeyPressed = ctrlKey || metaKey; // If a user is typing and the dropdown is not active
+
+          if (!this._isTextElement && /[a-zA-Z0-9-_ ]/.test(keyString)) {
+            this.showDropdown();
+          } // Map keys to key actions
+
+
+          var keyDownActions = (_keyDownActions = {}, _keyDownActions[A_KEY] = this._onAKey, _keyDownActions[ENTER_KEY] = this._onEnterKey, _keyDownActions[ESC_KEY] = this._onEscapeKey, _keyDownActions[UP_KEY] = this._onDirectionKey, _keyDownActions[PAGE_UP_KEY] = this._onDirectionKey, _keyDownActions[DOWN_KEY] = this._onDirectionKey, _keyDownActions[PAGE_DOWN_KEY] = this._onDirectionKey, _keyDownActions[DELETE_KEY] = this._onDeleteKey, _keyDownActions[BACK_KEY] = this._onDeleteKey, _keyDownActions); // If keycode has a function, run it
+
+          if (keyDownActions[keyCode]) {
+            keyDownActions[keyCode]({
+              event: event,
+              target: target,
+              keyCode: keyCode,
+              metaKey: metaKey,
+              activeItems: activeItems,
+              hasFocusedInput: hasFocusedInput,
+              hasActiveDropdown: hasActiveDropdown,
+              hasItems: hasItems,
+              hasCtrlDownKeyPressed: hasCtrlDownKeyPressed
+            });
+          }
+        };
+
+        _proto._onKeyUp = function _onKeyUp(_ref2) {
+          var target = _ref2.target,
+              keyCode = _ref2.keyCode;
+          var value = this.input.value;
+          var activeItems = this._store.activeItems;
+
+          var canAddItem = this._canAddItem(activeItems, value);
+
+          var backKey = KEY_CODES.BACK_KEY,
+              deleteKey = KEY_CODES.DELETE_KEY; // We are typing into a text input and have a value, we want to show a dropdown
+          // notice. Otherwise hide the dropdown
+
+          if (this._isTextElement) {
+            var canShowDropdownNotice = canAddItem.notice && value;
+
+            if (canShowDropdownNotice) {
+              var dropdownItem = this._getTemplate('notice', canAddItem.notice);
+
+              this.dropdown.element.innerHTML = dropdownItem.outerHTML;
+              this.showDropdown(true);
+            } else {
+              this.hideDropdown(true);
+            }
+          } else {
+            var userHasRemovedValue = (keyCode === backKey || keyCode === deleteKey) && !target.value;
+            var canReactivateChoices = !this._isTextElement && this._isSearching;
+            var canSearch = this._canSearch && canAddItem.response;
+
+            if (userHasRemovedValue && canReactivateChoices) {
+              this._isSearching = false;
+
+              this._store.dispatch(choices_activateChoices(true));
+            } else if (canSearch) {
+              this._handleSearch(this.input.value);
+            }
+          }
+
+          this._canSearch = this.config.searchEnabled;
+        };
+
+        _proto._onAKey = function _onAKey(_ref3) {
+          var hasItems = _ref3.hasItems,
+              hasCtrlDownKeyPressed = _ref3.hasCtrlDownKeyPressed; // If CTRL + A or CMD + A have been pressed and there are items to select
+
+          if (hasCtrlDownKeyPressed && hasItems) {
+            this._canSearch = false;
+            var shouldHightlightAll = this.config.removeItems && !this.input.value && this.input.element === document.activeElement;
+
+            if (shouldHightlightAll) {
+              this.highlightAll();
+            }
+          }
+        };
+
+        _proto._onEnterKey = function _onEnterKey(_ref4) {
+          var event = _ref4.event,
+              target = _ref4.target,
+              activeItems = _ref4.activeItems,
+              hasActiveDropdown = _ref4.hasActiveDropdown;
+          var enterKey = KEY_CODES.ENTER_KEY;
+          var targetWasButton = target.hasAttribute('data-button');
+
+          if (this._isTextElement && target.value) {
+            var value = this.input.value;
+
+            var canAddItem = this._canAddItem(activeItems, value);
+
+            if (canAddItem.response) {
+              this.hideDropdown(true);
+
+              this._addItem({
+                value: value
+              });
+
+              this._triggerChange(value);
+
+              this.clearInput();
+            }
+          }
+
+          if (targetWasButton) {
+            this._handleButtonAction(activeItems, target);
+
+            event.preventDefault();
+          }
+
+          if (hasActiveDropdown) {
+            var highlightedChoice = this.dropdown.getChild("." + this.config.classNames.highlightedState);
+
+            if (highlightedChoice) {
+              // add enter keyCode value
+              if (activeItems[0]) {
+                activeItems[0].keyCode = enterKey; // eslint-disable-line no-param-reassign
+              }
+
+              this._handleChoiceAction(activeItems, highlightedChoice);
+            }
+
+            event.preventDefault();
+          } else if (this._isSelectOneElement) {
+            this.showDropdown();
+            event.preventDefault();
+          }
+        };
+
+        _proto._onEscapeKey = function _onEscapeKey(_ref5) {
+          var hasActiveDropdown = _ref5.hasActiveDropdown;
+
+          if (hasActiveDropdown) {
+            this.hideDropdown(true);
+            this.containerOuter.focus();
+          }
+        };
+
+        _proto._onDirectionKey = function _onDirectionKey(_ref6) {
+          var event = _ref6.event,
+              hasActiveDropdown = _ref6.hasActiveDropdown,
+              keyCode = _ref6.keyCode,
+              metaKey = _ref6.metaKey;
+          var downKey = KEY_CODES.DOWN_KEY,
+              pageUpKey = KEY_CODES.PAGE_UP_KEY,
+              pageDownKey = KEY_CODES.PAGE_DOWN_KEY; // If up or down key is pressed, traverse through options
+
+          if (hasActiveDropdown || this._isSelectOneElement) {
+            this.showDropdown();
+            this._canSearch = false;
+            var directionInt = keyCode === downKey || keyCode === pageDownKey ? 1 : -1;
+            var skipKey = metaKey || keyCode === pageDownKey || keyCode === pageUpKey;
+            var selectableChoiceIdentifier = '[data-choice-selectable]';
+            var nextEl;
+
+            if (skipKey) {
+              if (directionInt > 0) {
+                nextEl = this.dropdown.element.querySelector(selectableChoiceIdentifier + ":last-of-type");
+              } else {
+                nextEl = this.dropdown.element.querySelector(selectableChoiceIdentifier);
+              }
+            } else {
+              var currentEl = this.dropdown.element.querySelector("." + this.config.classNames.highlightedState);
+
+              if (currentEl) {
+                nextEl = getAdjacentEl(currentEl, selectableChoiceIdentifier, directionInt);
+              } else {
+                nextEl = this.dropdown.element.querySelector(selectableChoiceIdentifier);
+              }
+            }
+
+            if (nextEl) {
+              // We prevent default to stop the cursor moving
+              // when pressing the arrow
+              if (!isScrolledIntoView(nextEl, this.choiceList.element, directionInt)) {
+                this.choiceList.scrollToChildElement(nextEl, directionInt);
+              }
+
+              this._highlightChoice(nextEl);
+            } // Prevent default to maintain cursor position whilst
+            // traversing dropdown options
+
+
+            event.preventDefault();
+          }
+        };
+
+        _proto._onDeleteKey = function _onDeleteKey(_ref7) {
+          var event = _ref7.event,
+              target = _ref7.target,
+              hasFocusedInput = _ref7.hasFocusedInput,
+              activeItems = _ref7.activeItems; // If backspace or delete key is pressed and the input has no value
+
+          if (hasFocusedInput && !target.value && !this._isSelectOneElement) {
+            this._handleBackspace(activeItems);
+
+            event.preventDefault();
+          }
+        };
+
+        _proto._onTouchMove = function _onTouchMove() {
+          if (this._wasTap) {
+            this._wasTap = false;
+          }
+        };
+
+        _proto._onTouchEnd = function _onTouchEnd(event) {
+          var _ref8 = event || event.touches[0],
+              target = _ref8.target;
+
+          var touchWasWithinContainer = this._wasTap && this.containerOuter.element.contains(target);
+
+          if (touchWasWithinContainer) {
+            var containerWasExactTarget = target === this.containerOuter.element || target === this.containerInner.element;
+
+            if (containerWasExactTarget) {
+              if (this._isTextElement) {
+                this.input.focus();
+              } else if (this._isSelectMultipleElement) {
+                this.showDropdown();
+              }
+            } // Prevents focus event firing
+
+
+            event.stopPropagation();
+          }
+
+          this._wasTap = true;
+        }
+        /**
+         * Handles mousedown event in capture mode for containetOuter.element
+         * @param {MouseEvent} event
+         */
+        ;
+
+        _proto._onMouseDown = function _onMouseDown(event) {
+          var target = event.target;
+
+          if (!(target instanceof HTMLElement)) {
+            return;
+          } // If we have our mouse down on the scrollbar and are on IE11...
+
+
+          if (IS_IE11 && this.choiceList.element.contains(target)) {
+            // check if click was on a scrollbar area
+            var firstChoice =
+            /** @type {HTMLElement} */
+            this.choiceList.element.firstElementChild;
+            var isOnScrollbar = this._direction === 'ltr' ? event.offsetX >= firstChoice.offsetWidth : event.offsetX < firstChoice.offsetLeft;
+            this._isScrollingOnIe = isOnScrollbar;
+          }
+
+          if (target === this.input.element) {
+            return;
+          }
+
+          var item = target.closest('[data-button],[data-item],[data-choice]');
+
+          if (item instanceof HTMLElement) {
+            var hasShiftKey = event.shiftKey;
+            var activeItems = this._store.activeItems;
+            var dataset = item.dataset;
+
+            if ('button' in dataset) {
+              this._handleButtonAction(activeItems, item);
+            } else if ('item' in dataset) {
+              this._handleItemAction(activeItems, item, hasShiftKey);
+            } else if ('choice' in dataset) {
+              this._handleChoiceAction(activeItems, item);
+            }
+          }
+
+          event.preventDefault();
+        }
+        /**
+         * Handles mouseover event over this.dropdown
+         * @param {MouseEvent} event
+         */
+        ;
+
+        _proto._onMouseOver = function _onMouseOver(_ref9) {
+          var target = _ref9.target;
+
+          if (target instanceof HTMLElement && 'choice' in target.dataset) {
+            this._highlightChoice(target);
+          }
+        };
+
+        _proto._onClick = function _onClick(_ref10) {
+          var target = _ref10.target;
+          var clickWasWithinContainer = this.containerOuter.element.contains(target);
+
+          if (clickWasWithinContainer) {
+            if (!this.dropdown.isActive && !this.containerOuter.isDisabled) {
+              if (this._isTextElement) {
+                if (document.activeElement !== this.input.element) {
+                  this.input.focus();
+                }
+              } else {
+                this.showDropdown();
+                this.containerOuter.focus();
+              }
+            } else if (this._isSelectOneElement && target !== this.input.element && !this.dropdown.element.contains(target)) {
+              this.hideDropdown();
+            }
+          } else {
+            var hasHighlightedItems = this._store.highlightedActiveItems.length > 0;
+
+            if (hasHighlightedItems) {
+              this.unhighlightAll();
+            }
+
+            this.containerOuter.removeFocusState();
+            this.hideDropdown(true);
+          }
+        };
+
+        _proto._onFocus = function _onFocus(_ref11) {
+          var _this17 = this,
+              _focusActions;
+
+          var target = _ref11.target;
+          var focusWasWithinContainer = this.containerOuter.element.contains(target);
+
+          if (!focusWasWithinContainer) {
+            return;
+          }
+
+          var focusActions = (_focusActions = {}, _focusActions[TEXT_TYPE] = function () {
+            if (target === _this17.input.element) {
+              _this17.containerOuter.addFocusState();
+            }
+          }, _focusActions[SELECT_ONE_TYPE] = function () {
+            _this17.containerOuter.addFocusState();
+
+            if (target === _this17.input.element) {
+              _this17.showDropdown(true);
+            }
+          }, _focusActions[SELECT_MULTIPLE_TYPE] = function () {
+            if (target === _this17.input.element) {
+              _this17.showDropdown(true); // If element is a select box, the focused element is the container and the dropdown
+              // isn't already open, focus and show dropdown
+
+
+              _this17.containerOuter.addFocusState();
+            }
+          }, _focusActions);
+          focusActions[this.passedElement.element.type]();
+        };
+
+        _proto._onBlur = function _onBlur(_ref12) {
+          var _this18 = this;
+
+          var target = _ref12.target;
+          var blurWasWithinContainer = this.containerOuter.element.contains(target);
+
+          if (blurWasWithinContainer && !this._isScrollingOnIe) {
+            var _blurActions;
+
+            var activeItems = this._store.activeItems;
+            var hasHighlightedItems = activeItems.some(function (item) {
+              return item.highlighted;
+            });
+            var blurActions = (_blurActions = {}, _blurActions[TEXT_TYPE] = function () {
+              if (target === _this18.input.element) {
+                _this18.containerOuter.removeFocusState();
+
+                if (hasHighlightedItems) {
+                  _this18.unhighlightAll();
+                }
+
+                _this18.hideDropdown(true);
+              }
+            }, _blurActions[SELECT_ONE_TYPE] = function () {
+              _this18.containerOuter.removeFocusState();
+
+              if (target === _this18.input.element || target === _this18.containerOuter.element && !_this18._canSearch) {
+                _this18.hideDropdown(true);
+              }
+            }, _blurActions[SELECT_MULTIPLE_TYPE] = function () {
+              if (target === _this18.input.element) {
+                _this18.containerOuter.removeFocusState();
+
+                _this18.hideDropdown(true);
+
+                if (hasHighlightedItems) {
+                  _this18.unhighlightAll();
+                }
+              }
+            }, _blurActions);
+            blurActions[this.passedElement.element.type]();
+          } else {
+            // On IE11, clicking the scollbar blurs our input and thus
+            // closes the dropdown. To stop this, we refocus our input
+            // if we know we are on IE *and* are scrolling.
+            this._isScrollingOnIe = false;
+            this.input.element.focus();
+          }
+        };
+
+        _proto._onFormReset = function _onFormReset() {
+          this._store.dispatch(resetTo(this._initialState));
+        };
+
+        _proto._highlightChoice = function _highlightChoice(el) {
+          var _this19 = this;
+
+          if (el === void 0) {
+            el = null;
+          }
+
+          var choices = Array.from(this.dropdown.element.querySelectorAll('[data-choice-selectable]'));
+
+          if (!choices.length) {
+            return;
+          }
+
+          var passedEl = el;
+          var highlightedChoices = Array.from(this.dropdown.element.querySelectorAll("." + this.config.classNames.highlightedState)); // Remove any highlighted choices
+
+          highlightedChoices.forEach(function (choice) {
+            choice.classList.remove(_this19.config.classNames.highlightedState);
+            choice.setAttribute('aria-selected', 'false');
+          });
+
+          if (passedEl) {
+            this._highlightPosition = choices.indexOf(passedEl);
+          } else {
+            // Highlight choice based on last known highlight location
+            if (choices.length > this._highlightPosition) {
+              // If we have an option to highlight
+              passedEl = choices[this._highlightPosition];
+            } else {
+              // Otherwise highlight the option before
+              passedEl = choices[choices.length - 1];
+            }
+
+            if (!passedEl) {
+              passedEl = choices[0];
+            }
+          }
+
+          passedEl.classList.add(this.config.classNames.highlightedState);
+          passedEl.setAttribute('aria-selected', 'true');
+          this.passedElement.triggerEvent(EVENTS.highlightChoice, {
+            el: passedEl
+          });
+
+          if (this.dropdown.isActive) {
+            // IE11 ignores aria-label and blocks virtual keyboard
+            // if aria-activedescendant is set without a dropdown
+            this.input.setActiveDescendant(passedEl.id);
+            this.containerOuter.setActiveDescendant(passedEl.id);
+          }
+        };
+
+        _proto._addItem = function _addItem(_ref13) {
+          var value = _ref13.value,
+              _ref13$label = _ref13.label,
+              label = _ref13$label === void 0 ? null : _ref13$label,
+              _ref13$choiceId = _ref13.choiceId,
+              choiceId = _ref13$choiceId === void 0 ? -1 : _ref13$choiceId,
+              _ref13$groupId = _ref13.groupId,
+              groupId = _ref13$groupId === void 0 ? -1 : _ref13$groupId,
+              _ref13$customProperti = _ref13.customProperties,
+              customProperties = _ref13$customProperti === void 0 ? null : _ref13$customProperti,
+              _ref13$placeholder = _ref13.placeholder,
+              placeholder = _ref13$placeholder === void 0 ? false : _ref13$placeholder,
+              _ref13$keyCode = _ref13.keyCode,
+              keyCode = _ref13$keyCode === void 0 ? null : _ref13$keyCode;
+          var passedValue = typeof value === 'string' ? value.trim() : value;
+          var passedKeyCode = keyCode;
+          var passedCustomProperties = customProperties;
+          var items = this._store.items;
+          var passedLabel = label || passedValue;
+          var passedOptionId = choiceId || -1;
+          var group = groupId >= 0 ? this._store.getGroupById(groupId) : null;
+          var id = items ? items.length + 1 : 1; // If a prepended value has been passed, prepend it
+
+          if (this.config.prependValue) {
+            passedValue = this.config.prependValue + passedValue.toString();
+          } // If an appended value has been passed, append it
+
+
+          if (this.config.appendValue) {
+            passedValue += this.config.appendValue.toString();
+          }
+
+          this._store.dispatch(items_addItem({
+            value: passedValue,
+            label: passedLabel,
+            id: id,
+            choiceId: passedOptionId,
+            groupId: groupId,
+            customProperties: customProperties,
+            placeholder: placeholder,
+            keyCode: passedKeyCode
+          }));
+
+          if (this._isSelectOneElement) {
+            this.removeActiveItems(id);
+          } // Trigger change event
+
+
+          this.passedElement.triggerEvent(EVENTS.addItem, {
+            id: id,
+            value: passedValue,
+            label: passedLabel,
+            customProperties: passedCustomProperties,
+            groupValue: group && group.value ? group.value : undefined,
+            keyCode: passedKeyCode
+          });
+          return this;
+        };
+
+        _proto._removeItem = function _removeItem(item) {
+          if (!item || !isType('Object', item)) {
+            return this;
+          }
+
+          var id = item.id,
+              value = item.value,
+              label = item.label,
+              choiceId = item.choiceId,
+              groupId = item.groupId;
+          var group = groupId >= 0 ? this._store.getGroupById(groupId) : null;
+
+          this._store.dispatch(items_removeItem(id, choiceId));
+
+          if (group && group.value) {
+            this.passedElement.triggerEvent(EVENTS.removeItem, {
+              id: id,
+              value: value,
+              label: label,
+              groupValue: group.value
+            });
+          } else {
+            this.passedElement.triggerEvent(EVENTS.removeItem, {
+              id: id,
+              value: value,
+              label: label
+            });
+          }
+
+          return this;
+        };
+
+        _proto._addChoice = function _addChoice(_ref14) {
+          var value = _ref14.value,
+              _ref14$label = _ref14.label,
+              label = _ref14$label === void 0 ? null : _ref14$label,
+              _ref14$isSelected = _ref14.isSelected,
+              isSelected = _ref14$isSelected === void 0 ? false : _ref14$isSelected,
+              _ref14$isDisabled = _ref14.isDisabled,
+              isDisabled = _ref14$isDisabled === void 0 ? false : _ref14$isDisabled,
+              _ref14$groupId = _ref14.groupId,
+              groupId = _ref14$groupId === void 0 ? -1 : _ref14$groupId,
+              _ref14$customProperti = _ref14.customProperties,
+              customProperties = _ref14$customProperti === void 0 ? null : _ref14$customProperti,
+              _ref14$placeholder = _ref14.placeholder,
+              placeholder = _ref14$placeholder === void 0 ? false : _ref14$placeholder,
+              _ref14$keyCode = _ref14.keyCode,
+              keyCode = _ref14$keyCode === void 0 ? null : _ref14$keyCode;
+
+          if (typeof value === 'undefined' || value === null) {
+            return;
+          } // Generate unique id
+
+
+          var choices = this._store.choices;
+          var choiceLabel = label || value;
+          var choiceId = choices ? choices.length + 1 : 1;
+          var choiceElementId = this._baseId + "-" + this._idNames.itemChoice + "-" + choiceId;
+
+          this._store.dispatch(choices_addChoice({
+            id: choiceId,
+            groupId: groupId,
+            elementId: choiceElementId,
+            value: value,
+            label: choiceLabel,
+            disabled: isDisabled,
+            customProperties: customProperties,
+            placeholder: placeholder,
+            keyCode: keyCode
+          }));
+
+          if (isSelected) {
+            this._addItem({
+              value: value,
+              label: choiceLabel,
+              choiceId: choiceId,
+              customProperties: customProperties,
+              placeholder: placeholder,
+              keyCode: keyCode
+            });
+          }
+        };
+
+        _proto._addGroup = function _addGroup(_ref15) {
+          var _this20 = this;
+
+          var group = _ref15.group,
+              id = _ref15.id,
+              _ref15$valueKey = _ref15.valueKey,
+              valueKey = _ref15$valueKey === void 0 ? 'value' : _ref15$valueKey,
+              _ref15$labelKey = _ref15.labelKey,
+              labelKey = _ref15$labelKey === void 0 ? 'label' : _ref15$labelKey;
+          var groupChoices = isType('Object', group) ? group.choices : Array.from(group.getElementsByTagName('OPTION'));
+          var groupId = id || Math.floor(new Date().valueOf() * Math.random());
+          var isDisabled = group.disabled ? group.disabled : false;
+
+          if (groupChoices) {
+            this._store.dispatch(groups_addGroup({
+              value: group.label,
+              id: groupId,
+              active: true,
+              disabled: isDisabled
+            }));
+
+            var addGroupChoices = function addGroupChoices(choice) {
+              var isOptDisabled = choice.disabled || choice.parentNode && choice.parentNode.disabled;
+
+              _this20._addChoice({
+                value: choice[valueKey],
+                label: isType('Object', choice) ? choice[labelKey] : choice.innerHTML,
+                isSelected: choice.selected,
+                isDisabled: isOptDisabled,
+                groupId: groupId,
+                customProperties: choice.customProperties,
+                placeholder: choice.placeholder
+              });
+            };
+
+            groupChoices.forEach(addGroupChoices);
+          } else {
+            this._store.dispatch(groups_addGroup({
+              value: group.label,
+              id: group.id,
+              active: false,
+              disabled: group.disabled
+            }));
+          }
+        };
+
+        _proto._getTemplate = function _getTemplate(template) {
+          var _this$_templates$temp;
+
+          if (!template) {
+            return null;
+          }
+
+          var classNames = this.config.classNames;
+
+          for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+            args[_key - 1] = arguments[_key];
+          }
+
+          return (_this$_templates$temp = this._templates[template]).call.apply(_this$_templates$temp, [this, classNames].concat(args));
+        };
+
+        _proto._createTemplates = function _createTemplates() {
+          var callbackOnCreateTemplates = this.config.callbackOnCreateTemplates;
+          var userTemplates = {};
+
+          if (callbackOnCreateTemplates && typeof callbackOnCreateTemplates === 'function') {
+            userTemplates = callbackOnCreateTemplates.call(this, strToEl);
+          }
+
+          this._templates = cjs_default()(TEMPLATES, userTemplates);
+        };
+
+        _proto._createElements = function _createElements() {
+          this.containerOuter = new container_Container({
+            element: this._getTemplate('containerOuter', this._direction, this._isSelectElement, this._isSelectOneElement, this.config.searchEnabled, this.passedElement.element.type),
+            classNames: this.config.classNames,
+            type: this.passedElement.element.type,
+            position: this.config.position
+          });
+          this.containerInner = new container_Container({
+            element: this._getTemplate('containerInner'),
+            classNames: this.config.classNames,
+            type: this.passedElement.element.type,
+            position: this.config.position
+          });
+          this.input = new input_Input({
+            element: this._getTemplate('input', this._placeholderValue),
+            classNames: this.config.classNames,
+            type: this.passedElement.element.type,
+            preventPaste: !this.config.paste
+          });
+          this.choiceList = new list_List({
+            element: this._getTemplate('choiceList', this._isSelectOneElement)
+          });
+          this.itemList = new list_List({
+            element: this._getTemplate('itemList', this._isSelectOneElement)
+          });
+          this.dropdown = new Dropdown({
+            element: this._getTemplate('dropdown'),
+            classNames: this.config.classNames,
+            type: this.passedElement.element.type
+          });
+        };
+
+        _proto._createStructure = function _createStructure() {
+          // Hide original element
+          this.passedElement.conceal(); // Wrap input in container preserving DOM ordering
+
+          this.containerInner.wrap(this.passedElement.element); // Wrapper inner container with outer container
+
+          this.containerOuter.wrap(this.containerInner.element);
+
+          if (this._isSelectOneElement) {
+            this.input.placeholder = this.config.searchPlaceholderValue || '';
+          } else if (this._placeholderValue) {
+            this.input.placeholder = this._placeholderValue;
+            this.input.setWidth();
+          }
+
+          this.containerOuter.element.appendChild(this.containerInner.element);
+          this.containerOuter.element.appendChild(this.dropdown.element);
+          this.containerInner.element.appendChild(this.itemList.element);
+
+          if (!this._isTextElement) {
+            this.dropdown.element.appendChild(this.choiceList.element);
+          }
+
+          if (!this._isSelectOneElement) {
+            this.containerInner.element.appendChild(this.input.element);
+          } else if (this.config.searchEnabled) {
+            this.dropdown.element.insertBefore(this.input.element, this.dropdown.element.firstChild);
+          }
+
+          if (this._isSelectElement) {
+            this._highlightPosition = 0;
+            this._isSearching = false;
+
+            this._startLoading();
+
+            if (this._presetGroups.length) {
+              this._addPredefinedGroups(this._presetGroups);
+            } else {
+              this._addPredefinedChoices(this._presetChoices);
+            }
+
+            this._stopLoading();
+          }
+
+          if (this._isTextElement) {
+            this._addPredefinedItems(this._presetItems);
+          }
+        };
+
+        _proto._addPredefinedGroups = function _addPredefinedGroups(groups) {
+          var _this21 = this; // If we have a placeholder option
+
+
+          var placeholderChoice = this.passedElement.placeholderOption;
+
+          if (placeholderChoice && placeholderChoice.parentNode.tagName === 'SELECT') {
+            this._addChoice({
+              value: placeholderChoice.value,
+              label: placeholderChoice.innerHTML,
+              isSelected: placeholderChoice.selected,
+              isDisabled: placeholderChoice.disabled,
+              placeholder: true
+            });
+          }
+
+          groups.forEach(function (group) {
+            return _this21._addGroup({
+              group: group,
+              id: group.id || null
+            });
+          });
+        };
+
+        _proto._addPredefinedChoices = function _addPredefinedChoices(choices) {
+          var _this22 = this; // If sorting is enabled or the user is searching, filter choices
+
+
+          if (this.config.shouldSort) {
+            choices.sort(this.config.sorter);
+          }
+
+          var hasSelectedChoice = choices.some(function (choice) {
+            return choice.selected;
+          });
+          var firstEnabledChoiceIndex = choices.findIndex(function (choice) {
+            return choice.disabled === undefined || !choice.disabled;
+          });
+          choices.forEach(function (choice, index) {
+            var value = choice.value,
+                label = choice.label,
+                customProperties = choice.customProperties,
+                placeholder = choice.placeholder;
+
+            if (_this22._isSelectElement) {
+              // If the choice is actually a group
+              if (choice.choices) {
+                _this22._addGroup({
+                  group: choice,
+                  id: choice.id || null
+                });
+              } else {
+                /**
+                 * If there is a selected choice already or the choice is not the first in
+                 * the array, add each choice normally.
+                 *
+                 * Otherwise we pre-select the first enabled choice in the array ("select-one" only)
+                 */
+                var shouldPreselect = _this22._isSelectOneElement && !hasSelectedChoice && index === firstEnabledChoiceIndex;
+                var isSelected = shouldPreselect ? true : choice.selected;
+                var isDisabled = choice.disabled;
+
+                _this22._addChoice({
+                  value: value,
+                  label: label,
+                  isSelected: isSelected,
+                  isDisabled: isDisabled,
+                  customProperties: customProperties,
+                  placeholder: placeholder
+                });
+              }
+            } else {
+              _this22._addChoice({
+                value: value,
+                label: label,
+                isSelected: choice.selected,
+                isDisabled: choice.disabled,
+                customProperties: customProperties,
+                placeholder: placeholder
+              });
+            }
+          });
+        }
+        /**
+         * @param {Item[]} items
+         */
+        ;
+
+        _proto._addPredefinedItems = function _addPredefinedItems(items) {
+          var _this23 = this;
+
+          items.forEach(function (item) {
+            if (typeof item === 'object' && item.value) {
+              _this23._addItem({
+                value: item.value,
+                label: item.label,
+                choiceId: item.id,
+                customProperties: item.customProperties,
+                placeholder: item.placeholder
+              });
+            }
+
+            if (typeof item === 'string') {
+              _this23._addItem({
+                value: item
+              });
+            }
+          });
+        };
+
+        _proto._setChoiceOrItem = function _setChoiceOrItem(item) {
+          var _this24 = this;
+
+          var itemType = getType(item).toLowerCase();
+          var handleType = {
+            object: function object() {
+              if (!item.value) {
+                return;
+              } // If we are dealing with a select input, we need to create an option first
+              // that is then selected. For text inputs we can just add items normally.
+
+
+              if (!_this24._isTextElement) {
+                _this24._addChoice({
+                  value: item.value,
+                  label: item.label,
+                  isSelected: true,
+                  isDisabled: false,
+                  customProperties: item.customProperties,
+                  placeholder: item.placeholder
+                });
+              } else {
+                _this24._addItem({
+                  value: item.value,
+                  label: item.label,
+                  choiceId: item.id,
+                  customProperties: item.customProperties,
+                  placeholder: item.placeholder
+                });
+              }
+            },
+            string: function string() {
+              if (!_this24._isTextElement) {
+                _this24._addChoice({
+                  value: item,
+                  label: item,
+                  isSelected: true,
+                  isDisabled: false
+                });
+              } else {
+                _this24._addItem({
+                  value: item
+                });
+              }
+            }
+          };
+          handleType[itemType]();
+        };
+
+        _proto._findAndSelectChoiceByValue = function _findAndSelectChoiceByValue(val) {
+          var _this25 = this;
+
+          var choices = this._store.choices; // Check 'value' property exists and the choice isn't already selected
+
+          var foundChoice = choices.find(function (choice) {
+            return _this25.config.valueComparer(choice.value, val);
+          });
+
+          if (foundChoice && !foundChoice.selected) {
+            this._addItem({
+              value: foundChoice.value,
+              label: foundChoice.label,
+              choiceId: foundChoice.id,
+              groupId: foundChoice.groupId,
+              customProperties: foundChoice.customProperties,
+              placeholder: foundChoice.placeholder,
+              keyCode: foundChoice.keyCode
+            });
+          }
+        };
+
+        _proto._generatePlaceholderValue = function _generatePlaceholderValue() {
+          if (this._isSelectElement) {
+            var placeholderOption = this.passedElement.placeholderOption;
+            return placeholderOption ? placeholderOption.text : false;
+          }
+
+          var _this$config4 = this.config,
+              placeholder = _this$config4.placeholder,
+              placeholderValue = _this$config4.placeholderValue;
+          var dataset = this.passedElement.element.dataset;
+
+          if (placeholder) {
+            if (placeholderValue) {
+              return placeholderValue;
+            }
+
+            if (dataset.placeholder) {
+              return dataset.placeholder;
+            }
+          }
+
+          return false;
+        };
+
+        return Choices;
+      }();
+      /* harmony default export */
+
+
+      __webpack_exports__["default"] = choices_Choices;
+      /***/
+    }
+    /******/
+    ])["default"]
+  );
+});
+});
+
+var Choices = /*@__PURE__*/getDefaultExportFromCjs(choices);
+
+const defaultDateTrigger = "@";
+const defaultTimeTrigger = "@@";
+function getFolderChoices(app) {
+    const folderList = [];
+    obsidian.Vault.recurseChildren(app.vault.getRoot(), (f) => {
+        if (f instanceof obsidian.TFolder) {
+            folderList.push({
+                value: f.path,
+                label: f.path,
+                selected: false,
+                disabled: false,
+            });
+        }
+    });
+    return folderList;
+}
+function getTemplateChoices(app, folderStr) {
+    const fileList = [];
+    let folder = folderStr ? app.vault.getAbstractFileByPath(folderStr) : null;
+    if (!folder || !(folder instanceof obsidian.TFolder)) {
+        folder = app.vault.getRoot();
+    }
+    obsidian.Vault.recurseChildren(folder, (f) => {
+        if (f instanceof obsidian.TFile) {
+            fileList.push({
+                value: f.path,
+                label: f.basename,
+                selected: false,
+                disabled: false,
+            });
+        }
+    });
+    return fileList;
+}
+function getListOptions(app, plugin) {
+    const { templateFolder, templatesEnabled, templaterPlugin, } = plugin.getTemplatePlugins();
+    const templateFiles = getTemplateChoices(app, templateFolder);
+    const vaultFolders = getFolderChoices(app);
+    let templateWarning = "";
+    if (!templatesEnabled && !templaterPlugin) {
+        templateWarning = "Note: No template plugins are currently enabled.";
+    }
+    return {
+        templateFiles,
+        vaultFolders,
+        templateWarning,
+    };
+}
+function createSearchSelect({ choices, key, warningText, local, placeHolderStr, manager, }) {
+    return (setting) => {
+        setting.controlEl.createEl("select", {}, (el) => {
+            // el must be in the dom, so we setTimeout
+            setTimeout(() => {
+                let list = choices;
+                const [value, defaultVal] = manager.getSetting(key, local);
+                if (defaultVal) {
+                    const index = choices.findIndex((f) => f.value === defaultVal);
+                    const choice = choices[index];
+                    list = update$2(list, {
+                        $splice: [[index, 1]],
+                        $unshift: [
+                            update$2(choice, {
+                                placeholder: {
+                                    $set: true,
+                                },
+                                value: {
+                                    $set: "",
+                                },
+                                label: {
+                                    $apply: (v) => `${v} (default)`,
+                                },
+                            }),
+                        ],
+                    });
+                }
+                else {
+                    list = update$2(list, {
+                        $unshift: [
+                            {
+                                placeholder: true,
+                                value: "",
+                                label: placeHolderStr,
+                                selected: false,
+                                disabled: false,
+                            },
+                        ],
+                    });
+                }
+                const c = new Choices(el, {
+                    placeholder: true,
+                    position: "bottom",
+                    searchPlaceholderValue: "Search...",
+                    searchEnabled: list.length > 10,
+                    choices: list,
+                }).setChoiceByValue("");
+                if (value && typeof value === "string") {
+                    c.setChoiceByValue(value);
+                }
+                const onChange = (e) => {
+                    const val = e.detail.value;
+                    if (val) {
+                        manager.applySettingsUpdate({
+                            [key]: {
+                                $set: val,
+                            },
+                        });
+                    }
+                    else {
+                        manager.applySettingsUpdate({
+                            $unset: [key],
+                        });
+                    }
+                };
+                el.addEventListener("change", onChange);
+                manager.cleanupFns.push(() => {
+                    c.destroy();
+                    el.removeEventListener("change", onChange);
+                });
+            });
+            if (warningText) {
+                setting.descEl.createDiv({}, (div) => {
+                    div.createEl("strong", { text: warningText });
+                });
+            }
+        });
+    };
+}
 
 /*! js-yaml 4.1.0 https://github.com/nodeca/js-yaml @license MIT */
 function isNothing(subject) {
@@ -9563,7 +15930,7 @@ function isInteger(object) {
   return Object.prototype.toString.call(object) === '[object Number]' && object % 1 === 0 && !common.isNegativeZero(object);
 }
 
-var int = new type('tag:yaml.org,2002:int', {
+var int$1 = new type('tag:yaml.org,2002:int', {
   kind: 'scalar',
   resolve: resolveYamlInteger,
   construct: constructYamlInteger,
@@ -9690,7 +16057,7 @@ var float = new type('tag:yaml.org,2002:float', {
   defaultStyle: 'lowercase'
 });
 var json = failsafe.extend({
-  implicit: [_null, bool, int, float]
+  implicit: [_null, bool, int$1, float]
 });
 var core = json;
 var YAML_DATE_REGEXP = new RegExp('^([0-9][0-9][0-9][0-9])' + // [1] year
@@ -12816,7 +19183,7 @@ var types = {
   set: set,
   timestamp: timestamp,
   bool: bool,
-  int: int,
+  int: int$1,
   merge: merge,
   omap: omap,
   seq: seq,
@@ -12862,15 +19229,41 @@ const completeRegex = /^\*\*Complete\*\*$/i;
 const archiveString = "***";
 const archiveMarkerRegex = /^\*\*\*$/;
 function itemToMd(item) {
-    return `- [${item.data.isComplete ? "x" : " "}] ${item.title}`;
+    return `- [${item.data.isComplete ? "x" : " "}] ${item.titleRaw}`;
 }
-function mdToItem(itemMd) {
+function processTitle(title, view, settings) {
+    const dateFormat = view.getSetting("date-format", settings) || getDefaultDateFormat(view.app);
+    const dateTrigger = view.getSetting("date-trigger", settings) || defaultDateTrigger;
+    const shouldHideDate = view.getSetting("hide-date-in-title", settings);
+    const shouldLinkDate = view.getSetting("link-date-to-daily-note", settings);
+    let date = undefined;
+    let processedTitle = title;
+    const contentMatch = shouldLinkDate ? "\\[\\[([^}]+)\\]\\]" : "{([^}]+)}";
+    const dateRegEx = new RegExp(`(?:^|\\s)${escapeRegExpStr(dateTrigger)}${contentMatch}`, "g");
+    const match = dateRegEx.exec(title);
+    if (match) {
+        date = obsidian.moment(match[1], dateFormat);
+    }
+    if (shouldHideDate) {
+        processedTitle = processedTitle.replace(dateRegEx, "");
+    }
+    return {
+        title: processedTitle,
+        date,
+    };
+}
+function mdToItem(itemMd, view, settings) {
     const match = itemMd.match(taskRegex);
+    const processed = processTitle(match[4], view, settings);
     return {
         id: generateInstanceId(),
-        title: match[4],
+        title: processed.title,
+        titleRaw: match[4],
         data: {
             isComplete: match[3] !== " ",
+        },
+        metadata: {
+            date: processed.date,
         },
     };
 }
@@ -12915,7 +19308,7 @@ function mdToSettings(boardMd) {
     }
     return { "kanban-plugin": "basic" };
 }
-function mdToBoard(boardMd) {
+function mdToBoard(boardMd, view) {
     const settings = mdToSettings(boardMd);
     const lines = boardMd.split(newLineRegex);
     const lanes = [];
@@ -12948,10 +19341,10 @@ function mdToBoard(boardMd) {
         // Create an item from tasks
         if (taskRegex.test(line)) {
             if (haveSeenArchiveMarker) {
-                archive.push(mdToItem(line));
+                archive.push(mdToItem(line, view, settings));
             }
             else {
-                currentLane.items.push(mdToItem(line));
+                currentLane.items.push(mdToItem(line, view, settings));
             }
         }
     });
@@ -20526,13 +26919,13 @@ function useAnnouncer(contextId) {
 }
 
 var count = 0;
-var defaults = {
+var defaults$1 = {
   separator: '::'
 };
 
 function useUniqueId(prefix, options) {
   if (options === void 0) {
-    options = defaults;
+    options = defaults$1;
   }
 
   return useMemo(function () {
@@ -26871,38 +33264,3784 @@ Fuse.config = Config;
   register(ExtendedSearch);
 }
 
+const HOOKS = ["onChange", "onClose", "onDayCreate", "onDestroy", "onKeyDown", "onMonthChange", "onOpen", "onParseConfig", "onReady", "onValueUpdate", "onYearChange", "onPreCalendarPosition"];
+const defaults = {
+  _disable: [],
+  allowInput: false,
+  allowInvalidPreload: false,
+  altFormat: "F j, Y",
+  altInput: false,
+  altInputClass: "form-control input",
+  animate: typeof window === "object" && window.navigator.userAgent.indexOf("MSIE") === -1,
+  ariaDateFormat: "F j, Y",
+  autoFillDefaultTime: true,
+  clickOpens: true,
+  closeOnSelect: true,
+  conjunction: ", ",
+  dateFormat: "Y-m-d",
+  defaultHour: 12,
+  defaultMinute: 0,
+  defaultSeconds: 0,
+  disable: [],
+  disableMobile: false,
+  enableSeconds: false,
+  enableTime: false,
+  errorHandler: err => typeof console !== "undefined" && console.warn(err),
+  getWeek: givenDate => {
+    const date = new Date(givenDate.getTime());
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+    var week1 = new Date(date.getFullYear(), 0, 4);
+    return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+  },
+  hourIncrement: 1,
+  ignoredFocusElements: [],
+  inline: false,
+  locale: "default",
+  minuteIncrement: 5,
+  mode: "single",
+  monthSelectorType: "dropdown",
+  nextArrow: "<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 17 17'><g></g><path d='M13.207 8.472l-7.854 7.854-0.707-0.707 7.146-7.146-7.146-7.148 0.707-0.707 7.854 7.854z' /></svg>",
+  noCalendar: false,
+  now: new Date(),
+  onChange: [],
+  onClose: [],
+  onDayCreate: [],
+  onDestroy: [],
+  onKeyDown: [],
+  onMonthChange: [],
+  onOpen: [],
+  onParseConfig: [],
+  onReady: [],
+  onValueUpdate: [],
+  onYearChange: [],
+  onPreCalendarPosition: [],
+  plugins: [],
+  position: "auto",
+  positionElement: undefined,
+  prevArrow: "<svg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 17 17'><g></g><path d='M5.207 8.471l7.146 7.147-0.707 0.707-7.853-7.854 7.854-7.853 0.707 0.707-7.147 7.146z' /></svg>",
+  shorthandCurrentMonth: false,
+  showMonths: 1,
+  static: false,
+  time_24hr: false,
+  weekNumbers: false,
+  wrap: false
+};
+
+const english = {
+  weekdays: {
+    shorthand: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    longhand: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+  },
+  months: {
+    shorthand: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    longhand: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+  },
+  daysInMonth: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+  firstDayOfWeek: 0,
+  ordinal: nth => {
+    const s = nth % 100;
+    if (s > 3 && s < 21) return "th";
+
+    switch (s % 10) {
+      case 1:
+        return "st";
+
+      case 2:
+        return "nd";
+
+      case 3:
+        return "rd";
+
+      default:
+        return "th";
+    }
+  },
+  rangeSeparator: " to ",
+  weekAbbreviation: "Wk",
+  scrollTitle: "Scroll to increment",
+  toggleTitle: "Click to toggle",
+  amPM: ["AM", "PM"],
+  yearAriaLabel: "Year",
+  monthAriaLabel: "Month",
+  hourAriaLabel: "Hour",
+  minuteAriaLabel: "Minute",
+  time_24hr: false
+};
+
+const pad = (number, length = 2) => `000${number}`.slice(length * -1);
+const int = bool => bool === true ? 1 : 0;
+function debounce(fn, wait) {
+  let t;
+  return function () {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, arguments), wait);
+  };
+}
+const arrayify = obj => obj instanceof Array ? obj : [obj];
+
+function toggleClass(elem, className, bool) {
+  if (bool === true) return elem.classList.add(className);
+  elem.classList.remove(className);
+}
+function createElement(tag, className, content) {
+  const e = window.document.createElement(tag);
+  className = className || "";
+  content = content || "";
+  e.className = className;
+  if (content !== undefined) e.textContent = content;
+  return e;
+}
+function clearNode(node) {
+  while (node.firstChild) node.removeChild(node.firstChild);
+}
+function findParent(node, condition) {
+  if (condition(node)) return node;else if (node.parentNode) return findParent(node.parentNode, condition);
+  return undefined;
+}
+function createNumberInput(inputClassName, opts) {
+  const wrapper = createElement("div", "numInputWrapper"),
+        numInput = createElement("input", "numInput " + inputClassName),
+        arrowUp = createElement("span", "arrowUp"),
+        arrowDown = createElement("span", "arrowDown");
+
+  if (navigator.userAgent.indexOf("MSIE 9.0") === -1) {
+    numInput.type = "number";
+  } else {
+    numInput.type = "text";
+    numInput.pattern = "\\d*";
+  }
+
+  if (opts !== undefined) for (const key in opts) numInput.setAttribute(key, opts[key]);
+  wrapper.appendChild(numInput);
+  wrapper.appendChild(arrowUp);
+  wrapper.appendChild(arrowDown);
+  return wrapper;
+}
+function getEventTarget(event) {
+  try {
+    if (typeof event.composedPath === "function") {
+      const path = event.composedPath();
+      return path[0];
+    }
+
+    return event.target;
+  } catch (error) {
+    return event.target;
+  }
+}
+
+const doNothing = () => undefined;
+
+const monthToStr = (monthNumber, shorthand, locale) => locale.months[shorthand ? "shorthand" : "longhand"][monthNumber];
+const revFormat = {
+  D: doNothing,
+  F: function (dateObj, monthName, locale) {
+    dateObj.setMonth(locale.months.longhand.indexOf(monthName));
+  },
+  G: (dateObj, hour) => {
+    dateObj.setHours(parseFloat(hour));
+  },
+  H: (dateObj, hour) => {
+    dateObj.setHours(parseFloat(hour));
+  },
+  J: (dateObj, day) => {
+    dateObj.setDate(parseFloat(day));
+  },
+  K: (dateObj, amPM, locale) => {
+    dateObj.setHours(dateObj.getHours() % 12 + 12 * int(new RegExp(locale.amPM[1], "i").test(amPM)));
+  },
+  M: function (dateObj, shortMonth, locale) {
+    dateObj.setMonth(locale.months.shorthand.indexOf(shortMonth));
+  },
+  S: (dateObj, seconds) => {
+    dateObj.setSeconds(parseFloat(seconds));
+  },
+  U: (_, unixSeconds) => new Date(parseFloat(unixSeconds) * 1000),
+  W: function (dateObj, weekNum, locale) {
+    const weekNumber = parseInt(weekNum);
+    const date = new Date(dateObj.getFullYear(), 0, 2 + (weekNumber - 1) * 7, 0, 0, 0, 0);
+    date.setDate(date.getDate() - date.getDay() + locale.firstDayOfWeek);
+    return date;
+  },
+  Y: (dateObj, year) => {
+    dateObj.setFullYear(parseFloat(year));
+  },
+  Z: (_, ISODate) => new Date(ISODate),
+  d: (dateObj, day) => {
+    dateObj.setDate(parseFloat(day));
+  },
+  h: (dateObj, hour) => {
+    dateObj.setHours(parseFloat(hour));
+  },
+  i: (dateObj, minutes) => {
+    dateObj.setMinutes(parseFloat(minutes));
+  },
+  j: (dateObj, day) => {
+    dateObj.setDate(parseFloat(day));
+  },
+  l: doNothing,
+  m: (dateObj, month) => {
+    dateObj.setMonth(parseFloat(month) - 1);
+  },
+  n: (dateObj, month) => {
+    dateObj.setMonth(parseFloat(month) - 1);
+  },
+  s: (dateObj, seconds) => {
+    dateObj.setSeconds(parseFloat(seconds));
+  },
+  u: (_, unixMillSeconds) => new Date(parseFloat(unixMillSeconds)),
+  w: doNothing,
+  y: (dateObj, year) => {
+    dateObj.setFullYear(2000 + parseFloat(year));
+  }
+};
+const tokenRegex = {
+  D: "(\\w+)",
+  F: "(\\w+)",
+  G: "(\\d\\d|\\d)",
+  H: "(\\d\\d|\\d)",
+  J: "(\\d\\d|\\d)\\w+",
+  K: "",
+  M: "(\\w+)",
+  S: "(\\d\\d|\\d)",
+  U: "(.+)",
+  W: "(\\d\\d|\\d)",
+  Y: "(\\d{4})",
+  Z: "(.+)",
+  d: "(\\d\\d|\\d)",
+  h: "(\\d\\d|\\d)",
+  i: "(\\d\\d|\\d)",
+  j: "(\\d\\d|\\d)",
+  l: "(\\w+)",
+  m: "(\\d\\d|\\d)",
+  n: "(\\d\\d|\\d)",
+  s: "(\\d\\d|\\d)",
+  u: "(.+)",
+  w: "(\\d\\d|\\d)",
+  y: "(\\d{2})"
+};
+const formats = {
+  Z: date => date.toISOString(),
+  D: function (date, locale, options) {
+    return locale.weekdays.shorthand[formats.w(date, locale, options)];
+  },
+  F: function (date, locale, options) {
+    return monthToStr(formats.n(date, locale, options) - 1, false, locale);
+  },
+  G: function (date, locale, options) {
+    return pad(formats.h(date, locale, options));
+  },
+  H: date => pad(date.getHours()),
+  J: function (date, locale) {
+    return locale.ordinal !== undefined ? date.getDate() + locale.ordinal(date.getDate()) : date.getDate();
+  },
+  K: (date, locale) => locale.amPM[int(date.getHours() > 11)],
+  M: function (date, locale) {
+    return monthToStr(date.getMonth(), true, locale);
+  },
+  S: date => pad(date.getSeconds()),
+  U: date => date.getTime() / 1000,
+  W: function (date, _, options) {
+    return options.getWeek(date);
+  },
+  Y: date => pad(date.getFullYear(), 4),
+  d: date => pad(date.getDate()),
+  h: date => date.getHours() % 12 ? date.getHours() % 12 : 12,
+  i: date => pad(date.getMinutes()),
+  j: date => date.getDate(),
+  l: function (date, locale) {
+    return locale.weekdays.longhand[date.getDay()];
+  },
+  m: date => pad(date.getMonth() + 1),
+  n: date => date.getMonth() + 1,
+  s: date => date.getSeconds(),
+  u: date => date.getTime(),
+  w: date => date.getDay(),
+  y: date => String(date.getFullYear()).substring(2)
+};
+
+const createDateFormatter = ({
+  config = defaults,
+  l10n = english,
+  isMobile = false
+}) => (dateObj, frmt, overrideLocale) => {
+  const locale = overrideLocale || l10n;
+
+  if (config.formatDate !== undefined && !isMobile) {
+    return config.formatDate(dateObj, frmt, locale);
+  }
+
+  return frmt.split("").map((c, i, arr) => formats[c] && arr[i - 1] !== "\\" ? formats[c](dateObj, locale, config) : c !== "\\" ? c : "").join("");
+};
+const createDateParser = ({
+  config = defaults,
+  l10n = english
+}) => (date, givenFormat, timeless, customLocale) => {
+  if (date !== 0 && !date) return undefined;
+  const locale = customLocale || l10n;
+  let parsedDate;
+  const dateOrig = date;
+  if (date instanceof Date) parsedDate = new Date(date.getTime());else if (typeof date !== "string" && date.toFixed !== undefined) parsedDate = new Date(date);else if (typeof date === "string") {
+    const format = givenFormat || (config || defaults).dateFormat;
+    const datestr = String(date).trim();
+
+    if (datestr === "today") {
+      parsedDate = new Date();
+      timeless = true;
+    } else if (/Z$/.test(datestr) || /GMT$/.test(datestr)) parsedDate = new Date(date);else if (config && config.parseDate) parsedDate = config.parseDate(date, format);else {
+      parsedDate = !config || !config.noCalendar ? new Date(new Date().getFullYear(), 0, 1, 0, 0, 0, 0) : new Date(new Date().setHours(0, 0, 0, 0));
+      let matched,
+          ops = [];
+
+      for (let i = 0, matchIndex = 0, regexStr = ""; i < format.length; i++) {
+        const token = format[i];
+        const isBackSlash = token === "\\";
+        const escaped = format[i - 1] === "\\" || isBackSlash;
+
+        if (tokenRegex[token] && !escaped) {
+          regexStr += tokenRegex[token];
+          const match = new RegExp(regexStr).exec(date);
+
+          if (match && (matched = true)) {
+            ops[token !== "Y" ? "push" : "unshift"]({
+              fn: revFormat[token],
+              val: match[++matchIndex]
+            });
+          }
+        } else if (!isBackSlash) regexStr += ".";
+
+        ops.forEach(({
+          fn,
+          val
+        }) => parsedDate = fn(parsedDate, val, locale) || parsedDate);
+      }
+
+      parsedDate = matched ? parsedDate : undefined;
+    }
+  }
+
+  if (!(parsedDate instanceof Date && !isNaN(parsedDate.getTime()))) {
+    config.errorHandler(new Error(`Invalid date provided: ${dateOrig}`));
+    return undefined;
+  }
+
+  if (timeless === true) parsedDate.setHours(0, 0, 0, 0);
+  return parsedDate;
+};
+function compareDates(date1, date2, timeless = true) {
+  if (timeless !== false) {
+    return new Date(date1.getTime()).setHours(0, 0, 0, 0) - new Date(date2.getTime()).setHours(0, 0, 0, 0);
+  }
+
+  return date1.getTime() - date2.getTime();
+}
+const isBetween = (ts, ts1, ts2) => {
+  return ts > Math.min(ts1, ts2) && ts < Math.max(ts1, ts2);
+};
+const duration = {
+  DAY: 86400000
+};
+function getDefaultHours(config) {
+  let hours = config.defaultHour;
+  let minutes = config.defaultMinute;
+  let seconds = config.defaultSeconds;
+
+  if (config.minDate !== undefined) {
+    const minHour = config.minDate.getHours();
+    const minMinutes = config.minDate.getMinutes();
+    const minSeconds = config.minDate.getSeconds();
+
+    if (hours < minHour) {
+      hours = minHour;
+    }
+
+    if (hours === minHour && minutes < minMinutes) {
+      minutes = minMinutes;
+    }
+
+    if (hours === minHour && minutes === minMinutes && seconds < minSeconds) seconds = config.minDate.getSeconds();
+  }
+
+  if (config.maxDate !== undefined) {
+    const maxHr = config.maxDate.getHours();
+    const maxMinutes = config.maxDate.getMinutes();
+    hours = Math.min(hours, maxHr);
+    if (hours === maxHr) minutes = Math.min(maxMinutes, minutes);
+    if (hours === maxHr && minutes === maxMinutes) seconds = config.maxDate.getSeconds();
+  }
+
+  return {
+    hours,
+    minutes,
+    seconds
+  };
+}
+
+if (typeof Object.assign !== "function") {
+  Object.assign = function (target, ...args) {
+    if (!target) {
+      throw TypeError("Cannot convert undefined or null to object");
+    }
+
+    for (const source of args) {
+      if (source) {
+        Object.keys(source).forEach(key => target[key] = source[key]);
+      }
+    }
+
+    return target;
+  };
+}
+
+const DEBOUNCED_CHANGE_MS = 300;
+
+function FlatpickrInstance(element, instanceConfig) {
+  const self = {
+    config: Object.assign(Object.assign({}, defaults), flatpickr.defaultConfig),
+    l10n: english
+  };
+  self.parseDate = createDateParser({
+    config: self.config,
+    l10n: self.l10n
+  });
+  self._handlers = [];
+  self.pluginElements = [];
+  self.loadedPlugins = [];
+  self._bind = bind;
+  self._setHoursFromDate = setHoursFromDate;
+  self._positionCalendar = positionCalendar;
+  self.changeMonth = changeMonth;
+  self.changeYear = changeYear;
+  self.clear = clear;
+  self.close = close;
+  self._createElement = createElement;
+  self.destroy = destroy;
+  self.isEnabled = isEnabled;
+  self.jumpToDate = jumpToDate;
+  self.open = open;
+  self.redraw = redraw;
+  self.set = set;
+  self.setDate = setDate;
+  self.toggle = toggle;
+
+  function setupHelperFunctions() {
+    self.utils = {
+      getDaysInMonth(month = self.currentMonth, yr = self.currentYear) {
+        if (month === 1 && (yr % 4 === 0 && yr % 100 !== 0 || yr % 400 === 0)) return 29;
+        return self.l10n.daysInMonth[month];
+      }
+
+    };
+  }
+
+  function init() {
+    self.element = self.input = element;
+    self.isOpen = false;
+    parseConfig();
+    setupLocale();
+    setupInputs();
+    setupDates();
+    setupHelperFunctions();
+    if (!self.isMobile) build();
+    bindEvents();
+
+    if (self.selectedDates.length || self.config.noCalendar) {
+      if (self.config.enableTime) {
+        setHoursFromDate(self.config.noCalendar ? self.latestSelectedDateObj : undefined);
+      }
+
+      updateValue(false);
+    }
+
+    setCalendarWidth();
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+    if (!self.isMobile && isSafari) {
+      positionCalendar();
+    }
+
+    triggerEvent("onReady");
+  }
+
+  function bindToInstance(fn) {
+    return fn.bind(self);
+  }
+
+  function setCalendarWidth() {
+    const config = self.config;
+
+    if (config.weekNumbers === false && config.showMonths === 1) {
+      return;
+    } else if (config.noCalendar !== true) {
+      window.requestAnimationFrame(function () {
+        if (self.calendarContainer !== undefined) {
+          self.calendarContainer.style.visibility = "hidden";
+          self.calendarContainer.style.display = "block";
+        }
+
+        if (self.daysContainer !== undefined) {
+          const daysWidth = (self.days.offsetWidth + 1) * config.showMonths;
+          self.daysContainer.style.width = daysWidth + "px";
+          self.calendarContainer.style.width = daysWidth + (self.weekWrapper !== undefined ? self.weekWrapper.offsetWidth : 0) + "px";
+          self.calendarContainer.style.removeProperty("visibility");
+          self.calendarContainer.style.removeProperty("display");
+        }
+      });
+    }
+  }
+
+  function updateTime(e) {
+    if (self.selectedDates.length === 0) {
+      const defaultDate = self.config.minDate === undefined || compareDates(new Date(), self.config.minDate) >= 0 ? new Date() : new Date(self.config.minDate.getTime());
+      const defaults = getDefaultHours(self.config);
+      defaultDate.setHours(defaults.hours, defaults.minutes, defaults.seconds, defaultDate.getMilliseconds());
+      self.selectedDates = [defaultDate];
+      self.latestSelectedDateObj = defaultDate;
+    }
+
+    if (e !== undefined && e.type !== "blur") {
+      timeWrapper(e);
+    }
+
+    const prevValue = self._input.value;
+    setHoursFromInputs();
+    updateValue();
+
+    if (self._input.value !== prevValue) {
+      self._debouncedChange();
+    }
+  }
+
+  function ampm2military(hour, amPM) {
+    return hour % 12 + 12 * int(amPM === self.l10n.amPM[1]);
+  }
+
+  function military2ampm(hour) {
+    switch (hour % 24) {
+      case 0:
+      case 12:
+        return 12;
+
+      default:
+        return hour % 12;
+    }
+  }
+
+  function setHoursFromInputs() {
+    if (self.hourElement === undefined || self.minuteElement === undefined) return;
+    let hours = (parseInt(self.hourElement.value.slice(-2), 10) || 0) % 24,
+        minutes = (parseInt(self.minuteElement.value, 10) || 0) % 60,
+        seconds = self.secondElement !== undefined ? (parseInt(self.secondElement.value, 10) || 0) % 60 : 0;
+
+    if (self.amPM !== undefined) {
+      hours = ampm2military(hours, self.amPM.textContent);
+    }
+
+    const limitMinHours = self.config.minTime !== undefined || self.config.minDate && self.minDateHasTime && self.latestSelectedDateObj && compareDates(self.latestSelectedDateObj, self.config.minDate, true) === 0;
+    const limitMaxHours = self.config.maxTime !== undefined || self.config.maxDate && self.maxDateHasTime && self.latestSelectedDateObj && compareDates(self.latestSelectedDateObj, self.config.maxDate, true) === 0;
+
+    if (limitMaxHours) {
+      const maxTime = self.config.maxTime !== undefined ? self.config.maxTime : self.config.maxDate;
+      hours = Math.min(hours, maxTime.getHours());
+      if (hours === maxTime.getHours()) minutes = Math.min(minutes, maxTime.getMinutes());
+      if (minutes === maxTime.getMinutes()) seconds = Math.min(seconds, maxTime.getSeconds());
+    }
+
+    if (limitMinHours) {
+      const minTime = self.config.minTime !== undefined ? self.config.minTime : self.config.minDate;
+      hours = Math.max(hours, minTime.getHours());
+      if (hours === minTime.getHours() && minutes < minTime.getMinutes()) minutes = minTime.getMinutes();
+      if (minutes === minTime.getMinutes()) seconds = Math.max(seconds, minTime.getSeconds());
+    }
+
+    setHours(hours, minutes, seconds);
+  }
+
+  function setHoursFromDate(dateObj) {
+    const date = dateObj || self.latestSelectedDateObj;
+
+    if (date) {
+      setHours(date.getHours(), date.getMinutes(), date.getSeconds());
+    }
+  }
+
+  function setHours(hours, minutes, seconds) {
+    if (self.latestSelectedDateObj !== undefined) {
+      self.latestSelectedDateObj.setHours(hours % 24, minutes, seconds || 0, 0);
+    }
+
+    if (!self.hourElement || !self.minuteElement || self.isMobile) return;
+    self.hourElement.value = pad(!self.config.time_24hr ? (12 + hours) % 12 + 12 * int(hours % 12 === 0) : hours);
+    self.minuteElement.value = pad(minutes);
+    if (self.amPM !== undefined) self.amPM.textContent = self.l10n.amPM[int(hours >= 12)];
+    if (self.secondElement !== undefined) self.secondElement.value = pad(seconds);
+  }
+
+  function onYearInput(event) {
+    const eventTarget = getEventTarget(event);
+    const year = parseInt(eventTarget.value) + (event.delta || 0);
+
+    if (year / 1000 > 1 || event.key === "Enter" && !/[^\d]/.test(year.toString())) {
+      changeYear(year);
+    }
+  }
+
+  function bind(element, event, handler, options) {
+    if (event instanceof Array) return event.forEach(ev => bind(element, ev, handler, options));
+    if (element instanceof Array) return element.forEach(el => bind(el, event, handler, options));
+    element.addEventListener(event, handler, options);
+
+    self._handlers.push({
+      remove: () => element.removeEventListener(event, handler)
+    });
+  }
+
+  function triggerChange() {
+    triggerEvent("onChange");
+  }
+
+  function bindEvents() {
+    if (self.config.wrap) {
+      ["open", "close", "toggle", "clear"].forEach(evt => {
+        Array.prototype.forEach.call(self.element.querySelectorAll(`[data-${evt}]`), el => bind(el, "click", self[evt]));
+      });
+    }
+
+    if (self.isMobile) {
+      setupMobile();
+      return;
+    }
+
+    const debouncedResize = debounce(onResize, 50);
+    self._debouncedChange = debounce(triggerChange, DEBOUNCED_CHANGE_MS);
+    if (self.daysContainer && !/iPhone|iPad|iPod/i.test(navigator.userAgent)) bind(self.daysContainer, "mouseover", e => {
+      if (self.config.mode === "range") onMouseOver(getEventTarget(e));
+    });
+    bind(window.document.body, "keydown", onKeyDown);
+    if (!self.config.inline && !self.config.static) bind(window, "resize", debouncedResize);
+    if (window.ontouchstart !== undefined) bind(window.document, "touchstart", documentClick);else bind(window.document, "mousedown", documentClick);
+    bind(window.document, "focus", documentClick, {
+      capture: true
+    });
+
+    if (self.config.clickOpens === true) {
+      bind(self._input, "focus", self.open);
+      bind(self._input, "click", self.open);
+    }
+
+    if (self.daysContainer !== undefined) {
+      bind(self.monthNav, "click", onMonthNavClick);
+      bind(self.monthNav, ["keyup", "increment"], onYearInput);
+      bind(self.daysContainer, "click", selectDate);
+    }
+
+    if (self.timeContainer !== undefined && self.minuteElement !== undefined && self.hourElement !== undefined) {
+      const selText = e => getEventTarget(e).select();
+
+      bind(self.timeContainer, ["increment"], updateTime);
+      bind(self.timeContainer, "blur", updateTime, {
+        capture: true
+      });
+      bind(self.timeContainer, "click", timeIncrement);
+      bind([self.hourElement, self.minuteElement], ["focus", "click"], selText);
+      if (self.secondElement !== undefined) bind(self.secondElement, "focus", () => self.secondElement && self.secondElement.select());
+
+      if (self.amPM !== undefined) {
+        bind(self.amPM, "click", e => {
+          updateTime(e);
+          triggerChange();
+        });
+      }
+    }
+
+    if (self.config.allowInput) {
+      bind(self._input, "blur", onBlur);
+    }
+  }
+
+  function jumpToDate(jumpDate, triggerChange) {
+    const jumpTo = jumpDate !== undefined ? self.parseDate(jumpDate) : self.latestSelectedDateObj || (self.config.minDate && self.config.minDate > self.now ? self.config.minDate : self.config.maxDate && self.config.maxDate < self.now ? self.config.maxDate : self.now);
+    const oldYear = self.currentYear;
+    const oldMonth = self.currentMonth;
+
+    try {
+      if (jumpTo !== undefined) {
+        self.currentYear = jumpTo.getFullYear();
+        self.currentMonth = jumpTo.getMonth();
+      }
+    } catch (e) {
+      e.message = "Invalid date supplied: " + jumpTo;
+      self.config.errorHandler(e);
+    }
+
+    if (triggerChange && self.currentYear !== oldYear) {
+      triggerEvent("onYearChange");
+      buildMonthSwitch();
+    }
+
+    if (triggerChange && (self.currentYear !== oldYear || self.currentMonth !== oldMonth)) {
+      triggerEvent("onMonthChange");
+    }
+
+    self.redraw();
+  }
+
+  function timeIncrement(e) {
+    const eventTarget = getEventTarget(e);
+    if (~eventTarget.className.indexOf("arrow")) incrementNumInput(e, eventTarget.classList.contains("arrowUp") ? 1 : -1);
+  }
+
+  function incrementNumInput(e, delta, inputElem) {
+    const target = e && getEventTarget(e);
+    const input = inputElem || target && target.parentNode && target.parentNode.firstChild;
+    const event = createEvent("increment");
+    event.delta = delta;
+    input && input.dispatchEvent(event);
+  }
+
+  function build() {
+    const fragment = window.document.createDocumentFragment();
+    self.calendarContainer = createElement("div", "flatpickr-calendar");
+    self.calendarContainer.tabIndex = -1;
+
+    if (!self.config.noCalendar) {
+      fragment.appendChild(buildMonthNav());
+      self.innerContainer = createElement("div", "flatpickr-innerContainer");
+
+      if (self.config.weekNumbers) {
+        const {
+          weekWrapper,
+          weekNumbers
+        } = buildWeeks();
+        self.innerContainer.appendChild(weekWrapper);
+        self.weekNumbers = weekNumbers;
+        self.weekWrapper = weekWrapper;
+      }
+
+      self.rContainer = createElement("div", "flatpickr-rContainer");
+      self.rContainer.appendChild(buildWeekdays());
+
+      if (!self.daysContainer) {
+        self.daysContainer = createElement("div", "flatpickr-days");
+        self.daysContainer.tabIndex = -1;
+      }
+
+      buildDays();
+      self.rContainer.appendChild(self.daysContainer);
+      self.innerContainer.appendChild(self.rContainer);
+      fragment.appendChild(self.innerContainer);
+    }
+
+    if (self.config.enableTime) {
+      fragment.appendChild(buildTime());
+    }
+
+    toggleClass(self.calendarContainer, "rangeMode", self.config.mode === "range");
+    toggleClass(self.calendarContainer, "animate", self.config.animate === true);
+    toggleClass(self.calendarContainer, "multiMonth", self.config.showMonths > 1);
+    self.calendarContainer.appendChild(fragment);
+    const customAppend = self.config.appendTo !== undefined && self.config.appendTo.nodeType !== undefined;
+
+    if (self.config.inline || self.config.static) {
+      self.calendarContainer.classList.add(self.config.inline ? "inline" : "static");
+
+      if (self.config.inline) {
+        if (!customAppend && self.element.parentNode) self.element.parentNode.insertBefore(self.calendarContainer, self._input.nextSibling);else if (self.config.appendTo !== undefined) self.config.appendTo.appendChild(self.calendarContainer);
+      }
+
+      if (self.config.static) {
+        const wrapper = createElement("div", "flatpickr-wrapper");
+        if (self.element.parentNode) self.element.parentNode.insertBefore(wrapper, self.element);
+        wrapper.appendChild(self.element);
+        if (self.altInput) wrapper.appendChild(self.altInput);
+        wrapper.appendChild(self.calendarContainer);
+      }
+    }
+
+    if (!self.config.static && !self.config.inline) (self.config.appendTo !== undefined ? self.config.appendTo : window.document.body).appendChild(self.calendarContainer);
+  }
+
+  function createDay(className, date, dayNumber, i) {
+    const dateIsEnabled = isEnabled(date, true),
+          dayElement = createElement("span", "flatpickr-day " + className, date.getDate().toString());
+    dayElement.dateObj = date;
+    dayElement.$i = i;
+    dayElement.setAttribute("aria-label", self.formatDate(date, self.config.ariaDateFormat));
+
+    if (className.indexOf("hidden") === -1 && compareDates(date, self.now) === 0) {
+      self.todayDateElem = dayElement;
+      dayElement.classList.add("today");
+      dayElement.setAttribute("aria-current", "date");
+    }
+
+    if (dateIsEnabled) {
+      dayElement.tabIndex = -1;
+
+      if (isDateSelected(date)) {
+        dayElement.classList.add("selected");
+        self.selectedDateElem = dayElement;
+
+        if (self.config.mode === "range") {
+          toggleClass(dayElement, "startRange", self.selectedDates[0] && compareDates(date, self.selectedDates[0], true) === 0);
+          toggleClass(dayElement, "endRange", self.selectedDates[1] && compareDates(date, self.selectedDates[1], true) === 0);
+          if (className === "nextMonthDay") dayElement.classList.add("inRange");
+        }
+      }
+    } else {
+      dayElement.classList.add("flatpickr-disabled");
+    }
+
+    if (self.config.mode === "range") {
+      if (isDateInRange(date) && !isDateSelected(date)) dayElement.classList.add("inRange");
+    }
+
+    if (self.weekNumbers && self.config.showMonths === 1 && className !== "prevMonthDay" && dayNumber % 7 === 1) {
+      self.weekNumbers.insertAdjacentHTML("beforeend", "<span class='flatpickr-day'>" + self.config.getWeek(date) + "</span>");
+    }
+
+    triggerEvent("onDayCreate", dayElement);
+    return dayElement;
+  }
+
+  function focusOnDayElem(targetNode) {
+    targetNode.focus();
+    if (self.config.mode === "range") onMouseOver(targetNode);
+  }
+
+  function getFirstAvailableDay(delta) {
+    const startMonth = delta > 0 ? 0 : self.config.showMonths - 1;
+    const endMonth = delta > 0 ? self.config.showMonths : -1;
+
+    for (let m = startMonth; m != endMonth; m += delta) {
+      const month = self.daysContainer.children[m];
+      const startIndex = delta > 0 ? 0 : month.children.length - 1;
+      const endIndex = delta > 0 ? month.children.length : -1;
+
+      for (let i = startIndex; i != endIndex; i += delta) {
+        const c = month.children[i];
+        if (c.className.indexOf("hidden") === -1 && isEnabled(c.dateObj)) return c;
+      }
+    }
+
+    return undefined;
+  }
+
+  function getNextAvailableDay(current, delta) {
+    const givenMonth = current.className.indexOf("Month") === -1 ? current.dateObj.getMonth() : self.currentMonth;
+    const endMonth = delta > 0 ? self.config.showMonths : -1;
+    const loopDelta = delta > 0 ? 1 : -1;
+
+    for (let m = givenMonth - self.currentMonth; m != endMonth; m += loopDelta) {
+      const month = self.daysContainer.children[m];
+      const startIndex = givenMonth - self.currentMonth === m ? current.$i + delta : delta < 0 ? month.children.length - 1 : 0;
+      const numMonthDays = month.children.length;
+
+      for (let i = startIndex; i >= 0 && i < numMonthDays && i != (delta > 0 ? numMonthDays : -1); i += loopDelta) {
+        const c = month.children[i];
+        if (c.className.indexOf("hidden") === -1 && isEnabled(c.dateObj) && Math.abs(current.$i - i) >= Math.abs(delta)) return focusOnDayElem(c);
+      }
+    }
+
+    self.changeMonth(loopDelta);
+    focusOnDay(getFirstAvailableDay(loopDelta), 0);
+    return undefined;
+  }
+
+  function focusOnDay(current, offset) {
+    const dayFocused = isInView(document.activeElement || document.body);
+    const startElem = current !== undefined ? current : dayFocused ? document.activeElement : self.selectedDateElem !== undefined && isInView(self.selectedDateElem) ? self.selectedDateElem : self.todayDateElem !== undefined && isInView(self.todayDateElem) ? self.todayDateElem : getFirstAvailableDay(offset > 0 ? 1 : -1);
+
+    if (startElem === undefined) {
+      self._input.focus();
+    } else if (!dayFocused) {
+      focusOnDayElem(startElem);
+    } else {
+      getNextAvailableDay(startElem, offset);
+    }
+  }
+
+  function buildMonthDays(year, month) {
+    const firstOfMonth = (new Date(year, month, 1).getDay() - self.l10n.firstDayOfWeek + 7) % 7;
+    const prevMonthDays = self.utils.getDaysInMonth((month - 1 + 12) % 12, year);
+    const daysInMonth = self.utils.getDaysInMonth(month, year),
+          days = window.document.createDocumentFragment(),
+          isMultiMonth = self.config.showMonths > 1,
+          prevMonthDayClass = isMultiMonth ? "prevMonthDay hidden" : "prevMonthDay",
+          nextMonthDayClass = isMultiMonth ? "nextMonthDay hidden" : "nextMonthDay";
+    let dayNumber = prevMonthDays + 1 - firstOfMonth,
+        dayIndex = 0;
+
+    for (; dayNumber <= prevMonthDays; dayNumber++, dayIndex++) {
+      days.appendChild(createDay(prevMonthDayClass, new Date(year, month - 1, dayNumber), dayNumber, dayIndex));
+    }
+
+    for (dayNumber = 1; dayNumber <= daysInMonth; dayNumber++, dayIndex++) {
+      days.appendChild(createDay("", new Date(year, month, dayNumber), dayNumber, dayIndex));
+    }
+
+    for (let dayNum = daysInMonth + 1; dayNum <= 42 - firstOfMonth && (self.config.showMonths === 1 || dayIndex % 7 !== 0); dayNum++, dayIndex++) {
+      days.appendChild(createDay(nextMonthDayClass, new Date(year, month + 1, dayNum % daysInMonth), dayNum, dayIndex));
+    }
+
+    const dayContainer = createElement("div", "dayContainer");
+    dayContainer.appendChild(days);
+    return dayContainer;
+  }
+
+  function buildDays() {
+    if (self.daysContainer === undefined) {
+      return;
+    }
+
+    clearNode(self.daysContainer);
+    if (self.weekNumbers) clearNode(self.weekNumbers);
+    const frag = document.createDocumentFragment();
+
+    for (let i = 0; i < self.config.showMonths; i++) {
+      const d = new Date(self.currentYear, self.currentMonth, 1);
+      d.setMonth(self.currentMonth + i);
+      frag.appendChild(buildMonthDays(d.getFullYear(), d.getMonth()));
+    }
+
+    self.daysContainer.appendChild(frag);
+    self.days = self.daysContainer.firstChild;
+
+    if (self.config.mode === "range" && self.selectedDates.length === 1) {
+      onMouseOver();
+    }
+  }
+
+  function buildMonthSwitch() {
+    if (self.config.showMonths > 1 || self.config.monthSelectorType !== "dropdown") return;
+
+    const shouldBuildMonth = function (month) {
+      if (self.config.minDate !== undefined && self.currentYear === self.config.minDate.getFullYear() && month < self.config.minDate.getMonth()) {
+        return false;
+      }
+
+      return !(self.config.maxDate !== undefined && self.currentYear === self.config.maxDate.getFullYear() && month > self.config.maxDate.getMonth());
+    };
+
+    self.monthsDropdownContainer.tabIndex = -1;
+    self.monthsDropdownContainer.innerHTML = "";
+
+    for (let i = 0; i < 12; i++) {
+      if (!shouldBuildMonth(i)) continue;
+      const month = createElement("option", "flatpickr-monthDropdown-month");
+      month.value = new Date(self.currentYear, i).getMonth().toString();
+      month.textContent = monthToStr(i, self.config.shorthandCurrentMonth, self.l10n);
+      month.tabIndex = -1;
+
+      if (self.currentMonth === i) {
+        month.selected = true;
+      }
+
+      self.monthsDropdownContainer.appendChild(month);
+    }
+  }
+
+  function buildMonth() {
+    const container = createElement("div", "flatpickr-month");
+    const monthNavFragment = window.document.createDocumentFragment();
+    let monthElement;
+
+    if (self.config.showMonths > 1 || self.config.monthSelectorType === "static") {
+      monthElement = createElement("span", "cur-month");
+    } else {
+      self.monthsDropdownContainer = createElement("select", "flatpickr-monthDropdown-months");
+      self.monthsDropdownContainer.setAttribute("aria-label", self.l10n.monthAriaLabel);
+      bind(self.monthsDropdownContainer, "change", e => {
+        const target = getEventTarget(e);
+        const selectedMonth = parseInt(target.value, 10);
+        self.changeMonth(selectedMonth - self.currentMonth);
+        triggerEvent("onMonthChange");
+      });
+      buildMonthSwitch();
+      monthElement = self.monthsDropdownContainer;
+    }
+
+    const yearInput = createNumberInput("cur-year", {
+      tabindex: "-1"
+    });
+    const yearElement = yearInput.getElementsByTagName("input")[0];
+    yearElement.setAttribute("aria-label", self.l10n.yearAriaLabel);
+
+    if (self.config.minDate) {
+      yearElement.setAttribute("min", self.config.minDate.getFullYear().toString());
+    }
+
+    if (self.config.maxDate) {
+      yearElement.setAttribute("max", self.config.maxDate.getFullYear().toString());
+      yearElement.disabled = !!self.config.minDate && self.config.minDate.getFullYear() === self.config.maxDate.getFullYear();
+    }
+
+    const currentMonth = createElement("div", "flatpickr-current-month");
+    currentMonth.appendChild(monthElement);
+    currentMonth.appendChild(yearInput);
+    monthNavFragment.appendChild(currentMonth);
+    container.appendChild(monthNavFragment);
+    return {
+      container,
+      yearElement,
+      monthElement
+    };
+  }
+
+  function buildMonths() {
+    clearNode(self.monthNav);
+    self.monthNav.appendChild(self.prevMonthNav);
+
+    if (self.config.showMonths) {
+      self.yearElements = [];
+      self.monthElements = [];
+    }
+
+    for (let m = self.config.showMonths; m--;) {
+      const month = buildMonth();
+      self.yearElements.push(month.yearElement);
+      self.monthElements.push(month.monthElement);
+      self.monthNav.appendChild(month.container);
+    }
+
+    self.monthNav.appendChild(self.nextMonthNav);
+  }
+
+  function buildMonthNav() {
+    self.monthNav = createElement("div", "flatpickr-months");
+    self.yearElements = [];
+    self.monthElements = [];
+    self.prevMonthNav = createElement("span", "flatpickr-prev-month");
+    self.prevMonthNav.innerHTML = self.config.prevArrow;
+    self.nextMonthNav = createElement("span", "flatpickr-next-month");
+    self.nextMonthNav.innerHTML = self.config.nextArrow;
+    buildMonths();
+    Object.defineProperty(self, "_hidePrevMonthArrow", {
+      get: () => self.__hidePrevMonthArrow,
+
+      set(bool) {
+        if (self.__hidePrevMonthArrow !== bool) {
+          toggleClass(self.prevMonthNav, "flatpickr-disabled", bool);
+          self.__hidePrevMonthArrow = bool;
+        }
+      }
+
+    });
+    Object.defineProperty(self, "_hideNextMonthArrow", {
+      get: () => self.__hideNextMonthArrow,
+
+      set(bool) {
+        if (self.__hideNextMonthArrow !== bool) {
+          toggleClass(self.nextMonthNav, "flatpickr-disabled", bool);
+          self.__hideNextMonthArrow = bool;
+        }
+      }
+
+    });
+    self.currentYearElement = self.yearElements[0];
+    updateNavigationCurrentMonth();
+    return self.monthNav;
+  }
+
+  function buildTime() {
+    self.calendarContainer.classList.add("hasTime");
+    if (self.config.noCalendar) self.calendarContainer.classList.add("noCalendar");
+    const defaults = getDefaultHours(self.config);
+    self.timeContainer = createElement("div", "flatpickr-time");
+    self.timeContainer.tabIndex = -1;
+    const separator = createElement("span", "flatpickr-time-separator", ":");
+    const hourInput = createNumberInput("flatpickr-hour", {
+      "aria-label": self.l10n.hourAriaLabel
+    });
+    self.hourElement = hourInput.getElementsByTagName("input")[0];
+    const minuteInput = createNumberInput("flatpickr-minute", {
+      "aria-label": self.l10n.minuteAriaLabel
+    });
+    self.minuteElement = minuteInput.getElementsByTagName("input")[0];
+    self.hourElement.tabIndex = self.minuteElement.tabIndex = -1;
+    self.hourElement.value = pad(self.latestSelectedDateObj ? self.latestSelectedDateObj.getHours() : self.config.time_24hr ? defaults.hours : military2ampm(defaults.hours));
+    self.minuteElement.value = pad(self.latestSelectedDateObj ? self.latestSelectedDateObj.getMinutes() : defaults.minutes);
+    self.hourElement.setAttribute("step", self.config.hourIncrement.toString());
+    self.minuteElement.setAttribute("step", self.config.minuteIncrement.toString());
+    self.hourElement.setAttribute("min", self.config.time_24hr ? "0" : "1");
+    self.hourElement.setAttribute("max", self.config.time_24hr ? "23" : "12");
+    self.hourElement.setAttribute("maxlength", "2");
+    self.minuteElement.setAttribute("min", "0");
+    self.minuteElement.setAttribute("max", "59");
+    self.minuteElement.setAttribute("maxlength", "2");
+    self.timeContainer.appendChild(hourInput);
+    self.timeContainer.appendChild(separator);
+    self.timeContainer.appendChild(minuteInput);
+    if (self.config.time_24hr) self.timeContainer.classList.add("time24hr");
+
+    if (self.config.enableSeconds) {
+      self.timeContainer.classList.add("hasSeconds");
+      const secondInput = createNumberInput("flatpickr-second");
+      self.secondElement = secondInput.getElementsByTagName("input")[0];
+      self.secondElement.value = pad(self.latestSelectedDateObj ? self.latestSelectedDateObj.getSeconds() : defaults.seconds);
+      self.secondElement.setAttribute("step", self.minuteElement.getAttribute("step"));
+      self.secondElement.setAttribute("min", "0");
+      self.secondElement.setAttribute("max", "59");
+      self.secondElement.setAttribute("maxlength", "2");
+      self.timeContainer.appendChild(createElement("span", "flatpickr-time-separator", ":"));
+      self.timeContainer.appendChild(secondInput);
+    }
+
+    if (!self.config.time_24hr) {
+      self.amPM = createElement("span", "flatpickr-am-pm", self.l10n.amPM[int((self.latestSelectedDateObj ? self.hourElement.value : self.config.defaultHour) > 11)]);
+      self.amPM.title = self.l10n.toggleTitle;
+      self.amPM.tabIndex = -1;
+      self.timeContainer.appendChild(self.amPM);
+    }
+
+    return self.timeContainer;
+  }
+
+  function buildWeekdays() {
+    if (!self.weekdayContainer) self.weekdayContainer = createElement("div", "flatpickr-weekdays");else clearNode(self.weekdayContainer);
+
+    for (let i = self.config.showMonths; i--;) {
+      const container = createElement("div", "flatpickr-weekdaycontainer");
+      self.weekdayContainer.appendChild(container);
+    }
+
+    updateWeekdays();
+    return self.weekdayContainer;
+  }
+
+  function updateWeekdays() {
+    if (!self.weekdayContainer) {
+      return;
+    }
+
+    const firstDayOfWeek = self.l10n.firstDayOfWeek;
+    let weekdays = [...self.l10n.weekdays.shorthand];
+
+    if (firstDayOfWeek > 0 && firstDayOfWeek < weekdays.length) {
+      weekdays = [...weekdays.splice(firstDayOfWeek, weekdays.length), ...weekdays.splice(0, firstDayOfWeek)];
+    }
+
+    for (let i = self.config.showMonths; i--;) {
+      self.weekdayContainer.children[i].innerHTML = `
+      <span class='flatpickr-weekday'>
+        ${weekdays.join("</span><span class='flatpickr-weekday'>")}
+      </span>
+      `;
+    }
+  }
+
+  function buildWeeks() {
+    self.calendarContainer.classList.add("hasWeeks");
+    const weekWrapper = createElement("div", "flatpickr-weekwrapper");
+    weekWrapper.appendChild(createElement("span", "flatpickr-weekday", self.l10n.weekAbbreviation));
+    const weekNumbers = createElement("div", "flatpickr-weeks");
+    weekWrapper.appendChild(weekNumbers);
+    return {
+      weekWrapper,
+      weekNumbers
+    };
+  }
+
+  function changeMonth(value, isOffset = true) {
+    const delta = isOffset ? value : value - self.currentMonth;
+    if (delta < 0 && self._hidePrevMonthArrow === true || delta > 0 && self._hideNextMonthArrow === true) return;
+    self.currentMonth += delta;
+
+    if (self.currentMonth < 0 || self.currentMonth > 11) {
+      self.currentYear += self.currentMonth > 11 ? 1 : -1;
+      self.currentMonth = (self.currentMonth + 12) % 12;
+      triggerEvent("onYearChange");
+      buildMonthSwitch();
+    }
+
+    buildDays();
+    triggerEvent("onMonthChange");
+    updateNavigationCurrentMonth();
+  }
+
+  function clear(triggerChangeEvent = true, toInitial = true) {
+    self.input.value = "";
+    if (self.altInput !== undefined) self.altInput.value = "";
+    if (self.mobileInput !== undefined) self.mobileInput.value = "";
+    self.selectedDates = [];
+    self.latestSelectedDateObj = undefined;
+
+    if (toInitial === true) {
+      self.currentYear = self._initialDate.getFullYear();
+      self.currentMonth = self._initialDate.getMonth();
+    }
+
+    if (self.config.enableTime === true) {
+      const {
+        hours,
+        minutes,
+        seconds
+      } = getDefaultHours(self.config);
+      setHours(hours, minutes, seconds);
+    }
+
+    self.redraw();
+    if (triggerChangeEvent) triggerEvent("onChange");
+  }
+
+  function close() {
+    self.isOpen = false;
+
+    if (!self.isMobile) {
+      if (self.calendarContainer !== undefined) {
+        self.calendarContainer.classList.remove("open");
+      }
+
+      if (self._input !== undefined) {
+        self._input.classList.remove("active");
+      }
+    }
+
+    triggerEvent("onClose");
+  }
+
+  function destroy() {
+    if (self.config !== undefined) triggerEvent("onDestroy");
+
+    for (let i = self._handlers.length; i--;) {
+      self._handlers[i].remove();
+    }
+
+    self._handlers = [];
+
+    if (self.mobileInput) {
+      if (self.mobileInput.parentNode) self.mobileInput.parentNode.removeChild(self.mobileInput);
+      self.mobileInput = undefined;
+    } else if (self.calendarContainer && self.calendarContainer.parentNode) {
+      if (self.config.static && self.calendarContainer.parentNode) {
+        const wrapper = self.calendarContainer.parentNode;
+        wrapper.lastChild && wrapper.removeChild(wrapper.lastChild);
+
+        if (wrapper.parentNode) {
+          while (wrapper.firstChild) wrapper.parentNode.insertBefore(wrapper.firstChild, wrapper);
+
+          wrapper.parentNode.removeChild(wrapper);
+        }
+      } else self.calendarContainer.parentNode.removeChild(self.calendarContainer);
+    }
+
+    if (self.altInput) {
+      self.input.type = "text";
+      if (self.altInput.parentNode) self.altInput.parentNode.removeChild(self.altInput);
+      delete self.altInput;
+    }
+
+    if (self.input) {
+      self.input.type = self.input._type;
+      self.input.classList.remove("flatpickr-input");
+      self.input.removeAttribute("readonly");
+    }
+
+    ["_showTimeInput", "latestSelectedDateObj", "_hideNextMonthArrow", "_hidePrevMonthArrow", "__hideNextMonthArrow", "__hidePrevMonthArrow", "isMobile", "isOpen", "selectedDateElem", "minDateHasTime", "maxDateHasTime", "days", "daysContainer", "_input", "_positionElement", "innerContainer", "rContainer", "monthNav", "todayDateElem", "calendarContainer", "weekdayContainer", "prevMonthNav", "nextMonthNav", "monthsDropdownContainer", "currentMonthElement", "currentYearElement", "navigationCurrentMonth", "selectedDateElem", "config"].forEach(k => {
+      try {
+        delete self[k];
+      } catch (_) {}
+    });
+  }
+
+  function isCalendarElem(elem) {
+    if (self.config.appendTo && self.config.appendTo.contains(elem)) return true;
+    return self.calendarContainer.contains(elem);
+  }
+
+  function documentClick(e) {
+    if (self.isOpen && !self.config.inline) {
+      const eventTarget = getEventTarget(e);
+      const isCalendarElement = isCalendarElem(eventTarget);
+      const isInput = eventTarget === self.input || eventTarget === self.altInput || self.element.contains(eventTarget) || e.path && e.path.indexOf && (~e.path.indexOf(self.input) || ~e.path.indexOf(self.altInput));
+      const lostFocus = e.type === "blur" ? isInput && e.relatedTarget && !isCalendarElem(e.relatedTarget) : !isInput && !isCalendarElement && !isCalendarElem(e.relatedTarget);
+      const isIgnored = !self.config.ignoredFocusElements.some(elem => elem.contains(eventTarget));
+
+      if (lostFocus && isIgnored) {
+        if (self.timeContainer !== undefined && self.minuteElement !== undefined && self.hourElement !== undefined && self.input.value !== "" && self.input.value !== undefined) {
+          updateTime();
+        }
+
+        self.close();
+
+        if (self.config && self.config.mode === "range" && self.selectedDates.length === 1) {
+          self.clear(false);
+          self.redraw();
+        }
+      }
+    }
+  }
+
+  function changeYear(newYear) {
+    if (!newYear || self.config.minDate && newYear < self.config.minDate.getFullYear() || self.config.maxDate && newYear > self.config.maxDate.getFullYear()) return;
+    const newYearNum = newYear,
+          isNewYear = self.currentYear !== newYearNum;
+    self.currentYear = newYearNum || self.currentYear;
+
+    if (self.config.maxDate && self.currentYear === self.config.maxDate.getFullYear()) {
+      self.currentMonth = Math.min(self.config.maxDate.getMonth(), self.currentMonth);
+    } else if (self.config.minDate && self.currentYear === self.config.minDate.getFullYear()) {
+      self.currentMonth = Math.max(self.config.minDate.getMonth(), self.currentMonth);
+    }
+
+    if (isNewYear) {
+      self.redraw();
+      triggerEvent("onYearChange");
+      buildMonthSwitch();
+    }
+  }
+
+  function isEnabled(date, timeless = true) {
+    var _a;
+
+    const dateToCheck = self.parseDate(date, undefined, timeless);
+    if (self.config.minDate && dateToCheck && compareDates(dateToCheck, self.config.minDate, timeless !== undefined ? timeless : !self.minDateHasTime) < 0 || self.config.maxDate && dateToCheck && compareDates(dateToCheck, self.config.maxDate, timeless !== undefined ? timeless : !self.maxDateHasTime) > 0) return false;
+    if (!self.config.enable && self.config.disable.length === 0) return true;
+    if (dateToCheck === undefined) return false;
+    const bool = !!self.config.enable,
+          array = (_a = self.config.enable) !== null && _a !== void 0 ? _a : self.config.disable;
+
+    for (let i = 0, d; i < array.length; i++) {
+      d = array[i];
+      if (typeof d === "function" && d(dateToCheck)) return bool;else if (d instanceof Date && dateToCheck !== undefined && d.getTime() === dateToCheck.getTime()) return bool;else if (typeof d === "string") {
+        const parsed = self.parseDate(d, undefined, true);
+        return parsed && parsed.getTime() === dateToCheck.getTime() ? bool : !bool;
+      } else if (typeof d === "object" && dateToCheck !== undefined && d.from && d.to && dateToCheck.getTime() >= d.from.getTime() && dateToCheck.getTime() <= d.to.getTime()) return bool;
+    }
+
+    return !bool;
+  }
+
+  function isInView(elem) {
+    if (self.daysContainer !== undefined) return elem.className.indexOf("hidden") === -1 && elem.className.indexOf("flatpickr-disabled") === -1 && self.daysContainer.contains(elem);
+    return false;
+  }
+
+  function onBlur(e) {
+    const isInput = e.target === self._input;
+
+    if (isInput && (self.selectedDates.length > 0 || self._input.value.length > 0) && !(e.relatedTarget && isCalendarElem(e.relatedTarget))) {
+      self.setDate(self._input.value, true, e.target === self.altInput ? self.config.altFormat : self.config.dateFormat);
+    }
+  }
+
+  function onKeyDown(e) {
+    const eventTarget = getEventTarget(e);
+    const isInput = self.config.wrap ? element.contains(eventTarget) : eventTarget === self._input;
+    const allowInput = self.config.allowInput;
+    const allowKeydown = self.isOpen && (!allowInput || !isInput);
+    const allowInlineKeydown = self.config.inline && isInput && !allowInput;
+
+    if (e.keyCode === 13 && isInput) {
+      if (allowInput) {
+        self.setDate(self._input.value, true, eventTarget === self.altInput ? self.config.altFormat : self.config.dateFormat);
+        return eventTarget.blur();
+      } else {
+        self.open();
+      }
+    } else if (isCalendarElem(eventTarget) || allowKeydown || allowInlineKeydown) {
+      const isTimeObj = !!self.timeContainer && self.timeContainer.contains(eventTarget);
+
+      switch (e.keyCode) {
+        case 13:
+          if (isTimeObj) {
+            e.preventDefault();
+            updateTime();
+            focusAndClose();
+          } else selectDate(e);
+
+          break;
+
+        case 27:
+          e.preventDefault();
+          focusAndClose();
+          break;
+
+        case 8:
+        case 46:
+          if (isInput && !self.config.allowInput) {
+            e.preventDefault();
+            self.clear();
+          }
+
+          break;
+
+        case 37:
+        case 39:
+          if (!isTimeObj && !isInput) {
+            e.preventDefault();
+
+            if (self.daysContainer !== undefined && (allowInput === false || document.activeElement && isInView(document.activeElement))) {
+              const delta = e.keyCode === 39 ? 1 : -1;
+              if (!e.ctrlKey) focusOnDay(undefined, delta);else {
+                e.stopPropagation();
+                changeMonth(delta);
+                focusOnDay(getFirstAvailableDay(1), 0);
+              }
+            }
+          } else if (self.hourElement) self.hourElement.focus();
+
+          break;
+
+        case 38:
+        case 40:
+          e.preventDefault();
+          const delta = e.keyCode === 40 ? 1 : -1;
+
+          if (self.daysContainer && eventTarget.$i !== undefined || eventTarget === self.input || eventTarget === self.altInput) {
+            if (e.ctrlKey) {
+              e.stopPropagation();
+              changeYear(self.currentYear - delta);
+              focusOnDay(getFirstAvailableDay(1), 0);
+            } else if (!isTimeObj) focusOnDay(undefined, delta * 7);
+          } else if (eventTarget === self.currentYearElement) {
+            changeYear(self.currentYear - delta);
+          } else if (self.config.enableTime) {
+            if (!isTimeObj && self.hourElement) self.hourElement.focus();
+            updateTime(e);
+
+            self._debouncedChange();
+          }
+
+          break;
+
+        case 9:
+          if (isTimeObj) {
+            const elems = [self.hourElement, self.minuteElement, self.secondElement, self.amPM].concat(self.pluginElements).filter(x => x);
+            const i = elems.indexOf(eventTarget);
+
+            if (i !== -1) {
+              const target = elems[i + (e.shiftKey ? -1 : 1)];
+              e.preventDefault();
+
+              (target || self._input).focus();
+            }
+          } else if (!self.config.noCalendar && self.daysContainer && self.daysContainer.contains(eventTarget) && e.shiftKey) {
+            e.preventDefault();
+
+            self._input.focus();
+          }
+
+          break;
+      }
+    }
+
+    if (self.amPM !== undefined && eventTarget === self.amPM) {
+      switch (e.key) {
+        case self.l10n.amPM[0].charAt(0):
+        case self.l10n.amPM[0].charAt(0).toLowerCase():
+          self.amPM.textContent = self.l10n.amPM[0];
+          setHoursFromInputs();
+          updateValue();
+          break;
+
+        case self.l10n.amPM[1].charAt(0):
+        case self.l10n.amPM[1].charAt(0).toLowerCase():
+          self.amPM.textContent = self.l10n.amPM[1];
+          setHoursFromInputs();
+          updateValue();
+          break;
+      }
+    }
+
+    if (isInput || isCalendarElem(eventTarget)) {
+      triggerEvent("onKeyDown", e);
+    }
+  }
+
+  function onMouseOver(elem) {
+    if (self.selectedDates.length !== 1 || elem && (!elem.classList.contains("flatpickr-day") || elem.classList.contains("flatpickr-disabled"))) return;
+    const hoverDate = elem ? elem.dateObj.getTime() : self.days.firstElementChild.dateObj.getTime(),
+          initialDate = self.parseDate(self.selectedDates[0], undefined, true).getTime(),
+          rangeStartDate = Math.min(hoverDate, self.selectedDates[0].getTime()),
+          rangeEndDate = Math.max(hoverDate, self.selectedDates[0].getTime());
+    let containsDisabled = false;
+    let minRange = 0,
+        maxRange = 0;
+
+    for (let t = rangeStartDate; t < rangeEndDate; t += duration.DAY) {
+      if (!isEnabled(new Date(t), true)) {
+        containsDisabled = containsDisabled || t > rangeStartDate && t < rangeEndDate;
+        if (t < initialDate && (!minRange || t > minRange)) minRange = t;else if (t > initialDate && (!maxRange || t < maxRange)) maxRange = t;
+      }
+    }
+
+    for (let m = 0; m < self.config.showMonths; m++) {
+      const month = self.daysContainer.children[m];
+
+      for (let i = 0, l = month.children.length; i < l; i++) {
+        const dayElem = month.children[i],
+              date = dayElem.dateObj;
+        const timestamp = date.getTime();
+        const outOfRange = minRange > 0 && timestamp < minRange || maxRange > 0 && timestamp > maxRange;
+
+        if (outOfRange) {
+          dayElem.classList.add("notAllowed");
+          ["inRange", "startRange", "endRange"].forEach(c => {
+            dayElem.classList.remove(c);
+          });
+          continue;
+        } else if (containsDisabled && !outOfRange) continue;
+
+        ["startRange", "inRange", "endRange", "notAllowed"].forEach(c => {
+          dayElem.classList.remove(c);
+        });
+
+        if (elem !== undefined) {
+          elem.classList.add(hoverDate <= self.selectedDates[0].getTime() ? "startRange" : "endRange");
+          if (initialDate < hoverDate && timestamp === initialDate) dayElem.classList.add("startRange");else if (initialDate > hoverDate && timestamp === initialDate) dayElem.classList.add("endRange");
+          if (timestamp >= minRange && (maxRange === 0 || timestamp <= maxRange) && isBetween(timestamp, initialDate, hoverDate)) dayElem.classList.add("inRange");
+        }
+      }
+    }
+  }
+
+  function onResize() {
+    if (self.isOpen && !self.config.static && !self.config.inline) positionCalendar();
+  }
+
+  function open(e, positionElement = self._positionElement) {
+    if (self.isMobile === true) {
+      if (e) {
+        e.preventDefault();
+        const eventTarget = getEventTarget(e);
+
+        if (eventTarget) {
+          eventTarget.blur();
+        }
+      }
+
+      if (self.mobileInput !== undefined) {
+        self.mobileInput.focus();
+        self.mobileInput.click();
+      }
+
+      triggerEvent("onOpen");
+      return;
+    } else if (self._input.disabled || self.config.inline) {
+      return;
+    }
+
+    const wasOpen = self.isOpen;
+    self.isOpen = true;
+
+    if (!wasOpen) {
+      self.calendarContainer.classList.add("open");
+
+      self._input.classList.add("active");
+
+      triggerEvent("onOpen");
+      positionCalendar(positionElement);
+    }
+
+    if (self.config.enableTime === true && self.config.noCalendar === true) {
+      if (self.config.allowInput === false && (e === undefined || !self.timeContainer.contains(e.relatedTarget))) {
+        setTimeout(() => self.hourElement.select(), 50);
+      }
+    }
+  }
+
+  function minMaxDateSetter(type) {
+    return date => {
+      const dateObj = self.config[`_${type}Date`] = self.parseDate(date, self.config.dateFormat);
+      const inverseDateObj = self.config[`_${type === "min" ? "max" : "min"}Date`];
+
+      if (dateObj !== undefined) {
+        self[type === "min" ? "minDateHasTime" : "maxDateHasTime"] = dateObj.getHours() > 0 || dateObj.getMinutes() > 0 || dateObj.getSeconds() > 0;
+      }
+
+      if (self.selectedDates) {
+        self.selectedDates = self.selectedDates.filter(d => isEnabled(d));
+        if (!self.selectedDates.length && type === "min") setHoursFromDate(dateObj);
+        updateValue();
+      }
+
+      if (self.daysContainer) {
+        redraw();
+        if (dateObj !== undefined) self.currentYearElement[type] = dateObj.getFullYear().toString();else self.currentYearElement.removeAttribute(type);
+        self.currentYearElement.disabled = !!inverseDateObj && dateObj !== undefined && inverseDateObj.getFullYear() === dateObj.getFullYear();
+      }
+    };
+  }
+
+  function parseConfig() {
+    const boolOpts = ["wrap", "weekNumbers", "allowInput", "allowInvalidPreload", "clickOpens", "time_24hr", "enableTime", "noCalendar", "altInput", "shorthandCurrentMonth", "inline", "static", "enableSeconds", "disableMobile"];
+    const userConfig = Object.assign(Object.assign({}, JSON.parse(JSON.stringify(element.dataset || {}))), instanceConfig);
+    const formats = {};
+    self.config.parseDate = userConfig.parseDate;
+    self.config.formatDate = userConfig.formatDate;
+    Object.defineProperty(self.config, "enable", {
+      get: () => self.config._enable,
+      set: dates => {
+        self.config._enable = parseDateRules(dates);
+      }
+    });
+    Object.defineProperty(self.config, "disable", {
+      get: () => self.config._disable,
+      set: dates => {
+        self.config._disable = parseDateRules(dates);
+      }
+    });
+    const timeMode = userConfig.mode === "time";
+
+    if (!userConfig.dateFormat && (userConfig.enableTime || timeMode)) {
+      const defaultDateFormat = flatpickr.defaultConfig.dateFormat || defaults.dateFormat;
+      formats.dateFormat = userConfig.noCalendar || timeMode ? "H:i" + (userConfig.enableSeconds ? ":S" : "") : defaultDateFormat + " H:i" + (userConfig.enableSeconds ? ":S" : "");
+    }
+
+    if (userConfig.altInput && (userConfig.enableTime || timeMode) && !userConfig.altFormat) {
+      const defaultAltFormat = flatpickr.defaultConfig.altFormat || defaults.altFormat;
+      formats.altFormat = userConfig.noCalendar || timeMode ? "h:i" + (userConfig.enableSeconds ? ":S K" : " K") : defaultAltFormat + ` h:i${userConfig.enableSeconds ? ":S" : ""} K`;
+    }
+
+    Object.defineProperty(self.config, "minDate", {
+      get: () => self.config._minDate,
+      set: minMaxDateSetter("min")
+    });
+    Object.defineProperty(self.config, "maxDate", {
+      get: () => self.config._maxDate,
+      set: minMaxDateSetter("max")
+    });
+
+    const minMaxTimeSetter = type => val => {
+      self.config[type === "min" ? "_minTime" : "_maxTime"] = self.parseDate(val, "H:i:S");
+    };
+
+    Object.defineProperty(self.config, "minTime", {
+      get: () => self.config._minTime,
+      set: minMaxTimeSetter("min")
+    });
+    Object.defineProperty(self.config, "maxTime", {
+      get: () => self.config._maxTime,
+      set: minMaxTimeSetter("max")
+    });
+
+    if (userConfig.mode === "time") {
+      self.config.noCalendar = true;
+      self.config.enableTime = true;
+    }
+
+    Object.assign(self.config, formats, userConfig);
+
+    for (let i = 0; i < boolOpts.length; i++) self.config[boolOpts[i]] = self.config[boolOpts[i]] === true || self.config[boolOpts[i]] === "true";
+
+    HOOKS.filter(hook => self.config[hook] !== undefined).forEach(hook => {
+      self.config[hook] = arrayify(self.config[hook] || []).map(bindToInstance);
+    });
+    self.isMobile = !self.config.disableMobile && !self.config.inline && self.config.mode === "single" && !self.config.disable.length && !self.config.enable && !self.config.weekNumbers && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    for (let i = 0; i < self.config.plugins.length; i++) {
+      const pluginConf = self.config.plugins[i](self) || {};
+
+      for (const key in pluginConf) {
+        if (HOOKS.indexOf(key) > -1) {
+          self.config[key] = arrayify(pluginConf[key]).map(bindToInstance).concat(self.config[key]);
+        } else if (typeof userConfig[key] === "undefined") self.config[key] = pluginConf[key];
+      }
+    }
+
+    if (!userConfig.altInputClass) {
+      self.config.altInputClass = getInputElem().className + " " + self.config.altInputClass;
+    }
+
+    triggerEvent("onParseConfig");
+  }
+
+  function getInputElem() {
+    return self.config.wrap ? element.querySelector("[data-input]") : element;
+  }
+
+  function setupLocale() {
+    if (typeof self.config.locale !== "object" && typeof flatpickr.l10ns[self.config.locale] === "undefined") self.config.errorHandler(new Error(`flatpickr: invalid locale ${self.config.locale}`));
+    self.l10n = Object.assign(Object.assign({}, flatpickr.l10ns.default), typeof self.config.locale === "object" ? self.config.locale : self.config.locale !== "default" ? flatpickr.l10ns[self.config.locale] : undefined);
+    tokenRegex.K = `(${self.l10n.amPM[0]}|${self.l10n.amPM[1]}|${self.l10n.amPM[0].toLowerCase()}|${self.l10n.amPM[1].toLowerCase()})`;
+    const userConfig = Object.assign(Object.assign({}, instanceConfig), JSON.parse(JSON.stringify(element.dataset || {})));
+
+    if (userConfig.time_24hr === undefined && flatpickr.defaultConfig.time_24hr === undefined) {
+      self.config.time_24hr = self.l10n.time_24hr;
+    }
+
+    self.formatDate = createDateFormatter(self);
+    self.parseDate = createDateParser({
+      config: self.config,
+      l10n: self.l10n
+    });
+  }
+
+  function positionCalendar(customPositionElement) {
+    if (typeof self.config.position === "function") {
+      return void self.config.position(self, customPositionElement);
+    }
+
+    if (self.calendarContainer === undefined) return;
+    triggerEvent("onPreCalendarPosition");
+    const positionElement = customPositionElement || self._positionElement;
+    const calendarHeight = Array.prototype.reduce.call(self.calendarContainer.children, (acc, child) => acc + child.offsetHeight, 0),
+          calendarWidth = self.calendarContainer.offsetWidth,
+          configPos = self.config.position.split(" "),
+          configPosVertical = configPos[0],
+          configPosHorizontal = configPos.length > 1 ? configPos[1] : null,
+          inputBounds = positionElement.getBoundingClientRect(),
+          distanceFromBottom = window.innerHeight - inputBounds.bottom,
+          showOnTop = configPosVertical === "above" || configPosVertical !== "below" && distanceFromBottom < calendarHeight && inputBounds.top > calendarHeight;
+    const top = window.pageYOffset + inputBounds.top + (!showOnTop ? positionElement.offsetHeight + 2 : -calendarHeight - 2);
+    toggleClass(self.calendarContainer, "arrowTop", !showOnTop);
+    toggleClass(self.calendarContainer, "arrowBottom", showOnTop);
+    if (self.config.inline) return;
+    let left = window.pageXOffset + inputBounds.left;
+    let isCenter = false;
+    let isRight = false;
+
+    if (configPosHorizontal === "center") {
+      left -= (calendarWidth - inputBounds.width) / 2;
+      isCenter = true;
+    } else if (configPosHorizontal === "right") {
+      left -= calendarWidth - inputBounds.width;
+      isRight = true;
+    }
+
+    toggleClass(self.calendarContainer, "arrowLeft", !isCenter && !isRight);
+    toggleClass(self.calendarContainer, "arrowCenter", isCenter);
+    toggleClass(self.calendarContainer, "arrowRight", isRight);
+    const right = window.document.body.offsetWidth - (window.pageXOffset + inputBounds.right);
+    const rightMost = left + calendarWidth > window.document.body.offsetWidth;
+    const centerMost = right + calendarWidth > window.document.body.offsetWidth;
+    toggleClass(self.calendarContainer, "rightMost", rightMost);
+    if (self.config.static) return;
+    self.calendarContainer.style.top = `${top}px`;
+
+    if (!rightMost) {
+      self.calendarContainer.style.left = `${left}px`;
+      self.calendarContainer.style.right = "auto";
+    } else if (!centerMost) {
+      self.calendarContainer.style.left = "auto";
+      self.calendarContainer.style.right = `${right}px`;
+    } else {
+      const doc = getDocumentStyleSheet();
+      if (doc === undefined) return;
+      const bodyWidth = window.document.body.offsetWidth;
+      const centerLeft = Math.max(0, bodyWidth / 2 - calendarWidth / 2);
+      const centerBefore = ".flatpickr-calendar.centerMost:before";
+      const centerAfter = ".flatpickr-calendar.centerMost:after";
+      const centerIndex = doc.cssRules.length;
+      const centerStyle = `{left:${inputBounds.left}px;right:auto;}`;
+      toggleClass(self.calendarContainer, "rightMost", false);
+      toggleClass(self.calendarContainer, "centerMost", true);
+      doc.insertRule(`${centerBefore},${centerAfter}${centerStyle}`, centerIndex);
+      self.calendarContainer.style.left = `${centerLeft}px`;
+      self.calendarContainer.style.right = "auto";
+    }
+  }
+
+  function getDocumentStyleSheet() {
+    let editableSheet = null;
+
+    for (let i = 0; i < document.styleSheets.length; i++) {
+      const sheet = document.styleSheets[i];
+
+      try {
+        sheet.cssRules;
+      } catch (err) {
+        continue;
+      }
+
+      editableSheet = sheet;
+      break;
+    }
+
+    return editableSheet != null ? editableSheet : createStyleSheet();
+  }
+
+  function createStyleSheet() {
+    const style = document.createElement("style");
+    document.head.appendChild(style);
+    return style.sheet;
+  }
+
+  function redraw() {
+    if (self.config.noCalendar || self.isMobile) return;
+    buildMonthSwitch();
+    updateNavigationCurrentMonth();
+    buildDays();
+  }
+
+  function focusAndClose() {
+    self._input.focus();
+
+    if (window.navigator.userAgent.indexOf("MSIE") !== -1 || navigator.msMaxTouchPoints !== undefined) {
+      setTimeout(self.close, 0);
+    } else {
+      self.close();
+    }
+  }
+
+  function selectDate(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const isSelectable = day => day.classList && day.classList.contains("flatpickr-day") && !day.classList.contains("flatpickr-disabled") && !day.classList.contains("notAllowed");
+
+    const t = findParent(getEventTarget(e), isSelectable);
+    if (t === undefined) return;
+    const target = t;
+    const selectedDate = self.latestSelectedDateObj = new Date(target.dateObj.getTime());
+    const shouldChangeMonth = (selectedDate.getMonth() < self.currentMonth || selectedDate.getMonth() > self.currentMonth + self.config.showMonths - 1) && self.config.mode !== "range";
+    self.selectedDateElem = target;
+    if (self.config.mode === "single") self.selectedDates = [selectedDate];else if (self.config.mode === "multiple") {
+      const selectedIndex = isDateSelected(selectedDate);
+      if (selectedIndex) self.selectedDates.splice(parseInt(selectedIndex), 1);else self.selectedDates.push(selectedDate);
+    } else if (self.config.mode === "range") {
+      if (self.selectedDates.length === 2) {
+        self.clear(false, false);
+      }
+
+      self.latestSelectedDateObj = selectedDate;
+      self.selectedDates.push(selectedDate);
+      if (compareDates(selectedDate, self.selectedDates[0], true) !== 0) self.selectedDates.sort((a, b) => a.getTime() - b.getTime());
+    }
+    setHoursFromInputs();
+
+    if (shouldChangeMonth) {
+      const isNewYear = self.currentYear !== selectedDate.getFullYear();
+      self.currentYear = selectedDate.getFullYear();
+      self.currentMonth = selectedDate.getMonth();
+
+      if (isNewYear) {
+        triggerEvent("onYearChange");
+        buildMonthSwitch();
+      }
+
+      triggerEvent("onMonthChange");
+    }
+
+    updateNavigationCurrentMonth();
+    buildDays();
+    updateValue();
+    if (!shouldChangeMonth && self.config.mode !== "range" && self.config.showMonths === 1) focusOnDayElem(target);else if (self.selectedDateElem !== undefined && self.hourElement === undefined) {
+      self.selectedDateElem && self.selectedDateElem.focus();
+    }
+    if (self.hourElement !== undefined) self.hourElement !== undefined && self.hourElement.focus();
+
+    if (self.config.closeOnSelect) {
+      const single = self.config.mode === "single" && !self.config.enableTime;
+      const range = self.config.mode === "range" && self.selectedDates.length === 2 && !self.config.enableTime;
+
+      if (single || range) {
+        focusAndClose();
+      }
+    }
+
+    triggerChange();
+  }
+
+  const CALLBACKS = {
+    locale: [setupLocale, updateWeekdays],
+    showMonths: [buildMonths, setCalendarWidth, buildWeekdays],
+    minDate: [jumpToDate],
+    maxDate: [jumpToDate],
+    clickOpens: [() => {
+      if (self.config.clickOpens === true) {
+        bind(self._input, "focus", self.open);
+        bind(self._input, "click", self.open);
+      } else {
+        self._input.removeEventListener("focus", self.open);
+
+        self._input.removeEventListener("click", self.open);
+      }
+    }]
+  };
+
+  function set(option, value) {
+    if (option !== null && typeof option === "object") {
+      Object.assign(self.config, option);
+
+      for (const key in option) {
+        if (CALLBACKS[key] !== undefined) CALLBACKS[key].forEach(x => x());
+      }
+    } else {
+      self.config[option] = value;
+      if (CALLBACKS[option] !== undefined) CALLBACKS[option].forEach(x => x());else if (HOOKS.indexOf(option) > -1) self.config[option] = arrayify(value);
+    }
+
+    self.redraw();
+    updateValue(true);
+  }
+
+  function setSelectedDate(inputDate, format) {
+    let dates = [];
+    if (inputDate instanceof Array) dates = inputDate.map(d => self.parseDate(d, format));else if (inputDate instanceof Date || typeof inputDate === "number") dates = [self.parseDate(inputDate, format)];else if (typeof inputDate === "string") {
+      switch (self.config.mode) {
+        case "single":
+        case "time":
+          dates = [self.parseDate(inputDate, format)];
+          break;
+
+        case "multiple":
+          dates = inputDate.split(self.config.conjunction).map(date => self.parseDate(date, format));
+          break;
+
+        case "range":
+          dates = inputDate.split(self.l10n.rangeSeparator).map(date => self.parseDate(date, format));
+          break;
+      }
+    } else self.config.errorHandler(new Error(`Invalid date supplied: ${JSON.stringify(inputDate)}`));
+    self.selectedDates = self.config.allowInvalidPreload ? dates : dates.filter(d => d instanceof Date && isEnabled(d, false));
+    if (self.config.mode === "range") self.selectedDates.sort((a, b) => a.getTime() - b.getTime());
+  }
+
+  function setDate(date, triggerChange = false, format = self.config.dateFormat) {
+    if (date !== 0 && !date || date instanceof Array && date.length === 0) return self.clear(triggerChange);
+    setSelectedDate(date, format);
+    self.latestSelectedDateObj = self.selectedDates[self.selectedDates.length - 1];
+    self.redraw();
+    jumpToDate(undefined, triggerChange);
+    setHoursFromDate();
+
+    if (self.selectedDates.length === 0) {
+      self.clear(false);
+    }
+
+    updateValue(triggerChange);
+    if (triggerChange) triggerEvent("onChange");
+  }
+
+  function parseDateRules(arr) {
+    return arr.slice().map(rule => {
+      if (typeof rule === "string" || typeof rule === "number" || rule instanceof Date) {
+        return self.parseDate(rule, undefined, true);
+      } else if (rule && typeof rule === "object" && rule.from && rule.to) return {
+        from: self.parseDate(rule.from, undefined),
+        to: self.parseDate(rule.to, undefined)
+      };
+
+      return rule;
+    }).filter(x => x);
+  }
+
+  function setupDates() {
+    self.selectedDates = [];
+    self.now = self.parseDate(self.config.now) || new Date();
+    const preloadedDate = self.config.defaultDate || ((self.input.nodeName === "INPUT" || self.input.nodeName === "TEXTAREA") && self.input.placeholder && self.input.value === self.input.placeholder ? null : self.input.value);
+    if (preloadedDate) setSelectedDate(preloadedDate, self.config.dateFormat);
+    self._initialDate = self.selectedDates.length > 0 ? self.selectedDates[0] : self.config.minDate && self.config.minDate.getTime() > self.now.getTime() ? self.config.minDate : self.config.maxDate && self.config.maxDate.getTime() < self.now.getTime() ? self.config.maxDate : self.now;
+    self.currentYear = self._initialDate.getFullYear();
+    self.currentMonth = self._initialDate.getMonth();
+    if (self.selectedDates.length > 0) self.latestSelectedDateObj = self.selectedDates[0];
+    if (self.config.minTime !== undefined) self.config.minTime = self.parseDate(self.config.minTime, "H:i");
+    if (self.config.maxTime !== undefined) self.config.maxTime = self.parseDate(self.config.maxTime, "H:i");
+    self.minDateHasTime = !!self.config.minDate && (self.config.minDate.getHours() > 0 || self.config.minDate.getMinutes() > 0 || self.config.minDate.getSeconds() > 0);
+    self.maxDateHasTime = !!self.config.maxDate && (self.config.maxDate.getHours() > 0 || self.config.maxDate.getMinutes() > 0 || self.config.maxDate.getSeconds() > 0);
+  }
+
+  function setupInputs() {
+    self.input = getInputElem();
+
+    if (!self.input) {
+      self.config.errorHandler(new Error("Invalid input element specified"));
+      return;
+    }
+
+    self.input._type = self.input.type;
+    self.input.type = "text";
+    self.input.classList.add("flatpickr-input");
+    self._input = self.input;
+
+    if (self.config.altInput) {
+      self.altInput = createElement(self.input.nodeName, self.config.altInputClass);
+      self._input = self.altInput;
+      self.altInput.placeholder = self.input.placeholder;
+      self.altInput.disabled = self.input.disabled;
+      self.altInput.required = self.input.required;
+      self.altInput.tabIndex = self.input.tabIndex;
+      self.altInput.type = "text";
+      self.input.setAttribute("type", "hidden");
+      if (!self.config.static && self.input.parentNode) self.input.parentNode.insertBefore(self.altInput, self.input.nextSibling);
+    }
+
+    if (!self.config.allowInput) self._input.setAttribute("readonly", "readonly");
+    self._positionElement = self.config.positionElement || self._input;
+  }
+
+  function setupMobile() {
+    const inputType = self.config.enableTime ? self.config.noCalendar ? "time" : "datetime-local" : "date";
+    self.mobileInput = createElement("input", self.input.className + " flatpickr-mobile");
+    self.mobileInput.tabIndex = 1;
+    self.mobileInput.type = inputType;
+    self.mobileInput.disabled = self.input.disabled;
+    self.mobileInput.required = self.input.required;
+    self.mobileInput.placeholder = self.input.placeholder;
+    self.mobileFormatStr = inputType === "datetime-local" ? "Y-m-d\\TH:i:S" : inputType === "date" ? "Y-m-d" : "H:i:S";
+
+    if (self.selectedDates.length > 0) {
+      self.mobileInput.defaultValue = self.mobileInput.value = self.formatDate(self.selectedDates[0], self.mobileFormatStr);
+    }
+
+    if (self.config.minDate) self.mobileInput.min = self.formatDate(self.config.minDate, "Y-m-d");
+    if (self.config.maxDate) self.mobileInput.max = self.formatDate(self.config.maxDate, "Y-m-d");
+    if (self.input.getAttribute("step")) self.mobileInput.step = String(self.input.getAttribute("step"));
+    self.input.type = "hidden";
+    if (self.altInput !== undefined) self.altInput.type = "hidden";
+
+    try {
+      if (self.input.parentNode) self.input.parentNode.insertBefore(self.mobileInput, self.input.nextSibling);
+    } catch (_a) {}
+
+    bind(self.mobileInput, "change", e => {
+      self.setDate(getEventTarget(e).value, false, self.mobileFormatStr);
+      triggerEvent("onChange");
+      triggerEvent("onClose");
+    });
+  }
+
+  function toggle(e) {
+    if (self.isOpen === true) return self.close();
+    self.open(e);
+  }
+
+  function triggerEvent(event, data) {
+    if (self.config === undefined) return;
+    const hooks = self.config[event];
+
+    if (hooks !== undefined && hooks.length > 0) {
+      for (let i = 0; hooks[i] && i < hooks.length; i++) hooks[i](self.selectedDates, self.input.value, self, data);
+    }
+
+    if (event === "onChange") {
+      self.input.dispatchEvent(createEvent("change"));
+      self.input.dispatchEvent(createEvent("input"));
+    }
+  }
+
+  function createEvent(name) {
+    const e = document.createEvent("Event");
+    e.initEvent(name, true, true);
+    return e;
+  }
+
+  function isDateSelected(date) {
+    for (let i = 0; i < self.selectedDates.length; i++) {
+      if (compareDates(self.selectedDates[i], date) === 0) return "" + i;
+    }
+
+    return false;
+  }
+
+  function isDateInRange(date) {
+    if (self.config.mode !== "range" || self.selectedDates.length < 2) return false;
+    return compareDates(date, self.selectedDates[0]) >= 0 && compareDates(date, self.selectedDates[1]) <= 0;
+  }
+
+  function updateNavigationCurrentMonth() {
+    if (self.config.noCalendar || self.isMobile || !self.monthNav) return;
+    self.yearElements.forEach((yearElement, i) => {
+      const d = new Date(self.currentYear, self.currentMonth, 1);
+      d.setMonth(self.currentMonth + i);
+
+      if (self.config.showMonths > 1 || self.config.monthSelectorType === "static") {
+        self.monthElements[i].textContent = monthToStr(d.getMonth(), self.config.shorthandCurrentMonth, self.l10n) + " ";
+      } else {
+        self.monthsDropdownContainer.value = d.getMonth().toString();
+      }
+
+      yearElement.value = d.getFullYear().toString();
+    });
+    self._hidePrevMonthArrow = self.config.minDate !== undefined && (self.currentYear === self.config.minDate.getFullYear() ? self.currentMonth <= self.config.minDate.getMonth() : self.currentYear < self.config.minDate.getFullYear());
+    self._hideNextMonthArrow = self.config.maxDate !== undefined && (self.currentYear === self.config.maxDate.getFullYear() ? self.currentMonth + 1 > self.config.maxDate.getMonth() : self.currentYear > self.config.maxDate.getFullYear());
+  }
+
+  function getDateStr(format) {
+    return self.selectedDates.map(dObj => self.formatDate(dObj, format)).filter((d, i, arr) => self.config.mode !== "range" || self.config.enableTime || arr.indexOf(d) === i).join(self.config.mode !== "range" ? self.config.conjunction : self.l10n.rangeSeparator);
+  }
+
+  function updateValue(triggerChange = true) {
+    if (self.mobileInput !== undefined && self.mobileFormatStr) {
+      self.mobileInput.value = self.latestSelectedDateObj !== undefined ? self.formatDate(self.latestSelectedDateObj, self.mobileFormatStr) : "";
+    }
+
+    self.input.value = getDateStr(self.config.dateFormat);
+
+    if (self.altInput !== undefined) {
+      self.altInput.value = getDateStr(self.config.altFormat);
+    }
+
+    if (triggerChange !== false) triggerEvent("onValueUpdate");
+  }
+
+  function onMonthNavClick(e) {
+    const eventTarget = getEventTarget(e);
+    const isPrevMonth = self.prevMonthNav.contains(eventTarget);
+    const isNextMonth = self.nextMonthNav.contains(eventTarget);
+
+    if (isPrevMonth || isNextMonth) {
+      changeMonth(isPrevMonth ? -1 : 1);
+    } else if (self.yearElements.indexOf(eventTarget) >= 0) {
+      eventTarget.select();
+    } else if (eventTarget.classList.contains("arrowUp")) {
+      self.changeYear(self.currentYear + 1);
+    } else if (eventTarget.classList.contains("arrowDown")) {
+      self.changeYear(self.currentYear - 1);
+    }
+  }
+
+  function timeWrapper(e) {
+    e.preventDefault();
+    const isKeyDown = e.type === "keydown",
+          eventTarget = getEventTarget(e),
+          input = eventTarget;
+
+    if (self.amPM !== undefined && eventTarget === self.amPM) {
+      self.amPM.textContent = self.l10n.amPM[int(self.amPM.textContent === self.l10n.amPM[0])];
+    }
+
+    const min = parseFloat(input.getAttribute("min")),
+          max = parseFloat(input.getAttribute("max")),
+          step = parseFloat(input.getAttribute("step")),
+          curValue = parseInt(input.value, 10),
+          delta = e.delta || (isKeyDown ? e.which === 38 ? 1 : -1 : 0);
+    let newValue = curValue + step * delta;
+
+    if (typeof input.value !== "undefined" && input.value.length === 2) {
+      const isHourElem = input === self.hourElement,
+            isMinuteElem = input === self.minuteElement;
+
+      if (newValue < min) {
+        newValue = max + newValue + int(!isHourElem) + (int(isHourElem) && int(!self.amPM));
+        if (isMinuteElem) incrementNumInput(undefined, -1, self.hourElement);
+      } else if (newValue > max) {
+        newValue = input === self.hourElement ? newValue - max - int(!self.amPM) : min;
+        if (isMinuteElem) incrementNumInput(undefined, 1, self.hourElement);
+      }
+
+      if (self.amPM && isHourElem && (step === 1 ? newValue + curValue === 23 : Math.abs(newValue - curValue) > step)) {
+        self.amPM.textContent = self.l10n.amPM[int(self.amPM.textContent === self.l10n.amPM[0])];
+      }
+
+      input.value = pad(newValue);
+    }
+  }
+
+  init();
+  return self;
+}
+
+function _flatpickr(nodeList, config) {
+  const nodes = Array.prototype.slice.call(nodeList).filter(x => x instanceof HTMLElement);
+  const instances = [];
+
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+
+    try {
+      if (node.getAttribute("data-fp-omit") !== null) continue;
+
+      if (node._flatpickr !== undefined) {
+        node._flatpickr.destroy();
+
+        node._flatpickr = undefined;
+      }
+
+      node._flatpickr = FlatpickrInstance(node, config || {});
+      instances.push(node._flatpickr);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  return instances.length === 1 ? instances[0] : instances;
+}
+
+if (typeof HTMLElement !== "undefined" && typeof HTMLCollection !== "undefined" && typeof NodeList !== "undefined") {
+  HTMLCollection.prototype.flatpickr = NodeList.prototype.flatpickr = function (config) {
+    return _flatpickr(this, config);
+  };
+
+  HTMLElement.prototype.flatpickr = function (config) {
+    return _flatpickr([this], config);
+  };
+}
+
+var flatpickr = function (selector, config) {
+  if (typeof selector === "string") {
+    return _flatpickr(window.document.querySelectorAll(selector), config);
+  } else if (selector instanceof Node) {
+    return _flatpickr([selector], config);
+  } else {
+    return _flatpickr(selector, config);
+  }
+};
+
+flatpickr.defaultConfig = {};
+flatpickr.l10ns = {
+  en: Object.assign({}, english),
+  default: Object.assign({}, english)
+};
+
+flatpickr.localize = l10n => {
+  flatpickr.l10ns.default = Object.assign(Object.assign({}, flatpickr.l10ns.default), l10n);
+};
+
+flatpickr.setDefaults = config => {
+  flatpickr.defaultConfig = Object.assign(Object.assign({}, flatpickr.defaultConfig), config);
+};
+
+flatpickr.parseDate = createDateParser({});
+flatpickr.formatDate = createDateFormatter({});
+flatpickr.compareDates = compareDates;
+
+if (typeof jQuery !== "undefined" && typeof jQuery.fn !== "undefined") {
+  jQuery.fn.flatpickr = function (config) {
+    return _flatpickr(this, config);
+  };
+}
+
+Date.prototype.fp_incr = function (days) {
+  return new Date(this.getFullYear(), this.getMonth(), this.getDate() + (typeof days === "string" ? parseInt(days, 10) : days));
+};
+
+if (typeof window !== "undefined") {
+  window.flatpickr = flatpickr;
+}
+
+var l10n = createCommonjsModule(function (module, exports) {
+(function (global, factory) {
+  factory(exports) ;
+})(commonjsGlobal, function (exports) {
+  /*! *****************************************************************************
+  Copyright (c) Microsoft Corporation.
+    Permission to use, copy, modify, and/or distribute this software for any
+  purpose with or without fee is hereby granted.
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+  REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+  AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+  INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+  LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+  PERFORMANCE OF THIS SOFTWARE.
+  ***************************************************************************** */
+
+  var __assign = function () {
+    __assign = Object.assign || function __assign(t) {
+      for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+      }
+
+      return t;
+    };
+
+    return __assign.apply(this, arguments);
+  };
+
+  var fp = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Arabic = {
+    weekdays: {
+      shorthand: ["أحد", "اثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"],
+      longhand: ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"]
+    },
+    months: {
+      shorthand: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+      longhand: ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"]
+    },
+    rangeSeparator: " - "
+  };
+  fp.l10ns.ar = Arabic;
+  fp.l10ns;
+  var fp$1 = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Austria = {
+    weekdays: {
+      shorthand: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+      longhand: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
+    },
+    months: {
+      shorthand: ["Jän", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"],
+      longhand: ["Jänner", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
+    },
+    firstDayOfWeek: 1,
+    weekAbbreviation: "KW",
+    rangeSeparator: " bis ",
+    scrollTitle: "Zum Ändern scrollen",
+    toggleTitle: "Zum Umschalten klicken"
+  };
+  fp$1.l10ns.at = Austria;
+  fp$1.l10ns;
+  var fp$2 = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Azerbaijan = {
+    weekdays: {
+      shorthand: ["B.", "B.e.", "Ç.a.", "Ç.", "C.a.", "C.", "Ş."],
+      longhand: ["Bazar", "Bazar ertəsi", "Çərşənbə axşamı", "Çərşənbə", "Cümə axşamı", "Cümə", "Şənbə"]
+    },
+    months: {
+      shorthand: ["Yan", "Fev", "Mar", "Apr", "May", "İyn", "İyl", "Avq", "Sen", "Okt", "Noy", "Dek"],
+      longhand: ["Yanvar", "Fevral", "Mart", "Aprel", "May", "İyun", "İyul", "Avqust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return ".";
+    },
+    rangeSeparator: " - ",
+    weekAbbreviation: "Hf",
+    scrollTitle: "Artırmaq üçün sürüşdürün",
+    toggleTitle: "Aç / Bağla",
+    amPM: ["GƏ", "GS"],
+    time_24hr: true
+  };
+  fp$2.l10ns.az = Azerbaijan;
+  fp$2.l10ns;
+  var fp$3 = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Belarusian = {
+    weekdays: {
+      shorthand: ["Нд", "Пн", "Аў", "Ср", "Чц", "Пт", "Сб"],
+      longhand: ["Нядзеля", "Панядзелак", "Аўторак", "Серада", "Чацвер", "Пятніца", "Субота"]
+    },
+    months: {
+      shorthand: ["Сту", "Лют", "Сак", "Кра", "Тра", "Чэр", "Ліп", "Жні", "Вер", "Кас", "Ліс", "Сне"],
+      longhand: ["Студзень", "Люты", "Сакавік", "Красавік", "Травень", "Чэрвень", "Ліпень", "Жнівень", "Верасень", "Кастрычнік", "Лістапад", "Снежань"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return "";
+    },
+    rangeSeparator: " — ",
+    weekAbbreviation: "Тыд.",
+    scrollTitle: "Пракруціце для павелічэння",
+    toggleTitle: "Націсніце для пераключэння",
+    amPM: ["ДП", "ПП"],
+    yearAriaLabel: "Год",
+    time_24hr: true
+  };
+  fp$3.l10ns.be = Belarusian;
+  fp$3.l10ns;
+  var fp$4 = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Bosnian = {
+    firstDayOfWeek: 1,
+    weekdays: {
+      shorthand: ["Ned", "Pon", "Uto", "Sri", "Čet", "Pet", "Sub"],
+      longhand: ["Nedjelja", "Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Avg", "Sep", "Okt", "Nov", "Dec"],
+      longhand: ["Januar", "Februar", "Mart", "April", "Maj", "Juni", "Juli", "Avgust", "Septembar", "Oktobar", "Novembar", "Decembar"]
+    },
+    time_24hr: true
+  };
+  fp$4.l10ns.bs = Bosnian;
+  fp$4.l10ns;
+  var fp$5 = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Bulgarian = {
+    weekdays: {
+      shorthand: ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+      longhand: ["Неделя", "Понеделник", "Вторник", "Сряда", "Четвъртък", "Петък", "Събота"]
+    },
+    months: {
+      shorthand: ["Яну", "Фев", "Март", "Апр", "Май", "Юни", "Юли", "Авг", "Сеп", "Окт", "Ное", "Дек"],
+      longhand: ["Януари", "Февруари", "Март", "Април", "Май", "Юни", "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"]
+    },
+    time_24hr: true,
+    firstDayOfWeek: 1
+  };
+  fp$5.l10ns.bg = Bulgarian;
+  fp$5.l10ns;
+  var fp$6 = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Bangla = {
+    weekdays: {
+      shorthand: ["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহস্পতি", "শুক্র", "শনি"],
+      longhand: ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"]
+    },
+    months: {
+      shorthand: ["জানু", "ফেব্রু", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগ", "সেপ্টে", "অক্টো", "নভে", "ডিসে"],
+      longhand: ["জানুয়ারী", "ফেব্রুয়ারী", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"]
+    }
+  };
+  fp$6.l10ns.bn = Bangla;
+  fp$6.l10ns;
+  var fp$7 = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Catalan = {
+    weekdays: {
+      shorthand: ["Dg", "Dl", "Dt", "Dc", "Dj", "Dv", "Ds"],
+      longhand: ["Diumenge", "Dilluns", "Dimarts", "Dimecres", "Dijous", "Divendres", "Dissabte"]
+    },
+    months: {
+      shorthand: ["Gen", "Febr", "Març", "Abr", "Maig", "Juny", "Jul", "Ag", "Set", "Oct", "Nov", "Des"],
+      longhand: ["Gener", "Febrer", "Març", "Abril", "Maig", "Juny", "Juliol", "Agost", "Setembre", "Octubre", "Novembre", "Desembre"]
+    },
+    ordinal: function (nth) {
+      var s = nth % 100;
+      if (s > 3 && s < 21) return "è";
+
+      switch (s % 10) {
+        case 1:
+          return "r";
+
+        case 2:
+          return "n";
+
+        case 3:
+          return "r";
+
+        case 4:
+          return "t";
+
+        default:
+          return "è";
+      }
+    },
+    firstDayOfWeek: 1,
+    time_24hr: true
+  };
+  fp$7.l10ns.cat = fp$7.l10ns.ca = Catalan;
+  fp$7.l10ns;
+  var fp$8 = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Czech = {
+    weekdays: {
+      shorthand: ["Ne", "Po", "Út", "St", "Čt", "Pá", "So"],
+      longhand: ["Neděle", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota"]
+    },
+    months: {
+      shorthand: ["Led", "Ún", "Bře", "Dub", "Kvě", "Čer", "Čvc", "Srp", "Zář", "Říj", "Lis", "Pro"],
+      longhand: ["Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return ".";
+    },
+    rangeSeparator: " do ",
+    weekAbbreviation: "Týd.",
+    scrollTitle: "Rolujte pro změnu",
+    toggleTitle: "Přepnout dopoledne/odpoledne",
+    amPM: ["dop.", "odp."],
+    yearAriaLabel: "Rok",
+    time_24hr: true
+  };
+  fp$8.l10ns.cs = Czech;
+  fp$8.l10ns;
+  var fp$9 = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Welsh = {
+    weekdays: {
+      shorthand: ["Sul", "Llun", "Maw", "Mer", "Iau", "Gwe", "Sad"],
+      longhand: ["Dydd Sul", "Dydd Llun", "Dydd Mawrth", "Dydd Mercher", "Dydd Iau", "Dydd Gwener", "Dydd Sadwrn"]
+    },
+    months: {
+      shorthand: ["Ion", "Chwef", "Maw", "Ebr", "Mai", "Meh", "Gorff", "Awst", "Medi", "Hyd", "Tach", "Rhag"],
+      longhand: ["Ionawr", "Chwefror", "Mawrth", "Ebrill", "Mai", "Mehefin", "Gorffennaf", "Awst", "Medi", "Hydref", "Tachwedd", "Rhagfyr"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function (nth) {
+      if (nth === 1) return "af";
+      if (nth === 2) return "ail";
+      if (nth === 3 || nth === 4) return "ydd";
+      if (nth === 5 || nth === 6) return "ed";
+      if (nth >= 7 && nth <= 10 || nth == 12 || nth == 15 || nth == 18 || nth == 20) return "fed";
+      if (nth == 11 || nth == 13 || nth == 14 || nth == 16 || nth == 17 || nth == 19) return "eg";
+      if (nth >= 21 && nth <= 39) return "ain"; // Inconclusive.
+
+      return "";
+    },
+    time_24hr: true
+  };
+  fp$9.l10ns.cy = Welsh;
+  fp$9.l10ns;
+  var fp$a = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Danish = {
+    weekdays: {
+      shorthand: ["søn", "man", "tir", "ons", "tors", "fre", "lør"],
+      longhand: ["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"]
+    },
+    months: {
+      shorthand: ["jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"],
+      longhand: ["januar", "februar", "marts", "april", "maj", "juni", "juli", "august", "september", "oktober", "november", "december"]
+    },
+    ordinal: function () {
+      return ".";
+    },
+    firstDayOfWeek: 1,
+    rangeSeparator: " til ",
+    weekAbbreviation: "uge",
+    time_24hr: true
+  };
+  fp$a.l10ns.da = Danish;
+  fp$a.l10ns;
+  var fp$b = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var German = {
+    weekdays: {
+      shorthand: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+      longhand: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"],
+      longhand: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
+    },
+    firstDayOfWeek: 1,
+    weekAbbreviation: "KW",
+    rangeSeparator: " bis ",
+    scrollTitle: "Zum Ändern scrollen",
+    toggleTitle: "Zum Umschalten klicken",
+    time_24hr: true
+  };
+  fp$b.l10ns.de = German;
+  fp$b.l10ns;
+  var english = {
+    weekdays: {
+      shorthand: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      longhand: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      longhand: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    },
+    daysInMonth: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    firstDayOfWeek: 0,
+    ordinal: function (nth) {
+      var s = nth % 100;
+      if (s > 3 && s < 21) return "th";
+
+      switch (s % 10) {
+        case 1:
+          return "st";
+
+        case 2:
+          return "nd";
+
+        case 3:
+          return "rd";
+
+        default:
+          return "th";
+      }
+    },
+    rangeSeparator: " to ",
+    weekAbbreviation: "Wk",
+    scrollTitle: "Scroll to increment",
+    toggleTitle: "Click to toggle",
+    amPM: ["AM", "PM"],
+    yearAriaLabel: "Year",
+    monthAriaLabel: "Month",
+    hourAriaLabel: "Hour",
+    minuteAriaLabel: "Minute",
+    time_24hr: false
+  };
+  var fp$c = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Esperanto = {
+    firstDayOfWeek: 1,
+    rangeSeparator: " ĝis ",
+    weekAbbreviation: "Sem",
+    scrollTitle: "Rulumu por pligrandigi la valoron",
+    toggleTitle: "Klaku por ŝalti",
+    weekdays: {
+      shorthand: ["Dim", "Lun", "Mar", "Mer", "Ĵaŭ", "Ven", "Sab"],
+      longhand: ["dimanĉo", "lundo", "mardo", "merkredo", "ĵaŭdo", "vendredo", "sabato"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aŭg", "Sep", "Okt", "Nov", "Dec"],
+      longhand: ["januaro", "februaro", "marto", "aprilo", "majo", "junio", "julio", "aŭgusto", "septembro", "oktobro", "novembro", "decembro"]
+    },
+    ordinal: function () {
+      return "-a";
+    },
+    time_24hr: true
+  };
+  fp$c.l10ns.eo = Esperanto;
+  fp$c.l10ns;
+  var fp$d = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Spanish = {
+    weekdays: {
+      shorthand: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+      longhand: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
+    },
+    months: {
+      shorthand: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+      longhand: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+    },
+    ordinal: function () {
+      return "º";
+    },
+    firstDayOfWeek: 1,
+    rangeSeparator: " a ",
+    time_24hr: true
+  };
+  fp$d.l10ns.es = Spanish;
+  fp$d.l10ns;
+  var fp$e = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Estonian = {
+    weekdays: {
+      shorthand: ["P", "E", "T", "K", "N", "R", "L"],
+      longhand: ["Pühapäev", "Esmaspäev", "Teisipäev", "Kolmapäev", "Neljapäev", "Reede", "Laupäev"]
+    },
+    months: {
+      shorthand: ["Jaan", "Veebr", "Märts", "Apr", "Mai", "Juuni", "Juuli", "Aug", "Sept", "Okt", "Nov", "Dets"],
+      longhand: ["Jaanuar", "Veebruar", "Märts", "Aprill", "Mai", "Juuni", "Juuli", "August", "September", "Oktoober", "November", "Detsember"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return ".";
+    },
+    weekAbbreviation: "Näd",
+    rangeSeparator: " kuni ",
+    scrollTitle: "Keri, et suurendada",
+    toggleTitle: "Klõpsa, et vahetada",
+    time_24hr: true
+  };
+  fp$e.l10ns.et = Estonian;
+  fp$e.l10ns;
+  var fp$f = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Persian = {
+    weekdays: {
+      shorthand: ["یک", "دو", "سه", "چهار", "پنج", "جمعه", "شنبه"],
+      longhand: ["یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنچ‌شنبه", "جمعه", "شنبه"]
+    },
+    months: {
+      shorthand: ["ژانویه", "فوریه", "مارس", "آوریل", "مه", "ژوئن", "ژوئیه", "اوت", "سپتامبر", "اکتبر", "نوامبر", "دسامبر"],
+      longhand: ["ژانویه", "فوریه", "مارس", "آوریل", "مه", "ژوئن", "ژوئیه", "اوت", "سپتامبر", "اکتبر", "نوامبر", "دسامبر"]
+    },
+    firstDayOfWeek: 6,
+    ordinal: function () {
+      return "";
+    }
+  };
+  fp$f.l10ns.fa = Persian;
+  fp$f.l10ns;
+  var fp$g = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Finnish = {
+    firstDayOfWeek: 1,
+    weekdays: {
+      shorthand: ["Su", "Ma", "Ti", "Ke", "To", "Pe", "La"],
+      longhand: ["Sunnuntai", "Maanantai", "Tiistai", "Keskiviikko", "Torstai", "Perjantai", "Lauantai"]
+    },
+    months: {
+      shorthand: ["Tammi", "Helmi", "Maalis", "Huhti", "Touko", "Kesä", "Heinä", "Elo", "Syys", "Loka", "Marras", "Joulu"],
+      longhand: ["Tammikuu", "Helmikuu", "Maaliskuu", "Huhtikuu", "Toukokuu", "Kesäkuu", "Heinäkuu", "Elokuu", "Syyskuu", "Lokakuu", "Marraskuu", "Joulukuu"]
+    },
+    ordinal: function () {
+      return ".";
+    },
+    time_24hr: true
+  };
+  fp$g.l10ns.fi = Finnish;
+  fp$g.l10ns;
+  var fp$h = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Faroese = {
+    weekdays: {
+      shorthand: ["Sun", "Mán", "Týs", "Mik", "Hós", "Frí", "Ley"],
+      longhand: ["Sunnudagur", "Mánadagur", "Týsdagur", "Mikudagur", "Hósdagur", "Fríggjadagur", "Leygardagur"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mar", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Des"],
+      longhand: ["Januar", "Februar", "Mars", "Apríl", "Mai", "Juni", "Juli", "August", "Septembur", "Oktobur", "Novembur", "Desembur"]
+    },
+    ordinal: function () {
+      return ".";
+    },
+    firstDayOfWeek: 1,
+    rangeSeparator: " til ",
+    weekAbbreviation: "vika",
+    scrollTitle: "Rulla fyri at broyta",
+    toggleTitle: "Trýst fyri at skifta",
+    yearAriaLabel: "Ár",
+    time_24hr: true
+  };
+  fp$h.l10ns.fo = Faroese;
+  fp$h.l10ns;
+  var fp$i = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var French = {
+    firstDayOfWeek: 1,
+    weekdays: {
+      shorthand: ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"],
+      longhand: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"]
+    },
+    months: {
+      shorthand: ["janv", "févr", "mars", "avr", "mai", "juin", "juil", "août", "sept", "oct", "nov", "déc"],
+      longhand: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
+    },
+    ordinal: function (nth) {
+      if (nth > 1) return "";
+      return "er";
+    },
+    rangeSeparator: " au ",
+    weekAbbreviation: "Sem",
+    scrollTitle: "Défiler pour augmenter la valeur",
+    toggleTitle: "Cliquer pour basculer",
+    time_24hr: true
+  };
+  fp$i.l10ns.fr = French;
+  fp$i.l10ns;
+  var fp$j = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Greek = {
+    weekdays: {
+      shorthand: ["Κυ", "Δε", "Τρ", "Τε", "Πέ", "Πα", "Σά"],
+      longhand: ["Κυριακή", "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο"]
+    },
+    months: {
+      shorthand: ["Ιαν", "Φεβ", "Μάρ", "Απρ", "Μάι", "Ιού", "Ιού", "Αύγ", "Σεπ", "Οκτ", "Νοέ", "Δεκ"],
+      longhand: ["Ιανουάριος", "Φεβρουάριος", "Μάρτιος", "Απρίλιος", "Μάιος", "Ιούνιος", "Ιούλιος", "Αύγουστος", "Σεπτέμβριος", "Οκτώβριος", "Νοέμβριος", "Δεκέμβριος"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return "";
+    },
+    weekAbbreviation: "Εβδ",
+    rangeSeparator: " έως ",
+    scrollTitle: "Μετακυλήστε για προσαύξηση",
+    toggleTitle: "Κάντε κλικ για αλλαγή",
+    amPM: ["ΠΜ", "ΜΜ"]
+  };
+  fp$j.l10ns.gr = Greek;
+  fp$j.l10ns;
+  var fp$k = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Hebrew = {
+    weekdays: {
+      shorthand: ["א", "ב", "ג", "ד", "ה", "ו", "ש"],
+      longhand: ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"]
+    },
+    months: {
+      shorthand: ["ינו׳", "פבר׳", "מרץ", "אפר׳", "מאי", "יוני", "יולי", "אוג׳", "ספט׳", "אוק׳", "נוב׳", "דצמ׳"],
+      longhand: ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"]
+    },
+    rangeSeparator: " אל ",
+    time_24hr: true
+  };
+  fp$k.l10ns.he = Hebrew;
+  fp$k.l10ns;
+  var fp$l = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Hindi = {
+    weekdays: {
+      shorthand: ["रवि", "सोम", "मंगल", "बुध", "गुरु", "शुक्र", "शनि"],
+      longhand: ["रविवार", "सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार"]
+    },
+    months: {
+      shorthand: ["जन", "फर", "मार्च", "अप्रेल", "मई", "जून", "जूलाई", "अग", "सित", "अक्ट", "नव", "दि"],
+      longhand: ["जनवरी ", "फरवरी", "मार्च", "अप्रेल", "मई", "जून", "जूलाई", "अगस्त ", "सितम्बर", "अक्टूबर", "नवम्बर", "दिसम्बर"]
+    }
+  };
+  fp$l.l10ns.hi = Hindi;
+  fp$l.l10ns;
+  var fp$m = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Croatian = {
+    firstDayOfWeek: 1,
+    weekdays: {
+      shorthand: ["Ned", "Pon", "Uto", "Sri", "Čet", "Pet", "Sub"],
+      longhand: ["Nedjelja", "Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota"]
+    },
+    months: {
+      shorthand: ["Sij", "Velj", "Ožu", "Tra", "Svi", "Lip", "Srp", "Kol", "Ruj", "Lis", "Stu", "Pro"],
+      longhand: ["Siječanj", "Veljača", "Ožujak", "Travanj", "Svibanj", "Lipanj", "Srpanj", "Kolovoz", "Rujan", "Listopad", "Studeni", "Prosinac"]
+    },
+    time_24hr: true
+  };
+  fp$m.l10ns.hr = Croatian;
+  fp$m.l10ns;
+  var fp$n = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Hungarian = {
+    firstDayOfWeek: 1,
+    weekdays: {
+      shorthand: ["V", "H", "K", "Sz", "Cs", "P", "Szo"],
+      longhand: ["Vasárnap", "Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Már", "Ápr", "Máj", "Jún", "Júl", "Aug", "Szep", "Okt", "Nov", "Dec"],
+      longhand: ["Január", "Február", "Március", "Április", "Május", "Június", "Július", "Augusztus", "Szeptember", "Október", "November", "December"]
+    },
+    ordinal: function () {
+      return ".";
+    },
+    weekAbbreviation: "Hét",
+    scrollTitle: "Görgessen",
+    toggleTitle: "Kattintson a váltáshoz",
+    rangeSeparator: " - ",
+    time_24hr: true
+  };
+  fp$n.l10ns.hu = Hungarian;
+  fp$n.l10ns;
+  var fp$o = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Indonesian = {
+    weekdays: {
+      shorthand: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+      longhand: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"],
+      longhand: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return "";
+    },
+    time_24hr: true,
+    rangeSeparator: " - "
+  };
+  fp$o.l10ns.id = Indonesian;
+  fp$o.l10ns;
+  var fp$p = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Icelandic = {
+    weekdays: {
+      shorthand: ["Sun", "Mán", "Þri", "Mið", "Fim", "Fös", "Lau"],
+      longhand: ["Sunnudagur", "Mánudagur", "Þriðjudagur", "Miðvikudagur", "Fimmtudagur", "Föstudagur", "Laugardagur"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mar", "Apr", "Maí", "Jún", "Júl", "Ágú", "Sep", "Okt", "Nóv", "Des"],
+      longhand: ["Janúar", "Febrúar", "Mars", "Apríl", "Maí", "Júní", "Júlí", "Ágúst", "September", "Október", "Nóvember", "Desember"]
+    },
+    ordinal: function () {
+      return ".";
+    },
+    firstDayOfWeek: 1,
+    rangeSeparator: " til ",
+    weekAbbreviation: "vika",
+    yearAriaLabel: "Ár",
+    time_24hr: true
+  };
+  fp$p.l10ns.is = Icelandic;
+  fp$p.l10ns;
+  var fp$q = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Italian = {
+    weekdays: {
+      shorthand: ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
+      longhand: ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"]
+    },
+    months: {
+      shorthand: ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"],
+      longhand: ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return "°";
+    },
+    rangeSeparator: " al ",
+    weekAbbreviation: "Se",
+    scrollTitle: "Scrolla per aumentare",
+    toggleTitle: "Clicca per cambiare",
+    time_24hr: true
+  };
+  fp$q.l10ns.it = Italian;
+  fp$q.l10ns;
+  var fp$r = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Japanese = {
+    weekdays: {
+      shorthand: ["日", "月", "火", "水", "木", "金", "土"],
+      longhand: ["日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"]
+    },
+    months: {
+      shorthand: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+      longhand: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"]
+    },
+    time_24hr: true,
+    rangeSeparator: " から ",
+    monthAriaLabel: "月",
+    amPM: ["午前", "午後"],
+    yearAriaLabel: "年",
+    hourAriaLabel: "時間",
+    minuteAriaLabel: "分"
+  };
+  fp$r.l10ns.ja = Japanese;
+  fp$r.l10ns;
+  var fp$s = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Georgian = {
+    weekdays: {
+      shorthand: ["კვ", "ორ", "სა", "ოთ", "ხუ", "პა", "შა"],
+      longhand: ["კვირა", "ორშაბათი", "სამშაბათი", "ოთხშაბათი", "ხუთშაბათი", "პარასკევი", "შაბათი"]
+    },
+    months: {
+      shorthand: ["იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"],
+      longhand: ["იანვარი", "თებერვალი", "მარტი", "აპრილი", "მაისი", "ივნისი", "ივლისი", "აგვისტო", "სექტემბერი", "ოქტომბერი", "ნოემბერი", "დეკემბერი"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return "";
+    },
+    rangeSeparator: " — ",
+    weekAbbreviation: "კვ.",
+    scrollTitle: "დასქროლეთ გასადიდებლად",
+    toggleTitle: "დააკლიკეთ გადართვისთვის",
+    amPM: ["AM", "PM"],
+    yearAriaLabel: "წელი",
+    time_24hr: true
+  };
+  fp$s.l10ns.ka = Georgian;
+  fp$s.l10ns;
+  var fp$t = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Korean = {
+    weekdays: {
+      shorthand: ["일", "월", "화", "수", "목", "금", "토"],
+      longhand: ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"]
+    },
+    months: {
+      shorthand: ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"],
+      longhand: ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"]
+    },
+    ordinal: function () {
+      return "일";
+    },
+    rangeSeparator: " ~ "
+  };
+  fp$t.l10ns.ko = Korean;
+  fp$t.l10ns;
+  var fp$u = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Khmer = {
+    weekdays: {
+      shorthand: ["អាទិត្យ", "ចន្ទ", "អង្គារ", "ពុធ", "ព្រហស.", "សុក្រ", "សៅរ៍"],
+      longhand: ["អាទិត្យ", "ចន្ទ", "អង្គារ", "ពុធ", "ព្រហស្បតិ៍", "សុក្រ", "សៅរ៍"]
+    },
+    months: {
+      shorthand: ["មករា", "កុម្ភះ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"],
+      longhand: ["មករា", "កុម្ភះ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"]
+    },
+    ordinal: function () {
+      return "";
+    },
+    firstDayOfWeek: 1,
+    rangeSeparator: " ដល់ ",
+    weekAbbreviation: "សប្តាហ៍",
+    scrollTitle: "រំកិលដើម្បីបង្កើន",
+    toggleTitle: "ចុចដើម្បីផ្លាស់ប្ដូរ",
+    yearAriaLabel: "ឆ្នាំ",
+    time_24hr: true
+  };
+  fp$u.l10ns.km = Khmer;
+  fp$u.l10ns;
+  var fp$v = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Kazakh = {
+    weekdays: {
+      shorthand: ["Жс", "Дс", "Сc", "Ср", "Бс", "Жм", "Сб"],
+      longhand: ["Жексенбi", "Дүйсенбi", "Сейсенбi", "Сәрсенбi", "Бейсенбi", "Жұма", "Сенбi"]
+    },
+    months: {
+      shorthand: ["Қаң", "Ақп", "Нау", "Сәу", "Мам", "Мау", "Шiл", "Там", "Қыр", "Қаз", "Қар", "Жел"],
+      longhand: ["Қаңтар", "Ақпан", "Наурыз", "Сәуiр", "Мамыр", "Маусым", "Шiлде", "Тамыз", "Қыркүйек", "Қазан", "Қараша", "Желтоқсан"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return "";
+    },
+    rangeSeparator: " — ",
+    weekAbbreviation: "Апта",
+    scrollTitle: "Үлкейту үшін айналдырыңыз",
+    toggleTitle: "Ауыстыру үшін басыңыз",
+    amPM: ["ТД", "ТК"],
+    yearAriaLabel: "Жыл"
+  };
+  fp$v.l10ns.kz = Kazakh;
+  fp$v.l10ns;
+  var fp$w = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Lithuanian = {
+    weekdays: {
+      shorthand: ["S", "Pr", "A", "T", "K", "Pn", "Š"],
+      longhand: ["Sekmadienis", "Pirmadienis", "Antradienis", "Trečiadienis", "Ketvirtadienis", "Penktadienis", "Šeštadienis"]
+    },
+    months: {
+      shorthand: ["Sau", "Vas", "Kov", "Bal", "Geg", "Bir", "Lie", "Rgp", "Rgs", "Spl", "Lap", "Grd"],
+      longhand: ["Sausis", "Vasaris", "Kovas", "Balandis", "Gegužė", "Birželis", "Liepa", "Rugpjūtis", "Rugsėjis", "Spalis", "Lapkritis", "Gruodis"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return "-a";
+    },
+    rangeSeparator: " iki ",
+    weekAbbreviation: "Sav",
+    scrollTitle: "Keisti laiką pelės rateliu",
+    toggleTitle: "Perjungti laiko formatą",
+    time_24hr: true
+  };
+  fp$w.l10ns.lt = Lithuanian;
+  fp$w.l10ns;
+  var fp$x = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Latvian = {
+    firstDayOfWeek: 1,
+    weekdays: {
+      shorthand: ["Sv", "Pr", "Ot", "Tr", "Ce", "Pk", "Se"],
+      longhand: ["Svētdiena", "Pirmdiena", "Otrdiena", "Trešdiena", "Ceturtdiena", "Piektdiena", "Sestdiena"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mar", "Apr", "Mai", "Jūn", "Jūl", "Aug", "Sep", "Okt", "Nov", "Dec"],
+      longhand: ["Janvāris", "Februāris", "Marts", "Aprīlis", "Maijs", "Jūnijs", "Jūlijs", "Augusts", "Septembris", "Oktobris", "Novembris", "Decembris"]
+    },
+    rangeSeparator: " līdz ",
+    time_24hr: true
+  };
+  fp$x.l10ns.lv = Latvian;
+  fp$x.l10ns;
+  var fp$y = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Macedonian = {
+    weekdays: {
+      shorthand: ["Не", "По", "Вт", "Ср", "Че", "Пе", "Са"],
+      longhand: ["Недела", "Понеделник", "Вторник", "Среда", "Четврток", "Петок", "Сабота"]
+    },
+    months: {
+      shorthand: ["Јан", "Фев", "Мар", "Апр", "Мај", "Јун", "Јул", "Авг", "Сеп", "Окт", "Ное", "Дек"],
+      longhand: ["Јануари", "Февруари", "Март", "Април", "Мај", "Јуни", "Јули", "Август", "Септември", "Октомври", "Ноември", "Декември"]
+    },
+    firstDayOfWeek: 1,
+    weekAbbreviation: "Нед.",
+    rangeSeparator: " до ",
+    time_24hr: true
+  };
+  fp$y.l10ns.mk = Macedonian;
+  fp$y.l10ns;
+  var fp$z = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Mongolian = {
+    firstDayOfWeek: 1,
+    weekdays: {
+      shorthand: ["Да", "Мя", "Лх", "Пү", "Ба", "Бя", "Ня"],
+      longhand: ["Даваа", "Мягмар", "Лхагва", "Пүрэв", "Баасан", "Бямба", "Ням"]
+    },
+    months: {
+      shorthand: ["1-р сар", "2-р сар", "3-р сар", "4-р сар", "5-р сар", "6-р сар", "7-р сар", "8-р сар", "9-р сар", "10-р сар", "11-р сар", "12-р сар"],
+      longhand: ["Нэгдүгээр сар", "Хоёрдугаар сар", "Гуравдугаар сар", "Дөрөвдүгээр сар", "Тавдугаар сар", "Зургаадугаар сар", "Долдугаар сар", "Наймдугаар сар", "Есдүгээр сар", "Аравдугаар сар", "Арваннэгдүгээр сар", "Арванхоёрдугаар сар"]
+    },
+    rangeSeparator: "-с ",
+    time_24hr: true
+  };
+  fp$z.l10ns.mn = Mongolian;
+  fp$z.l10ns;
+  var fp$A = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Malaysian = {
+    weekdays: {
+      shorthand: ["Min", "Isn", "Sel", "Rab", "Kha", "Jum", "Sab"],
+      longhand: ["Minggu", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"],
+      longhand: ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return "";
+    }
+  };
+  fp$A.l10ns;
+  var fp$B = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Burmese = {
+    weekdays: {
+      shorthand: ["နွေ", "လာ", "ဂါ", "ဟူး", "ကြာ", "သော", "နေ"],
+      longhand: ["တနင်္ဂနွေ", "တနင်္လာ", "အင်္ဂါ", "ဗုဒ္ဓဟူး", "ကြာသပတေး", "သောကြာ", "စနေ"]
+    },
+    months: {
+      shorthand: ["ဇန်", "ဖေ", "မတ်", "ပြီ", "မေ", "ဇွန်", "လိုင်", "သြ", "စက်", "အောက်", "နို", "ဒီ"],
+      longhand: ["ဇန်နဝါရီ", "ဖေဖော်ဝါရီ", "မတ်", "ဧပြီ", "မေ", "ဇွန်", "ဇူလိုင်", "သြဂုတ်", "စက်တင်ဘာ", "အောက်တိုဘာ", "နိုဝင်ဘာ", "ဒီဇင်ဘာ"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return "";
+    },
+    time_24hr: true
+  };
+  fp$B.l10ns.my = Burmese;
+  fp$B.l10ns;
+  var fp$C = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Dutch = {
+    weekdays: {
+      shorthand: ["zo", "ma", "di", "wo", "do", "vr", "za"],
+      longhand: ["zondag", "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag"]
+    },
+    months: {
+      shorthand: ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sept", "okt", "nov", "dec"],
+      longhand: ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"]
+    },
+    firstDayOfWeek: 1,
+    weekAbbreviation: "wk",
+    rangeSeparator: " t/m ",
+    scrollTitle: "Scroll voor volgende / vorige",
+    toggleTitle: "Klik om te wisselen",
+    time_24hr: true,
+    ordinal: function (nth) {
+      if (nth === 1 || nth === 8 || nth >= 20) return "ste";
+      return "de";
+    }
+  };
+  fp$C.l10ns.nl = Dutch;
+  fp$C.l10ns;
+  var fp$D = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Norwegian = {
+    weekdays: {
+      shorthand: ["Søn", "Man", "Tir", "Ons", "Tor", "Fre", "Lør"],
+      longhand: ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mar", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Des"],
+      longhand: ["Januar", "Februar", "Mars", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Desember"]
+    },
+    firstDayOfWeek: 1,
+    rangeSeparator: " til ",
+    weekAbbreviation: "Uke",
+    scrollTitle: "Scroll for å endre",
+    toggleTitle: "Klikk for å veksle",
+    time_24hr: true,
+    ordinal: function () {
+      return ".";
+    }
+  };
+  fp$D.l10ns.no = Norwegian;
+  fp$D.l10ns;
+  var fp$E = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Punjabi = {
+    weekdays: {
+      shorthand: ["ਐਤ", "ਸੋਮ", "ਮੰਗਲ", "ਬੁੱਧ", "ਵੀਰ", "ਸ਼ੁੱਕਰ", "ਸ਼ਨਿੱਚਰ"],
+      longhand: ["ਐਤਵਾਰ", "ਸੋਮਵਾਰ", "ਮੰਗਲਵਾਰ", "ਬੁੱਧਵਾਰ", "ਵੀਰਵਾਰ", "ਸ਼ੁੱਕਰਵਾਰ", "ਸ਼ਨਿੱਚਰਵਾਰ"]
+    },
+    months: {
+      shorthand: ["ਜਨ", "ਫ਼ਰ", "ਮਾਰ", "ਅਪ੍ਰੈ", "ਮਈ", "ਜੂਨ", "ਜੁਲਾ", "ਅਗ", "ਸਤੰ", "ਅਕ", "ਨਵੰ", "ਦਸੰ"],
+      longhand: ["ਜਨਵਰੀ", "ਫ਼ਰਵਰੀ", "ਮਾਰਚ", "ਅਪ੍ਰੈਲ", "ਮਈ", "ਜੂਨ", "ਜੁਲਾਈ", "ਅਗਸਤ", "ਸਤੰਬਰ", "ਅਕਤੂਬਰ", "ਨਵੰਬਰ", "ਦਸੰਬਰ"]
+    },
+    time_24hr: true
+  };
+  fp$E.l10ns.pa = Punjabi;
+  fp$E.l10ns;
+  var fp$F = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Polish = {
+    weekdays: {
+      shorthand: ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"],
+      longhand: ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"]
+    },
+    months: {
+      shorthand: ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"],
+      longhand: ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"]
+    },
+    rangeSeparator: " do ",
+    weekAbbreviation: "tydz.",
+    scrollTitle: "Przewiń, aby zwiększyć",
+    toggleTitle: "Kliknij, aby przełączyć",
+    firstDayOfWeek: 1,
+    time_24hr: true,
+    ordinal: function () {
+      return ".";
+    }
+  };
+  fp$F.l10ns.pl = Polish;
+  fp$F.l10ns;
+  var fp$G = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Portuguese = {
+    weekdays: {
+      shorthand: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+      longhand: ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"]
+    },
+    months: {
+      shorthand: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
+      longhand: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+    },
+    rangeSeparator: " até ",
+    time_24hr: true
+  };
+  fp$G.l10ns.pt = Portuguese;
+  fp$G.l10ns;
+  var fp$H = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Romanian = {
+    weekdays: {
+      shorthand: ["Dum", "Lun", "Mar", "Mie", "Joi", "Vin", "Sâm"],
+      longhand: ["Duminică", "Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă"]
+    },
+    months: {
+      shorthand: ["Ian", "Feb", "Mar", "Apr", "Mai", "Iun", "Iul", "Aug", "Sep", "Oct", "Noi", "Dec"],
+      longhand: ["Ianuarie", "Februarie", "Martie", "Aprilie", "Mai", "Iunie", "Iulie", "August", "Septembrie", "Octombrie", "Noiembrie", "Decembrie"]
+    },
+    firstDayOfWeek: 1,
+    time_24hr: true,
+    ordinal: function () {
+      return "";
+    }
+  };
+  fp$H.l10ns.ro = Romanian;
+  fp$H.l10ns;
+  var fp$I = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Russian = {
+    weekdays: {
+      shorthand: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+      longhand: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"]
+    },
+    months: {
+      shorthand: ["Янв", "Фев", "Март", "Апр", "Май", "Июнь", "Июль", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+      longhand: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return "";
+    },
+    rangeSeparator: " — ",
+    weekAbbreviation: "Нед.",
+    scrollTitle: "Прокрутите для увеличения",
+    toggleTitle: "Нажмите для переключения",
+    amPM: ["ДП", "ПП"],
+    yearAriaLabel: "Год",
+    time_24hr: true
+  };
+  fp$I.l10ns.ru = Russian;
+  fp$I.l10ns;
+  var fp$J = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Sinhala = {
+    weekdays: {
+      shorthand: ["ඉ", "ස", "අ", "බ", "බ්‍ර", "සි", "සෙ"],
+      longhand: ["ඉරිදා", "සඳුදා", "අඟහරුවාදා", "බදාදා", "බ්‍රහස්පතින්දා", "සිකුරාදා", "සෙනසුරාදා"]
+    },
+    months: {
+      shorthand: ["ජන", "පෙබ", "මාර්", "අප්‍රේ", "මැයි", "ජුනි", "ජූලි", "අගෝ", "සැප්", "ඔක්", "නොවැ", "දෙසැ"],
+      longhand: ["ජනවාරි", "පෙබරවාරි", "මාර්තු", "අප්‍රේල්", "මැයි", "ජුනි", "ජූලි", "අගෝස්තු", "සැප්තැම්බර්", "ඔක්තෝබර්", "නොවැම්බර්", "දෙසැම්බර්"]
+    },
+    time_24hr: true
+  };
+  fp$J.l10ns.si = Sinhala;
+  fp$J.l10ns;
+  var fp$K = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Slovak = {
+    weekdays: {
+      shorthand: ["Ned", "Pon", "Ut", "Str", "Štv", "Pia", "Sob"],
+      longhand: ["Nedeľa", "Pondelok", "Utorok", "Streda", "Štvrtok", "Piatok", "Sobota"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mar", "Apr", "Máj", "Jún", "Júl", "Aug", "Sep", "Okt", "Nov", "Dec"],
+      longhand: ["Január", "Február", "Marec", "Apríl", "Máj", "Jún", "Júl", "August", "September", "Október", "November", "December"]
+    },
+    firstDayOfWeek: 1,
+    rangeSeparator: " do ",
+    time_24hr: true,
+    ordinal: function () {
+      return ".";
+    }
+  };
+  fp$K.l10ns.sk = Slovak;
+  fp$K.l10ns;
+  var fp$L = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Slovenian = {
+    weekdays: {
+      shorthand: ["Ned", "Pon", "Tor", "Sre", "Čet", "Pet", "Sob"],
+      longhand: ["Nedelja", "Ponedeljek", "Torek", "Sreda", "Četrtek", "Petek", "Sobota"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Avg", "Sep", "Okt", "Nov", "Dec"],
+      longhand: ["Januar", "Februar", "Marec", "April", "Maj", "Junij", "Julij", "Avgust", "September", "Oktober", "November", "December"]
+    },
+    firstDayOfWeek: 1,
+    rangeSeparator: " do ",
+    time_24hr: true,
+    ordinal: function () {
+      return ".";
+    }
+  };
+  fp$L.l10ns.sl = Slovenian;
+  fp$L.l10ns;
+  var fp$M = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Albanian = {
+    weekdays: {
+      shorthand: ["Di", "Hë", "Ma", "Më", "En", "Pr", "Sh"],
+      longhand: ["E Diel", "E Hënë", "E Martë", "E Mërkurë", "E Enjte", "E Premte", "E Shtunë"]
+    },
+    months: {
+      shorthand: ["Jan", "Shk", "Mar", "Pri", "Maj", "Qer", "Kor", "Gus", "Sht", "Tet", "Nën", "Dhj"],
+      longhand: ["Janar", "Shkurt", "Mars", "Prill", "Maj", "Qershor", "Korrik", "Gusht", "Shtator", "Tetor", "Nëntor", "Dhjetor"]
+    },
+    time_24hr: true
+  };
+  fp$M.l10ns.sq = Albanian;
+  fp$M.l10ns;
+  var fp$N = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Serbian = {
+    weekdays: {
+      shorthand: ["Ned", "Pon", "Uto", "Sre", "Čet", "Pet", "Sub"],
+      longhand: ["Nedelja", "Ponedeljak", "Utorak", "Sreda", "Četvrtak", "Petak", "Subota"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Avg", "Sep", "Okt", "Nov", "Dec"],
+      longhand: ["Januar", "Februar", "Mart", "April", "Maj", "Jun", "Jul", "Avgust", "Septembar", "Oktobar", "Novembar", "Decembar"]
+    },
+    firstDayOfWeek: 1,
+    weekAbbreviation: "Ned.",
+    rangeSeparator: " do ",
+    time_24hr: true
+  };
+  fp$N.l10ns.sr = Serbian;
+  fp$N.l10ns;
+  var fp$O = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Swedish = {
+    firstDayOfWeek: 1,
+    weekAbbreviation: "v",
+    weekdays: {
+      shorthand: ["Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"],
+      longhand: ["Söndag", "Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag"]
+    },
+    months: {
+      shorthand: ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"],
+      longhand: ["Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December"]
+    },
+    time_24hr: true,
+    ordinal: function () {
+      return ".";
+    }
+  };
+  fp$O.l10ns.sv = Swedish;
+  fp$O.l10ns;
+  var fp$P = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Thai = {
+    weekdays: {
+      shorthand: ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"],
+      longhand: ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"]
+    },
+    months: {
+      shorthand: ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."],
+      longhand: ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"]
+    },
+    firstDayOfWeek: 1,
+    rangeSeparator: " ถึง ",
+    scrollTitle: "เลื่อนเพื่อเพิ่มหรือลด",
+    toggleTitle: "คลิกเพื่อเปลี่ยน",
+    time_24hr: true,
+    ordinal: function () {
+      return "";
+    }
+  };
+  fp$P.l10ns.th = Thai;
+  fp$P.l10ns;
+  var fp$Q = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Turkish = {
+    weekdays: {
+      shorthand: ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"],
+      longhand: ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"]
+    },
+    months: {
+      shorthand: ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"],
+      longhand: ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return ".";
+    },
+    rangeSeparator: " - ",
+    weekAbbreviation: "Hf",
+    scrollTitle: "Artırmak için kaydırın",
+    toggleTitle: "Aç/Kapa",
+    amPM: ["ÖÖ", "ÖS"],
+    time_24hr: true
+  };
+  fp$Q.l10ns.tr = Turkish;
+  fp$Q.l10ns;
+  var fp$R = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Ukrainian = {
+    firstDayOfWeek: 1,
+    weekdays: {
+      shorthand: ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+      longhand: ["Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"]
+    },
+    months: {
+      shorthand: ["Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер", "Вер", "Жов", "Лис", "Гру"],
+      longhand: ["Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень", "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"]
+    },
+    time_24hr: true
+  };
+  fp$R.l10ns.uk = Ukrainian;
+  fp$R.l10ns;
+  var fp$S = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Uzbek = {
+    weekdays: {
+      shorthand: ["Якш", "Душ", "Сеш", "Чор", "Пай", "Жум", "Шан"],
+      longhand: ["Якшанба", "Душанба", "Сешанба", "Чоршанба", "Пайшанба", "Жума", "Шанба"]
+    },
+    months: {
+      shorthand: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+      longhand: ["Январ", "Феврал", "Март", "Апрел", "Май", "Июн", "Июл", "Август", "Сентябр", "Октябр", "Ноябр", "Декабр"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return "";
+    },
+    rangeSeparator: " — ",
+    weekAbbreviation: "Ҳафта",
+    scrollTitle: "Катталаштириш учун айлантиринг",
+    toggleTitle: "Ўтиш учун босинг",
+    amPM: ["AM", "PM"],
+    yearAriaLabel: "Йил",
+    time_24hr: true
+  };
+  fp$S.l10ns.uz = Uzbek;
+  fp$S.l10ns;
+  var fp$T = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var UzbekLatin = {
+    weekdays: {
+      shorthand: ["Ya", "Du", "Se", "Cho", "Pa", "Ju", "Sha"],
+      longhand: ["Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"]
+    },
+    months: {
+      shorthand: ["Yan", "Fev", "Mar", "Apr", "May", "Iyun", "Iyul", "Avg", "Sen", "Okt", "Noy", "Dek"],
+      longhand: ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"]
+    },
+    firstDayOfWeek: 1,
+    ordinal: function () {
+      return "";
+    },
+    rangeSeparator: " — ",
+    weekAbbreviation: "Hafta",
+    scrollTitle: "Kattalashtirish uchun aylantiring",
+    toggleTitle: "O‘tish uchun bosing",
+    amPM: ["AM", "PM"],
+    yearAriaLabel: "Yil",
+    time_24hr: true
+  };
+  fp$T.l10ns["uz_latn"] = UzbekLatin;
+  fp$T.l10ns;
+  var fp$U = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Vietnamese = {
+    weekdays: {
+      shorthand: ["CN", "T2", "T3", "T4", "T5", "T6", "T7"],
+      longhand: ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"]
+    },
+    months: {
+      shorthand: ["Th1", "Th2", "Th3", "Th4", "Th5", "Th6", "Th7", "Th8", "Th9", "Th10", "Th11", "Th12"],
+      longhand: ["Tháng một", "Tháng hai", "Tháng ba", "Tháng tư", "Tháng năm", "Tháng sáu", "Tháng bảy", "Tháng tám", "Tháng chín", "Tháng mười", "Tháng mười một", "Tháng mười hai"]
+    },
+    firstDayOfWeek: 1,
+    rangeSeparator: " đến "
+  };
+  fp$U.l10ns.vn = Vietnamese;
+  fp$U.l10ns;
+  var fp$V = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var Mandarin = {
+    weekdays: {
+      shorthand: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
+      longhand: ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
+    },
+    months: {
+      shorthand: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+      longhand: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"]
+    },
+    rangeSeparator: " 至 ",
+    weekAbbreviation: "周",
+    scrollTitle: "滚动切换",
+    toggleTitle: "点击切换 12/24 小时时制"
+  };
+  fp$V.l10ns.zh = Mandarin;
+  fp$V.l10ns;
+  var fp$W = typeof window !== "undefined" && window.flatpickr !== undefined ? window.flatpickr : {
+    l10ns: {}
+  };
+  var MandarinTraditional = {
+    weekdays: {
+      shorthand: ["週日", "週一", "週二", "週三", "週四", "週五", "週六"],
+      longhand: ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
+    },
+    months: {
+      shorthand: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+      longhand: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"]
+    },
+    rangeSeparator: " 至 ",
+    weekAbbreviation: "週",
+    scrollTitle: "滾動切換",
+    toggleTitle: "點擊切換 12/24 小時時制"
+  };
+  fp$W.l10ns.zh_tw = MandarinTraditional;
+  fp$W.l10ns;
+  var l10n = {
+    ar: Arabic,
+    at: Austria,
+    az: Azerbaijan,
+    be: Belarusian,
+    bg: Bulgarian,
+    bn: Bangla,
+    bs: Bosnian,
+    ca: Catalan,
+    cat: Catalan,
+    cs: Czech,
+    cy: Welsh,
+    da: Danish,
+    de: German,
+    default: __assign({}, english),
+    en: english,
+    eo: Esperanto,
+    es: Spanish,
+    et: Estonian,
+    fa: Persian,
+    fi: Finnish,
+    fo: Faroese,
+    fr: French,
+    gr: Greek,
+    he: Hebrew,
+    hi: Hindi,
+    hr: Croatian,
+    hu: Hungarian,
+    id: Indonesian,
+    is: Icelandic,
+    it: Italian,
+    ja: Japanese,
+    ka: Georgian,
+    ko: Korean,
+    km: Khmer,
+    kz: Kazakh,
+    lt: Lithuanian,
+    lv: Latvian,
+    mk: Macedonian,
+    mn: Mongolian,
+    ms: Malaysian,
+    my: Burmese,
+    nl: Dutch,
+    no: Norwegian,
+    pa: Punjabi,
+    pl: Polish,
+    pt: Portuguese,
+    ro: Romanian,
+    ru: Russian,
+    si: Sinhala,
+    sk: Slovak,
+    sl: Slovenian,
+    sq: Albanian,
+    sr: Serbian,
+    sv: Swedish,
+    th: Thai,
+    tr: Turkish,
+    uk: Ukrainian,
+    vn: Vietnamese,
+    zh: Mandarin,
+    zh_tw: MandarinTraditional,
+    uz: Uzbek,
+    uz_latn: UzbekLatin
+  };
+  exports.default = l10n;
+  Object.defineProperty(exports, '__esModule', {
+    value: true
+  });
+});
+});
+
+var l10n$1 = /*@__PURE__*/getDefaultExportFromCjs(l10n);
+
+const momentLocale = obsidian.moment.locale();
+const localeMap = {
+    ar: l10n$1.ar,
+    cz: l10n$1.cs,
+    da: l10n$1.da,
+    de: l10n$1.de,
+    en: l10n$1.en,
+    es: l10n$1.es,
+    fr: l10n$1.fr,
+    hi: l10n$1.hi,
+    id: l10n$1.id,
+    it: l10n$1.it,
+    ja: l10n$1.ja,
+    ko: l10n$1.ko,
+    nl: l10n$1.nl,
+    no: l10n$1.no,
+    pl: l10n$1.pl,
+    pt: l10n$1.pt,
+    "pt-BR": l10n$1.pt,
+    ro: l10n$1.ro,
+    ru: l10n$1.ru,
+    tr: l10n$1.tr,
+    zh: l10n$1.zh,
+    "zh-TW": l10n$1.zh_tw,
+};
+function getDefaultLocale() {
+    return localeMap[momentLocale];
+}
+
+const tagRegex = /(^|\s)#([^\s]*)$/;
+const linkRegex = /(^|\s)\[\[([^\]]*)$/;
+function forceChangeEvent(input, value) {
+    Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set.call(input, value);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+}
+function applyDate(date, inputRef, view) {
+    const dateFormat = view.getSetting("date-format") || getDefaultDateFormat(view.app);
+    const shouldLinkDates = view.getSetting("link-date-to-daily-note");
+    const formattedDate = obsidian.moment(date).format(dateFormat);
+    const wrappedDate = shouldLinkDates
+        ? `[[${formattedDate}]]`
+        : `{${formattedDate}}`;
+    forceChangeEvent(inputRef.current, `${inputRef.current.value}${wrappedDate}`);
+    inputRef.current.focus();
+}
+function constructDatePicker$1({ div, inputRef, cb, view, }) {
+    div.createEl("input", { type: "text" }, (input) => {
+        setTimeout(() => cb(flatpickr(input, {
+            locale: getDefaultLocale(),
+            inline: true,
+            onChange: (dates) => {
+                applyDate(dates[0], inputRef, view);
+            },
+        })));
+    });
+}
+function getTagSearchConfig(tagSearch) {
+    return {
+        id: "tag",
+        match: tagRegex,
+        index: 1,
+        search: (term, callback) => {
+            callback(tagSearch.search(term));
+        },
+        template: (result) => {
+            return result.item;
+        },
+        replace: (result) => `${result.item} `,
+    };
+}
+function getFileSearchConfig(fileSearch, filePath, view) {
+    return {
+        id: "link",
+        match: linkRegex,
+        index: 1,
+        template: (res) => {
+            return view.app.metadataCache.fileToLinktext(res.item, filePath);
+        },
+        search: (term, callback) => {
+            callback(fileSearch.search(term));
+        },
+        replace: (result) => `[[${view.app.metadataCache.fileToLinktext(result.item, filePath)}]] `,
+    };
+}
+function toPreviousMonth(date) {
+    const initialMonth = date.month();
+    const first = date.clone().startOf("month").weekday(0);
+    const diff = date.diff(first, "week");
+    date.subtract(1, "month").startOf("month").weekday(6).add(diff, "week");
+    let nextMonth = date.month();
+    while (initialMonth === nextMonth) {
+        date.subtract(1, "week");
+        nextMonth = date.month();
+    }
+    return date;
+}
+function toNextMonth(date) {
+    const initialMonth = date.month();
+    const first = date.clone().startOf("month").weekday(6);
+    const diff = date.diff(first, "week");
+    date.add(1, "month").startOf("month").weekday(0).add(diff, "week");
+    let nextMonth = date.month();
+    while (initialMonth === nextMonth) {
+        date.add(1, "week");
+        nextMonth = date.month();
+    }
+    return date;
+}
 function constructAutocomplete({ inputRef, isAutocompleteVisibleRef, obsidianContext, }) {
     const { view, filePath } = obsidianContext;
+    let datePickerEl = null;
+    let datePickerInstance = null;
+    const dateTrigger = view.getSetting("date-trigger") || defaultDateTrigger;
+    const timeTrigger = view.getSetting("time-trigger") || defaultTimeTrigger;
+    const destroyDatePicker = () => {
+        isAutocompleteVisibleRef.current = false;
+        datePickerInstance.destroy();
+        datePickerEl.remove();
+        setTimeout(() => (datePickerEl = null));
+    };
+    const dateTriggerRegex = new RegExp(`(?:^|\\s)${escapeRegExpStr(dateTrigger)}$`);
+    new RegExp(`(?:^|\\s)${escapeRegExpStr(timeTrigger)}$`);
     const tagSearch = new Fuse(Object.keys(view.app.metadataCache.getTags()).sort());
     const fileSearch = new Fuse(view.app.vault.getMarkdownFiles(), {
         keys: ["name"],
     });
     const editor = new dist.TextareaEditor(inputRef.current);
     const autocomplete = new dist$3.Textcomplete(editor, [
-        {
-            id: "tag",
-            match: /\B#([^\s]*)$/,
-            index: 1,
-            search: (term, callback) => {
-                callback(tagSearch.search(term));
-            },
-            template: (result) => {
-                return result.item;
-            },
-            replace: (result) => `${result.item} `,
-        },
-        {
-            id: "link",
-            match: /\B\[\[([^\]]*)$/,
-            index: 1,
-            template: (res) => {
-                return view.app.metadataCache.fileToLinktext(res.item, filePath);
-            },
-            search: (term, callback) => {
-                callback(fileSearch.search(term));
-            },
-            replace: (result) => `[[${view.app.metadataCache.fileToLinktext(result.item, filePath)}]] `,
-        },
+        getTagSearchConfig(tagSearch),
+        getFileSearchConfig(fileSearch, filePath, view),
     ], {
         dropdown: {
             className: c$2("autocomplete"),
@@ -26919,7 +37058,93 @@ function constructAutocomplete({ inputRef, isAutocompleteVisibleRef, obsidianCon
     autocomplete.on("hidden", () => {
         isAutocompleteVisibleRef.current = false;
     });
+    const keydownHandler = (e) => {
+        if (!datePickerEl) {
+            return;
+        }
+        if (e.key === "Enter") {
+            e.preventDefault();
+            const selectedDates = datePickerInstance.selectedDates;
+            if (selectedDates.length) {
+                applyDate(selectedDates[0], inputRef, view);
+            }
+            else {
+                applyDate(new Date(), inputRef, view);
+            }
+            return destroyDatePicker();
+        }
+        if (e.key === "Escape") {
+            e.preventDefault();
+            return destroyDatePicker();
+        }
+        const currentDate = obsidian.moment(datePickerInstance.selectedDates[0] || new Date());
+        if (e.key === "ArrowRight") {
+            e.preventDefault();
+            if (currentDate.weekday() === 6) {
+                datePickerInstance.setDate(toNextMonth(currentDate).toDate(), false);
+            }
+            else {
+                datePickerInstance.setDate(currentDate.add(1, "day").toDate(), false);
+            }
+            return;
+        }
+        if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            if (currentDate.weekday() === 0) {
+                datePickerInstance.setDate(toPreviousMonth(currentDate).toDate(), false);
+            }
+            else {
+                datePickerInstance.setDate(currentDate.subtract(1, "day").toDate(), false);
+            }
+            return;
+        }
+        if (e.key === "ArrowUp") {
+            e.preventDefault();
+            datePickerInstance.setDate(currentDate.subtract(1, "week").toDate(), false);
+            return;
+        }
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            datePickerInstance.setDate(currentDate.add(1, "week").toDate(), false);
+            return;
+        }
+    };
+    inputRef.current.addEventListener("keydown", keydownHandler);
+    editor.on("change", (e) => {
+        const beforeCursor = e.detail.beforeCursor;
+        if (beforeCursor && dateTriggerRegex.test(beforeCursor)) {
+            const position = editor.getCursorOffset();
+            if (datePickerEl) {
+                datePickerEl.style.left = `${position.left || 0}px`;
+                datePickerEl.style.top = `${position.top || 0}px`;
+            }
+            else {
+                datePickerEl = document.body.createDiv({ cls: c$2("date-picker") }, (div) => {
+                    div.style.left = `${position.left || 0}px`;
+                    div.style.top = `${position.top || 0}px`;
+                    constructDatePicker$1({
+                        div,
+                        inputRef,
+                        view,
+                        cb: (picker) => {
+                            datePickerInstance = picker;
+                            isAutocompleteVisibleRef.current = true;
+                        },
+                    });
+                });
+            }
+        }
+        else if (datePickerEl) {
+            destroyDatePicker();
+        }
+    });
     return () => {
+        if (inputRef.current) {
+            inputRef.current.removeEventListener("keydown", keydownHandler);
+        }
+        if (datePickerEl) {
+            destroyDatePicker();
+        }
         autocomplete.destroy();
         editor.destroy();
     };
@@ -26946,8 +37171,7 @@ function useAutocompleteInputProps({ isInputVisible, onEnter, onEscape, }) {
         onCompositionStart,
         onCompositionEnd,
         onKeyDownCapture: (e) => {
-            if (getShouldIMEBlockAction() ||
-                isAutocompleteVisibleRef.current) {
+            if (getShouldIMEBlockAction() || isAutocompleteVisibleRef.current) {
                 return;
             }
             if (e.key === "Enter") {
@@ -26962,9 +37186,13 @@ function useAutocompleteInputProps({ isInputVisible, onEnter, onEscape, }) {
 }
 
 function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, onChange, }) {
+    var _a, _b;
     const obsidianContext = react.useContext(ObsidianContext);
     const inputRef = react.useRef();
     const { view, filePath } = obsidianContext;
+    const dateFormat = view.getSetting("date-format") || getDefaultDateFormat(view.app);
+    const dateDisplayFormat = view.getSetting("date-display-format") || dateFormat;
+    const shouldLinkDate = view.getSetting("link-date-to-daily-note");
     const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false);
     const autocompleteProps = useAutocompleteInputProps({
         isInputVisible: isSettingsVisible,
@@ -26974,21 +37202,110 @@ function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, onChange, 
     const markdownContent = react.useMemo(() => {
         const tempEl = createDiv();
         obsidian.MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
-        return { __html: tempEl.innerHTML.toString() };
-    }, [item.title, filePath, view]);
+        return {
+            innerHTML: { __html: tempEl.innerHTML.toString() },
+        };
+    }, [item, filePath, dateFormat, view]);
     if (isSettingsVisible) {
-        return (react.createElement("div", { "data-replicated-value": item.title, className: c$2("grow-wrap") },
-            react.createElement("textarea", Object.assign({ rows: 1, ref: inputRef, className: c$2("item-input"), value: item.title, onChange: onChange }, autocompleteProps))));
+        return (react.createElement("div", { "data-replicated-value": item.titleRaw, className: c$2("grow-wrap") },
+            react.createElement("textarea", Object.assign({ rows: 1, ref: inputRef, className: c$2("item-input"), value: item.titleRaw, onChange: onChange }, autocompleteProps))));
     }
+    const dateStr = (_a = item.metadata.date) === null || _a === void 0 ? void 0 : _a.format(dateFormat);
+    const dateDisplayStr = (_b = item.metadata.date) === null || _b === void 0 ? void 0 : _b.format(dateDisplayFormat);
+    const datePath = dateStr ? obsidian.getLinkpath(dateStr) : null;
+    const isResolved = dateStr
+        ? view.app.metadataCache.getFirstLinkpathDest(datePath, filePath)
+        : null;
+    const date = datePath && shouldLinkDate ? (react.createElement("a", { href: datePath, "data-href": datePath, className: `internal-link ${isResolved ? "" : "is-unresolved"}`, target: "blank", rel: "noopener" }, dateDisplayStr)) : (dateDisplayStr);
     return (react.createElement("div", { className: c$2("item-title") },
-        react.createElement("div", { className: `markdown-preview-view ${c$2("item-markdown")}`, dangerouslySetInnerHTML: markdownContent })));
+        react.createElement("div", { className: `markdown-preview-view ${c$2("item-markdown")}`, dangerouslySetInnerHTML: markdownContent.innerHTML }),
+        react.createElement("div", { className: c$2("item-metadata") }, dateStr && react.createElement("span", { className: c$2("item-metadata-date") }, date))));
 }
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
+function constructDatePicker(coordinates, onChange, date) {
+    return document.body.createDiv({ cls: c$2("date-picker") }, (div) => {
+        div.style.left = `${coordinates.x || 0}px`;
+        div.style.top = `${coordinates.y || 0}px`;
+        div.createEl("input", { type: "text" }, (input) => {
+            setTimeout(() => {
+                let picker = null;
+                const clickHandler = (e) => {
+                    if (e.target instanceof HTMLElement &&
+                        e.target.closest(`.${c$2("date-picker")}`) === null) {
+                        selfDestruct();
+                    }
+                };
+                const keyHandler = (e) => {
+                    if (e.key === "Escape") {
+                        selfDestruct();
+                    }
+                };
+                const selfDestruct = () => {
+                    picker.destroy();
+                    div.remove();
+                    document.body.removeEventListener("click", clickHandler);
+                    document.removeEventListener("keydown", keyHandler);
+                };
+                picker = flatpickr(input, {
+                    locale: getDefaultLocale(),
+                    defaultDate: date,
+                    inline: true,
+                    onChange: (dates) => {
+                        onChange(dates);
+                        selfDestruct();
+                    },
+                });
+                document.body.addEventListener("click", clickHandler);
+                document.addEventListener("keydown", keyHandler);
+            });
+        });
+    });
+}
 function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers, }) {
     const { view } = react.useContext(ObsidianContext);
     return react.useMemo(() => {
-        return new obsidian.Menu(view.app)
+        const coordinates = { x: 0, y: 0 };
+        const menu = new obsidian.Menu(view.app)
+            .addItem((i) => {
+            const hasDate = !!item.metadata.date;
+            i.setIcon("calendar-with-checkmark")
+                .setTitle(hasDate ? "Edit date" : "Add date")
+                .onClick((e) => {
+                var _a;
+                const dateFormat = view.getSetting("date-format") || getDefaultDateFormat(view.app);
+                const shouldLinkDates = view.getSetting("link-date-to-daily-note");
+                const dateTrigger = view.getSetting("date-trigger") || defaultDateTrigger;
+                const contentMatch = shouldLinkDates
+                    ? "\\[\\[([^}]+)\\]\\]"
+                    : "{([^}]+)}";
+                const dateRegEx = new RegExp(`(^|\\s)${escapeRegExpStr(dateTrigger)}${contentMatch}`);
+                constructDatePicker(coordinates, (dates) => {
+                    const date = dates[0];
+                    const formattedDate = obsidian.moment(date).format(dateFormat);
+                    const wrappedDate = shouldLinkDates
+                        ? `[[${formattedDate}]]`
+                        : `{${formattedDate}}`;
+                    let titleRaw = item.titleRaw;
+                    if (hasDate) {
+                        titleRaw = item.titleRaw.replace(dateRegEx, `$1${dateTrigger}${wrappedDate}`);
+                    }
+                    else {
+                        titleRaw = `${item.titleRaw} ${dateTrigger}${wrappedDate}`;
+                    }
+                    const processed = processTitle(titleRaw, view);
+                    boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, {
+                        title: { $set: processed.title },
+                        titleRaw: { $set: titleRaw },
+                        metadata: {
+                            date: {
+                                $set: processed.date,
+                            },
+                        },
+                    }));
+                }, (_a = item.metadata.date) === null || _a === void 0 ? void 0 : _a.toDate());
+            });
+        })
             .addItem((i) => {
             i.setIcon("pencil")
                 .setTitle("Edit card")
@@ -27024,36 +37341,80 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
                 .setTitle("Delete card")
                 .onClick(() => boardModifiers.deleteItem(laneIndex, itemIndex));
         });
+        return (e) => {
+            coordinates.x = e.clientX;
+            coordinates.y = e.clientY;
+            menu.showAtPosition(coordinates);
+        };
     }, [view, setIsEditing, boardModifiers, laneIndex, itemIndex, item]);
 }
 
+function GhostItem({ item, shouldShowArchiveButton }) {
+    return (react.createElement("div", { className: c$2("item") },
+        react.createElement("div", { className: c$2("item-content-wrapper") },
+            shouldShowArchiveButton && (react.createElement("div", { className: c$2("item-prefix-button-wrapper") },
+                react.createElement("button", { className: c$2("item-prefix-button"), "aria-label": "Archive item" },
+                    react.createElement(Icon, { name: "sheets-in-box" })))),
+            react.createElement(ItemContent, { isSettingsVisible: false, item: item }),
+            react.createElement("div", { className: c$2("item-postfix-button-wrapper") },
+                react.createElement("button", { className: c$2("item-postfix-button"), "aria-label": "More options" },
+                    react.createElement(Icon, { name: "vertical-three-dots" }))))));
+}
 function draggableItemFactory({ items, laneIndex, }) {
     return (provided, snapshot, rubric) => {
         const { boardModifiers, board } = react.useContext(KanbanContext);
+        const { view } = react.useContext(ObsidianContext);
         const itemIndex = rubric.source.index;
         const item = items[itemIndex];
         const lane = board.lanes[laneIndex];
         const [isEditing, setIsEditing] = react.useState(false);
-        const settingsMenu = useItemMenu({
+        const date = item.metadata.date;
+        const classModifiers = [];
+        if (snapshot.isDragging)
+            classModifiers.push("is-dragging");
+        if (date) {
+            if (date.isSame(new Date(), "day")) {
+                classModifiers.push("is-today");
+            }
+            if (date.isAfter(new Date(), "day")) {
+                classModifiers.push("is-future");
+            }
+            if (date.isBefore(new Date(), "day")) {
+                classModifiers.push("is-past");
+            }
+        }
+        const showMenu = useItemMenu({
             setIsEditing,
             item,
             laneIndex,
             itemIndex,
             boardModifiers,
         });
-        return (react.createElement("div", Object.assign({ className: `${c$2("item")} ${snapshot.isDragging ? "is-dragging" : ""}`, ref: provided.innerRef }, provided.draggableProps, provided.dragHandleProps),
+        return (react.createElement("div", Object.assign({ className: `${c$2("item")} ${classModifiers.join(" ")}`, ref: provided.innerRef }, provided.draggableProps, provided.dragHandleProps),
             react.createElement("div", { className: c$2("item-content-wrapper") },
                 lane.data.shouldMarkItemsComplete && (react.createElement("div", { className: c$2("item-prefix-button-wrapper") },
                     react.createElement("button", { onClick: () => {
                             boardModifiers.archiveItem(laneIndex, itemIndex, item);
                         }, className: c$2("item-prefix-button"), "aria-label": "Archive item" },
                         react.createElement(Icon, { name: "sheets-in-box" })))),
-                react.createElement(ItemContent, { isSettingsVisible: isEditing, setIsSettingsVisible: setIsEditing, item: item, onChange: (e) => boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, { title: { $set: e.target.value } })) }),
+                react.createElement(ItemContent, { isSettingsVisible: isEditing, setIsSettingsVisible: setIsEditing, item: item, onChange: (e) => {
+                        const titleRaw = e.target.value;
+                        const processed = processTitle(titleRaw, view);
+                        boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, {
+                            title: { $set: processed.title },
+                            titleRaw: { $set: titleRaw },
+                            metadata: {
+                                date: {
+                                    $set: processed.date,
+                                },
+                            },
+                        }));
+                    } }),
                 react.createElement("div", { className: c$2("item-postfix-button-wrapper") }, isEditing ? (react.createElement("button", { onClick: () => {
                         setIsEditing(false);
                     }, className: `${c$2("item-postfix-button")} is-enabled`, "aria-label": "Cancel" },
                     react.createElement(Icon, { name: "cross" }))) : (react.createElement("button", { onClick: (e) => {
-                        settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
+                        showMenu(e.nativeEvent);
                     }, className: c$2("item-postfix-button"), "aria-label": "More options" },
                     react.createElement(Icon, { name: "vertical-three-dots" })))))));
     };
@@ -27062,17 +37423,23 @@ function draggableItemFactory({ items, laneIndex, }) {
 function ItemForm({ addItem }) {
     const [isInputVisible, setIsInputVisible] = react.useState(false);
     const [itemTitle, setItemTitle] = react.useState("");
+    const { view } = react.useContext(ObsidianContext);
     const clear = () => {
         setItemTitle("");
         setIsInputVisible(false);
     };
     const createItem = () => {
         const title = itemTitle.trim();
+        const processed = processTitle(title, view);
         if (title) {
             const newItem = {
                 id: generateInstanceId(),
-                title,
+                title: processed.title,
+                titleRaw: title,
                 data: {},
+                metadata: {
+                    date: processed.date,
+                },
             };
             addItem(newItem);
             setItemTitle("");
@@ -27247,14 +37614,7 @@ function LaneItems({ isGhost, items, laneId, laneIndex, shouldShowArchiveButton,
     });
     if (isGhost) {
         return (react.createElement("div", { className: c$2("lane-items") }, items.map((item, i) => {
-            return (react.createElement("div", { key: i, className: c$2("item") },
-                react.createElement("div", { className: c$2("item-content-wrapper") },
-                    react.createElement(ItemContent, { isSettingsVisible: false, item: item }),
-                    react.createElement("div", { className: c$2("item-edit-button-wrapper") },
-                        shouldShowArchiveButton && (react.createElement("button", { className: `${c$2("item-edit-button")}` },
-                            react.createElement(Icon, { name: "sheets-in-box" }))),
-                        react.createElement("button", { className: `${c$2("item-edit-button")}` },
-                            react.createElement(Icon, { name: "pencil" }))))));
+            return (react.createElement(GhostItem, { item: item, shouldShowArchiveButton: shouldShowArchiveButton }));
         })));
     }
     return (react.createElement(ConnectedDroppable, { droppableId: laneId, type: "ITEM", renderClone: renderItem }, (provided, snapshot) => (react.createElement("div", Object.assign({ className: `${c$2("lane-items")} ${snapshot.isDraggingOver ? "is-dragging-over" : ""}`, ref: provided.innerRef }, provided.droppableProps),
@@ -27586,6351 +37946,6 @@ class DataBridge {
     }
 }
 
-/*! choices.js v9.0.1 | © 2019 Josh Johnson | https://github.com/jshjohnson/Choices#readme */
-
-var choices = createCommonjsModule(function (module, exports) {
-(function webpackUniversalModuleDefinition(root, factory) {
-  module.exports = factory();
-})(window, function () {
-  return (
-    /******/
-    function (modules) {
-      // webpackBootstrap
-
-      /******/
-      // The module cache
-
-      /******/
-      var installedModules = {};
-      /******/
-
-      /******/
-      // The require function
-
-      /******/
-
-      function __webpack_require__(moduleId) {
-        /******/
-
-        /******/
-        // Check if module is in cache
-
-        /******/
-        if (installedModules[moduleId]) {
-          /******/
-          return installedModules[moduleId].exports;
-          /******/
-        }
-        /******/
-        // Create a new module (and put it into the cache)
-
-        /******/
-
-
-        var module = installedModules[moduleId] = {
-          /******/
-          i: moduleId,
-
-          /******/
-          l: false,
-
-          /******/
-          exports: {}
-          /******/
-
-        };
-        /******/
-
-        /******/
-        // Execute the module function
-
-        /******/
-
-        modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-        /******/
-
-        /******/
-        // Flag the module as loaded
-
-        /******/
-
-        module.l = true;
-        /******/
-
-        /******/
-        // Return the exports of the module
-
-        /******/
-
-        return module.exports;
-        /******/
-      }
-      /******/
-
-      /******/
-
-      /******/
-      // expose the modules object (__webpack_modules__)
-
-      /******/
-
-
-      __webpack_require__.m = modules;
-      /******/
-
-      /******/
-      // expose the module cache
-
-      /******/
-
-      __webpack_require__.c = installedModules;
-      /******/
-
-      /******/
-      // define getter function for harmony exports
-
-      /******/
-
-      __webpack_require__.d = function (exports, name, getter) {
-        /******/
-        if (!__webpack_require__.o(exports, name)) {
-          /******/
-          Object.defineProperty(exports, name, {
-            enumerable: true,
-            get: getter
-          });
-          /******/
-        }
-        /******/
-
-      };
-      /******/
-
-      /******/
-      // define __esModule on exports
-
-      /******/
-
-
-      __webpack_require__.r = function (exports) {
-        /******/
-        if (typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-          /******/
-          Object.defineProperty(exports, Symbol.toStringTag, {
-            value: 'Module'
-          });
-          /******/
-        }
-        /******/
-
-
-        Object.defineProperty(exports, '__esModule', {
-          value: true
-        });
-        /******/
-      };
-      /******/
-
-      /******/
-      // create a fake namespace object
-
-      /******/
-      // mode & 1: value is a module id, require it
-
-      /******/
-      // mode & 2: merge all properties of value into the ns
-
-      /******/
-      // mode & 4: return value when already ns object
-
-      /******/
-      // mode & 8|1: behave like require
-
-      /******/
-
-
-      __webpack_require__.t = function (value, mode) {
-        /******/
-        if (mode & 1) value = __webpack_require__(value);
-        /******/
-
-        if (mode & 8) return value;
-        /******/
-
-        if (mode & 4 && typeof value === 'object' && value && value.__esModule) return value;
-        /******/
-
-        var ns = Object.create(null);
-        /******/
-
-        __webpack_require__.r(ns);
-        /******/
-
-
-        Object.defineProperty(ns, 'default', {
-          enumerable: true,
-          value: value
-        });
-        /******/
-
-        if (mode & 2 && typeof value != 'string') for (var key in value) __webpack_require__.d(ns, key, function (key) {
-          return value[key];
-        }.bind(null, key));
-        /******/
-
-        return ns;
-        /******/
-      };
-      /******/
-
-      /******/
-      // getDefaultExport function for compatibility with non-harmony modules
-
-      /******/
-
-
-      __webpack_require__.n = function (module) {
-        /******/
-        var getter = module && module.__esModule ?
-        /******/
-        function getDefault() {
-          return module['default'];
-        } :
-        /******/
-        function getModuleExports() {
-          return module;
-        };
-        /******/
-
-        __webpack_require__.d(getter, 'a', getter);
-        /******/
-
-
-        return getter;
-        /******/
-      };
-      /******/
-
-      /******/
-      // Object.prototype.hasOwnProperty.call
-
-      /******/
-
-
-      __webpack_require__.o = function (object, property) {
-        return Object.prototype.hasOwnProperty.call(object, property);
-      };
-      /******/
-
-      /******/
-      // __webpack_public_path__
-
-      /******/
-
-
-      __webpack_require__.p = "/public/assets/scripts/";
-      /******/
-
-      /******/
-
-      /******/
-      // Load entry module and return exports
-
-      /******/
-
-      return __webpack_require__(__webpack_require__.s = 4);
-      /******/
-    }(
-    /************************************************************************/
-
-    /******/
-    [
-    /* 0 */
-
-    /***/
-    function (module, exports, __webpack_require__) {
-
-      var isMergeableObject = function isMergeableObject(value) {
-        return isNonNullObject(value) && !isSpecial(value);
-      };
-
-      function isNonNullObject(value) {
-        return !!value && typeof value === 'object';
-      }
-
-      function isSpecial(value) {
-        var stringValue = Object.prototype.toString.call(value);
-        return stringValue === '[object RegExp]' || stringValue === '[object Date]' || isReactElement(value);
-      } // see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
-
-
-      var canUseSymbol = typeof Symbol === 'function' && Symbol.for;
-      var REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for('react.element') : 0xeac7;
-
-      function isReactElement(value) {
-        return value.$$typeof === REACT_ELEMENT_TYPE;
-      }
-
-      function emptyTarget(val) {
-        return Array.isArray(val) ? [] : {};
-      }
-
-      function cloneUnlessOtherwiseSpecified(value, options) {
-        return options.clone !== false && options.isMergeableObject(value) ? deepmerge(emptyTarget(value), value, options) : value;
-      }
-
-      function defaultArrayMerge(target, source, options) {
-        return target.concat(source).map(function (element) {
-          return cloneUnlessOtherwiseSpecified(element, options);
-        });
-      }
-
-      function getMergeFunction(key, options) {
-        if (!options.customMerge) {
-          return deepmerge;
-        }
-
-        var customMerge = options.customMerge(key);
-        return typeof customMerge === 'function' ? customMerge : deepmerge;
-      }
-
-      function getEnumerableOwnPropertySymbols(target) {
-        return Object.getOwnPropertySymbols ? Object.getOwnPropertySymbols(target).filter(function (symbol) {
-          return target.propertyIsEnumerable(symbol);
-        }) : [];
-      }
-
-      function getKeys(target) {
-        return Object.keys(target).concat(getEnumerableOwnPropertySymbols(target));
-      } // Protects from prototype poisoning and unexpected merging up the prototype chain.
-
-
-      function propertyIsUnsafe(target, key) {
-        try {
-          return key in target && // Properties are safe to merge if they don't exist in the target yet,
-          !(Object.hasOwnProperty.call(target, key) // unsafe if they exist up the prototype chain,
-          && Object.propertyIsEnumerable.call(target, key)); // and also unsafe if they're nonenumerable.
-        } catch (unused) {
-          // Counterintuitively, it's safe to merge any property on a target that causes the `in` operator to throw.
-          // This happens when trying to copy an object in the source over a plain string in the target.
-          return false;
-        }
-      }
-
-      function mergeObject(target, source, options) {
-        var destination = {};
-
-        if (options.isMergeableObject(target)) {
-          getKeys(target).forEach(function (key) {
-            destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
-          });
-        }
-
-        getKeys(source).forEach(function (key) {
-          if (propertyIsUnsafe(target, key)) {
-            return;
-          }
-
-          if (!options.isMergeableObject(source[key]) || !target[key]) {
-            destination[key] = cloneUnlessOtherwiseSpecified(source[key], options);
-          } else {
-            destination[key] = getMergeFunction(key, options)(target[key], source[key], options);
-          }
-        });
-        return destination;
-      }
-
-      function deepmerge(target, source, options) {
-        options = options || {};
-        options.arrayMerge = options.arrayMerge || defaultArrayMerge;
-        options.isMergeableObject = options.isMergeableObject || isMergeableObject; // cloneUnlessOtherwiseSpecified is added to `options` so that custom arrayMerge()
-        // implementations can use it. The caller may not replace it.
-
-        options.cloneUnlessOtherwiseSpecified = cloneUnlessOtherwiseSpecified;
-        var sourceIsArray = Array.isArray(source);
-        var targetIsArray = Array.isArray(target);
-        var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
-
-        if (!sourceAndTargetTypesMatch) {
-          return cloneUnlessOtherwiseSpecified(source, options);
-        } else if (sourceIsArray) {
-          return options.arrayMerge(target, source, options);
-        } else {
-          return mergeObject(target, source, options);
-        }
-      }
-
-      deepmerge.all = function deepmergeAll(array, options) {
-        if (!Array.isArray(array)) {
-          throw new Error('first argument should be an array');
-        }
-
-        return array.reduce(function (prev, next) {
-          return deepmerge(prev, next, options);
-        }, {});
-      };
-
-      var deepmerge_1 = deepmerge;
-      module.exports = deepmerge_1;
-      /***/
-    },
-    /* 1 */
-
-    /***/
-    function (module, __webpack_exports__, __webpack_require__) {
-      /* WEBPACK VAR INJECTION */
-
-      (function (global, module) {
-        /* harmony import */
-        var _ponyfill_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3);
-        /* global window */
-
-
-        var root;
-
-        if (typeof self !== 'undefined') {
-          root = self;
-        } else if (typeof window !== 'undefined') {
-          root = window;
-        } else if (typeof global !== 'undefined') {
-          root = global;
-        } else {
-          root = module;
-        }
-
-        var result = Object(_ponyfill_js__WEBPACK_IMPORTED_MODULE_0__[
-        /* default */
-        "a"])(root);
-        /* harmony default export */
-
-        __webpack_exports__["a"] = result;
-        /* WEBPACK VAR INJECTION */
-      }).call(this, __webpack_require__(5), __webpack_require__(6)(module));
-      /***/
-    },
-    /* 2 */
-
-    /***/
-    function (module, exports, __webpack_require__) {
-      /*!
-       * Fuse.js v3.4.5 - Lightweight fuzzy-search (http://fusejs.io)
-       * 
-       * Copyright (c) 2012-2017 Kirollos Risk (http://kiro.me)
-       * All Rights Reserved. Apache Software License 2.0
-       * 
-       * http://www.apache.org/licenses/LICENSE-2.0
-       */
-      !function (e, t) {
-        module.exports = t() ;
-      }(this, function () {
-        return function (e) {
-          var t = {};
-
-          function n(r) {
-            if (t[r]) return t[r].exports;
-            var o = t[r] = {
-              i: r,
-              l: !1,
-              exports: {}
-            };
-            return e[r].call(o.exports, o, o.exports, n), o.l = !0, o.exports;
-          }
-
-          return n.m = e, n.c = t, n.d = function (e, t, r) {
-            n.o(e, t) || Object.defineProperty(e, t, {
-              enumerable: !0,
-              get: r
-            });
-          }, n.r = function (e) {
-            "undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(e, Symbol.toStringTag, {
-              value: "Module"
-            }), Object.defineProperty(e, "__esModule", {
-              value: !0
-            });
-          }, n.t = function (e, t) {
-            if (1 & t && (e = n(e)), 8 & t) return e;
-            if (4 & t && "object" == typeof e && e && e.__esModule) return e;
-            var r = Object.create(null);
-            if (n.r(r), Object.defineProperty(r, "default", {
-              enumerable: !0,
-              value: e
-            }), 2 & t && "string" != typeof e) for (var o in e) n.d(r, o, function (t) {
-              return e[t];
-            }.bind(null, o));
-            return r;
-          }, n.n = function (e) {
-            var t = e && e.__esModule ? function () {
-              return e.default;
-            } : function () {
-              return e;
-            };
-            return n.d(t, "a", t), t;
-          }, n.o = function (e, t) {
-            return Object.prototype.hasOwnProperty.call(e, t);
-          }, n.p = "", n(n.s = 1);
-        }([function (e, t) {
-          e.exports = function (e) {
-            return Array.isArray ? Array.isArray(e) : "[object Array]" === Object.prototype.toString.call(e);
-          };
-        }, function (e, t, n) {
-          function r(e) {
-            return (r = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (e) {
-              return typeof e;
-            } : function (e) {
-              return e && "function" == typeof Symbol && e.constructor === Symbol && e !== Symbol.prototype ? "symbol" : typeof e;
-            })(e);
-          }
-
-          function o(e, t) {
-            for (var n = 0; n < t.length; n++) {
-              var r = t[n];
-              r.enumerable = r.enumerable || !1, r.configurable = !0, "value" in r && (r.writable = !0), Object.defineProperty(e, r.key, r);
-            }
-          }
-
-          var i = n(2),
-              a = n(8),
-              s = n(0),
-              c = function () {
-            function e(t, n) {
-              var r = n.location,
-                  o = void 0 === r ? 0 : r,
-                  i = n.distance,
-                  s = void 0 === i ? 100 : i,
-                  c = n.threshold,
-                  h = void 0 === c ? .6 : c,
-                  l = n.maxPatternLength,
-                  u = void 0 === l ? 32 : l,
-                  f = n.caseSensitive,
-                  d = void 0 !== f && f,
-                  v = n.tokenSeparator,
-                  p = void 0 === v ? / +/g : v,
-                  g = n.findAllMatches,
-                  y = void 0 !== g && g,
-                  m = n.minMatchCharLength,
-                  k = void 0 === m ? 1 : m,
-                  S = n.id,
-                  x = void 0 === S ? null : S,
-                  b = n.keys,
-                  M = void 0 === b ? [] : b,
-                  _ = n.shouldSort,
-                  L = void 0 === _ || _,
-                  w = n.getFn,
-                  A = void 0 === w ? a : w,
-                  C = n.sortFn,
-                  I = void 0 === C ? function (e, t) {
-                return e.score - t.score;
-              } : C,
-                  O = n.tokenize,
-                  j = void 0 !== O && O,
-                  P = n.matchAllTokens,
-                  F = void 0 !== P && P,
-                  T = n.includeMatches,
-                  z = void 0 !== T && T,
-                  E = n.includeScore,
-                  K = void 0 !== E && E,
-                  $ = n.verbose,
-                  J = void 0 !== $ && $;
-              !function (e, t) {
-                if (!(e instanceof t)) throw new TypeError("Cannot call a class as a function");
-              }(this, e), this.options = {
-                location: o,
-                distance: s,
-                threshold: h,
-                maxPatternLength: u,
-                isCaseSensitive: d,
-                tokenSeparator: p,
-                findAllMatches: y,
-                minMatchCharLength: k,
-                id: x,
-                keys: M,
-                includeMatches: z,
-                includeScore: K,
-                shouldSort: L,
-                getFn: A,
-                sortFn: I,
-                verbose: J,
-                tokenize: j,
-                matchAllTokens: F
-              }, this.setCollection(t);
-            }
-
-            var t, n;
-            return t = e, (n = [{
-              key: "setCollection",
-              value: function (e) {
-                return this.list = e, e;
-              }
-            }, {
-              key: "search",
-              value: function (e) {
-                var t = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : {
-                  limit: !1
-                };
-
-                this._log('---------\nSearch pattern: "'.concat(e, '"'));
-
-                var n = this._prepareSearchers(e),
-                    r = n.tokenSearchers,
-                    o = n.fullSearcher,
-                    i = this._search(r, o),
-                    a = i.weights,
-                    s = i.results;
-
-                return this._computeScore(a, s), this.options.shouldSort && this._sort(s), t.limit && "number" == typeof t.limit && (s = s.slice(0, t.limit)), this._format(s);
-              }
-            }, {
-              key: "_prepareSearchers",
-              value: function () {
-                var e = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : "",
-                    t = [];
-                if (this.options.tokenize) for (var n = e.split(this.options.tokenSeparator), r = 0, o = n.length; r < o; r += 1) t.push(new i(n[r], this.options));
-                return {
-                  tokenSearchers: t,
-                  fullSearcher: new i(e, this.options)
-                };
-              }
-            }, {
-              key: "_search",
-              value: function () {
-                var e = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : [],
-                    t = arguments.length > 1 ? arguments[1] : void 0,
-                    n = this.list,
-                    r = {},
-                    o = [];
-
-                if ("string" == typeof n[0]) {
-                  for (var i = 0, a = n.length; i < a; i += 1) this._analyze({
-                    key: "",
-                    value: n[i],
-                    record: i,
-                    index: i
-                  }, {
-                    resultMap: r,
-                    results: o,
-                    tokenSearchers: e,
-                    fullSearcher: t
-                  });
-
-                  return {
-                    weights: null,
-                    results: o
-                  };
-                }
-
-                for (var s = {}, c = 0, h = n.length; c < h; c += 1) for (var l = n[c], u = 0, f = this.options.keys.length; u < f; u += 1) {
-                  var d = this.options.keys[u];
-
-                  if ("string" != typeof d) {
-                    if (s[d.name] = {
-                      weight: 1 - d.weight || 1
-                    }, d.weight <= 0 || d.weight > 1) throw new Error("Key weight has to be > 0 and <= 1");
-                    d = d.name;
-                  } else s[d] = {
-                    weight: 1
-                  };
-
-                  this._analyze({
-                    key: d,
-                    value: this.options.getFn(l, d),
-                    record: l,
-                    index: c
-                  }, {
-                    resultMap: r,
-                    results: o,
-                    tokenSearchers: e,
-                    fullSearcher: t
-                  });
-                }
-
-                return {
-                  weights: s,
-                  results: o
-                };
-              }
-            }, {
-              key: "_analyze",
-              value: function (e, t) {
-                var n = e.key,
-                    r = e.arrayIndex,
-                    o = void 0 === r ? -1 : r,
-                    i = e.value,
-                    a = e.record,
-                    c = e.index,
-                    h = t.tokenSearchers,
-                    l = void 0 === h ? [] : h,
-                    u = t.fullSearcher,
-                    f = void 0 === u ? [] : u,
-                    d = t.resultMap,
-                    v = void 0 === d ? {} : d,
-                    p = t.results,
-                    g = void 0 === p ? [] : p;
-
-                if (null != i) {
-                  var y = !1,
-                      m = -1,
-                      k = 0;
-
-                  if ("string" == typeof i) {
-                    this._log("\nKey: ".concat("" === n ? "-" : n));
-
-                    var S = f.search(i);
-
-                    if (this._log('Full text: "'.concat(i, '", score: ').concat(S.score)), this.options.tokenize) {
-                      for (var x = i.split(this.options.tokenSeparator), b = [], M = 0; M < l.length; M += 1) {
-                        var _ = l[M];
-
-                        this._log('\nPattern: "'.concat(_.pattern, '"'));
-
-                        for (var L = !1, w = 0; w < x.length; w += 1) {
-                          var A = x[w],
-                              C = _.search(A),
-                              I = {};
-
-                          C.isMatch ? (I[A] = C.score, y = !0, L = !0, b.push(C.score)) : (I[A] = 1, this.options.matchAllTokens || b.push(1)), this._log('Token: "'.concat(A, '", score: ').concat(I[A]));
-                        }
-
-                        L && (k += 1);
-                      }
-
-                      m = b[0];
-
-                      for (var O = b.length, j = 1; j < O; j += 1) m += b[j];
-
-                      m /= O, this._log("Token score average:", m);
-                    }
-
-                    var P = S.score;
-                    m > -1 && (P = (P + m) / 2), this._log("Score average:", P);
-                    var F = !this.options.tokenize || !this.options.matchAllTokens || k >= l.length;
-
-                    if (this._log("\nCheck Matches: ".concat(F)), (y || S.isMatch) && F) {
-                      var T = v[c];
-                      T ? T.output.push({
-                        key: n,
-                        arrayIndex: o,
-                        value: i,
-                        score: P,
-                        matchedIndices: S.matchedIndices
-                      }) : (v[c] = {
-                        item: a,
-                        output: [{
-                          key: n,
-                          arrayIndex: o,
-                          value: i,
-                          score: P,
-                          matchedIndices: S.matchedIndices
-                        }]
-                      }, g.push(v[c]));
-                    }
-                  } else if (s(i)) for (var z = 0, E = i.length; z < E; z += 1) this._analyze({
-                    key: n,
-                    arrayIndex: z,
-                    value: i[z],
-                    record: a,
-                    index: c
-                  }, {
-                    resultMap: v,
-                    results: g,
-                    tokenSearchers: l,
-                    fullSearcher: f
-                  });
-                }
-              }
-            }, {
-              key: "_computeScore",
-              value: function (e, t) {
-                this._log("\n\nComputing score:\n");
-
-                for (var n = 0, r = t.length; n < r; n += 1) {
-                  for (var o = t[n].output, i = o.length, a = 1, s = 1, c = 0; c < i; c += 1) {
-                    var h = e ? e[o[c].key].weight : 1,
-                        l = (1 === h ? o[c].score : o[c].score || .001) * h;
-                    1 !== h ? s = Math.min(s, l) : (o[c].nScore = l, a *= l);
-                  }
-
-                  t[n].score = 1 === s ? a : s, this._log(t[n]);
-                }
-              }
-            }, {
-              key: "_sort",
-              value: function (e) {
-                this._log("\n\nSorting...."), e.sort(this.options.sortFn);
-              }
-            }, {
-              key: "_format",
-              value: function (e) {
-                var t = [];
-
-                if (this.options.verbose) {
-                  var n = [];
-                  this._log("\n\nOutput:\n\n", JSON.stringify(e, function (e, t) {
-                    if ("object" === r(t) && null !== t) {
-                      if (-1 !== n.indexOf(t)) return;
-                      n.push(t);
-                    }
-
-                    return t;
-                  })), n = null;
-                }
-
-                var o = [];
-                this.options.includeMatches && o.push(function (e, t) {
-                  var n = e.output;
-                  t.matches = [];
-
-                  for (var r = 0, o = n.length; r < o; r += 1) {
-                    var i = n[r];
-
-                    if (0 !== i.matchedIndices.length) {
-                      var a = {
-                        indices: i.matchedIndices,
-                        value: i.value
-                      };
-                      i.key && (a.key = i.key), i.hasOwnProperty("arrayIndex") && i.arrayIndex > -1 && (a.arrayIndex = i.arrayIndex), t.matches.push(a);
-                    }
-                  }
-                }), this.options.includeScore && o.push(function (e, t) {
-                  t.score = e.score;
-                });
-
-                for (var i = 0, a = e.length; i < a; i += 1) {
-                  var s = e[i];
-
-                  if (this.options.id && (s.item = this.options.getFn(s.item, this.options.id)[0]), o.length) {
-                    for (var c = {
-                      item: s.item
-                    }, h = 0, l = o.length; h < l; h += 1) o[h](s, c);
-
-                    t.push(c);
-                  } else t.push(s.item);
-                }
-
-                return t;
-              }
-            }, {
-              key: "_log",
-              value: function () {
-                var e;
-                this.options.verbose && (e = console).log.apply(e, arguments);
-              }
-            }]) && o(t.prototype, n), e;
-          }();
-
-          e.exports = c;
-        }, function (e, t, n) {
-          function r(e, t) {
-            for (var n = 0; n < t.length; n++) {
-              var r = t[n];
-              r.enumerable = r.enumerable || !1, r.configurable = !0, "value" in r && (r.writable = !0), Object.defineProperty(e, r.key, r);
-            }
-          }
-
-          var o = n(3),
-              i = n(4),
-              a = n(7),
-              s = function () {
-            function e(t, n) {
-              var r = n.location,
-                  o = void 0 === r ? 0 : r,
-                  i = n.distance,
-                  s = void 0 === i ? 100 : i,
-                  c = n.threshold,
-                  h = void 0 === c ? .6 : c,
-                  l = n.maxPatternLength,
-                  u = void 0 === l ? 32 : l,
-                  f = n.isCaseSensitive,
-                  d = void 0 !== f && f,
-                  v = n.tokenSeparator,
-                  p = void 0 === v ? / +/g : v,
-                  g = n.findAllMatches,
-                  y = void 0 !== g && g,
-                  m = n.minMatchCharLength,
-                  k = void 0 === m ? 1 : m;
-              !function (e, t) {
-                if (!(e instanceof t)) throw new TypeError("Cannot call a class as a function");
-              }(this, e), this.options = {
-                location: o,
-                distance: s,
-                threshold: h,
-                maxPatternLength: u,
-                isCaseSensitive: d,
-                tokenSeparator: p,
-                findAllMatches: y,
-                minMatchCharLength: k
-              }, this.pattern = this.options.isCaseSensitive ? t : t.toLowerCase(), this.pattern.length <= u && (this.patternAlphabet = a(this.pattern));
-            }
-
-            var t, n;
-            return t = e, (n = [{
-              key: "search",
-              value: function (e) {
-                if (this.options.isCaseSensitive || (e = e.toLowerCase()), this.pattern === e) return {
-                  isMatch: !0,
-                  score: 0,
-                  matchedIndices: [[0, e.length - 1]]
-                };
-                var t = this.options,
-                    n = t.maxPatternLength,
-                    r = t.tokenSeparator;
-                if (this.pattern.length > n) return o(e, this.pattern, r);
-                var a = this.options,
-                    s = a.location,
-                    c = a.distance,
-                    h = a.threshold,
-                    l = a.findAllMatches,
-                    u = a.minMatchCharLength;
-                return i(e, this.pattern, this.patternAlphabet, {
-                  location: s,
-                  distance: c,
-                  threshold: h,
-                  findAllMatches: l,
-                  minMatchCharLength: u
-                });
-              }
-            }]) && r(t.prototype, n), e;
-          }();
-
-          e.exports = s;
-        }, function (e, t) {
-          var n = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
-
-          e.exports = function (e, t) {
-            var r = arguments.length > 2 && void 0 !== arguments[2] ? arguments[2] : / +/g,
-                o = new RegExp(t.replace(n, "\\$&").replace(r, "|")),
-                i = e.match(o),
-                a = !!i,
-                s = [];
-            if (a) for (var c = 0, h = i.length; c < h; c += 1) {
-              var l = i[c];
-              s.push([e.indexOf(l), l.length - 1]);
-            }
-            return {
-              score: a ? .5 : 1,
-              isMatch: a,
-              matchedIndices: s
-            };
-          };
-        }, function (e, t, n) {
-          var r = n(5),
-              o = n(6);
-
-          e.exports = function (e, t, n, i) {
-            for (var a = i.location, s = void 0 === a ? 0 : a, c = i.distance, h = void 0 === c ? 100 : c, l = i.threshold, u = void 0 === l ? .6 : l, f = i.findAllMatches, d = void 0 !== f && f, v = i.minMatchCharLength, p = void 0 === v ? 1 : v, g = s, y = e.length, m = u, k = e.indexOf(t, g), S = t.length, x = [], b = 0; b < y; b += 1) x[b] = 0;
-
-            if (-1 !== k) {
-              var M = r(t, {
-                errors: 0,
-                currentLocation: k,
-                expectedLocation: g,
-                distance: h
-              });
-
-              if (m = Math.min(M, m), -1 !== (k = e.lastIndexOf(t, g + S))) {
-                var _ = r(t, {
-                  errors: 0,
-                  currentLocation: k,
-                  expectedLocation: g,
-                  distance: h
-                });
-
-                m = Math.min(_, m);
-              }
-            }
-
-            k = -1;
-
-            for (var L = [], w = 1, A = S + y, C = 1 << S - 1, I = 0; I < S; I += 1) {
-              for (var O = 0, j = A; O < j;) {
-                r(t, {
-                  errors: I,
-                  currentLocation: g + j,
-                  expectedLocation: g,
-                  distance: h
-                }) <= m ? O = j : A = j, j = Math.floor((A - O) / 2 + O);
-              }
-
-              A = j;
-              var P = Math.max(1, g - j + 1),
-                  F = d ? y : Math.min(g + j, y) + S,
-                  T = Array(F + 2);
-              T[F + 1] = (1 << I) - 1;
-
-              for (var z = F; z >= P; z -= 1) {
-                var E = z - 1,
-                    K = n[e.charAt(E)];
-
-                if (K && (x[E] = 1), T[z] = (T[z + 1] << 1 | 1) & K, 0 !== I && (T[z] |= (L[z + 1] | L[z]) << 1 | 1 | L[z + 1]), T[z] & C && (w = r(t, {
-                  errors: I,
-                  currentLocation: E,
-                  expectedLocation: g,
-                  distance: h
-                })) <= m) {
-                  if (m = w, (k = E) <= g) break;
-                  P = Math.max(1, 2 * g - k);
-                }
-              }
-
-              if (r(t, {
-                errors: I + 1,
-                currentLocation: g,
-                expectedLocation: g,
-                distance: h
-              }) > m) break;
-              L = T;
-            }
-
-            return {
-              isMatch: k >= 0,
-              score: 0 === w ? .001 : w,
-              matchedIndices: o(x, p)
-            };
-          };
-        }, function (e, t) {
-          e.exports = function (e, t) {
-            var n = t.errors,
-                r = void 0 === n ? 0 : n,
-                o = t.currentLocation,
-                i = void 0 === o ? 0 : o,
-                a = t.expectedLocation,
-                s = void 0 === a ? 0 : a,
-                c = t.distance,
-                h = void 0 === c ? 100 : c,
-                l = r / e.length,
-                u = Math.abs(s - i);
-            return h ? l + u / h : u ? 1 : l;
-          };
-        }, function (e, t) {
-          e.exports = function () {
-            for (var e = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : [], t = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : 1, n = [], r = -1, o = -1, i = 0, a = e.length; i < a; i += 1) {
-              var s = e[i];
-              s && -1 === r ? r = i : s || -1 === r || ((o = i - 1) - r + 1 >= t && n.push([r, o]), r = -1);
-            }
-
-            return e[i - 1] && i - r >= t && n.push([r, i - 1]), n;
-          };
-        }, function (e, t) {
-          e.exports = function (e) {
-            for (var t = {}, n = e.length, r = 0; r < n; r += 1) t[e.charAt(r)] = 0;
-
-            for (var o = 0; o < n; o += 1) t[e.charAt(o)] |= 1 << n - o - 1;
-
-            return t;
-          };
-        }, function (e, t, n) {
-          var r = n(0);
-
-          e.exports = function (e, t) {
-            return function e(t, n, o) {
-              if (n) {
-                var i = n.indexOf("."),
-                    a = n,
-                    s = null;
-                -1 !== i && (a = n.slice(0, i), s = n.slice(i + 1));
-                var c = t[a];
-                if (null != c) if (s || "string" != typeof c && "number" != typeof c) {
-                  if (r(c)) for (var h = 0, l = c.length; h < l; h += 1) e(c[h], s, o);else s && e(c, s, o);
-                } else o.push(c.toString());
-              } else o.push(t);
-
-              return o;
-            }(e, t, []);
-          };
-        }]);
-      });
-      /***/
-    },
-    /* 3 */
-
-    /***/
-    function (module, __webpack_exports__, __webpack_require__) {
-      /* harmony export (binding) */
-
-      __webpack_require__.d(__webpack_exports__, "a", function () {
-        return symbolObservablePonyfill;
-      });
-
-      function symbolObservablePonyfill(root) {
-        var result;
-        var Symbol = root.Symbol;
-
-        if (typeof Symbol === 'function') {
-          if (Symbol.observable) {
-            result = Symbol.observable;
-          } else {
-            result = Symbol('observable');
-            Symbol.observable = result;
-          }
-        } else {
-          result = '@@observable';
-        }
-
-        return result;
-      }
-      /***/
-    },
-    /* 4 */
-
-    /***/
-    function (module, exports, __webpack_require__) {
-      module.exports = __webpack_require__(7);
-      /***/
-    },
-    /* 5 */
-
-    /***/
-    function (module, exports) {
-      var g; // This works in non-strict mode
-
-      g = function () {
-        return this;
-      }();
-
-      try {
-        // This works if eval is allowed (see CSP)
-        g = g || new Function("return this")();
-      } catch (e) {
-        // This works if the window reference is available
-        if (typeof window === "object") g = window;
-      } // g can still be undefined, but nothing to do about it...
-      // We return undefined, instead of nothing here, so it's
-      // easier to handle this case. if(!global) { ...}
-
-
-      module.exports = g;
-      /***/
-    },
-    /* 6 */
-
-    /***/
-    function (module, exports) {
-      module.exports = function (originalModule) {
-        if (!originalModule.webpackPolyfill) {
-          var module = Object.create(originalModule); // module.parent = undefined by default
-
-          if (!module.children) module.children = [];
-          Object.defineProperty(module, "loaded", {
-            enumerable: true,
-            get: function () {
-              return module.l;
-            }
-          });
-          Object.defineProperty(module, "id", {
-            enumerable: true,
-            get: function () {
-              return module.i;
-            }
-          });
-          Object.defineProperty(module, "exports", {
-            enumerable: true
-          });
-          module.webpackPolyfill = 1;
-        }
-
-        return module;
-      };
-      /***/
-
-    },
-    /* 7 */
-
-    /***/
-    function (module, __webpack_exports__, __webpack_require__) {
-
-      __webpack_require__.r(__webpack_exports__); // EXTERNAL MODULE: ./node_modules/fuse.js/dist/fuse.js
-
-
-      var dist_fuse = __webpack_require__(2);
-
-      var fuse_default = /*#__PURE__*/__webpack_require__.n(dist_fuse); // EXTERNAL MODULE: ./node_modules/deepmerge/dist/cjs.js
-
-
-      var cjs = __webpack_require__(0);
-
-      var cjs_default = /*#__PURE__*/__webpack_require__.n(cjs); // EXTERNAL MODULE: ./node_modules/symbol-observable/es/index.js
-
-
-      var es = __webpack_require__(1); // CONCATENATED MODULE: ./node_modules/redux/es/redux.js
-
-      /**
-       * These are private action types reserved by Redux.
-       * For any unknown actions, you must return the current state.
-       * If the current state is undefined, you must return the initial state.
-       * Do not reference these action types directly in your code.
-       */
-
-
-      var randomString = function randomString() {
-        return Math.random().toString(36).substring(7).split('').join('.');
-      };
-
-      var ActionTypes = {
-        INIT: "@@redux/INIT" + randomString(),
-        REPLACE: "@@redux/REPLACE" + randomString(),
-        PROBE_UNKNOWN_ACTION: function PROBE_UNKNOWN_ACTION() {
-          return "@@redux/PROBE_UNKNOWN_ACTION" + randomString();
-        }
-      };
-      /**
-       * @param {any} obj The object to inspect.
-       * @returns {boolean} True if the argument appears to be a plain object.
-       */
-
-      function isPlainObject(obj) {
-        if (typeof obj !== 'object' || obj === null) return false;
-        var proto = obj;
-
-        while (Object.getPrototypeOf(proto) !== null) {
-          proto = Object.getPrototypeOf(proto);
-        }
-
-        return Object.getPrototypeOf(obj) === proto;
-      }
-      /**
-       * Creates a Redux store that holds the state tree.
-       * The only way to change the data in the store is to call `dispatch()` on it.
-       *
-       * There should only be a single store in your app. To specify how different
-       * parts of the state tree respond to actions, you may combine several reducers
-       * into a single reducer function by using `combineReducers`.
-       *
-       * @param {Function} reducer A function that returns the next state tree, given
-       * the current state tree and the action to handle.
-       *
-       * @param {any} [preloadedState] The initial state. You may optionally specify it
-       * to hydrate the state from the server in universal apps, or to restore a
-       * previously serialized user session.
-       * If you use `combineReducers` to produce the root reducer function, this must be
-       * an object with the same shape as `combineReducers` keys.
-       *
-       * @param {Function} [enhancer] The store enhancer. You may optionally specify it
-       * to enhance the store with third-party capabilities such as middleware,
-       * time travel, persistence, etc. The only store enhancer that ships with Redux
-       * is `applyMiddleware()`.
-       *
-       * @returns {Store} A Redux store that lets you read the state, dispatch actions
-       * and subscribe to changes.
-       */
-
-
-      function createStore(reducer, preloadedState, enhancer) {
-        var _ref2;
-
-        if (typeof preloadedState === 'function' && typeof enhancer === 'function' || typeof enhancer === 'function' && typeof arguments[3] === 'function') {
-          throw new Error('It looks like you are passing several store enhancers to ' + 'createStore(). This is not supported. Instead, compose them ' + 'together to a single function.');
-        }
-
-        if (typeof preloadedState === 'function' && typeof enhancer === 'undefined') {
-          enhancer = preloadedState;
-          preloadedState = undefined;
-        }
-
-        if (typeof enhancer !== 'undefined') {
-          if (typeof enhancer !== 'function') {
-            throw new Error('Expected the enhancer to be a function.');
-          }
-
-          return enhancer(createStore)(reducer, preloadedState);
-        }
-
-        if (typeof reducer !== 'function') {
-          throw new Error('Expected the reducer to be a function.');
-        }
-
-        var currentReducer = reducer;
-        var currentState = preloadedState;
-        var currentListeners = [];
-        var nextListeners = currentListeners;
-        var isDispatching = false;
-        /**
-         * This makes a shallow copy of currentListeners so we can use
-         * nextListeners as a temporary list while dispatching.
-         *
-         * This prevents any bugs around consumers calling
-         * subscribe/unsubscribe in the middle of a dispatch.
-         */
-
-        function ensureCanMutateNextListeners() {
-          if (nextListeners === currentListeners) {
-            nextListeners = currentListeners.slice();
-          }
-        }
-        /**
-         * Reads the state tree managed by the store.
-         *
-         * @returns {any} The current state tree of your application.
-         */
-
-
-        function getState() {
-          if (isDispatching) {
-            throw new Error('You may not call store.getState() while the reducer is executing. ' + 'The reducer has already received the state as an argument. ' + 'Pass it down from the top reducer instead of reading it from the store.');
-          }
-
-          return currentState;
-        }
-        /**
-         * Adds a change listener. It will be called any time an action is dispatched,
-         * and some part of the state tree may potentially have changed. You may then
-         * call `getState()` to read the current state tree inside the callback.
-         *
-         * You may call `dispatch()` from a change listener, with the following
-         * caveats:
-         *
-         * 1. The subscriptions are snapshotted just before every `dispatch()` call.
-         * If you subscribe or unsubscribe while the listeners are being invoked, this
-         * will not have any effect on the `dispatch()` that is currently in progress.
-         * However, the next `dispatch()` call, whether nested or not, will use a more
-         * recent snapshot of the subscription list.
-         *
-         * 2. The listener should not expect to see all state changes, as the state
-         * might have been updated multiple times during a nested `dispatch()` before
-         * the listener is called. It is, however, guaranteed that all subscribers
-         * registered before the `dispatch()` started will be called with the latest
-         * state by the time it exits.
-         *
-         * @param {Function} listener A callback to be invoked on every dispatch.
-         * @returns {Function} A function to remove this change listener.
-         */
-
-
-        function subscribe(listener) {
-          if (typeof listener !== 'function') {
-            throw new Error('Expected the listener to be a function.');
-          }
-
-          if (isDispatching) {
-            throw new Error('You may not call store.subscribe() while the reducer is executing. ' + 'If you would like to be notified after the store has been updated, subscribe from a ' + 'component and invoke store.getState() in the callback to access the latest state. ' + 'See https://redux.js.org/api-reference/store#subscribe(listener) for more details.');
-          }
-
-          var isSubscribed = true;
-          ensureCanMutateNextListeners();
-          nextListeners.push(listener);
-          return function unsubscribe() {
-            if (!isSubscribed) {
-              return;
-            }
-
-            if (isDispatching) {
-              throw new Error('You may not unsubscribe from a store listener while the reducer is executing. ' + 'See https://redux.js.org/api-reference/store#subscribe(listener) for more details.');
-            }
-
-            isSubscribed = false;
-            ensureCanMutateNextListeners();
-            var index = nextListeners.indexOf(listener);
-            nextListeners.splice(index, 1);
-          };
-        }
-        /**
-         * Dispatches an action. It is the only way to trigger a state change.
-         *
-         * The `reducer` function, used to create the store, will be called with the
-         * current state tree and the given `action`. Its return value will
-         * be considered the **next** state of the tree, and the change listeners
-         * will be notified.
-         *
-         * The base implementation only supports plain object actions. If you want to
-         * dispatch a Promise, an Observable, a thunk, or something else, you need to
-         * wrap your store creating function into the corresponding middleware. For
-         * example, see the documentation for the `redux-thunk` package. Even the
-         * middleware will eventually dispatch plain object actions using this method.
-         *
-         * @param {Object} action A plain object representing “what changed”. It is
-         * a good idea to keep actions serializable so you can record and replay user
-         * sessions, or use the time travelling `redux-devtools`. An action must have
-         * a `type` property which may not be `undefined`. It is a good idea to use
-         * string constants for action types.
-         *
-         * @returns {Object} For convenience, the same action object you dispatched.
-         *
-         * Note that, if you use a custom middleware, it may wrap `dispatch()` to
-         * return something else (for example, a Promise you can await).
-         */
-
-
-        function dispatch(action) {
-          if (!isPlainObject(action)) {
-            throw new Error('Actions must be plain objects. ' + 'Use custom middleware for async actions.');
-          }
-
-          if (typeof action.type === 'undefined') {
-            throw new Error('Actions may not have an undefined "type" property. ' + 'Have you misspelled a constant?');
-          }
-
-          if (isDispatching) {
-            throw new Error('Reducers may not dispatch actions.');
-          }
-
-          try {
-            isDispatching = true;
-            currentState = currentReducer(currentState, action);
-          } finally {
-            isDispatching = false;
-          }
-
-          var listeners = currentListeners = nextListeners;
-
-          for (var i = 0; i < listeners.length; i++) {
-            var listener = listeners[i];
-            listener();
-          }
-
-          return action;
-        }
-        /**
-         * Replaces the reducer currently used by the store to calculate the state.
-         *
-         * You might need this if your app implements code splitting and you want to
-         * load some of the reducers dynamically. You might also need this if you
-         * implement a hot reloading mechanism for Redux.
-         *
-         * @param {Function} nextReducer The reducer for the store to use instead.
-         * @returns {void}
-         */
-
-
-        function replaceReducer(nextReducer) {
-          if (typeof nextReducer !== 'function') {
-            throw new Error('Expected the nextReducer to be a function.');
-          }
-
-          currentReducer = nextReducer; // This action has a similiar effect to ActionTypes.INIT.
-          // Any reducers that existed in both the new and old rootReducer
-          // will receive the previous state. This effectively populates
-          // the new state tree with any relevant data from the old one.
-
-          dispatch({
-            type: ActionTypes.REPLACE
-          });
-        }
-        /**
-         * Interoperability point for observable/reactive libraries.
-         * @returns {observable} A minimal observable of state changes.
-         * For more information, see the observable proposal:
-         * https://github.com/tc39/proposal-observable
-         */
-
-
-        function observable() {
-          var _ref;
-
-          var outerSubscribe = subscribe;
-          return _ref = {
-            /**
-             * The minimal observable subscription method.
-             * @param {Object} observer Any object that can be used as an observer.
-             * The observer object should have a `next` method.
-             * @returns {subscription} An object with an `unsubscribe` method that can
-             * be used to unsubscribe the observable from the store, and prevent further
-             * emission of values from the observable.
-             */
-            subscribe: function subscribe(observer) {
-              if (typeof observer !== 'object' || observer === null) {
-                throw new TypeError('Expected the observer to be an object.');
-              }
-
-              function observeState() {
-                if (observer.next) {
-                  observer.next(getState());
-                }
-              }
-
-              observeState();
-              var unsubscribe = outerSubscribe(observeState);
-              return {
-                unsubscribe: unsubscribe
-              };
-            }
-          }, _ref[es["a"
-          /* default */
-          ]] = function () {
-            return this;
-          }, _ref;
-        } // When a store is created, an "INIT" action is dispatched so that every
-        // reducer returns their initial state. This effectively populates
-        // the initial state tree.
-
-
-        dispatch({
-          type: ActionTypes.INIT
-        });
-        return _ref2 = {
-          dispatch: dispatch,
-          subscribe: subscribe,
-          getState: getState,
-          replaceReducer: replaceReducer
-        }, _ref2[es["a"
-        /* default */
-        ]] = observable, _ref2;
-      }
-
-      function getUndefinedStateErrorMessage(key, action) {
-        var actionType = action && action.type;
-        var actionDescription = actionType && "action \"" + String(actionType) + "\"" || 'an action';
-        return "Given " + actionDescription + ", reducer \"" + key + "\" returned undefined. " + "To ignore an action, you must explicitly return the previous state. " + "If you want this reducer to hold no value, you can return null instead of undefined.";
-      }
-
-      function assertReducerShape(reducers) {
-        Object.keys(reducers).forEach(function (key) {
-          var reducer = reducers[key];
-          var initialState = reducer(undefined, {
-            type: ActionTypes.INIT
-          });
-
-          if (typeof initialState === 'undefined') {
-            throw new Error("Reducer \"" + key + "\" returned undefined during initialization. " + "If the state passed to the reducer is undefined, you must " + "explicitly return the initial state. The initial state may " + "not be undefined. If you don't want to set a value for this reducer, " + "you can use null instead of undefined.");
-          }
-
-          if (typeof reducer(undefined, {
-            type: ActionTypes.PROBE_UNKNOWN_ACTION()
-          }) === 'undefined') {
-            throw new Error("Reducer \"" + key + "\" returned undefined when probed with a random type. " + ("Don't try to handle " + ActionTypes.INIT + " or other actions in \"redux/*\" ") + "namespace. They are considered private. Instead, you must return the " + "current state for any unknown actions, unless it is undefined, " + "in which case you must return the initial state, regardless of the " + "action type. The initial state may not be undefined, but can be null.");
-          }
-        });
-      }
-      /**
-       * Turns an object whose values are different reducer functions, into a single
-       * reducer function. It will call every child reducer, and gather their results
-       * into a single state object, whose keys correspond to the keys of the passed
-       * reducer functions.
-       *
-       * @param {Object} reducers An object whose values correspond to different
-       * reducer functions that need to be combined into one. One handy way to obtain
-       * it is to use ES6 `import * as reducers` syntax. The reducers may never return
-       * undefined for any action. Instead, they should return their initial state
-       * if the state passed to them was undefined, and the current state for any
-       * unrecognized action.
-       *
-       * @returns {Function} A reducer function that invokes every reducer inside the
-       * passed object, and builds a state object with the same shape.
-       */
-
-
-      function combineReducers(reducers) {
-        var reducerKeys = Object.keys(reducers);
-        var finalReducers = {};
-
-        for (var i = 0; i < reducerKeys.length; i++) {
-          var key = reducerKeys[i];
-
-          if (typeof reducers[key] === 'function') {
-            finalReducers[key] = reducers[key];
-          }
-        }
-
-        var finalReducerKeys = Object.keys(finalReducers); // This is used to make sure we don't warn about the same
-
-        var shapeAssertionError;
-
-        try {
-          assertReducerShape(finalReducers);
-        } catch (e) {
-          shapeAssertionError = e;
-        }
-
-        return function combination(state, action) {
-          if (state === void 0) {
-            state = {};
-          }
-
-          if (shapeAssertionError) {
-            throw shapeAssertionError;
-          }
-
-          var hasChanged = false;
-          var nextState = {};
-
-          for (var _i = 0; _i < finalReducerKeys.length; _i++) {
-            var _key = finalReducerKeys[_i];
-            var reducer = finalReducers[_key];
-            var previousStateForKey = state[_key];
-            var nextStateForKey = reducer(previousStateForKey, action);
-
-            if (typeof nextStateForKey === 'undefined') {
-              var errorMessage = getUndefinedStateErrorMessage(_key, action);
-              throw new Error(errorMessage);
-            }
-
-            nextState[_key] = nextStateForKey;
-            hasChanged = hasChanged || nextStateForKey !== previousStateForKey;
-          }
-
-          return hasChanged ? nextState : state;
-        };
-      }
-
-
-      var defaultState = [];
-
-      function items_items(state, action) {
-        if (state === void 0) {
-          state = defaultState;
-        }
-
-        switch (action.type) {
-          case 'ADD_ITEM':
-            {
-              // Add object to items array
-              var newState = [].concat(state, [{
-                id: action.id,
-                choiceId: action.choiceId,
-                groupId: action.groupId,
-                value: action.value,
-                label: action.label,
-                active: true,
-                highlighted: false,
-                customProperties: action.customProperties,
-                placeholder: action.placeholder || false,
-                keyCode: null
-              }]);
-              return newState.map(function (obj) {
-                var item = obj;
-                item.highlighted = false;
-                return item;
-              });
-            }
-
-          case 'REMOVE_ITEM':
-            {
-              // Set item to inactive
-              return state.map(function (obj) {
-                var item = obj;
-
-                if (item.id === action.id) {
-                  item.active = false;
-                }
-
-                return item;
-              });
-            }
-
-          case 'HIGHLIGHT_ITEM':
-            {
-              return state.map(function (obj) {
-                var item = obj;
-
-                if (item.id === action.id) {
-                  item.highlighted = action.highlighted;
-                }
-
-                return item;
-              });
-            }
-
-          default:
-            {
-              return state;
-            }
-        }
-      } // CONCATENATED MODULE: ./src/scripts/reducers/groups.js
-
-
-      var groups_defaultState = [];
-
-      function groups(state, action) {
-        if (state === void 0) {
-          state = groups_defaultState;
-        }
-
-        switch (action.type) {
-          case 'ADD_GROUP':
-            {
-              return [].concat(state, [{
-                id: action.id,
-                value: action.value,
-                active: action.active,
-                disabled: action.disabled
-              }]);
-            }
-
-          case 'CLEAR_CHOICES':
-            {
-              return [];
-            }
-
-          default:
-            {
-              return state;
-            }
-        }
-      } // CONCATENATED MODULE: ./src/scripts/reducers/choices.js
-
-
-      var choices_defaultState = [];
-
-      function choices_choices(state, action) {
-        if (state === void 0) {
-          state = choices_defaultState;
-        }
-
-        switch (action.type) {
-          case 'ADD_CHOICE':
-            {
-              /*
-                  A disabled choice appears in the choice dropdown but cannot be selected
-                  A selected choice has been added to the passed input's value (added as an item)
-                  An active choice appears within the choice dropdown
-               */
-              return [].concat(state, [{
-                id: action.id,
-                elementId: action.elementId,
-                groupId: action.groupId,
-                value: action.value,
-                label: action.label || action.value,
-                disabled: action.disabled || false,
-                selected: false,
-                active: true,
-                score: 9999,
-                customProperties: action.customProperties,
-                placeholder: action.placeholder || false,
-                keyCode: null
-              }]);
-            }
-
-          case 'ADD_ITEM':
-            {
-              // If all choices need to be activated
-              if (action.activateOptions) {
-                return state.map(function (obj) {
-                  var choice = obj;
-                  choice.active = action.active;
-                  return choice;
-                });
-              } // When an item is added and it has an associated choice,
-              // we want to disable it so it can't be chosen again
-
-
-              if (action.choiceId > -1) {
-                return state.map(function (obj) {
-                  var choice = obj;
-
-                  if (choice.id === parseInt(action.choiceId, 10)) {
-                    choice.selected = true;
-                  }
-
-                  return choice;
-                });
-              }
-
-              return state;
-            }
-
-          case 'REMOVE_ITEM':
-            {
-              // When an item is removed and it has an associated choice,
-              // we want to re-enable it so it can be chosen again
-              if (action.choiceId > -1) {
-                return state.map(function (obj) {
-                  var choice = obj;
-
-                  if (choice.id === parseInt(action.choiceId, 10)) {
-                    choice.selected = false;
-                  }
-
-                  return choice;
-                });
-              }
-
-              return state;
-            }
-
-          case 'FILTER_CHOICES':
-            {
-              return state.map(function (obj) {
-                var choice = obj; // Set active state based on whether choice is
-                // within filtered results
-
-                choice.active = action.results.some(function (_ref) {
-                  var item = _ref.item,
-                      score = _ref.score;
-
-                  if (item.id === choice.id) {
-                    choice.score = score;
-                    return true;
-                  }
-
-                  return false;
-                });
-                return choice;
-              });
-            }
-
-          case 'ACTIVATE_CHOICES':
-            {
-              return state.map(function (obj) {
-                var choice = obj;
-                choice.active = action.active;
-                return choice;
-              });
-            }
-
-          case 'CLEAR_CHOICES':
-            {
-              return choices_defaultState;
-            }
-
-          default:
-            {
-              return state;
-            }
-        }
-      } // CONCATENATED MODULE: ./src/scripts/reducers/general.js
-
-
-      var general_defaultState = {
-        loading: false
-      };
-
-      var general = function general(state, action) {
-        if (state === void 0) {
-          state = general_defaultState;
-        }
-
-        switch (action.type) {
-          case 'SET_IS_LOADING':
-            {
-              return {
-                loading: action.isLoading
-              };
-            }
-
-          default:
-            {
-              return state;
-            }
-        }
-      };
-      /* harmony default export */
-
-
-      var reducers_general = general; // CONCATENATED MODULE: ./src/scripts/lib/utils.js
-
-      /**
-       * @param {number} min
-       * @param {number} max
-       * @returns {number}
-       */
-
-      var getRandomNumber = function getRandomNumber(min, max) {
-        return Math.floor(Math.random() * (max - min) + min);
-      };
-      /**
-       * @param {number} length
-       * @returns {string}
-       */
-
-
-      var generateChars = function generateChars(length) {
-        return Array.from({
-          length: length
-        }, function () {
-          return getRandomNumber(0, 36).toString(36);
-        }).join('');
-      };
-      /**
-       * @param {HTMLInputElement | HTMLSelectElement} element
-       * @param {string} prefix
-       * @returns {string}
-       */
-
-
-      var generateId = function generateId(element, prefix) {
-        var id = element.id || element.name && element.name + "-" + generateChars(2) || generateChars(4);
-        id = id.replace(/(:|\.|\[|\]|,)/g, '');
-        id = prefix + "-" + id;
-        return id;
-      };
-      /**
-       * @param {any} obj
-       * @returns {string}
-       */
-
-
-      var getType = function getType(obj) {
-        return Object.prototype.toString.call(obj).slice(8, -1);
-      };
-      /**
-       * @param {string} type
-       * @param {any} obj
-       * @returns {boolean}
-       */
-
-
-      var isType = function isType(type, obj) {
-        return obj !== undefined && obj !== null && getType(obj) === type;
-      };
-      /**
-       * @param {HTMLElement} element
-       * @param {HTMLElement} [wrapper={HTMLDivElement}]
-       * @returns {HTMLElement}
-       */
-
-
-      var utils_wrap = function wrap(element, wrapper) {
-        if (wrapper === void 0) {
-          wrapper = document.createElement('div');
-        }
-
-        if (element.nextSibling) {
-          element.parentNode.insertBefore(wrapper, element.nextSibling);
-        } else {
-          element.parentNode.appendChild(wrapper);
-        }
-
-        return wrapper.appendChild(element);
-      };
-      /**
-       * @param {Element} startEl
-       * @param {string} selector
-       * @param {1 | -1} direction
-       * @returns {Element | undefined}
-       */
-
-
-      var getAdjacentEl = function getAdjacentEl(startEl, selector, direction) {
-        if (direction === void 0) {
-          direction = 1;
-        }
-
-        if (!(startEl instanceof Element) || typeof selector !== 'string') {
-          return undefined;
-        }
-
-        var prop = (direction > 0 ? 'next' : 'previous') + "ElementSibling";
-        var sibling = startEl[prop];
-
-        while (sibling) {
-          if (sibling.matches(selector)) {
-            return sibling;
-          }
-
-          sibling = sibling[prop];
-        }
-
-        return sibling;
-      };
-      /**
-       * @param {Element} element
-       * @param {Element} parent
-       * @param {-1 | 1} direction
-       * @returns {boolean}
-       */
-
-
-      var isScrolledIntoView = function isScrolledIntoView(element, parent, direction) {
-        if (direction === void 0) {
-          direction = 1;
-        }
-
-        if (!element) {
-          return false;
-        }
-
-        var isVisible;
-
-        if (direction > 0) {
-          // In view from bottom
-          isVisible = parent.scrollTop + parent.offsetHeight >= element.offsetTop + element.offsetHeight;
-        } else {
-          // In view from top
-          isVisible = element.offsetTop >= parent.scrollTop;
-        }
-
-        return isVisible;
-      };
-      /**
-       * @param {any} value
-       * @returns {any}
-       */
-
-
-      var sanitise = function sanitise(value) {
-        if (typeof value !== 'string') {
-          return value;
-        }
-
-        return value.replace(/&/g, '&amp;').replace(/>/g, '&rt;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-      };
-      /**
-       * @returns {() => (str: string) => Element}
-       */
-
-
-      var strToEl = function () {
-        var tmpEl = document.createElement('div');
-        return function (str) {
-          var cleanedInput = str.trim();
-          tmpEl.innerHTML = cleanedInput;
-          var firldChild = tmpEl.children[0];
-
-          while (tmpEl.firstChild) {
-            tmpEl.removeChild(tmpEl.firstChild);
-          }
-
-          return firldChild;
-        };
-      }();
-      /**
-       * @param {{ label?: string, value: string }} a
-       * @param {{ label?: string, value: string }} b
-       * @returns {number}
-       */
-
-
-      var sortByAlpha = function sortByAlpha(_ref, _ref2) {
-        var value = _ref.value,
-            _ref$label = _ref.label,
-            label = _ref$label === void 0 ? value : _ref$label;
-        var value2 = _ref2.value,
-            _ref2$label = _ref2.label,
-            label2 = _ref2$label === void 0 ? value2 : _ref2$label;
-        return label.localeCompare(label2, [], {
-          sensitivity: 'base',
-          ignorePunctuation: true,
-          numeric: true
-        });
-      };
-      /**
-       * @param {{ score: number }} a
-       * @param {{ score: number }} b
-       */
-
-
-      var sortByScore = function sortByScore(a, b) {
-        return a.score - b.score;
-      };
-      /**
-       * @param {HTMLElement} element
-       * @param {string} type
-       * @param {object} customArgs
-       */
-
-
-      var dispatchEvent = function dispatchEvent(element, type, customArgs) {
-        if (customArgs === void 0) {
-          customArgs = null;
-        }
-
-        var event = new CustomEvent(type, {
-          detail: customArgs,
-          bubbles: true,
-          cancelable: true
-        });
-        return element.dispatchEvent(event);
-      };
-      /**
-       * @param {array} array
-       * @param {any} value
-       * @param {string} [key="value"]
-       * @returns {boolean}
-       */
-
-
-      var existsInArray = function existsInArray(array, value, key) {
-        if (key === void 0) {
-          key = 'value';
-        }
-
-        return array.some(function (item) {
-          if (typeof value === 'string') {
-            return item[key] === value.trim();
-          }
-
-          return item[key] === value;
-        });
-      };
-      /**
-       * @param {any} obj
-       * @returns {any}
-       */
-
-
-      var cloneObject = function cloneObject(obj) {
-        return JSON.parse(JSON.stringify(obj));
-      };
-      /**
-       * Returns an array of keys present on the first but missing on the second object
-       * @param {object} a
-       * @param {object} b
-       * @returns {string[]}
-       */
-
-
-      var diff = function diff(a, b) {
-        var aKeys = Object.keys(a).sort();
-        var bKeys = Object.keys(b).sort();
-        return aKeys.filter(function (i) {
-          return bKeys.indexOf(i) < 0;
-        });
-      }; // CONCATENATED MODULE: ./src/scripts/reducers/index.js
-
-
-      var appReducer = combineReducers({
-        items: items_items,
-        groups: groups,
-        choices: choices_choices,
-        general: reducers_general
-      });
-
-      var reducers_rootReducer = function rootReducer(passedState, action) {
-        var state = passedState; // If we are clearing all items, groups and options we reassign
-        // state and then pass that state to our proper reducer. This isn't
-        // mutating our actual state
-        // See: http://stackoverflow.com/a/35641992
-
-        if (action.type === 'CLEAR_ALL') {
-          state = undefined;
-        } else if (action.type === 'RESET_TO') {
-          return cloneObject(action.state);
-        }
-
-        return appReducer(state, action);
-      };
-      /* harmony default export */
-
-
-      var reducers = reducers_rootReducer; // CONCATENATED MODULE: ./src/scripts/store/store.js
-
-      function _defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-          var descriptor = props[i];
-          descriptor.enumerable = descriptor.enumerable || false;
-          descriptor.configurable = true;
-          if ("value" in descriptor) descriptor.writable = true;
-          Object.defineProperty(target, descriptor.key, descriptor);
-        }
-      }
-
-      function _createClass(Constructor, protoProps, staticProps) {
-        if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-        if (staticProps) _defineProperties(Constructor, staticProps);
-        return Constructor;
-      }
-      /**
-       * @typedef {import('../../../types/index').Choices.Choice} Choice
-       * @typedef {import('../../../types/index').Choices.Group} Group
-       * @typedef {import('../../../types/index').Choices.Item} Item
-       */
-
-
-      var store_Store = /*#__PURE__*/function () {
-        function Store() {
-          this._store = createStore(reducers, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
-        }
-        /**
-         * Subscribe store to function call (wrapped Redux method)
-         * @param  {Function} onChange Function to trigger when state changes
-         * @return
-         */
-
-
-        var _proto = Store.prototype;
-
-        _proto.subscribe = function subscribe(onChange) {
-          this._store.subscribe(onChange);
-        }
-        /**
-         * Dispatch event to store (wrapped Redux method)
-         * @param  {{ type: string, [x: string]: any }} action Action to trigger
-         * @return
-         */
-        ;
-
-        _proto.dispatch = function dispatch(action) {
-          this._store.dispatch(action);
-        }
-        /**
-         * Get store object (wrapping Redux method)
-         * @returns {object} State
-         */
-        ;
-        /**
-         * Get loading state from store
-         * @returns {boolean} Loading State
-         */
-
-
-        _proto.isLoading = function isLoading() {
-          return this.state.general.loading;
-        }
-        /**
-         * Get single choice by it's ID
-         * @param {string} id
-         * @returns {Choice | undefined} Found choice
-         */
-        ;
-
-        _proto.getChoiceById = function getChoiceById(id) {
-          return this.activeChoices.find(function (choice) {
-            return choice.id === parseInt(id, 10);
-          });
-        }
-        /**
-         * Get group by group id
-         * @param  {number} id Group ID
-         * @returns {Group | undefined} Group data
-         */
-        ;
-
-        _proto.getGroupById = function getGroupById(id) {
-          return this.groups.find(function (group) {
-            return group.id === id;
-          });
-        };
-
-        _createClass(Store, [{
-          key: "state",
-          get: function get() {
-            return this._store.getState();
-          }
-          /**
-           * Get items from store
-           * @returns {Item[]} Item objects
-           */
-
-        }, {
-          key: "items",
-          get: function get() {
-            return this.state.items;
-          }
-          /**
-           * Get active items from store
-           * @returns {Item[]} Item objects
-           */
-
-        }, {
-          key: "activeItems",
-          get: function get() {
-            return this.items.filter(function (item) {
-              return item.active === true;
-            });
-          }
-          /**
-           * Get highlighted items from store
-           * @returns {Item[]} Item objects
-           */
-
-        }, {
-          key: "highlightedActiveItems",
-          get: function get() {
-            return this.items.filter(function (item) {
-              return item.active && item.highlighted;
-            });
-          }
-          /**
-           * Get choices from store
-           * @returns {Choice[]} Option objects
-           */
-
-        }, {
-          key: "choices",
-          get: function get() {
-            return this.state.choices;
-          }
-          /**
-           * Get active choices from store
-           * @returns {Choice[]} Option objects
-           */
-
-        }, {
-          key: "activeChoices",
-          get: function get() {
-            return this.choices.filter(function (choice) {
-              return choice.active === true;
-            });
-          }
-          /**
-           * Get selectable choices from store
-           * @returns {Choice[]} Option objects
-           */
-
-        }, {
-          key: "selectableChoices",
-          get: function get() {
-            return this.choices.filter(function (choice) {
-              return choice.disabled !== true;
-            });
-          }
-          /**
-           * Get choices that can be searched (excluding placeholders)
-           * @returns {Choice[]} Option objects
-           */
-
-        }, {
-          key: "searchableChoices",
-          get: function get() {
-            return this.selectableChoices.filter(function (choice) {
-              return choice.placeholder !== true;
-            });
-          }
-          /**
-           * Get placeholder choice from store
-           * @returns {Choice | undefined} Found placeholder
-           */
-
-        }, {
-          key: "placeholderChoice",
-          get: function get() {
-            return [].concat(this.choices).reverse().find(function (choice) {
-              return choice.placeholder === true;
-            });
-          }
-          /**
-           * Get groups from store
-           * @returns {Group[]} Group objects
-           */
-
-        }, {
-          key: "groups",
-          get: function get() {
-            return this.state.groups;
-          }
-          /**
-           * Get active groups from store
-           * @returns {Group[]} Group objects
-           */
-
-        }, {
-          key: "activeGroups",
-          get: function get() {
-            var groups = this.groups,
-                choices = this.choices;
-            return groups.filter(function (group) {
-              var isActive = group.active === true && group.disabled === false;
-              var hasActiveOptions = choices.some(function (choice) {
-                return choice.active === true && choice.disabled === false;
-              });
-              return isActive && hasActiveOptions;
-            }, []);
-          }
-        }]);
-
-        return Store;
-      }(); // CONCATENATED MODULE: ./src/scripts/components/dropdown.js
-
-
-      function dropdown_defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-          var descriptor = props[i];
-          descriptor.enumerable = descriptor.enumerable || false;
-          descriptor.configurable = true;
-          if ("value" in descriptor) descriptor.writable = true;
-          Object.defineProperty(target, descriptor.key, descriptor);
-        }
-      }
-
-      function dropdown_createClass(Constructor, protoProps, staticProps) {
-        if (protoProps) dropdown_defineProperties(Constructor.prototype, protoProps);
-        if (staticProps) dropdown_defineProperties(Constructor, staticProps);
-        return Constructor;
-      }
-      /**
-       * @typedef {import('../../../types/index').Choices.passedElement} passedElement
-       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
-       */
-
-
-      var Dropdown = /*#__PURE__*/function () {
-        /**
-         * @param {{
-         *  element: HTMLElement,
-         *  type: passedElement['type'],
-         *  classNames: ClassNames,
-         * }} args
-         */
-        function Dropdown(_ref) {
-          var element = _ref.element,
-              type = _ref.type,
-              classNames = _ref.classNames;
-          this.element = element;
-          this.classNames = classNames;
-          this.type = type;
-          this.isActive = false;
-        }
-        /**
-         * Bottom position of dropdown in viewport coordinates
-         * @returns {number} Vertical position
-         */
-
-
-        var _proto = Dropdown.prototype;
-        /**
-         * Find element that matches passed selector
-         * @param {string} selector
-         * @returns {HTMLElement | null}
-         */
-
-        _proto.getChild = function getChild(selector) {
-          return this.element.querySelector(selector);
-        }
-        /**
-         * Show dropdown to user by adding active state class
-         * @returns {this}
-         */
-        ;
-
-        _proto.show = function show() {
-          this.element.classList.add(this.classNames.activeState);
-          this.element.setAttribute('aria-expanded', 'true');
-          this.isActive = true;
-          return this;
-        }
-        /**
-         * Hide dropdown from user
-         * @returns {this}
-         */
-        ;
-
-        _proto.hide = function hide() {
-          this.element.classList.remove(this.classNames.activeState);
-          this.element.setAttribute('aria-expanded', 'false');
-          this.isActive = false;
-          return this;
-        };
-
-        dropdown_createClass(Dropdown, [{
-          key: "distanceFromTopWindow",
-          get: function get() {
-            return this.element.getBoundingClientRect().bottom;
-          }
-        }]);
-        return Dropdown;
-      }(); // CONCATENATED MODULE: ./src/scripts/constants.js
-
-      /**
-       * @typedef {import('../../types/index').Choices.ClassNames} ClassNames
-       * @typedef {import('../../types/index').Choices.Options} Options
-       */
-
-      /** @type {ClassNames} */
-
-
-      var DEFAULT_CLASSNAMES = {
-        containerOuter: 'choices',
-        containerInner: 'choices__inner',
-        input: 'choices__input',
-        inputCloned: 'choices__input--cloned',
-        list: 'choices__list',
-        listItems: 'choices__list--multiple',
-        listSingle: 'choices__list--single',
-        listDropdown: 'choices__list--dropdown',
-        item: 'choices__item',
-        itemSelectable: 'choices__item--selectable',
-        itemDisabled: 'choices__item--disabled',
-        itemChoice: 'choices__item--choice',
-        placeholder: 'choices__placeholder',
-        group: 'choices__group',
-        groupHeading: 'choices__heading',
-        button: 'choices__button',
-        activeState: 'is-active',
-        focusState: 'is-focused',
-        openState: 'is-open',
-        disabledState: 'is-disabled',
-        highlightedState: 'is-highlighted',
-        selectedState: 'is-selected',
-        flippedState: 'is-flipped',
-        loadingState: 'is-loading',
-        noResults: 'has-no-results',
-        noChoices: 'has-no-choices'
-      };
-      /** @type {Options} */
-
-      var DEFAULT_CONFIG = {
-        items: [],
-        choices: [],
-        silent: false,
-        renderChoiceLimit: -1,
-        maxItemCount: -1,
-        addItems: true,
-        addItemFilter: null,
-        removeItems: true,
-        removeItemButton: false,
-        editItems: false,
-        duplicateItemsAllowed: true,
-        delimiter: ',',
-        paste: true,
-        searchEnabled: true,
-        searchChoices: true,
-        searchFloor: 1,
-        searchResultLimit: 4,
-        searchFields: ['label', 'value'],
-        position: 'auto',
-        resetScrollPosition: true,
-        shouldSort: true,
-        shouldSortItems: false,
-        sorter: sortByAlpha,
-        placeholder: true,
-        placeholderValue: null,
-        searchPlaceholderValue: null,
-        prependValue: null,
-        appendValue: null,
-        renderSelectedChoices: 'auto',
-        loadingText: 'Loading...',
-        noResultsText: 'No results found',
-        noChoicesText: 'No choices to choose from',
-        itemSelectText: 'Press to select',
-        uniqueItemText: 'Only unique values can be added',
-        customAddItemText: 'Only values matching specific conditions can be added',
-        addItemText: function addItemText(value) {
-          return "Press Enter to add <b>\"" + sanitise(value) + "\"</b>";
-        },
-        maxItemText: function maxItemText(maxItemCount) {
-          return "Only " + maxItemCount + " values can be added";
-        },
-        valueComparer: function valueComparer(value1, value2) {
-          return value1 === value2;
-        },
-        fuseOptions: {
-          includeScore: true
-        },
-        callbackOnInit: null,
-        callbackOnCreateTemplates: null,
-        classNames: DEFAULT_CLASSNAMES
-      };
-      var EVENTS = {
-        showDropdown: 'showDropdown',
-        hideDropdown: 'hideDropdown',
-        change: 'change',
-        choice: 'choice',
-        search: 'search',
-        addItem: 'addItem',
-        removeItem: 'removeItem',
-        highlightItem: 'highlightItem',
-        highlightChoice: 'highlightChoice'
-      };
-      var ACTION_TYPES = {
-        ADD_CHOICE: 'ADD_CHOICE',
-        FILTER_CHOICES: 'FILTER_CHOICES',
-        ACTIVATE_CHOICES: 'ACTIVATE_CHOICES',
-        CLEAR_CHOICES: 'CLEAR_CHOICES',
-        ADD_GROUP: 'ADD_GROUP',
-        ADD_ITEM: 'ADD_ITEM',
-        REMOVE_ITEM: 'REMOVE_ITEM',
-        HIGHLIGHT_ITEM: 'HIGHLIGHT_ITEM',
-        CLEAR_ALL: 'CLEAR_ALL'
-      };
-      var KEY_CODES = {
-        BACK_KEY: 46,
-        DELETE_KEY: 8,
-        ENTER_KEY: 13,
-        A_KEY: 65,
-        ESC_KEY: 27,
-        UP_KEY: 38,
-        DOWN_KEY: 40,
-        PAGE_UP_KEY: 33,
-        PAGE_DOWN_KEY: 34
-      };
-      var TEXT_TYPE = 'text';
-      var SELECT_ONE_TYPE = 'select-one';
-      var SELECT_MULTIPLE_TYPE = 'select-multiple';
-      var SCROLLING_SPEED = 4; // CONCATENATED MODULE: ./src/scripts/components/container.js
-
-      /**
-       * @typedef {import('../../../types/index').Choices.passedElement} passedElement
-       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
-       */
-
-      var container_Container = /*#__PURE__*/function () {
-        /**
-         * @param {{
-         *  element: HTMLElement,
-         *  type: passedElement['type'],
-         *  classNames: ClassNames,
-         *  position
-         * }} args
-         */
-        function Container(_ref) {
-          var element = _ref.element,
-              type = _ref.type,
-              classNames = _ref.classNames,
-              position = _ref.position;
-          this.element = element;
-          this.classNames = classNames;
-          this.type = type;
-          this.position = position;
-          this.isOpen = false;
-          this.isFlipped = false;
-          this.isFocussed = false;
-          this.isDisabled = false;
-          this.isLoading = false;
-          this._onFocus = this._onFocus.bind(this);
-          this._onBlur = this._onBlur.bind(this);
-        }
-
-        var _proto = Container.prototype;
-
-        _proto.addEventListeners = function addEventListeners() {
-          this.element.addEventListener('focus', this._onFocus);
-          this.element.addEventListener('blur', this._onBlur);
-        };
-
-        _proto.removeEventListeners = function removeEventListeners() {
-          this.element.removeEventListener('focus', this._onFocus);
-          this.element.removeEventListener('blur', this._onBlur);
-        }
-        /**
-         * Determine whether container should be flipped based on passed
-         * dropdown position
-         * @param {number} dropdownPos
-         * @returns {boolean}
-         */
-        ;
-
-        _proto.shouldFlip = function shouldFlip(dropdownPos) {
-          if (typeof dropdownPos !== 'number') {
-            return false;
-          } // If flip is enabled and the dropdown bottom position is
-          // greater than the window height flip the dropdown.
-
-
-          var shouldFlip = false;
-
-          if (this.position === 'auto') {
-            shouldFlip = !window.matchMedia("(min-height: " + (dropdownPos + 1) + "px)").matches;
-          } else if (this.position === 'top') {
-            shouldFlip = true;
-          }
-
-          return shouldFlip;
-        }
-        /**
-         * @param {string} activeDescendantID
-         */
-        ;
-
-        _proto.setActiveDescendant = function setActiveDescendant(activeDescendantID) {
-          this.element.setAttribute('aria-activedescendant', activeDescendantID);
-        };
-
-        _proto.removeActiveDescendant = function removeActiveDescendant() {
-          this.element.removeAttribute('aria-activedescendant');
-        }
-        /**
-         * @param {number} dropdownPos
-         */
-        ;
-
-        _proto.open = function open(dropdownPos) {
-          this.element.classList.add(this.classNames.openState);
-          this.element.setAttribute('aria-expanded', 'true');
-          this.isOpen = true;
-
-          if (this.shouldFlip(dropdownPos)) {
-            this.element.classList.add(this.classNames.flippedState);
-            this.isFlipped = true;
-          }
-        };
-
-        _proto.close = function close() {
-          this.element.classList.remove(this.classNames.openState);
-          this.element.setAttribute('aria-expanded', 'false');
-          this.removeActiveDescendant();
-          this.isOpen = false; // A dropdown flips if it does not have space within the page
-
-          if (this.isFlipped) {
-            this.element.classList.remove(this.classNames.flippedState);
-            this.isFlipped = false;
-          }
-        };
-
-        _proto.focus = function focus() {
-          if (!this.isFocussed) {
-            this.element.focus();
-          }
-        };
-
-        _proto.addFocusState = function addFocusState() {
-          this.element.classList.add(this.classNames.focusState);
-        };
-
-        _proto.removeFocusState = function removeFocusState() {
-          this.element.classList.remove(this.classNames.focusState);
-        };
-
-        _proto.enable = function enable() {
-          this.element.classList.remove(this.classNames.disabledState);
-          this.element.removeAttribute('aria-disabled');
-
-          if (this.type === SELECT_ONE_TYPE) {
-            this.element.setAttribute('tabindex', '0');
-          }
-
-          this.isDisabled = false;
-        };
-
-        _proto.disable = function disable() {
-          this.element.classList.add(this.classNames.disabledState);
-          this.element.setAttribute('aria-disabled', 'true');
-
-          if (this.type === SELECT_ONE_TYPE) {
-            this.element.setAttribute('tabindex', '-1');
-          }
-
-          this.isDisabled = true;
-        }
-        /**
-         * @param {HTMLElement} element
-         */
-        ;
-
-        _proto.wrap = function wrap(element) {
-          utils_wrap(element, this.element);
-        }
-        /**
-         * @param {Element} element
-         */
-        ;
-
-        _proto.unwrap = function unwrap(element) {
-          // Move passed element outside this element
-          this.element.parentNode.insertBefore(element, this.element); // Remove this element
-
-          this.element.parentNode.removeChild(this.element);
-        };
-
-        _proto.addLoadingState = function addLoadingState() {
-          this.element.classList.add(this.classNames.loadingState);
-          this.element.setAttribute('aria-busy', 'true');
-          this.isLoading = true;
-        };
-
-        _proto.removeLoadingState = function removeLoadingState() {
-          this.element.classList.remove(this.classNames.loadingState);
-          this.element.removeAttribute('aria-busy');
-          this.isLoading = false;
-        };
-
-        _proto._onFocus = function _onFocus() {
-          this.isFocussed = true;
-        };
-
-        _proto._onBlur = function _onBlur() {
-          this.isFocussed = false;
-        };
-
-        return Container;
-      }(); // CONCATENATED MODULE: ./src/scripts/components/input.js
-
-
-      function input_defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-          var descriptor = props[i];
-          descriptor.enumerable = descriptor.enumerable || false;
-          descriptor.configurable = true;
-          if ("value" in descriptor) descriptor.writable = true;
-          Object.defineProperty(target, descriptor.key, descriptor);
-        }
-      }
-
-      function input_createClass(Constructor, protoProps, staticProps) {
-        if (protoProps) input_defineProperties(Constructor.prototype, protoProps);
-        if (staticProps) input_defineProperties(Constructor, staticProps);
-        return Constructor;
-      }
-      /**
-       * @typedef {import('../../../types/index').Choices.passedElement} passedElement
-       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
-       */
-
-
-      var input_Input = /*#__PURE__*/function () {
-        /**
-         * @param {{
-         *  element: HTMLInputElement,
-         *  type: passedElement['type'],
-         *  classNames: ClassNames,
-         *  preventPaste: boolean
-         * }} args
-         */
-        function Input(_ref) {
-          var element = _ref.element,
-              type = _ref.type,
-              classNames = _ref.classNames,
-              preventPaste = _ref.preventPaste;
-          this.element = element;
-          this.type = type;
-          this.classNames = classNames;
-          this.preventPaste = preventPaste;
-          this.isFocussed = this.element === document.activeElement;
-          this.isDisabled = element.disabled;
-          this._onPaste = this._onPaste.bind(this);
-          this._onInput = this._onInput.bind(this);
-          this._onFocus = this._onFocus.bind(this);
-          this._onBlur = this._onBlur.bind(this);
-        }
-        /**
-         * @param {string} placeholder
-         */
-
-
-        var _proto = Input.prototype;
-
-        _proto.addEventListeners = function addEventListeners() {
-          this.element.addEventListener('paste', this._onPaste);
-          this.element.addEventListener('input', this._onInput, {
-            passive: true
-          });
-          this.element.addEventListener('focus', this._onFocus, {
-            passive: true
-          });
-          this.element.addEventListener('blur', this._onBlur, {
-            passive: true
-          });
-        };
-
-        _proto.removeEventListeners = function removeEventListeners() {
-          this.element.removeEventListener('input', this._onInput, {
-            passive: true
-          });
-          this.element.removeEventListener('paste', this._onPaste);
-          this.element.removeEventListener('focus', this._onFocus, {
-            passive: true
-          });
-          this.element.removeEventListener('blur', this._onBlur, {
-            passive: true
-          });
-        };
-
-        _proto.enable = function enable() {
-          this.element.removeAttribute('disabled');
-          this.isDisabled = false;
-        };
-
-        _proto.disable = function disable() {
-          this.element.setAttribute('disabled', '');
-          this.isDisabled = true;
-        };
-
-        _proto.focus = function focus() {
-          if (!this.isFocussed) {
-            this.element.focus();
-          }
-        };
-
-        _proto.blur = function blur() {
-          if (this.isFocussed) {
-            this.element.blur();
-          }
-        }
-        /**
-         * Set value of input to blank
-         * @param {boolean} setWidth
-         * @returns {this}
-         */
-        ;
-
-        _proto.clear = function clear(setWidth) {
-          if (setWidth === void 0) {
-            setWidth = true;
-          }
-
-          if (this.element.value) {
-            this.element.value = '';
-          }
-
-          if (setWidth) {
-            this.setWidth();
-          }
-
-          return this;
-        }
-        /**
-         * Set the correct input width based on placeholder
-         * value or input value
-         */
-        ;
-
-        _proto.setWidth = function setWidth() {
-          // Resize input to contents or placeholder
-          var _this$element = this.element,
-              style = _this$element.style,
-              value = _this$element.value,
-              placeholder = _this$element.placeholder;
-          style.minWidth = placeholder.length + 1 + "ch";
-          style.width = value.length + 1 + "ch";
-        }
-        /**
-         * @param {string} activeDescendantID
-         */
-        ;
-
-        _proto.setActiveDescendant = function setActiveDescendant(activeDescendantID) {
-          this.element.setAttribute('aria-activedescendant', activeDescendantID);
-        };
-
-        _proto.removeActiveDescendant = function removeActiveDescendant() {
-          this.element.removeAttribute('aria-activedescendant');
-        };
-
-        _proto._onInput = function _onInput() {
-          if (this.type !== SELECT_ONE_TYPE) {
-            this.setWidth();
-          }
-        }
-        /**
-         * @param {Event} event
-         */
-        ;
-
-        _proto._onPaste = function _onPaste(event) {
-          if (this.preventPaste) {
-            event.preventDefault();
-          }
-        };
-
-        _proto._onFocus = function _onFocus() {
-          this.isFocussed = true;
-        };
-
-        _proto._onBlur = function _onBlur() {
-          this.isFocussed = false;
-        };
-
-        input_createClass(Input, [{
-          key: "placeholder",
-          set: function set(placeholder) {
-            this.element.placeholder = placeholder;
-          }
-          /**
-           * @returns {string}
-           */
-
-        }, {
-          key: "value",
-          get: function get() {
-            return sanitise(this.element.value);
-          }
-          /**
-           * @param {string} value
-           */
-          ,
-          set: function set(value) {
-            this.element.value = value;
-          }
-        }]);
-        return Input;
-      }(); // CONCATENATED MODULE: ./src/scripts/components/list.js
-
-      /**
-       * @typedef {import('../../../types/index').Choices.Choice} Choice
-       */
-
-
-      var list_List = /*#__PURE__*/function () {
-        /**
-         * @param {{ element: HTMLElement }} args
-         */
-        function List(_ref) {
-          var element = _ref.element;
-          this.element = element;
-          this.scrollPos = this.element.scrollTop;
-          this.height = this.element.offsetHeight;
-        }
-
-        var _proto = List.prototype;
-
-        _proto.clear = function clear() {
-          this.element.innerHTML = '';
-        }
-        /**
-         * @param {Element | DocumentFragment} node
-         */
-        ;
-
-        _proto.append = function append(node) {
-          this.element.appendChild(node);
-        }
-        /**
-         * @param {string} selector
-         * @returns {Element | null}
-         */
-        ;
-
-        _proto.getChild = function getChild(selector) {
-          return this.element.querySelector(selector);
-        }
-        /**
-         * @returns {boolean}
-         */
-        ;
-
-        _proto.hasChildren = function hasChildren() {
-          return this.element.hasChildNodes();
-        };
-
-        _proto.scrollToTop = function scrollToTop() {
-          this.element.scrollTop = 0;
-        }
-        /**
-         * @param {Element} element
-         * @param {1 | -1} direction
-         */
-        ;
-
-        _proto.scrollToChildElement = function scrollToChildElement(element, direction) {
-          var _this = this;
-
-          if (!element) {
-            return;
-          }
-
-          var listHeight = this.element.offsetHeight; // Scroll position of dropdown
-
-          var listScrollPosition = this.element.scrollTop + listHeight;
-          var elementHeight = element.offsetHeight; // Distance from bottom of element to top of parent
-
-          var elementPos = element.offsetTop + elementHeight; // Difference between the element and scroll position
-
-          var destination = direction > 0 ? this.element.scrollTop + elementPos - listScrollPosition : element.offsetTop;
-          requestAnimationFrame(function () {
-            _this._animateScroll(destination, direction);
-          });
-        }
-        /**
-         * @param {number} scrollPos
-         * @param {number} strength
-         * @param {number} destination
-         */
-        ;
-
-        _proto._scrollDown = function _scrollDown(scrollPos, strength, destination) {
-          var easing = (destination - scrollPos) / strength;
-          var distance = easing > 1 ? easing : 1;
-          this.element.scrollTop = scrollPos + distance;
-        }
-        /**
-         * @param {number} scrollPos
-         * @param {number} strength
-         * @param {number} destination
-         */
-        ;
-
-        _proto._scrollUp = function _scrollUp(scrollPos, strength, destination) {
-          var easing = (scrollPos - destination) / strength;
-          var distance = easing > 1 ? easing : 1;
-          this.element.scrollTop = scrollPos - distance;
-        }
-        /**
-         * @param {*} destination
-         * @param {*} direction
-         */
-        ;
-
-        _proto._animateScroll = function _animateScroll(destination, direction) {
-          var _this2 = this;
-
-          var strength = SCROLLING_SPEED;
-          var choiceListScrollTop = this.element.scrollTop;
-          var continueAnimation = false;
-
-          if (direction > 0) {
-            this._scrollDown(choiceListScrollTop, strength, destination);
-
-            if (choiceListScrollTop < destination) {
-              continueAnimation = true;
-            }
-          } else {
-            this._scrollUp(choiceListScrollTop, strength, destination);
-
-            if (choiceListScrollTop > destination) {
-              continueAnimation = true;
-            }
-          }
-
-          if (continueAnimation) {
-            requestAnimationFrame(function () {
-              _this2._animateScroll(destination, direction);
-            });
-          }
-        };
-
-        return List;
-      }(); // CONCATENATED MODULE: ./src/scripts/components/wrapped-element.js
-
-
-      function wrapped_element_defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-          var descriptor = props[i];
-          descriptor.enumerable = descriptor.enumerable || false;
-          descriptor.configurable = true;
-          if ("value" in descriptor) descriptor.writable = true;
-          Object.defineProperty(target, descriptor.key, descriptor);
-        }
-      }
-
-      function wrapped_element_createClass(Constructor, protoProps, staticProps) {
-        if (protoProps) wrapped_element_defineProperties(Constructor.prototype, protoProps);
-        if (staticProps) wrapped_element_defineProperties(Constructor, staticProps);
-        return Constructor;
-      }
-      /**
-       * @typedef {import('../../../types/index').Choices.passedElement} passedElement
-       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
-       */
-
-
-      var wrapped_element_WrappedElement = /*#__PURE__*/function () {
-        /**
-         * @param {{
-         *  element: HTMLInputElement | HTMLSelectElement,
-         *  classNames: ClassNames,
-         * }} args
-         */
-        function WrappedElement(_ref) {
-          var element = _ref.element,
-              classNames = _ref.classNames;
-          this.element = element;
-          this.classNames = classNames;
-
-          if (!(element instanceof HTMLInputElement) && !(element instanceof HTMLSelectElement)) {
-            throw new TypeError('Invalid element passed');
-          }
-
-          this.isDisabled = false;
-        }
-
-        var _proto = WrappedElement.prototype;
-
-        _proto.conceal = function conceal() {
-          // Hide passed input
-          this.element.classList.add(this.classNames.input);
-          this.element.hidden = true; // Remove element from tab index
-
-          this.element.tabIndex = -1; // Backup original styles if any
-
-          var origStyle = this.element.getAttribute('style');
-
-          if (origStyle) {
-            this.element.setAttribute('data-choice-orig-style', origStyle);
-          }
-
-          this.element.setAttribute('data-choice', 'active');
-        };
-
-        _proto.reveal = function reveal() {
-          // Reinstate passed element
-          this.element.classList.remove(this.classNames.input);
-          this.element.hidden = false;
-          this.element.removeAttribute('tabindex'); // Recover original styles if any
-
-          var origStyle = this.element.getAttribute('data-choice-orig-style');
-
-          if (origStyle) {
-            this.element.removeAttribute('data-choice-orig-style');
-            this.element.setAttribute('style', origStyle);
-          } else {
-            this.element.removeAttribute('style');
-          }
-
-          this.element.removeAttribute('data-choice'); // Re-assign values - this is weird, I know
-          // @todo Figure out why we need to do this
-
-          this.element.value = this.element.value; // eslint-disable-line no-self-assign
-        };
-
-        _proto.enable = function enable() {
-          this.element.removeAttribute('disabled');
-          this.element.disabled = false;
-          this.isDisabled = false;
-        };
-
-        _proto.disable = function disable() {
-          this.element.setAttribute('disabled', '');
-          this.element.disabled = true;
-          this.isDisabled = true;
-        };
-
-        _proto.triggerEvent = function triggerEvent(eventType, data) {
-          dispatchEvent(this.element, eventType, data);
-        };
-
-        wrapped_element_createClass(WrappedElement, [{
-          key: "isActive",
-          get: function get() {
-            return this.element.dataset.choice === 'active';
-          }
-        }, {
-          key: "dir",
-          get: function get() {
-            return this.element.dir;
-          }
-        }, {
-          key: "value",
-          get: function get() {
-            return this.element.value;
-          },
-          set: function set(value) {
-            // you must define setter here otherwise it will be readonly property
-            this.element.value = value;
-          }
-        }]);
-        return WrappedElement;
-      }(); // CONCATENATED MODULE: ./src/scripts/components/wrapped-input.js
-
-
-      function wrapped_input_defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-          var descriptor = props[i];
-          descriptor.enumerable = descriptor.enumerable || false;
-          descriptor.configurable = true;
-          if ("value" in descriptor) descriptor.writable = true;
-          Object.defineProperty(target, descriptor.key, descriptor);
-        }
-      }
-
-      function wrapped_input_createClass(Constructor, protoProps, staticProps) {
-        if (protoProps) wrapped_input_defineProperties(Constructor.prototype, protoProps);
-        if (staticProps) wrapped_input_defineProperties(Constructor, staticProps);
-        return Constructor;
-      }
-
-      function _inheritsLoose(subClass, superClass) {
-        subClass.prototype = Object.create(superClass.prototype);
-        subClass.prototype.constructor = subClass;
-        subClass.__proto__ = superClass;
-      }
-      /**
-       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
-       * @typedef {import('../../../types/index').Choices.Item} Item
-       */
-
-
-      var WrappedInput = /*#__PURE__*/function (_WrappedElement) {
-        _inheritsLoose(WrappedInput, _WrappedElement);
-        /**
-         * @param {{
-         *  element: HTMLInputElement,
-         *  classNames: ClassNames,
-         *  delimiter: string
-         * }} args
-         */
-
-
-        function WrappedInput(_ref) {
-          var _this;
-
-          var element = _ref.element,
-              classNames = _ref.classNames,
-              delimiter = _ref.delimiter;
-          _this = _WrappedElement.call(this, {
-            element: element,
-            classNames: classNames
-          }) || this;
-          _this.delimiter = delimiter;
-          return _this;
-        }
-        /**
-         * @returns {string}
-         */
-
-
-        wrapped_input_createClass(WrappedInput, [{
-          key: "value",
-          get: function get() {
-            return this.element.value;
-          }
-          /**
-           * @param {Item[]} items
-           */
-          ,
-          set: function set(items) {
-            var itemValues = items.map(function (_ref2) {
-              var value = _ref2.value;
-              return value;
-            });
-            var joinedValues = itemValues.join(this.delimiter);
-            this.element.setAttribute('value', joinedValues);
-            this.element.value = joinedValues;
-          }
-        }]);
-        return WrappedInput;
-      }(wrapped_element_WrappedElement); // CONCATENATED MODULE: ./src/scripts/components/wrapped-select.js
-
-
-      function wrapped_select_defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-          var descriptor = props[i];
-          descriptor.enumerable = descriptor.enumerable || false;
-          descriptor.configurable = true;
-          if ("value" in descriptor) descriptor.writable = true;
-          Object.defineProperty(target, descriptor.key, descriptor);
-        }
-      }
-
-      function wrapped_select_createClass(Constructor, protoProps, staticProps) {
-        if (protoProps) wrapped_select_defineProperties(Constructor.prototype, protoProps);
-        if (staticProps) wrapped_select_defineProperties(Constructor, staticProps);
-        return Constructor;
-      }
-
-      function wrapped_select_inheritsLoose(subClass, superClass) {
-        subClass.prototype = Object.create(superClass.prototype);
-        subClass.prototype.constructor = subClass;
-        subClass.__proto__ = superClass;
-      }
-      /**
-       * @typedef {import('../../../types/index').Choices.ClassNames} ClassNames
-       * @typedef {import('../../../types/index').Choices.Item} Item
-       * @typedef {import('../../../types/index').Choices.Choice} Choice
-       */
-
-
-      var WrappedSelect = /*#__PURE__*/function (_WrappedElement) {
-        wrapped_select_inheritsLoose(WrappedSelect, _WrappedElement);
-        /**
-         * @param {{
-         *  element: HTMLSelectElement,
-         *  classNames: ClassNames,
-         *  delimiter: string
-         *  template: function
-         * }} args
-         */
-
-        function WrappedSelect(_ref) {
-          var _this;
-
-          var element = _ref.element,
-              classNames = _ref.classNames,
-              template = _ref.template;
-          _this = _WrappedElement.call(this, {
-            element: element,
-            classNames: classNames
-          }) || this;
-          _this.template = template;
-          return _this;
-        }
-
-        var _proto = WrappedSelect.prototype;
-        /**
-         * @param {DocumentFragment} fragment
-         */
-
-        _proto.appendDocFragment = function appendDocFragment(fragment) {
-          this.element.innerHTML = '';
-          this.element.appendChild(fragment);
-        };
-
-        wrapped_select_createClass(WrappedSelect, [{
-          key: "placeholderOption",
-          get: function get() {
-            return this.element.querySelector('option[value=""]') || // Backward compatibility layer for the non-standard placeholder attribute supported in older versions.
-            this.element.querySelector('option[placeholder]');
-          }
-          /**
-           * @returns {Element[]}
-           */
-
-        }, {
-          key: "optionGroups",
-          get: function get() {
-            return Array.from(this.element.getElementsByTagName('OPTGROUP'));
-          }
-          /**
-           * @returns {Item[] | Choice[]}
-           */
-
-        }, {
-          key: "options",
-          get: function get() {
-            return Array.from(this.element.options);
-          }
-          /**
-           * @param {Item[] | Choice[]} options
-           */
-          ,
-          set: function set(options) {
-            var _this2 = this;
-
-            var fragment = document.createDocumentFragment();
-
-            var addOptionToFragment = function addOptionToFragment(data) {
-              // Create a standard select option
-              var option = _this2.template(data); // Append it to fragment
-
-
-              fragment.appendChild(option);
-            }; // Add each list item to list
-
-
-            options.forEach(function (optionData) {
-              return addOptionToFragment(optionData);
-            });
-            this.appendDocFragment(fragment);
-          }
-        }]);
-        return WrappedSelect;
-      }(wrapped_element_WrappedElement); // CONCATENATED MODULE: ./src/scripts/components/index.js
-      // CONCATENATED MODULE: ./src/scripts/templates.js
-
-      /**
-       * Helpers to create HTML elements used by Choices
-       * Can be overridden by providing `callbackOnCreateTemplates` option
-       * @typedef {import('../../types/index').Choices.Templates} Templates
-       * @typedef {import('../../types/index').Choices.ClassNames} ClassNames
-       * @typedef {import('../../types/index').Choices.Options} Options
-       * @typedef {import('../../types/index').Choices.Item} Item
-       * @typedef {import('../../types/index').Choices.Choice} Choice
-       * @typedef {import('../../types/index').Choices.Group} Group
-       */
-
-
-      var TEMPLATES =
-      /** @type {Templates} */
-      {
-        /**
-         * @param {Partial<ClassNames>} classNames
-         * @param {"ltr" | "rtl" | "auto"} dir
-         * @param {boolean} isSelectElement
-         * @param {boolean} isSelectOneElement
-         * @param {boolean} searchEnabled
-         * @param {"select-one" | "select-multiple" | "text"} passedElementType
-         */
-        containerOuter: function containerOuter(_ref, dir, isSelectElement, isSelectOneElement, searchEnabled, passedElementType) {
-          var _containerOuter = _ref.containerOuter;
-          var div = Object.assign(document.createElement('div'), {
-            className: _containerOuter
-          });
-          div.dataset.type = passedElementType;
-
-          if (dir) {
-            div.dir = dir;
-          }
-
-          if (isSelectOneElement) {
-            div.tabIndex = 0;
-          }
-
-          if (isSelectElement) {
-            div.setAttribute('role', searchEnabled ? 'combobox' : 'listbox');
-
-            if (searchEnabled) {
-              div.setAttribute('aria-autocomplete', 'list');
-            }
-          }
-
-          div.setAttribute('aria-haspopup', 'true');
-          div.setAttribute('aria-expanded', 'false');
-          return div;
-        },
-
-        /**
-         * @param {Partial<ClassNames>} classNames
-         */
-        containerInner: function containerInner(_ref2) {
-          var _containerInner = _ref2.containerInner;
-          return Object.assign(document.createElement('div'), {
-            className: _containerInner
-          });
-        },
-
-        /**
-         * @param {Partial<ClassNames>} classNames
-         * @param {boolean} isSelectOneElement
-         */
-        itemList: function itemList(_ref3, isSelectOneElement) {
-          var list = _ref3.list,
-              listSingle = _ref3.listSingle,
-              listItems = _ref3.listItems;
-          return Object.assign(document.createElement('div'), {
-            className: list + " " + (isSelectOneElement ? listSingle : listItems)
-          });
-        },
-
-        /**
-         * @param {Partial<ClassNames>} classNames
-         * @param {string} value
-         */
-        placeholder: function placeholder(_ref4, value) {
-          var _placeholder = _ref4.placeholder;
-          return Object.assign(document.createElement('div'), {
-            className: _placeholder,
-            innerHTML: value
-          });
-        },
-
-        /**
-         * @param {Partial<ClassNames>} classNames
-         * @param {Item} item
-         * @param {boolean} removeItemButton
-         */
-        item: function item(_ref5, _ref6, removeItemButton) {
-          var _item = _ref5.item,
-              button = _ref5.button,
-              highlightedState = _ref5.highlightedState,
-              itemSelectable = _ref5.itemSelectable,
-              placeholder = _ref5.placeholder;
-          var id = _ref6.id,
-              value = _ref6.value,
-              label = _ref6.label,
-              customProperties = _ref6.customProperties,
-              active = _ref6.active,
-              disabled = _ref6.disabled,
-              highlighted = _ref6.highlighted,
-              isPlaceholder = _ref6.placeholder;
-          var div = Object.assign(document.createElement('div'), {
-            className: _item,
-            innerHTML: label
-          });
-          Object.assign(div.dataset, {
-            item: '',
-            id: id,
-            value: value,
-            customProperties: customProperties
-          });
-
-          if (active) {
-            div.setAttribute('aria-selected', 'true');
-          }
-
-          if (disabled) {
-            div.setAttribute('aria-disabled', 'true');
-          }
-
-          if (isPlaceholder) {
-            div.classList.add(placeholder);
-          }
-
-          div.classList.add(highlighted ? highlightedState : itemSelectable);
-
-          if (removeItemButton) {
-            if (disabled) {
-              div.classList.remove(itemSelectable);
-            }
-
-            div.dataset.deletable = '';
-            /** @todo This MUST be localizable, not hardcoded! */
-
-            var REMOVE_ITEM_TEXT = 'Remove item';
-            var removeButton = Object.assign(document.createElement('button'), {
-              type: 'button',
-              className: button,
-              innerHTML: REMOVE_ITEM_TEXT
-            });
-            removeButton.setAttribute('aria-label', REMOVE_ITEM_TEXT + ": '" + value + "'");
-            removeButton.dataset.button = '';
-            div.appendChild(removeButton);
-          }
-
-          return div;
-        },
-
-        /**
-         * @param {Partial<ClassNames>} classNames
-         * @param {boolean} isSelectOneElement
-         */
-        choiceList: function choiceList(_ref7, isSelectOneElement) {
-          var list = _ref7.list;
-          var div = Object.assign(document.createElement('div'), {
-            className: list
-          });
-
-          if (!isSelectOneElement) {
-            div.setAttribute('aria-multiselectable', 'true');
-          }
-
-          div.setAttribute('role', 'listbox');
-          return div;
-        },
-
-        /**
-         * @param {Partial<ClassNames>} classNames
-         * @param {Group} group
-         */
-        choiceGroup: function choiceGroup(_ref8, _ref9) {
-          var group = _ref8.group,
-              groupHeading = _ref8.groupHeading,
-              itemDisabled = _ref8.itemDisabled;
-          var id = _ref9.id,
-              value = _ref9.value,
-              disabled = _ref9.disabled;
-          var div = Object.assign(document.createElement('div'), {
-            className: group + " " + (disabled ? itemDisabled : '')
-          });
-          div.setAttribute('role', 'group');
-          Object.assign(div.dataset, {
-            group: '',
-            id: id,
-            value: value
-          });
-
-          if (disabled) {
-            div.setAttribute('aria-disabled', 'true');
-          }
-
-          div.appendChild(Object.assign(document.createElement('div'), {
-            className: groupHeading,
-            innerHTML: value
-          }));
-          return div;
-        },
-
-        /**
-         * @param {Partial<ClassNames>} classNames
-         * @param {Choice} choice
-         * @param {Options['itemSelectText']} selectText
-         */
-        choice: function choice(_ref10, _ref11, selectText) {
-          var item = _ref10.item,
-              itemChoice = _ref10.itemChoice,
-              itemSelectable = _ref10.itemSelectable,
-              selectedState = _ref10.selectedState,
-              itemDisabled = _ref10.itemDisabled,
-              placeholder = _ref10.placeholder;
-          var id = _ref11.id,
-              value = _ref11.value,
-              label = _ref11.label,
-              groupId = _ref11.groupId,
-              elementId = _ref11.elementId,
-              isDisabled = _ref11.disabled,
-              isSelected = _ref11.selected,
-              isPlaceholder = _ref11.placeholder;
-          var div = Object.assign(document.createElement('div'), {
-            id: elementId,
-            innerHTML: label,
-            className: item + " " + itemChoice
-          });
-
-          if (isSelected) {
-            div.classList.add(selectedState);
-          }
-
-          if (isPlaceholder) {
-            div.classList.add(placeholder);
-          }
-
-          div.setAttribute('role', groupId > 0 ? 'treeitem' : 'option');
-          Object.assign(div.dataset, {
-            choice: '',
-            id: id,
-            value: value,
-            selectText: selectText
-          });
-
-          if (isDisabled) {
-            div.classList.add(itemDisabled);
-            div.dataset.choiceDisabled = '';
-            div.setAttribute('aria-disabled', 'true');
-          } else {
-            div.classList.add(itemSelectable);
-            div.dataset.choiceSelectable = '';
-          }
-
-          return div;
-        },
-
-        /**
-         * @param {Partial<ClassNames>} classNames
-         * @param {string} placeholderValue
-         */
-        input: function input(_ref12, placeholderValue) {
-          var _input = _ref12.input,
-              inputCloned = _ref12.inputCloned;
-          var inp = Object.assign(document.createElement('input'), {
-            type: 'text',
-            className: _input + " " + inputCloned,
-            autocomplete: 'off',
-            autocapitalize: 'off',
-            spellcheck: false
-          });
-          inp.setAttribute('role', 'textbox');
-          inp.setAttribute('aria-autocomplete', 'list');
-          inp.setAttribute('aria-label', placeholderValue);
-          return inp;
-        },
-
-        /**
-         * @param {Partial<ClassNames>} classNames
-         */
-        dropdown: function dropdown(_ref13) {
-          var list = _ref13.list,
-              listDropdown = _ref13.listDropdown;
-          var div = document.createElement('div');
-          div.classList.add(list, listDropdown);
-          div.setAttribute('aria-expanded', 'false');
-          return div;
-        },
-
-        /**
-         *
-         * @param {Partial<ClassNames>} classNames
-         * @param {string} innerHTML
-         * @param {"no-choices" | "no-results" | ""} type
-         */
-        notice: function notice(_ref14, innerHTML, type) {
-          var item = _ref14.item,
-              itemChoice = _ref14.itemChoice,
-              noResults = _ref14.noResults,
-              noChoices = _ref14.noChoices;
-
-          if (type === void 0) {
-            type = '';
-          }
-
-          var classes = [item, itemChoice];
-
-          if (type === 'no-choices') {
-            classes.push(noChoices);
-          } else if (type === 'no-results') {
-            classes.push(noResults);
-          }
-
-          return Object.assign(document.createElement('div'), {
-            innerHTML: innerHTML,
-            className: classes.join(' ')
-          });
-        },
-
-        /**
-         * @param {Item} option
-         */
-        option: function option(_ref15) {
-          var label = _ref15.label,
-              value = _ref15.value,
-              customProperties = _ref15.customProperties,
-              active = _ref15.active,
-              disabled = _ref15.disabled;
-          var opt = new Option(label, value, false, active);
-
-          if (customProperties) {
-            opt.dataset.customProperties = customProperties;
-          }
-
-          opt.disabled = disabled;
-          return opt;
-        }
-      };
-
-      /**
-       * @typedef {import('redux').Action} Action
-       * @typedef {import('../../../types/index').Choices.Choice} Choice
-       */
-
-      /**
-       * @argument {Choice} choice
-       * @returns {Action & Choice}
-       */
-
-      var choices_addChoice = function addChoice(_ref) {
-        var value = _ref.value,
-            label = _ref.label,
-            id = _ref.id,
-            groupId = _ref.groupId,
-            disabled = _ref.disabled,
-            elementId = _ref.elementId,
-            customProperties = _ref.customProperties,
-            placeholder = _ref.placeholder,
-            keyCode = _ref.keyCode;
-        return {
-          type: ACTION_TYPES.ADD_CHOICE,
-          value: value,
-          label: label,
-          id: id,
-          groupId: groupId,
-          disabled: disabled,
-          elementId: elementId,
-          customProperties: customProperties,
-          placeholder: placeholder,
-          keyCode: keyCode
-        };
-      };
-      /**
-       * @argument {Choice[]} results
-       * @returns {Action & { results: Choice[] }}
-       */
-
-
-      var choices_filterChoices = function filterChoices(results) {
-        return {
-          type: ACTION_TYPES.FILTER_CHOICES,
-          results: results
-        };
-      };
-      /**
-       * @argument {boolean} active
-       * @returns {Action & { active: boolean }}
-       */
-
-
-      var choices_activateChoices = function activateChoices(active) {
-        if (active === void 0) {
-          active = true;
-        }
-
-        return {
-          type: ACTION_TYPES.ACTIVATE_CHOICES,
-          active: active
-        };
-      };
-      /**
-       * @returns {Action}
-       */
-
-
-      var choices_clearChoices = function clearChoices() {
-        return {
-          type: ACTION_TYPES.CLEAR_CHOICES
-        };
-      }; // CONCATENATED MODULE: ./src/scripts/actions/items.js
-
-      /**
-       * @typedef {import('redux').Action} Action
-       * @typedef {import('../../../types/index').Choices.Item} Item
-       */
-
-      /**
-       * @param {Item} item
-       * @returns {Action & Item}
-       */
-
-
-      var items_addItem = function addItem(_ref) {
-        var value = _ref.value,
-            label = _ref.label,
-            id = _ref.id,
-            choiceId = _ref.choiceId,
-            groupId = _ref.groupId,
-            customProperties = _ref.customProperties,
-            placeholder = _ref.placeholder,
-            keyCode = _ref.keyCode;
-        return {
-          type: ACTION_TYPES.ADD_ITEM,
-          value: value,
-          label: label,
-          id: id,
-          choiceId: choiceId,
-          groupId: groupId,
-          customProperties: customProperties,
-          placeholder: placeholder,
-          keyCode: keyCode
-        };
-      };
-      /**
-       * @param {string} id
-       * @param {string} choiceId
-       * @returns {Action & { id: string, choiceId: string }}
-       */
-
-
-      var items_removeItem = function removeItem(id, choiceId) {
-        return {
-          type: ACTION_TYPES.REMOVE_ITEM,
-          id: id,
-          choiceId: choiceId
-        };
-      };
-      /**
-       * @param {string} id
-       * @param {boolean} highlighted
-       * @returns {Action & { id: string, highlighted: boolean }}
-       */
-
-
-      var items_highlightItem = function highlightItem(id, highlighted) {
-        return {
-          type: ACTION_TYPES.HIGHLIGHT_ITEM,
-          id: id,
-          highlighted: highlighted
-        };
-      }; // CONCATENATED MODULE: ./src/scripts/actions/groups.js
-
-      /**
-       * @typedef {import('redux').Action} Action
-       * @typedef {import('../../../types/index').Choices.Group} Group
-       */
-
-      /**
-       * @param {Group} group
-       * @returns {Action & Group}
-       */
-
-
-      var groups_addGroup = function addGroup(_ref) {
-        var value = _ref.value,
-            id = _ref.id,
-            active = _ref.active,
-            disabled = _ref.disabled;
-        return {
-          type: ACTION_TYPES.ADD_GROUP,
-          value: value,
-          id: id,
-          active: active,
-          disabled: disabled
-        };
-      }; // CONCATENATED MODULE: ./src/scripts/actions/misc.js
-
-      /**
-       * @typedef {import('redux').Action} Action
-       */
-
-      /**
-       * @returns {Action}
-       */
-
-
-      var clearAll = function clearAll() {
-        return {
-          type: 'CLEAR_ALL'
-        };
-      };
-      /**
-       * @param {any} state
-       * @returns {Action & { state: object }}
-       */
-
-
-      var resetTo = function resetTo(state) {
-        return {
-          type: 'RESET_TO',
-          state: state
-        };
-      };
-      /**
-       * @param {boolean} isLoading
-       * @returns {Action & { isLoading: boolean }}
-       */
-
-
-      var setIsLoading = function setIsLoading(isLoading) {
-        return {
-          type: 'SET_IS_LOADING',
-          isLoading: isLoading
-        };
-      }; // CONCATENATED MODULE: ./src/scripts/choices.js
-
-
-      function choices_defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-          var descriptor = props[i];
-          descriptor.enumerable = descriptor.enumerable || false;
-          descriptor.configurable = true;
-          if ("value" in descriptor) descriptor.writable = true;
-          Object.defineProperty(target, descriptor.key, descriptor);
-        }
-      }
-
-      function choices_createClass(Constructor, protoProps, staticProps) {
-        if (protoProps) choices_defineProperties(Constructor.prototype, protoProps);
-        if (staticProps) choices_defineProperties(Constructor, staticProps);
-        return Constructor;
-      }
-      /** @see {@link http://browserhacks.com/#hack-acea075d0ac6954f275a70023906050c} */
-
-
-      var IS_IE11 = '-ms-scroll-limit' in document.documentElement.style && '-ms-ime-align' in document.documentElement.style;
-      /**
-       * @typedef {import('../../types/index').Choices.Choice} Choice
-       * @typedef {import('../../types/index').Choices.Item} Item
-       * @typedef {import('../../types/index').Choices.Group} Group
-       * @typedef {import('../../types/index').Choices.Options} Options
-       */
-
-      /** @type {Partial<Options>} */
-
-      var USER_DEFAULTS = {};
-      /**
-       * Choices
-       * @author Josh Johnson<josh@joshuajohnson.co.uk>
-       */
-
-      var choices_Choices = /*#__PURE__*/function () {
-        choices_createClass(Choices, null, [{
-          key: "defaults",
-          get: function get() {
-            return Object.preventExtensions({
-              get options() {
-                return USER_DEFAULTS;
-              },
-
-              get templates() {
-                return TEMPLATES;
-              }
-
-            });
-          }
-          /**
-           * @param {string | HTMLInputElement | HTMLSelectElement} element
-           * @param {Partial<Options>} userConfig
-           */
-
-        }]);
-
-        function Choices(element, userConfig) {
-          var _this = this;
-
-          if (element === void 0) {
-            element = '[data-choice]';
-          }
-
-          if (userConfig === void 0) {
-            userConfig = {};
-          }
-          /** @type {Partial<Options>} */
-
-
-          this.config = cjs_default.a.all([DEFAULT_CONFIG, Choices.defaults.options, userConfig], // When merging array configs, replace with a copy of the userConfig array,
-          // instead of concatenating with the default array
-          {
-            arrayMerge: function arrayMerge(_, sourceArray) {
-              return [].concat(sourceArray);
-            }
-          });
-          var invalidConfigOptions = diff(this.config, DEFAULT_CONFIG);
-
-          if (invalidConfigOptions.length) {
-            console.warn('Unknown config option(s) passed', invalidConfigOptions.join(', '));
-          }
-
-          var passedElement = typeof element === 'string' ? document.querySelector(element) : element;
-
-          if (!(passedElement instanceof HTMLInputElement || passedElement instanceof HTMLSelectElement)) {
-            throw TypeError('Expected one of the following types text|select-one|select-multiple');
-          }
-
-          this._isTextElement = passedElement.type === TEXT_TYPE;
-          this._isSelectOneElement = passedElement.type === SELECT_ONE_TYPE;
-          this._isSelectMultipleElement = passedElement.type === SELECT_MULTIPLE_TYPE;
-          this._isSelectElement = this._isSelectOneElement || this._isSelectMultipleElement;
-          this.config.searchEnabled = this._isSelectMultipleElement || this.config.searchEnabled;
-
-          if (!['auto', 'always'].includes(this.config.renderSelectedChoices)) {
-            this.config.renderSelectedChoices = 'auto';
-          }
-
-          if (userConfig.addItemFilter && typeof userConfig.addItemFilter !== 'function') {
-            var re = userConfig.addItemFilter instanceof RegExp ? userConfig.addItemFilter : new RegExp(userConfig.addItemFilter);
-            this.config.addItemFilter = re.test.bind(re);
-          }
-
-          if (this._isTextElement) {
-            this.passedElement = new WrappedInput({
-              element: passedElement,
-              classNames: this.config.classNames,
-              delimiter: this.config.delimiter
-            });
-          } else {
-            this.passedElement = new WrappedSelect({
-              element: passedElement,
-              classNames: this.config.classNames,
-              template: function template(data) {
-                return _this._templates.option(data);
-              }
-            });
-          }
-
-          this.initialised = false;
-          this._store = new store_Store();
-          this._initialState = {};
-          this._currentState = {};
-          this._prevState = {};
-          this._currentValue = '';
-          this._canSearch = this.config.searchEnabled;
-          this._isScrollingOnIe = false;
-          this._highlightPosition = 0;
-          this._wasTap = true;
-          this._placeholderValue = this._generatePlaceholderValue();
-          this._baseId = generateId(this.passedElement.element, 'choices-');
-          /**
-           * setting direction in cases where it's explicitly set on passedElement
-           * or when calculated direction is different from the document
-           * @type {HTMLElement['dir']}
-           */
-
-          this._direction = this.passedElement.dir;
-
-          if (!this._direction) {
-            var _window$getComputedSt = window.getComputedStyle(this.passedElement.element),
-                elementDirection = _window$getComputedSt.direction;
-
-            var _window$getComputedSt2 = window.getComputedStyle(document.documentElement),
-                documentDirection = _window$getComputedSt2.direction;
-
-            if (elementDirection !== documentDirection) {
-              this._direction = elementDirection;
-            }
-          }
-
-          this._idNames = {
-            itemChoice: 'item-choice'
-          }; // Assign preset groups from passed element
-
-          this._presetGroups = this.passedElement.optionGroups; // Assign preset options from passed element
-
-          this._presetOptions = this.passedElement.options; // Assign preset choices from passed object
-
-          this._presetChoices = this.config.choices; // Assign preset items from passed object first
-
-          this._presetItems = this.config.items; // Add any values passed from attribute
-
-          if (this.passedElement.value) {
-            this._presetItems = this._presetItems.concat(this.passedElement.value.split(this.config.delimiter));
-          } // Create array of choices from option elements
-
-
-          if (this.passedElement.options) {
-            this.passedElement.options.forEach(function (o) {
-              _this._presetChoices.push({
-                value: o.value,
-                label: o.innerHTML,
-                selected: o.selected,
-                disabled: o.disabled || o.parentNode.disabled,
-                placeholder: o.value === '' || o.hasAttribute('placeholder'),
-                customProperties: o.getAttribute('data-custom-properties')
-              });
-            });
-          }
-
-          this._render = this._render.bind(this);
-          this._onFocus = this._onFocus.bind(this);
-          this._onBlur = this._onBlur.bind(this);
-          this._onKeyUp = this._onKeyUp.bind(this);
-          this._onKeyDown = this._onKeyDown.bind(this);
-          this._onClick = this._onClick.bind(this);
-          this._onTouchMove = this._onTouchMove.bind(this);
-          this._onTouchEnd = this._onTouchEnd.bind(this);
-          this._onMouseDown = this._onMouseDown.bind(this);
-          this._onMouseOver = this._onMouseOver.bind(this);
-          this._onFormReset = this._onFormReset.bind(this);
-          this._onAKey = this._onAKey.bind(this);
-          this._onEnterKey = this._onEnterKey.bind(this);
-          this._onEscapeKey = this._onEscapeKey.bind(this);
-          this._onDirectionKey = this._onDirectionKey.bind(this);
-          this._onDeleteKey = this._onDeleteKey.bind(this); // If element has already been initialised with Choices, fail silently
-
-          if (this.passedElement.isActive) {
-            if (!this.config.silent) {
-              console.warn('Trying to initialise Choices on element already initialised');
-            }
-
-            this.initialised = true;
-            return;
-          } // Let's go
-
-
-          this.init();
-        }
-
-        var _proto = Choices.prototype;
-
-        _proto.init = function init() {
-          if (this.initialised) {
-            return;
-          }
-
-          this._createTemplates();
-
-          this._createElements();
-
-          this._createStructure(); // Set initial state (We need to clone the state because some reducers
-          // modify the inner objects properties in the state) 🤢
-
-
-          this._initialState = cloneObject(this._store.state);
-
-          this._store.subscribe(this._render);
-
-          this._render();
-
-          this._addEventListeners();
-
-          var shouldDisable = !this.config.addItems || this.passedElement.element.hasAttribute('disabled');
-
-          if (shouldDisable) {
-            this.disable();
-          }
-
-          this.initialised = true;
-          var callbackOnInit = this.config.callbackOnInit; // Run callback if it is a function
-
-          if (callbackOnInit && typeof callbackOnInit === 'function') {
-            callbackOnInit.call(this);
-          }
-        };
-
-        _proto.destroy = function destroy() {
-          if (!this.initialised) {
-            return;
-          }
-
-          this._removeEventListeners();
-
-          this.passedElement.reveal();
-          this.containerOuter.unwrap(this.passedElement.element);
-          this.clearStore();
-
-          if (this._isSelectElement) {
-            this.passedElement.options = this._presetOptions;
-          }
-
-          this._templates = null;
-          this.initialised = false;
-        };
-
-        _proto.enable = function enable() {
-          if (this.passedElement.isDisabled) {
-            this.passedElement.enable();
-          }
-
-          if (this.containerOuter.isDisabled) {
-            this._addEventListeners();
-
-            this.input.enable();
-            this.containerOuter.enable();
-          }
-
-          return this;
-        };
-
-        _proto.disable = function disable() {
-          if (!this.passedElement.isDisabled) {
-            this.passedElement.disable();
-          }
-
-          if (!this.containerOuter.isDisabled) {
-            this._removeEventListeners();
-
-            this.input.disable();
-            this.containerOuter.disable();
-          }
-
-          return this;
-        };
-
-        _proto.highlightItem = function highlightItem(item, runEvent) {
-          if (runEvent === void 0) {
-            runEvent = true;
-          }
-
-          if (!item) {
-            return this;
-          }
-
-          var id = item.id,
-              _item$groupId = item.groupId,
-              groupId = _item$groupId === void 0 ? -1 : _item$groupId,
-              _item$value = item.value,
-              value = _item$value === void 0 ? '' : _item$value,
-              _item$label = item.label,
-              label = _item$label === void 0 ? '' : _item$label;
-          var group = groupId >= 0 ? this._store.getGroupById(groupId) : null;
-
-          this._store.dispatch(items_highlightItem(id, true));
-
-          if (runEvent) {
-            this.passedElement.triggerEvent(EVENTS.highlightItem, {
-              id: id,
-              value: value,
-              label: label,
-              groupValue: group && group.value ? group.value : null
-            });
-          }
-
-          return this;
-        };
-
-        _proto.unhighlightItem = function unhighlightItem(item) {
-          if (!item) {
-            return this;
-          }
-
-          var id = item.id,
-              _item$groupId2 = item.groupId,
-              groupId = _item$groupId2 === void 0 ? -1 : _item$groupId2,
-              _item$value2 = item.value,
-              value = _item$value2 === void 0 ? '' : _item$value2,
-              _item$label2 = item.label,
-              label = _item$label2 === void 0 ? '' : _item$label2;
-          var group = groupId >= 0 ? this._store.getGroupById(groupId) : null;
-
-          this._store.dispatch(items_highlightItem(id, false));
-
-          this.passedElement.triggerEvent(EVENTS.highlightItem, {
-            id: id,
-            value: value,
-            label: label,
-            groupValue: group && group.value ? group.value : null
-          });
-          return this;
-        };
-
-        _proto.highlightAll = function highlightAll() {
-          var _this2 = this;
-
-          this._store.items.forEach(function (item) {
-            return _this2.highlightItem(item);
-          });
-
-          return this;
-        };
-
-        _proto.unhighlightAll = function unhighlightAll() {
-          var _this3 = this;
-
-          this._store.items.forEach(function (item) {
-            return _this3.unhighlightItem(item);
-          });
-
-          return this;
-        };
-
-        _proto.removeActiveItemsByValue = function removeActiveItemsByValue(value) {
-          var _this4 = this;
-
-          this._store.activeItems.filter(function (item) {
-            return item.value === value;
-          }).forEach(function (item) {
-            return _this4._removeItem(item);
-          });
-
-          return this;
-        };
-
-        _proto.removeActiveItems = function removeActiveItems(excludedId) {
-          var _this5 = this;
-
-          this._store.activeItems.filter(function (_ref) {
-            var id = _ref.id;
-            return id !== excludedId;
-          }).forEach(function (item) {
-            return _this5._removeItem(item);
-          });
-
-          return this;
-        };
-
-        _proto.removeHighlightedItems = function removeHighlightedItems(runEvent) {
-          var _this6 = this;
-
-          if (runEvent === void 0) {
-            runEvent = false;
-          }
-
-          this._store.highlightedActiveItems.forEach(function (item) {
-            _this6._removeItem(item); // If this action was performed by the user
-            // trigger the event
-
-
-            if (runEvent) {
-              _this6._triggerChange(item.value);
-            }
-          });
-
-          return this;
-        };
-
-        _proto.showDropdown = function showDropdown(preventInputFocus) {
-          var _this7 = this;
-
-          if (this.dropdown.isActive) {
-            return this;
-          }
-
-          requestAnimationFrame(function () {
-            _this7.dropdown.show();
-
-            _this7.containerOuter.open(_this7.dropdown.distanceFromTopWindow);
-
-            if (!preventInputFocus && _this7._canSearch) {
-              _this7.input.focus();
-            }
-
-            _this7.passedElement.triggerEvent(EVENTS.showDropdown, {});
-          });
-          return this;
-        };
-
-        _proto.hideDropdown = function hideDropdown(preventInputBlur) {
-          var _this8 = this;
-
-          if (!this.dropdown.isActive) {
-            return this;
-          }
-
-          requestAnimationFrame(function () {
-            _this8.dropdown.hide();
-
-            _this8.containerOuter.close();
-
-            if (!preventInputBlur && _this8._canSearch) {
-              _this8.input.removeActiveDescendant();
-
-              _this8.input.blur();
-            }
-
-            _this8.passedElement.triggerEvent(EVENTS.hideDropdown, {});
-          });
-          return this;
-        };
-
-        _proto.getValue = function getValue(valueOnly) {
-          if (valueOnly === void 0) {
-            valueOnly = false;
-          }
-
-          var values = this._store.activeItems.reduce(function (selectedItems, item) {
-            var itemValue = valueOnly ? item.value : item;
-            selectedItems.push(itemValue);
-            return selectedItems;
-          }, []);
-
-          return this._isSelectOneElement ? values[0] : values;
-        }
-        /**
-         * @param {string[] | import('../../types/index').Choices.Item[]} items
-         */
-        ;
-
-        _proto.setValue = function setValue(items) {
-          var _this9 = this;
-
-          if (!this.initialised) {
-            return this;
-          }
-
-          items.forEach(function (value) {
-            return _this9._setChoiceOrItem(value);
-          });
-          return this;
-        };
-
-        _proto.setChoiceByValue = function setChoiceByValue(value) {
-          var _this10 = this;
-
-          if (!this.initialised || this._isTextElement) {
-            return this;
-          } // If only one value has been passed, convert to array
-
-
-          var choiceValue = Array.isArray(value) ? value : [value]; // Loop through each value and
-
-          choiceValue.forEach(function (val) {
-            return _this10._findAndSelectChoiceByValue(val);
-          });
-          return this;
-        }
-        /**
-         * Set choices of select input via an array of objects (or function that returns array of object or promise of it),
-         * a value field name and a label field name.
-         * This behaves the same as passing items via the choices option but can be called after initialising Choices.
-         * This can also be used to add groups of choices (see example 2); Optionally pass a true `replaceChoices` value to remove any existing choices.
-         * Optionally pass a `customProperties` object to add additional data to your choices (useful when searching/filtering etc).
-         *
-         * **Input types affected:** select-one, select-multiple
-         *
-         * @template {Choice[] | ((instance: Choices) => object[] | Promise<object[]>)} T
-         * @param {T} [choicesArrayOrFetcher]
-         * @param {string} [value = 'value'] - name of `value` field
-         * @param {string} [label = 'label'] - name of 'label' field
-         * @param {boolean} [replaceChoices = false] - whether to replace of add choices
-         * @returns {this | Promise<this>}
-         *
-         * @example
-         * ```js
-         * const example = new Choices(element);
-         *
-         * example.setChoices([
-         *   {value: 'One', label: 'Label One', disabled: true},
-         *   {value: 'Two', label: 'Label Two', selected: true},
-         *   {value: 'Three', label: 'Label Three'},
-         * ], 'value', 'label', false);
-         * ```
-         *
-         * @example
-         * ```js
-         * const example = new Choices(element);
-         *
-         * example.setChoices(async () => {
-         *   try {
-         *      const items = await fetch('/items');
-         *      return items.json()
-         *   } catch(err) {
-         *      console.error(err)
-         *   }
-         * });
-         * ```
-         *
-         * @example
-         * ```js
-         * const example = new Choices(element);
-         *
-         * example.setChoices([{
-         *   label: 'Group one',
-         *   id: 1,
-         *   disabled: false,
-         *   choices: [
-         *     {value: 'Child One', label: 'Child One', selected: true},
-         *     {value: 'Child Two', label: 'Child Two',  disabled: true},
-         *     {value: 'Child Three', label: 'Child Three'},
-         *   ]
-         * },
-         * {
-         *   label: 'Group two',
-         *   id: 2,
-         *   disabled: false,
-         *   choices: [
-         *     {value: 'Child Four', label: 'Child Four', disabled: true},
-         *     {value: 'Child Five', label: 'Child Five'},
-         *     {value: 'Child Six', label: 'Child Six', customProperties: {
-         *       description: 'Custom description about child six',
-         *       random: 'Another random custom property'
-         *     }},
-         *   ]
-         * }], 'value', 'label', false);
-         * ```
-         */
-        ;
-
-        _proto.setChoices = function setChoices(choicesArrayOrFetcher, value, label, replaceChoices) {
-          var _this11 = this;
-
-          if (choicesArrayOrFetcher === void 0) {
-            choicesArrayOrFetcher = [];
-          }
-
-          if (value === void 0) {
-            value = 'value';
-          }
-
-          if (label === void 0) {
-            label = 'label';
-          }
-
-          if (replaceChoices === void 0) {
-            replaceChoices = false;
-          }
-
-          if (!this.initialised) {
-            throw new ReferenceError("setChoices was called on a non-initialized instance of Choices");
-          }
-
-          if (!this._isSelectElement) {
-            throw new TypeError("setChoices can't be used with INPUT based Choices");
-          }
-
-          if (typeof value !== 'string' || !value) {
-            throw new TypeError("value parameter must be a name of 'value' field in passed objects");
-          } // Clear choices if needed
-
-
-          if (replaceChoices) {
-            this.clearChoices();
-          }
-
-          if (typeof choicesArrayOrFetcher === 'function') {
-            // it's a choices fetcher function
-            var fetcher = choicesArrayOrFetcher(this);
-
-            if (typeof Promise === 'function' && fetcher instanceof Promise) {
-              // that's a promise
-              // eslint-disable-next-line compat/compat
-              return new Promise(function (resolve) {
-                return requestAnimationFrame(resolve);
-              }).then(function () {
-                return _this11._handleLoadingState(true);
-              }).then(function () {
-                return fetcher;
-              }).then(function (data) {
-                return _this11.setChoices(data, value, label, replaceChoices);
-              }).catch(function (err) {
-                if (!_this11.config.silent) {
-                  console.error(err);
-                }
-              }).then(function () {
-                return _this11._handleLoadingState(false);
-              }).then(function () {
-                return _this11;
-              });
-            } // function returned something else than promise, let's check if it's an array of choices
-
-
-            if (!Array.isArray(fetcher)) {
-              throw new TypeError(".setChoices first argument function must return either array of choices or Promise, got: " + typeof fetcher);
-            } // recursion with results, it's sync and choices were cleared already
-
-
-            return this.setChoices(fetcher, value, label, false);
-          }
-
-          if (!Array.isArray(choicesArrayOrFetcher)) {
-            throw new TypeError(".setChoices must be called either with array of choices with a function resulting into Promise of array of choices");
-          }
-
-          this.containerOuter.removeLoadingState();
-
-          this._startLoading();
-
-          choicesArrayOrFetcher.forEach(function (groupOrChoice) {
-            if (groupOrChoice.choices) {
-              _this11._addGroup({
-                id: parseInt(groupOrChoice.id, 10) || null,
-                group: groupOrChoice,
-                valueKey: value,
-                labelKey: label
-              });
-            } else {
-              _this11._addChoice({
-                value: groupOrChoice[value],
-                label: groupOrChoice[label],
-                isSelected: groupOrChoice.selected,
-                isDisabled: groupOrChoice.disabled,
-                customProperties: groupOrChoice.customProperties,
-                placeholder: groupOrChoice.placeholder
-              });
-            }
-          });
-
-          this._stopLoading();
-
-          return this;
-        };
-
-        _proto.clearChoices = function clearChoices() {
-          this._store.dispatch(choices_clearChoices());
-
-          return this;
-        };
-
-        _proto.clearStore = function clearStore() {
-          this._store.dispatch(clearAll());
-
-          return this;
-        };
-
-        _proto.clearInput = function clearInput() {
-          var shouldSetInputWidth = !this._isSelectOneElement;
-          this.input.clear(shouldSetInputWidth);
-
-          if (!this._isTextElement && this._canSearch) {
-            this._isSearching = false;
-
-            this._store.dispatch(choices_activateChoices(true));
-          }
-
-          return this;
-        };
-
-        _proto._render = function _render() {
-          if (this._store.isLoading()) {
-            return;
-          }
-
-          this._currentState = this._store.state;
-          var stateChanged = this._currentState.choices !== this._prevState.choices || this._currentState.groups !== this._prevState.groups || this._currentState.items !== this._prevState.items;
-          var shouldRenderChoices = this._isSelectElement;
-          var shouldRenderItems = this._currentState.items !== this._prevState.items;
-
-          if (!stateChanged) {
-            return;
-          }
-
-          if (shouldRenderChoices) {
-            this._renderChoices();
-          }
-
-          if (shouldRenderItems) {
-            this._renderItems();
-          }
-
-          this._prevState = this._currentState;
-        };
-
-        _proto._renderChoices = function _renderChoices() {
-          var _this12 = this;
-
-          var _this$_store = this._store,
-              activeGroups = _this$_store.activeGroups,
-              activeChoices = _this$_store.activeChoices;
-          var choiceListFragment = document.createDocumentFragment();
-          this.choiceList.clear();
-
-          if (this.config.resetScrollPosition) {
-            requestAnimationFrame(function () {
-              return _this12.choiceList.scrollToTop();
-            });
-          } // If we have grouped options
-
-
-          if (activeGroups.length >= 1 && !this._isSearching) {
-            // If we have a placeholder choice along with groups
-            var activePlaceholders = activeChoices.filter(function (activeChoice) {
-              return activeChoice.placeholder === true && activeChoice.groupId === -1;
-            });
-
-            if (activePlaceholders.length >= 1) {
-              choiceListFragment = this._createChoicesFragment(activePlaceholders, choiceListFragment);
-            }
-
-            choiceListFragment = this._createGroupsFragment(activeGroups, activeChoices, choiceListFragment);
-          } else if (activeChoices.length >= 1) {
-            choiceListFragment = this._createChoicesFragment(activeChoices, choiceListFragment);
-          } // If we have choices to show
-
-
-          if (choiceListFragment.childNodes && choiceListFragment.childNodes.length > 0) {
-            var activeItems = this._store.activeItems;
-
-            var canAddItem = this._canAddItem(activeItems, this.input.value); // ...and we can select them
-
-
-            if (canAddItem.response) {
-              // ...append them and highlight the first choice
-              this.choiceList.append(choiceListFragment);
-
-              this._highlightChoice();
-            } else {
-              // ...otherwise show a notice
-              this.choiceList.append(this._getTemplate('notice', canAddItem.notice));
-            }
-          } else {
-            // Otherwise show a notice
-            var dropdownItem;
-            var notice;
-
-            if (this._isSearching) {
-              notice = typeof this.config.noResultsText === 'function' ? this.config.noResultsText() : this.config.noResultsText;
-              dropdownItem = this._getTemplate('notice', notice, 'no-results');
-            } else {
-              notice = typeof this.config.noChoicesText === 'function' ? this.config.noChoicesText() : this.config.noChoicesText;
-              dropdownItem = this._getTemplate('notice', notice, 'no-choices');
-            }
-
-            this.choiceList.append(dropdownItem);
-          }
-        };
-
-        _proto._renderItems = function _renderItems() {
-          var activeItems = this._store.activeItems || [];
-          this.itemList.clear(); // Create a fragment to store our list items
-          // (so we don't have to update the DOM for each item)
-
-          var itemListFragment = this._createItemsFragment(activeItems); // If we have items to add, append them
-
-
-          if (itemListFragment.childNodes) {
-            this.itemList.append(itemListFragment);
-          }
-        };
-
-        _proto._createGroupsFragment = function _createGroupsFragment(groups, choices, fragment) {
-          var _this13 = this;
-
-          if (fragment === void 0) {
-            fragment = document.createDocumentFragment();
-          }
-
-          var getGroupChoices = function getGroupChoices(group) {
-            return choices.filter(function (choice) {
-              if (_this13._isSelectOneElement) {
-                return choice.groupId === group.id;
-              }
-
-              return choice.groupId === group.id && (_this13.config.renderSelectedChoices === 'always' || !choice.selected);
-            });
-          }; // If sorting is enabled, filter groups
-
-
-          if (this.config.shouldSort) {
-            groups.sort(this.config.sorter);
-          }
-
-          groups.forEach(function (group) {
-            var groupChoices = getGroupChoices(group);
-
-            if (groupChoices.length >= 1) {
-              var dropdownGroup = _this13._getTemplate('choiceGroup', group);
-
-              fragment.appendChild(dropdownGroup);
-
-              _this13._createChoicesFragment(groupChoices, fragment, true);
-            }
-          });
-          return fragment;
-        };
-
-        _proto._createChoicesFragment = function _createChoicesFragment(choices, fragment, withinGroup) {
-          var _this14 = this;
-
-          if (fragment === void 0) {
-            fragment = document.createDocumentFragment();
-          }
-
-          if (withinGroup === void 0) {
-            withinGroup = false;
-          } // Create a fragment to store our list items (so we don't have to update the DOM for each item)
-
-
-          var _this$config = this.config,
-              renderSelectedChoices = _this$config.renderSelectedChoices,
-              searchResultLimit = _this$config.searchResultLimit,
-              renderChoiceLimit = _this$config.renderChoiceLimit;
-          var filter = this._isSearching ? sortByScore : this.config.sorter;
-
-          var appendChoice = function appendChoice(choice) {
-            var shouldRender = renderSelectedChoices === 'auto' ? _this14._isSelectOneElement || !choice.selected : true;
-
-            if (shouldRender) {
-              var dropdownItem = _this14._getTemplate('choice', choice, _this14.config.itemSelectText);
-
-              fragment.appendChild(dropdownItem);
-            }
-          };
-
-          var rendererableChoices = choices;
-
-          if (renderSelectedChoices === 'auto' && !this._isSelectOneElement) {
-            rendererableChoices = choices.filter(function (choice) {
-              return !choice.selected;
-            });
-          } // Split array into placeholders and "normal" choices
-
-
-          var _rendererableChoices$ = rendererableChoices.reduce(function (acc, choice) {
-            if (choice.placeholder) {
-              acc.placeholderChoices.push(choice);
-            } else {
-              acc.normalChoices.push(choice);
-            }
-
-            return acc;
-          }, {
-            placeholderChoices: [],
-            normalChoices: []
-          }),
-              placeholderChoices = _rendererableChoices$.placeholderChoices,
-              normalChoices = _rendererableChoices$.normalChoices; // If sorting is enabled or the user is searching, filter choices
-
-
-          if (this.config.shouldSort || this._isSearching) {
-            normalChoices.sort(filter);
-          }
-
-          var choiceLimit = rendererableChoices.length; // Prepend placeholeder
-
-          var sortedChoices = this._isSelectOneElement ? [].concat(placeholderChoices, normalChoices) : normalChoices;
-
-          if (this._isSearching) {
-            choiceLimit = searchResultLimit;
-          } else if (renderChoiceLimit && renderChoiceLimit > 0 && !withinGroup) {
-            choiceLimit = renderChoiceLimit;
-          } // Add each choice to dropdown within range
-
-
-          for (var i = 0; i < choiceLimit; i += 1) {
-            if (sortedChoices[i]) {
-              appendChoice(sortedChoices[i]);
-            }
-          }
-
-          return fragment;
-        };
-
-        _proto._createItemsFragment = function _createItemsFragment(items, fragment) {
-          var _this15 = this;
-
-          if (fragment === void 0) {
-            fragment = document.createDocumentFragment();
-          } // Create fragment to add elements to
-
-
-          var _this$config2 = this.config,
-              shouldSortItems = _this$config2.shouldSortItems,
-              sorter = _this$config2.sorter,
-              removeItemButton = _this$config2.removeItemButton; // If sorting is enabled, filter items
-
-          if (shouldSortItems && !this._isSelectOneElement) {
-            items.sort(sorter);
-          }
-
-          if (this._isTextElement) {
-            // Update the value of the hidden input
-            this.passedElement.value = items;
-          } else {
-            // Update the options of the hidden input
-            this.passedElement.options = items;
-          }
-
-          var addItemToFragment = function addItemToFragment(item) {
-            // Create new list element
-            var listItem = _this15._getTemplate('item', item, removeItemButton); // Append it to list
-
-
-            fragment.appendChild(listItem);
-          }; // Add each list item to list
-
-
-          items.forEach(addItemToFragment);
-          return fragment;
-        };
-
-        _proto._triggerChange = function _triggerChange(value) {
-          if (value === undefined || value === null) {
-            return;
-          }
-
-          this.passedElement.triggerEvent(EVENTS.change, {
-            value: value
-          });
-        };
-
-        _proto._selectPlaceholderChoice = function _selectPlaceholderChoice() {
-          var placeholderChoice = this._store.placeholderChoice;
-
-          if (placeholderChoice) {
-            this._addItem({
-              value: placeholderChoice.value,
-              label: placeholderChoice.label,
-              choiceId: placeholderChoice.id,
-              groupId: placeholderChoice.groupId,
-              placeholder: placeholderChoice.placeholder
-            });
-
-            this._triggerChange(placeholderChoice.value);
-          }
-        };
-
-        _proto._handleButtonAction = function _handleButtonAction(activeItems, element) {
-          if (!activeItems || !element || !this.config.removeItems || !this.config.removeItemButton) {
-            return;
-          }
-
-          var itemId = element.parentNode.getAttribute('data-id');
-          var itemToRemove = activeItems.find(function (item) {
-            return item.id === parseInt(itemId, 10);
-          }); // Remove item associated with button
-
-          this._removeItem(itemToRemove);
-
-          this._triggerChange(itemToRemove.value);
-
-          if (this._isSelectOneElement) {
-            this._selectPlaceholderChoice();
-          }
-        };
-
-        _proto._handleItemAction = function _handleItemAction(activeItems, element, hasShiftKey) {
-          var _this16 = this;
-
-          if (hasShiftKey === void 0) {
-            hasShiftKey = false;
-          }
-
-          if (!activeItems || !element || !this.config.removeItems || this._isSelectOneElement) {
-            return;
-          }
-
-          var passedId = element.getAttribute('data-id'); // We only want to select one item with a click
-          // so we deselect any items that aren't the target
-          // unless shift is being pressed
-
-          activeItems.forEach(function (item) {
-            if (item.id === parseInt(passedId, 10) && !item.highlighted) {
-              _this16.highlightItem(item);
-            } else if (!hasShiftKey && item.highlighted) {
-              _this16.unhighlightItem(item);
-            }
-          }); // Focus input as without focus, a user cannot do anything with a
-          // highlighted item
-
-          this.input.focus();
-        };
-
-        _proto._handleChoiceAction = function _handleChoiceAction(activeItems, element) {
-          if (!activeItems || !element) {
-            return;
-          } // If we are clicking on an option
-
-
-          var id = element.dataset.id;
-
-          var choice = this._store.getChoiceById(id);
-
-          if (!choice) {
-            return;
-          }
-
-          var passedKeyCode = activeItems[0] && activeItems[0].keyCode ? activeItems[0].keyCode : null;
-          var hasActiveDropdown = this.dropdown.isActive; // Update choice keyCode
-
-          choice.keyCode = passedKeyCode;
-          this.passedElement.triggerEvent(EVENTS.choice, {
-            choice: choice
-          });
-
-          if (!choice.selected && !choice.disabled) {
-            var canAddItem = this._canAddItem(activeItems, choice.value);
-
-            if (canAddItem.response) {
-              this._addItem({
-                value: choice.value,
-                label: choice.label,
-                choiceId: choice.id,
-                groupId: choice.groupId,
-                customProperties: choice.customProperties,
-                placeholder: choice.placeholder,
-                keyCode: choice.keyCode
-              });
-
-              this._triggerChange(choice.value);
-            }
-          }
-
-          this.clearInput(); // We want to close the dropdown if we are dealing with a single select box
-
-          if (hasActiveDropdown && this._isSelectOneElement) {
-            this.hideDropdown(true);
-            this.containerOuter.focus();
-          }
-        };
-
-        _proto._handleBackspace = function _handleBackspace(activeItems) {
-          if (!this.config.removeItems || !activeItems) {
-            return;
-          }
-
-          var lastItem = activeItems[activeItems.length - 1];
-          var hasHighlightedItems = activeItems.some(function (item) {
-            return item.highlighted;
-          }); // If editing the last item is allowed and there are not other selected items,
-          // we can edit the item value. Otherwise if we can remove items, remove all selected items
-
-          if (this.config.editItems && !hasHighlightedItems && lastItem) {
-            this.input.value = lastItem.value;
-            this.input.setWidth();
-
-            this._removeItem(lastItem);
-
-            this._triggerChange(lastItem.value);
-          } else {
-            if (!hasHighlightedItems) {
-              // Highlight last item if none already highlighted
-              this.highlightItem(lastItem, false);
-            }
-
-            this.removeHighlightedItems(true);
-          }
-        };
-
-        _proto._startLoading = function _startLoading() {
-          this._store.dispatch(setIsLoading(true));
-        };
-
-        _proto._stopLoading = function _stopLoading() {
-          this._store.dispatch(setIsLoading(false));
-        };
-
-        _proto._handleLoadingState = function _handleLoadingState(setLoading) {
-          if (setLoading === void 0) {
-            setLoading = true;
-          }
-
-          var placeholderItem = this.itemList.getChild("." + this.config.classNames.placeholder);
-
-          if (setLoading) {
-            this.disable();
-            this.containerOuter.addLoadingState();
-
-            if (this._isSelectOneElement) {
-              if (!placeholderItem) {
-                placeholderItem = this._getTemplate('placeholder', this.config.loadingText);
-                this.itemList.append(placeholderItem);
-              } else {
-                placeholderItem.innerHTML = this.config.loadingText;
-              }
-            } else {
-              this.input.placeholder = this.config.loadingText;
-            }
-          } else {
-            this.enable();
-            this.containerOuter.removeLoadingState();
-
-            if (this._isSelectOneElement) {
-              placeholderItem.innerHTML = this._placeholderValue || '';
-            } else {
-              this.input.placeholder = this._placeholderValue || '';
-            }
-          }
-        };
-
-        _proto._handleSearch = function _handleSearch(value) {
-          if (!value || !this.input.isFocussed) {
-            return;
-          }
-
-          var choices = this._store.choices;
-          var _this$config3 = this.config,
-              searchFloor = _this$config3.searchFloor,
-              searchChoices = _this$config3.searchChoices;
-          var hasUnactiveChoices = choices.some(function (option) {
-            return !option.active;
-          }); // Check that we have a value to search and the input was an alphanumeric character
-
-          if (value && value.length >= searchFloor) {
-            var resultCount = searchChoices ? this._searchChoices(value) : 0; // Trigger search event
-
-            this.passedElement.triggerEvent(EVENTS.search, {
-              value: value,
-              resultCount: resultCount
-            });
-          } else if (hasUnactiveChoices) {
-            // Otherwise reset choices to active
-            this._isSearching = false;
-
-            this._store.dispatch(choices_activateChoices(true));
-          }
-        };
-
-        _proto._canAddItem = function _canAddItem(activeItems, value) {
-          var canAddItem = true;
-          var notice = typeof this.config.addItemText === 'function' ? this.config.addItemText(value) : this.config.addItemText;
-
-          if (!this._isSelectOneElement) {
-            var isDuplicateValue = existsInArray(activeItems, value);
-
-            if (this.config.maxItemCount > 0 && this.config.maxItemCount <= activeItems.length) {
-              // If there is a max entry limit and we have reached that limit
-              // don't update
-              canAddItem = false;
-              notice = typeof this.config.maxItemText === 'function' ? this.config.maxItemText(this.config.maxItemCount) : this.config.maxItemText;
-            }
-
-            if (!this.config.duplicateItemsAllowed && isDuplicateValue && canAddItem) {
-              canAddItem = false;
-              notice = typeof this.config.uniqueItemText === 'function' ? this.config.uniqueItemText(value) : this.config.uniqueItemText;
-            }
-
-            if (this._isTextElement && this.config.addItems && canAddItem && typeof this.config.addItemFilter === 'function' && !this.config.addItemFilter(value)) {
-              canAddItem = false;
-              notice = typeof this.config.customAddItemText === 'function' ? this.config.customAddItemText(value) : this.config.customAddItemText;
-            }
-          }
-
-          return {
-            response: canAddItem,
-            notice: notice
-          };
-        };
-
-        _proto._searchChoices = function _searchChoices(value) {
-          var newValue = typeof value === 'string' ? value.trim() : value;
-          var currentValue = typeof this._currentValue === 'string' ? this._currentValue.trim() : this._currentValue;
-
-          if (newValue.length < 1 && newValue === currentValue + " ") {
-            return 0;
-          } // If new value matches the desired length and is not the same as the current value with a space
-
-
-          var haystack = this._store.searchableChoices;
-          var needle = newValue;
-          var keys = [].concat(this.config.searchFields);
-          var options = Object.assign(this.config.fuseOptions, {
-            keys: keys
-          });
-          var fuse = new fuse_default.a(haystack, options);
-          var results = fuse.search(needle);
-          this._currentValue = newValue;
-          this._highlightPosition = 0;
-          this._isSearching = true;
-
-          this._store.dispatch(choices_filterChoices(results));
-
-          return results.length;
-        };
-
-        _proto._addEventListeners = function _addEventListeners() {
-          var _document = document,
-              documentElement = _document.documentElement; // capture events - can cancel event processing or propagation
-
-          documentElement.addEventListener('touchend', this._onTouchEnd, true);
-          this.containerOuter.element.addEventListener('keydown', this._onKeyDown, true);
-          this.containerOuter.element.addEventListener('mousedown', this._onMouseDown, true); // passive events - doesn't call `preventDefault` or `stopPropagation`
-
-          documentElement.addEventListener('click', this._onClick, {
-            passive: true
-          });
-          documentElement.addEventListener('touchmove', this._onTouchMove, {
-            passive: true
-          });
-          this.dropdown.element.addEventListener('mouseover', this._onMouseOver, {
-            passive: true
-          });
-
-          if (this._isSelectOneElement) {
-            this.containerOuter.element.addEventListener('focus', this._onFocus, {
-              passive: true
-            });
-            this.containerOuter.element.addEventListener('blur', this._onBlur, {
-              passive: true
-            });
-          }
-
-          this.input.element.addEventListener('keyup', this._onKeyUp, {
-            passive: true
-          });
-          this.input.element.addEventListener('focus', this._onFocus, {
-            passive: true
-          });
-          this.input.element.addEventListener('blur', this._onBlur, {
-            passive: true
-          });
-
-          if (this.input.element.form) {
-            this.input.element.form.addEventListener('reset', this._onFormReset, {
-              passive: true
-            });
-          }
-
-          this.input.addEventListeners();
-        };
-
-        _proto._removeEventListeners = function _removeEventListeners() {
-          var _document2 = document,
-              documentElement = _document2.documentElement;
-          documentElement.removeEventListener('touchend', this._onTouchEnd, true);
-          this.containerOuter.element.removeEventListener('keydown', this._onKeyDown, true);
-          this.containerOuter.element.removeEventListener('mousedown', this._onMouseDown, true);
-          documentElement.removeEventListener('click', this._onClick);
-          documentElement.removeEventListener('touchmove', this._onTouchMove);
-          this.dropdown.element.removeEventListener('mouseover', this._onMouseOver);
-
-          if (this._isSelectOneElement) {
-            this.containerOuter.element.removeEventListener('focus', this._onFocus);
-            this.containerOuter.element.removeEventListener('blur', this._onBlur);
-          }
-
-          this.input.element.removeEventListener('keyup', this._onKeyUp);
-          this.input.element.removeEventListener('focus', this._onFocus);
-          this.input.element.removeEventListener('blur', this._onBlur);
-
-          if (this.input.element.form) {
-            this.input.element.form.removeEventListener('reset', this._onFormReset);
-          }
-
-          this.input.removeEventListeners();
-        }
-        /**
-         * @param {KeyboardEvent} event
-         */
-        ;
-
-        _proto._onKeyDown = function _onKeyDown(event) {
-          var _keyDownActions;
-
-          var target = event.target,
-              keyCode = event.keyCode,
-              ctrlKey = event.ctrlKey,
-              metaKey = event.metaKey;
-          var activeItems = this._store.activeItems;
-          var hasFocusedInput = this.input.isFocussed;
-          var hasActiveDropdown = this.dropdown.isActive;
-          var hasItems = this.itemList.hasChildren();
-          var keyString = String.fromCharCode(keyCode);
-          var BACK_KEY = KEY_CODES.BACK_KEY,
-              DELETE_KEY = KEY_CODES.DELETE_KEY,
-              ENTER_KEY = KEY_CODES.ENTER_KEY,
-              A_KEY = KEY_CODES.A_KEY,
-              ESC_KEY = KEY_CODES.ESC_KEY,
-              UP_KEY = KEY_CODES.UP_KEY,
-              DOWN_KEY = KEY_CODES.DOWN_KEY,
-              PAGE_UP_KEY = KEY_CODES.PAGE_UP_KEY,
-              PAGE_DOWN_KEY = KEY_CODES.PAGE_DOWN_KEY;
-          var hasCtrlDownKeyPressed = ctrlKey || metaKey; // If a user is typing and the dropdown is not active
-
-          if (!this._isTextElement && /[a-zA-Z0-9-_ ]/.test(keyString)) {
-            this.showDropdown();
-          } // Map keys to key actions
-
-
-          var keyDownActions = (_keyDownActions = {}, _keyDownActions[A_KEY] = this._onAKey, _keyDownActions[ENTER_KEY] = this._onEnterKey, _keyDownActions[ESC_KEY] = this._onEscapeKey, _keyDownActions[UP_KEY] = this._onDirectionKey, _keyDownActions[PAGE_UP_KEY] = this._onDirectionKey, _keyDownActions[DOWN_KEY] = this._onDirectionKey, _keyDownActions[PAGE_DOWN_KEY] = this._onDirectionKey, _keyDownActions[DELETE_KEY] = this._onDeleteKey, _keyDownActions[BACK_KEY] = this._onDeleteKey, _keyDownActions); // If keycode has a function, run it
-
-          if (keyDownActions[keyCode]) {
-            keyDownActions[keyCode]({
-              event: event,
-              target: target,
-              keyCode: keyCode,
-              metaKey: metaKey,
-              activeItems: activeItems,
-              hasFocusedInput: hasFocusedInput,
-              hasActiveDropdown: hasActiveDropdown,
-              hasItems: hasItems,
-              hasCtrlDownKeyPressed: hasCtrlDownKeyPressed
-            });
-          }
-        };
-
-        _proto._onKeyUp = function _onKeyUp(_ref2) {
-          var target = _ref2.target,
-              keyCode = _ref2.keyCode;
-          var value = this.input.value;
-          var activeItems = this._store.activeItems;
-
-          var canAddItem = this._canAddItem(activeItems, value);
-
-          var backKey = KEY_CODES.BACK_KEY,
-              deleteKey = KEY_CODES.DELETE_KEY; // We are typing into a text input and have a value, we want to show a dropdown
-          // notice. Otherwise hide the dropdown
-
-          if (this._isTextElement) {
-            var canShowDropdownNotice = canAddItem.notice && value;
-
-            if (canShowDropdownNotice) {
-              var dropdownItem = this._getTemplate('notice', canAddItem.notice);
-
-              this.dropdown.element.innerHTML = dropdownItem.outerHTML;
-              this.showDropdown(true);
-            } else {
-              this.hideDropdown(true);
-            }
-          } else {
-            var userHasRemovedValue = (keyCode === backKey || keyCode === deleteKey) && !target.value;
-            var canReactivateChoices = !this._isTextElement && this._isSearching;
-            var canSearch = this._canSearch && canAddItem.response;
-
-            if (userHasRemovedValue && canReactivateChoices) {
-              this._isSearching = false;
-
-              this._store.dispatch(choices_activateChoices(true));
-            } else if (canSearch) {
-              this._handleSearch(this.input.value);
-            }
-          }
-
-          this._canSearch = this.config.searchEnabled;
-        };
-
-        _proto._onAKey = function _onAKey(_ref3) {
-          var hasItems = _ref3.hasItems,
-              hasCtrlDownKeyPressed = _ref3.hasCtrlDownKeyPressed; // If CTRL + A or CMD + A have been pressed and there are items to select
-
-          if (hasCtrlDownKeyPressed && hasItems) {
-            this._canSearch = false;
-            var shouldHightlightAll = this.config.removeItems && !this.input.value && this.input.element === document.activeElement;
-
-            if (shouldHightlightAll) {
-              this.highlightAll();
-            }
-          }
-        };
-
-        _proto._onEnterKey = function _onEnterKey(_ref4) {
-          var event = _ref4.event,
-              target = _ref4.target,
-              activeItems = _ref4.activeItems,
-              hasActiveDropdown = _ref4.hasActiveDropdown;
-          var enterKey = KEY_CODES.ENTER_KEY;
-          var targetWasButton = target.hasAttribute('data-button');
-
-          if (this._isTextElement && target.value) {
-            var value = this.input.value;
-
-            var canAddItem = this._canAddItem(activeItems, value);
-
-            if (canAddItem.response) {
-              this.hideDropdown(true);
-
-              this._addItem({
-                value: value
-              });
-
-              this._triggerChange(value);
-
-              this.clearInput();
-            }
-          }
-
-          if (targetWasButton) {
-            this._handleButtonAction(activeItems, target);
-
-            event.preventDefault();
-          }
-
-          if (hasActiveDropdown) {
-            var highlightedChoice = this.dropdown.getChild("." + this.config.classNames.highlightedState);
-
-            if (highlightedChoice) {
-              // add enter keyCode value
-              if (activeItems[0]) {
-                activeItems[0].keyCode = enterKey; // eslint-disable-line no-param-reassign
-              }
-
-              this._handleChoiceAction(activeItems, highlightedChoice);
-            }
-
-            event.preventDefault();
-          } else if (this._isSelectOneElement) {
-            this.showDropdown();
-            event.preventDefault();
-          }
-        };
-
-        _proto._onEscapeKey = function _onEscapeKey(_ref5) {
-          var hasActiveDropdown = _ref5.hasActiveDropdown;
-
-          if (hasActiveDropdown) {
-            this.hideDropdown(true);
-            this.containerOuter.focus();
-          }
-        };
-
-        _proto._onDirectionKey = function _onDirectionKey(_ref6) {
-          var event = _ref6.event,
-              hasActiveDropdown = _ref6.hasActiveDropdown,
-              keyCode = _ref6.keyCode,
-              metaKey = _ref6.metaKey;
-          var downKey = KEY_CODES.DOWN_KEY,
-              pageUpKey = KEY_CODES.PAGE_UP_KEY,
-              pageDownKey = KEY_CODES.PAGE_DOWN_KEY; // If up or down key is pressed, traverse through options
-
-          if (hasActiveDropdown || this._isSelectOneElement) {
-            this.showDropdown();
-            this._canSearch = false;
-            var directionInt = keyCode === downKey || keyCode === pageDownKey ? 1 : -1;
-            var skipKey = metaKey || keyCode === pageDownKey || keyCode === pageUpKey;
-            var selectableChoiceIdentifier = '[data-choice-selectable]';
-            var nextEl;
-
-            if (skipKey) {
-              if (directionInt > 0) {
-                nextEl = this.dropdown.element.querySelector(selectableChoiceIdentifier + ":last-of-type");
-              } else {
-                nextEl = this.dropdown.element.querySelector(selectableChoiceIdentifier);
-              }
-            } else {
-              var currentEl = this.dropdown.element.querySelector("." + this.config.classNames.highlightedState);
-
-              if (currentEl) {
-                nextEl = getAdjacentEl(currentEl, selectableChoiceIdentifier, directionInt);
-              } else {
-                nextEl = this.dropdown.element.querySelector(selectableChoiceIdentifier);
-              }
-            }
-
-            if (nextEl) {
-              // We prevent default to stop the cursor moving
-              // when pressing the arrow
-              if (!isScrolledIntoView(nextEl, this.choiceList.element, directionInt)) {
-                this.choiceList.scrollToChildElement(nextEl, directionInt);
-              }
-
-              this._highlightChoice(nextEl);
-            } // Prevent default to maintain cursor position whilst
-            // traversing dropdown options
-
-
-            event.preventDefault();
-          }
-        };
-
-        _proto._onDeleteKey = function _onDeleteKey(_ref7) {
-          var event = _ref7.event,
-              target = _ref7.target,
-              hasFocusedInput = _ref7.hasFocusedInput,
-              activeItems = _ref7.activeItems; // If backspace or delete key is pressed and the input has no value
-
-          if (hasFocusedInput && !target.value && !this._isSelectOneElement) {
-            this._handleBackspace(activeItems);
-
-            event.preventDefault();
-          }
-        };
-
-        _proto._onTouchMove = function _onTouchMove() {
-          if (this._wasTap) {
-            this._wasTap = false;
-          }
-        };
-
-        _proto._onTouchEnd = function _onTouchEnd(event) {
-          var _ref8 = event || event.touches[0],
-              target = _ref8.target;
-
-          var touchWasWithinContainer = this._wasTap && this.containerOuter.element.contains(target);
-
-          if (touchWasWithinContainer) {
-            var containerWasExactTarget = target === this.containerOuter.element || target === this.containerInner.element;
-
-            if (containerWasExactTarget) {
-              if (this._isTextElement) {
-                this.input.focus();
-              } else if (this._isSelectMultipleElement) {
-                this.showDropdown();
-              }
-            } // Prevents focus event firing
-
-
-            event.stopPropagation();
-          }
-
-          this._wasTap = true;
-        }
-        /**
-         * Handles mousedown event in capture mode for containetOuter.element
-         * @param {MouseEvent} event
-         */
-        ;
-
-        _proto._onMouseDown = function _onMouseDown(event) {
-          var target = event.target;
-
-          if (!(target instanceof HTMLElement)) {
-            return;
-          } // If we have our mouse down on the scrollbar and are on IE11...
-
-
-          if (IS_IE11 && this.choiceList.element.contains(target)) {
-            // check if click was on a scrollbar area
-            var firstChoice =
-            /** @type {HTMLElement} */
-            this.choiceList.element.firstElementChild;
-            var isOnScrollbar = this._direction === 'ltr' ? event.offsetX >= firstChoice.offsetWidth : event.offsetX < firstChoice.offsetLeft;
-            this._isScrollingOnIe = isOnScrollbar;
-          }
-
-          if (target === this.input.element) {
-            return;
-          }
-
-          var item = target.closest('[data-button],[data-item],[data-choice]');
-
-          if (item instanceof HTMLElement) {
-            var hasShiftKey = event.shiftKey;
-            var activeItems = this._store.activeItems;
-            var dataset = item.dataset;
-
-            if ('button' in dataset) {
-              this._handleButtonAction(activeItems, item);
-            } else if ('item' in dataset) {
-              this._handleItemAction(activeItems, item, hasShiftKey);
-            } else if ('choice' in dataset) {
-              this._handleChoiceAction(activeItems, item);
-            }
-          }
-
-          event.preventDefault();
-        }
-        /**
-         * Handles mouseover event over this.dropdown
-         * @param {MouseEvent} event
-         */
-        ;
-
-        _proto._onMouseOver = function _onMouseOver(_ref9) {
-          var target = _ref9.target;
-
-          if (target instanceof HTMLElement && 'choice' in target.dataset) {
-            this._highlightChoice(target);
-          }
-        };
-
-        _proto._onClick = function _onClick(_ref10) {
-          var target = _ref10.target;
-          var clickWasWithinContainer = this.containerOuter.element.contains(target);
-
-          if (clickWasWithinContainer) {
-            if (!this.dropdown.isActive && !this.containerOuter.isDisabled) {
-              if (this._isTextElement) {
-                if (document.activeElement !== this.input.element) {
-                  this.input.focus();
-                }
-              } else {
-                this.showDropdown();
-                this.containerOuter.focus();
-              }
-            } else if (this._isSelectOneElement && target !== this.input.element && !this.dropdown.element.contains(target)) {
-              this.hideDropdown();
-            }
-          } else {
-            var hasHighlightedItems = this._store.highlightedActiveItems.length > 0;
-
-            if (hasHighlightedItems) {
-              this.unhighlightAll();
-            }
-
-            this.containerOuter.removeFocusState();
-            this.hideDropdown(true);
-          }
-        };
-
-        _proto._onFocus = function _onFocus(_ref11) {
-          var _this17 = this,
-              _focusActions;
-
-          var target = _ref11.target;
-          var focusWasWithinContainer = this.containerOuter.element.contains(target);
-
-          if (!focusWasWithinContainer) {
-            return;
-          }
-
-          var focusActions = (_focusActions = {}, _focusActions[TEXT_TYPE] = function () {
-            if (target === _this17.input.element) {
-              _this17.containerOuter.addFocusState();
-            }
-          }, _focusActions[SELECT_ONE_TYPE] = function () {
-            _this17.containerOuter.addFocusState();
-
-            if (target === _this17.input.element) {
-              _this17.showDropdown(true);
-            }
-          }, _focusActions[SELECT_MULTIPLE_TYPE] = function () {
-            if (target === _this17.input.element) {
-              _this17.showDropdown(true); // If element is a select box, the focused element is the container and the dropdown
-              // isn't already open, focus and show dropdown
-
-
-              _this17.containerOuter.addFocusState();
-            }
-          }, _focusActions);
-          focusActions[this.passedElement.element.type]();
-        };
-
-        _proto._onBlur = function _onBlur(_ref12) {
-          var _this18 = this;
-
-          var target = _ref12.target;
-          var blurWasWithinContainer = this.containerOuter.element.contains(target);
-
-          if (blurWasWithinContainer && !this._isScrollingOnIe) {
-            var _blurActions;
-
-            var activeItems = this._store.activeItems;
-            var hasHighlightedItems = activeItems.some(function (item) {
-              return item.highlighted;
-            });
-            var blurActions = (_blurActions = {}, _blurActions[TEXT_TYPE] = function () {
-              if (target === _this18.input.element) {
-                _this18.containerOuter.removeFocusState();
-
-                if (hasHighlightedItems) {
-                  _this18.unhighlightAll();
-                }
-
-                _this18.hideDropdown(true);
-              }
-            }, _blurActions[SELECT_ONE_TYPE] = function () {
-              _this18.containerOuter.removeFocusState();
-
-              if (target === _this18.input.element || target === _this18.containerOuter.element && !_this18._canSearch) {
-                _this18.hideDropdown(true);
-              }
-            }, _blurActions[SELECT_MULTIPLE_TYPE] = function () {
-              if (target === _this18.input.element) {
-                _this18.containerOuter.removeFocusState();
-
-                _this18.hideDropdown(true);
-
-                if (hasHighlightedItems) {
-                  _this18.unhighlightAll();
-                }
-              }
-            }, _blurActions);
-            blurActions[this.passedElement.element.type]();
-          } else {
-            // On IE11, clicking the scollbar blurs our input and thus
-            // closes the dropdown. To stop this, we refocus our input
-            // if we know we are on IE *and* are scrolling.
-            this._isScrollingOnIe = false;
-            this.input.element.focus();
-          }
-        };
-
-        _proto._onFormReset = function _onFormReset() {
-          this._store.dispatch(resetTo(this._initialState));
-        };
-
-        _proto._highlightChoice = function _highlightChoice(el) {
-          var _this19 = this;
-
-          if (el === void 0) {
-            el = null;
-          }
-
-          var choices = Array.from(this.dropdown.element.querySelectorAll('[data-choice-selectable]'));
-
-          if (!choices.length) {
-            return;
-          }
-
-          var passedEl = el;
-          var highlightedChoices = Array.from(this.dropdown.element.querySelectorAll("." + this.config.classNames.highlightedState)); // Remove any highlighted choices
-
-          highlightedChoices.forEach(function (choice) {
-            choice.classList.remove(_this19.config.classNames.highlightedState);
-            choice.setAttribute('aria-selected', 'false');
-          });
-
-          if (passedEl) {
-            this._highlightPosition = choices.indexOf(passedEl);
-          } else {
-            // Highlight choice based on last known highlight location
-            if (choices.length > this._highlightPosition) {
-              // If we have an option to highlight
-              passedEl = choices[this._highlightPosition];
-            } else {
-              // Otherwise highlight the option before
-              passedEl = choices[choices.length - 1];
-            }
-
-            if (!passedEl) {
-              passedEl = choices[0];
-            }
-          }
-
-          passedEl.classList.add(this.config.classNames.highlightedState);
-          passedEl.setAttribute('aria-selected', 'true');
-          this.passedElement.triggerEvent(EVENTS.highlightChoice, {
-            el: passedEl
-          });
-
-          if (this.dropdown.isActive) {
-            // IE11 ignores aria-label and blocks virtual keyboard
-            // if aria-activedescendant is set without a dropdown
-            this.input.setActiveDescendant(passedEl.id);
-            this.containerOuter.setActiveDescendant(passedEl.id);
-          }
-        };
-
-        _proto._addItem = function _addItem(_ref13) {
-          var value = _ref13.value,
-              _ref13$label = _ref13.label,
-              label = _ref13$label === void 0 ? null : _ref13$label,
-              _ref13$choiceId = _ref13.choiceId,
-              choiceId = _ref13$choiceId === void 0 ? -1 : _ref13$choiceId,
-              _ref13$groupId = _ref13.groupId,
-              groupId = _ref13$groupId === void 0 ? -1 : _ref13$groupId,
-              _ref13$customProperti = _ref13.customProperties,
-              customProperties = _ref13$customProperti === void 0 ? null : _ref13$customProperti,
-              _ref13$placeholder = _ref13.placeholder,
-              placeholder = _ref13$placeholder === void 0 ? false : _ref13$placeholder,
-              _ref13$keyCode = _ref13.keyCode,
-              keyCode = _ref13$keyCode === void 0 ? null : _ref13$keyCode;
-          var passedValue = typeof value === 'string' ? value.trim() : value;
-          var passedKeyCode = keyCode;
-          var passedCustomProperties = customProperties;
-          var items = this._store.items;
-          var passedLabel = label || passedValue;
-          var passedOptionId = choiceId || -1;
-          var group = groupId >= 0 ? this._store.getGroupById(groupId) : null;
-          var id = items ? items.length + 1 : 1; // If a prepended value has been passed, prepend it
-
-          if (this.config.prependValue) {
-            passedValue = this.config.prependValue + passedValue.toString();
-          } // If an appended value has been passed, append it
-
-
-          if (this.config.appendValue) {
-            passedValue += this.config.appendValue.toString();
-          }
-
-          this._store.dispatch(items_addItem({
-            value: passedValue,
-            label: passedLabel,
-            id: id,
-            choiceId: passedOptionId,
-            groupId: groupId,
-            customProperties: customProperties,
-            placeholder: placeholder,
-            keyCode: passedKeyCode
-          }));
-
-          if (this._isSelectOneElement) {
-            this.removeActiveItems(id);
-          } // Trigger change event
-
-
-          this.passedElement.triggerEvent(EVENTS.addItem, {
-            id: id,
-            value: passedValue,
-            label: passedLabel,
-            customProperties: passedCustomProperties,
-            groupValue: group && group.value ? group.value : undefined,
-            keyCode: passedKeyCode
-          });
-          return this;
-        };
-
-        _proto._removeItem = function _removeItem(item) {
-          if (!item || !isType('Object', item)) {
-            return this;
-          }
-
-          var id = item.id,
-              value = item.value,
-              label = item.label,
-              choiceId = item.choiceId,
-              groupId = item.groupId;
-          var group = groupId >= 0 ? this._store.getGroupById(groupId) : null;
-
-          this._store.dispatch(items_removeItem(id, choiceId));
-
-          if (group && group.value) {
-            this.passedElement.triggerEvent(EVENTS.removeItem, {
-              id: id,
-              value: value,
-              label: label,
-              groupValue: group.value
-            });
-          } else {
-            this.passedElement.triggerEvent(EVENTS.removeItem, {
-              id: id,
-              value: value,
-              label: label
-            });
-          }
-
-          return this;
-        };
-
-        _proto._addChoice = function _addChoice(_ref14) {
-          var value = _ref14.value,
-              _ref14$label = _ref14.label,
-              label = _ref14$label === void 0 ? null : _ref14$label,
-              _ref14$isSelected = _ref14.isSelected,
-              isSelected = _ref14$isSelected === void 0 ? false : _ref14$isSelected,
-              _ref14$isDisabled = _ref14.isDisabled,
-              isDisabled = _ref14$isDisabled === void 0 ? false : _ref14$isDisabled,
-              _ref14$groupId = _ref14.groupId,
-              groupId = _ref14$groupId === void 0 ? -1 : _ref14$groupId,
-              _ref14$customProperti = _ref14.customProperties,
-              customProperties = _ref14$customProperti === void 0 ? null : _ref14$customProperti,
-              _ref14$placeholder = _ref14.placeholder,
-              placeholder = _ref14$placeholder === void 0 ? false : _ref14$placeholder,
-              _ref14$keyCode = _ref14.keyCode,
-              keyCode = _ref14$keyCode === void 0 ? null : _ref14$keyCode;
-
-          if (typeof value === 'undefined' || value === null) {
-            return;
-          } // Generate unique id
-
-
-          var choices = this._store.choices;
-          var choiceLabel = label || value;
-          var choiceId = choices ? choices.length + 1 : 1;
-          var choiceElementId = this._baseId + "-" + this._idNames.itemChoice + "-" + choiceId;
-
-          this._store.dispatch(choices_addChoice({
-            id: choiceId,
-            groupId: groupId,
-            elementId: choiceElementId,
-            value: value,
-            label: choiceLabel,
-            disabled: isDisabled,
-            customProperties: customProperties,
-            placeholder: placeholder,
-            keyCode: keyCode
-          }));
-
-          if (isSelected) {
-            this._addItem({
-              value: value,
-              label: choiceLabel,
-              choiceId: choiceId,
-              customProperties: customProperties,
-              placeholder: placeholder,
-              keyCode: keyCode
-            });
-          }
-        };
-
-        _proto._addGroup = function _addGroup(_ref15) {
-          var _this20 = this;
-
-          var group = _ref15.group,
-              id = _ref15.id,
-              _ref15$valueKey = _ref15.valueKey,
-              valueKey = _ref15$valueKey === void 0 ? 'value' : _ref15$valueKey,
-              _ref15$labelKey = _ref15.labelKey,
-              labelKey = _ref15$labelKey === void 0 ? 'label' : _ref15$labelKey;
-          var groupChoices = isType('Object', group) ? group.choices : Array.from(group.getElementsByTagName('OPTION'));
-          var groupId = id || Math.floor(new Date().valueOf() * Math.random());
-          var isDisabled = group.disabled ? group.disabled : false;
-
-          if (groupChoices) {
-            this._store.dispatch(groups_addGroup({
-              value: group.label,
-              id: groupId,
-              active: true,
-              disabled: isDisabled
-            }));
-
-            var addGroupChoices = function addGroupChoices(choice) {
-              var isOptDisabled = choice.disabled || choice.parentNode && choice.parentNode.disabled;
-
-              _this20._addChoice({
-                value: choice[valueKey],
-                label: isType('Object', choice) ? choice[labelKey] : choice.innerHTML,
-                isSelected: choice.selected,
-                isDisabled: isOptDisabled,
-                groupId: groupId,
-                customProperties: choice.customProperties,
-                placeholder: choice.placeholder
-              });
-            };
-
-            groupChoices.forEach(addGroupChoices);
-          } else {
-            this._store.dispatch(groups_addGroup({
-              value: group.label,
-              id: group.id,
-              active: false,
-              disabled: group.disabled
-            }));
-          }
-        };
-
-        _proto._getTemplate = function _getTemplate(template) {
-          var _this$_templates$temp;
-
-          if (!template) {
-            return null;
-          }
-
-          var classNames = this.config.classNames;
-
-          for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-            args[_key - 1] = arguments[_key];
-          }
-
-          return (_this$_templates$temp = this._templates[template]).call.apply(_this$_templates$temp, [this, classNames].concat(args));
-        };
-
-        _proto._createTemplates = function _createTemplates() {
-          var callbackOnCreateTemplates = this.config.callbackOnCreateTemplates;
-          var userTemplates = {};
-
-          if (callbackOnCreateTemplates && typeof callbackOnCreateTemplates === 'function') {
-            userTemplates = callbackOnCreateTemplates.call(this, strToEl);
-          }
-
-          this._templates = cjs_default()(TEMPLATES, userTemplates);
-        };
-
-        _proto._createElements = function _createElements() {
-          this.containerOuter = new container_Container({
-            element: this._getTemplate('containerOuter', this._direction, this._isSelectElement, this._isSelectOneElement, this.config.searchEnabled, this.passedElement.element.type),
-            classNames: this.config.classNames,
-            type: this.passedElement.element.type,
-            position: this.config.position
-          });
-          this.containerInner = new container_Container({
-            element: this._getTemplate('containerInner'),
-            classNames: this.config.classNames,
-            type: this.passedElement.element.type,
-            position: this.config.position
-          });
-          this.input = new input_Input({
-            element: this._getTemplate('input', this._placeholderValue),
-            classNames: this.config.classNames,
-            type: this.passedElement.element.type,
-            preventPaste: !this.config.paste
-          });
-          this.choiceList = new list_List({
-            element: this._getTemplate('choiceList', this._isSelectOneElement)
-          });
-          this.itemList = new list_List({
-            element: this._getTemplate('itemList', this._isSelectOneElement)
-          });
-          this.dropdown = new Dropdown({
-            element: this._getTemplate('dropdown'),
-            classNames: this.config.classNames,
-            type: this.passedElement.element.type
-          });
-        };
-
-        _proto._createStructure = function _createStructure() {
-          // Hide original element
-          this.passedElement.conceal(); // Wrap input in container preserving DOM ordering
-
-          this.containerInner.wrap(this.passedElement.element); // Wrapper inner container with outer container
-
-          this.containerOuter.wrap(this.containerInner.element);
-
-          if (this._isSelectOneElement) {
-            this.input.placeholder = this.config.searchPlaceholderValue || '';
-          } else if (this._placeholderValue) {
-            this.input.placeholder = this._placeholderValue;
-            this.input.setWidth();
-          }
-
-          this.containerOuter.element.appendChild(this.containerInner.element);
-          this.containerOuter.element.appendChild(this.dropdown.element);
-          this.containerInner.element.appendChild(this.itemList.element);
-
-          if (!this._isTextElement) {
-            this.dropdown.element.appendChild(this.choiceList.element);
-          }
-
-          if (!this._isSelectOneElement) {
-            this.containerInner.element.appendChild(this.input.element);
-          } else if (this.config.searchEnabled) {
-            this.dropdown.element.insertBefore(this.input.element, this.dropdown.element.firstChild);
-          }
-
-          if (this._isSelectElement) {
-            this._highlightPosition = 0;
-            this._isSearching = false;
-
-            this._startLoading();
-
-            if (this._presetGroups.length) {
-              this._addPredefinedGroups(this._presetGroups);
-            } else {
-              this._addPredefinedChoices(this._presetChoices);
-            }
-
-            this._stopLoading();
-          }
-
-          if (this._isTextElement) {
-            this._addPredefinedItems(this._presetItems);
-          }
-        };
-
-        _proto._addPredefinedGroups = function _addPredefinedGroups(groups) {
-          var _this21 = this; // If we have a placeholder option
-
-
-          var placeholderChoice = this.passedElement.placeholderOption;
-
-          if (placeholderChoice && placeholderChoice.parentNode.tagName === 'SELECT') {
-            this._addChoice({
-              value: placeholderChoice.value,
-              label: placeholderChoice.innerHTML,
-              isSelected: placeholderChoice.selected,
-              isDisabled: placeholderChoice.disabled,
-              placeholder: true
-            });
-          }
-
-          groups.forEach(function (group) {
-            return _this21._addGroup({
-              group: group,
-              id: group.id || null
-            });
-          });
-        };
-
-        _proto._addPredefinedChoices = function _addPredefinedChoices(choices) {
-          var _this22 = this; // If sorting is enabled or the user is searching, filter choices
-
-
-          if (this.config.shouldSort) {
-            choices.sort(this.config.sorter);
-          }
-
-          var hasSelectedChoice = choices.some(function (choice) {
-            return choice.selected;
-          });
-          var firstEnabledChoiceIndex = choices.findIndex(function (choice) {
-            return choice.disabled === undefined || !choice.disabled;
-          });
-          choices.forEach(function (choice, index) {
-            var value = choice.value,
-                label = choice.label,
-                customProperties = choice.customProperties,
-                placeholder = choice.placeholder;
-
-            if (_this22._isSelectElement) {
-              // If the choice is actually a group
-              if (choice.choices) {
-                _this22._addGroup({
-                  group: choice,
-                  id: choice.id || null
-                });
-              } else {
-                /**
-                 * If there is a selected choice already or the choice is not the first in
-                 * the array, add each choice normally.
-                 *
-                 * Otherwise we pre-select the first enabled choice in the array ("select-one" only)
-                 */
-                var shouldPreselect = _this22._isSelectOneElement && !hasSelectedChoice && index === firstEnabledChoiceIndex;
-                var isSelected = shouldPreselect ? true : choice.selected;
-                var isDisabled = choice.disabled;
-
-                _this22._addChoice({
-                  value: value,
-                  label: label,
-                  isSelected: isSelected,
-                  isDisabled: isDisabled,
-                  customProperties: customProperties,
-                  placeholder: placeholder
-                });
-              }
-            } else {
-              _this22._addChoice({
-                value: value,
-                label: label,
-                isSelected: choice.selected,
-                isDisabled: choice.disabled,
-                customProperties: customProperties,
-                placeholder: placeholder
-              });
-            }
-          });
-        }
-        /**
-         * @param {Item[]} items
-         */
-        ;
-
-        _proto._addPredefinedItems = function _addPredefinedItems(items) {
-          var _this23 = this;
-
-          items.forEach(function (item) {
-            if (typeof item === 'object' && item.value) {
-              _this23._addItem({
-                value: item.value,
-                label: item.label,
-                choiceId: item.id,
-                customProperties: item.customProperties,
-                placeholder: item.placeholder
-              });
-            }
-
-            if (typeof item === 'string') {
-              _this23._addItem({
-                value: item
-              });
-            }
-          });
-        };
-
-        _proto._setChoiceOrItem = function _setChoiceOrItem(item) {
-          var _this24 = this;
-
-          var itemType = getType(item).toLowerCase();
-          var handleType = {
-            object: function object() {
-              if (!item.value) {
-                return;
-              } // If we are dealing with a select input, we need to create an option first
-              // that is then selected. For text inputs we can just add items normally.
-
-
-              if (!_this24._isTextElement) {
-                _this24._addChoice({
-                  value: item.value,
-                  label: item.label,
-                  isSelected: true,
-                  isDisabled: false,
-                  customProperties: item.customProperties,
-                  placeholder: item.placeholder
-                });
-              } else {
-                _this24._addItem({
-                  value: item.value,
-                  label: item.label,
-                  choiceId: item.id,
-                  customProperties: item.customProperties,
-                  placeholder: item.placeholder
-                });
-              }
-            },
-            string: function string() {
-              if (!_this24._isTextElement) {
-                _this24._addChoice({
-                  value: item,
-                  label: item,
-                  isSelected: true,
-                  isDisabled: false
-                });
-              } else {
-                _this24._addItem({
-                  value: item
-                });
-              }
-            }
-          };
-          handleType[itemType]();
-        };
-
-        _proto._findAndSelectChoiceByValue = function _findAndSelectChoiceByValue(val) {
-          var _this25 = this;
-
-          var choices = this._store.choices; // Check 'value' property exists and the choice isn't already selected
-
-          var foundChoice = choices.find(function (choice) {
-            return _this25.config.valueComparer(choice.value, val);
-          });
-
-          if (foundChoice && !foundChoice.selected) {
-            this._addItem({
-              value: foundChoice.value,
-              label: foundChoice.label,
-              choiceId: foundChoice.id,
-              groupId: foundChoice.groupId,
-              customProperties: foundChoice.customProperties,
-              placeholder: foundChoice.placeholder,
-              keyCode: foundChoice.keyCode
-            });
-          }
-        };
-
-        _proto._generatePlaceholderValue = function _generatePlaceholderValue() {
-          if (this._isSelectElement) {
-            var placeholderOption = this.passedElement.placeholderOption;
-            return placeholderOption ? placeholderOption.text : false;
-          }
-
-          var _this$config4 = this.config,
-              placeholder = _this$config4.placeholder,
-              placeholderValue = _this$config4.placeholderValue;
-          var dataset = this.passedElement.element.dataset;
-
-          if (placeholder) {
-            if (placeholderValue) {
-              return placeholderValue;
-            }
-
-            if (dataset.placeholder) {
-              return dataset.placeholder;
-            }
-          }
-
-          return false;
-        };
-
-        return Choices;
-      }();
-      /* harmony default export */
-
-
-      __webpack_exports__["default"] = choices_Choices;
-      /***/
-    }
-    /******/
-    ])["default"]
-  );
-});
-});
-
-var Choices = /*@__PURE__*/getDefaultExportFromCjs(choices);
-
-function getFolderChoices(app) {
-    const folderList = [];
-    obsidian.Vault.recurseChildren(app.vault.getRoot(), (f) => {
-        if (f instanceof obsidian.TFolder) {
-            folderList.push({
-                value: f.path,
-                label: f.path,
-                selected: false,
-                disabled: false,
-            });
-        }
-    });
-    return folderList;
-}
-function getTemplateChoices(app, folderStr) {
-    const fileList = [];
-    let folder = folderStr ? app.vault.getAbstractFileByPath(folderStr) : null;
-    if (!folder || !(folder instanceof obsidian.TFolder)) {
-        folder = app.vault.getRoot();
-    }
-    obsidian.Vault.recurseChildren(folder, (f) => {
-        if (f instanceof obsidian.TFile) {
-            fileList.push({
-                value: f.path,
-                label: f.basename,
-                selected: false,
-                disabled: false,
-            });
-        }
-    });
-    return fileList;
-}
-function getListOptions(app, plugin) {
-    const { templateFolder, templatesEnabled, templaterPlugin, } = plugin.getTemplatePlugins();
-    const templateFiles = getTemplateChoices(app, templateFolder);
-    const vaultFolders = getFolderChoices(app);
-    let templateWarning = "";
-    if (!templatesEnabled && !templaterPlugin) {
-        templateWarning = "Note: No template plugins are currently enabled.";
-    }
-    return {
-        templateFiles,
-        vaultFolders,
-        templateWarning,
-    };
-}
-function createSearchSelect({ choices, key, warningText, local, placeHolderStr, manager, }) {
-    return (setting) => {
-        setting.controlEl.createEl("select", {}, (el) => {
-            // el must be in the dom, so we setTimeout
-            setTimeout(() => {
-                let list = choices;
-                const [value, defaultVal] = manager.getSetting(key, local);
-                if (defaultVal) {
-                    const index = choices.findIndex((f) => f.value === defaultVal);
-                    const choice = choices[index];
-                    list = update$2(list, {
-                        $splice: [[index, 1]],
-                        $unshift: [
-                            update$2(choice, {
-                                placeholder: {
-                                    $set: true,
-                                },
-                                value: {
-                                    $set: "",
-                                },
-                                label: {
-                                    $apply: (v) => `${v} (default)`,
-                                },
-                            }),
-                        ],
-                    });
-                }
-                else {
-                    list = update$2(list, {
-                        $unshift: [
-                            {
-                                placeholder: true,
-                                value: "",
-                                label: placeHolderStr,
-                                selected: false,
-                                disabled: false,
-                            },
-                        ],
-                    });
-                }
-                const c = new Choices(el, {
-                    placeholder: true,
-                    position: "bottom",
-                    searchPlaceholderValue: "Search...",
-                    searchEnabled: list.length > 10,
-                    choices: list,
-                }).setChoiceByValue("");
-                if (value && typeof value === "string") {
-                    c.setChoiceByValue(value);
-                }
-                const onChange = (e) => {
-                    const val = e.detail.value;
-                    if (val) {
-                        manager.applySettingsUpdate({
-                            [key]: {
-                                $set: val,
-                            },
-                        });
-                    }
-                    else {
-                        manager.applySettingsUpdate({
-                            $unset: [key],
-                        });
-                    }
-                };
-                el.addEventListener("change", onChange);
-                manager.cleanupFns.push(() => {
-                    c.destroy();
-                    el.removeEventListener("change", onChange);
-                });
-            });
-            if (warningText) {
-                setting.descEl.createDiv({}, (div) => {
-                    div.createEl("strong", { text: warningText });
-                });
-            }
-        });
-    };
-}
-
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 class SettingsManager {
     constructor(app, plugin, config, settings) {
@@ -33946,7 +37961,7 @@ class SettingsManager {
         this.applyDebounceTimer = window.setTimeout(() => {
             this.settings = update$2(this.settings, spec);
             this.config.onSettingsChange(this.settings);
-        }, 100);
+        }, 200);
     }
     getSetting(key, local) {
         if (local) {
@@ -34013,6 +38028,233 @@ class SettingsManager {
                 }
             });
         });
+        contentEl.createEl("h4", { text: "Date & Time" });
+        new obsidian.Setting(contentEl)
+            .setName("Date trigger")
+            .setDesc("When this is typed, it will trigger the date selector")
+            .addText((text) => {
+            const [value, globalValue] = this.getSetting("date-trigger", local);
+            if (value || globalValue) {
+                text.setValue((value || globalValue));
+            }
+            text.setPlaceholder(globalValue || defaultDateTrigger);
+            text.onChange((newValue) => {
+                if (newValue) {
+                    this.applySettingsUpdate({
+                        "date-trigger": {
+                            $set: newValue,
+                        },
+                    });
+                }
+                else {
+                    this.applySettingsUpdate({
+                        $unset: ["date-trigger"],
+                    });
+                }
+            });
+        });
+        new obsidian.Setting(contentEl).setName("Date format").then((setting) => {
+            setting.addMomentFormat((mf) => {
+                setting.descEl.appendChild(createFragment((frag) => {
+                    frag.appendText("This format will be used when saving dates in markdown.");
+                    frag.createEl("br");
+                    frag.appendText("For more syntax, refer to ");
+                    frag.createEl("a", {
+                        text: "format reference",
+                        href: "https://momentjs.com/docs/#/displaying/format/",
+                    }, (a) => {
+                        a.setAttr("target", "_blank");
+                    });
+                    frag.createEl("br");
+                    frag.appendText("Your current syntax looks like this: ");
+                    mf.setSampleEl(frag.createEl("b", { cls: "u-pop" }));
+                    frag.createEl("br");
+                }));
+                const [value, globalValue] = this.getSetting("date-format", local);
+                const defaultFormat = getDefaultDateFormat(this.app);
+                mf.setPlaceholder(defaultFormat);
+                mf.setDefaultFormat(defaultFormat);
+                if (value || globalValue) {
+                    mf.setValue((value || globalValue));
+                }
+                mf.onChange((newValue) => {
+                    if (newValue) {
+                        this.applySettingsUpdate({
+                            "date-format": {
+                                $set: newValue,
+                            },
+                        });
+                    }
+                    else {
+                        this.applySettingsUpdate({
+                            $unset: ["date-format"],
+                        });
+                    }
+                });
+            });
+        });
+        new obsidian.Setting(contentEl).setName("Date display format").then((setting) => {
+            setting.addMomentFormat((mf) => {
+                setting.descEl.appendChild(createFragment((frag) => {
+                    frag.appendText("This format will be used when displaying dates in Kanban cards.");
+                    frag.createEl("br");
+                    frag.appendText("For more syntax, refer to ");
+                    frag.createEl("a", {
+                        text: "format reference",
+                        href: "https://momentjs.com/docs/#/displaying/format/",
+                    }, (a) => {
+                        a.setAttr("target", "_blank");
+                    });
+                    frag.createEl("br");
+                    frag.appendText("Your current syntax looks like this: ");
+                    mf.setSampleEl(frag.createEl("b", { cls: "u-pop" }));
+                    frag.createEl("br");
+                }));
+                const [value, globalValue] = this.getSetting("date-display-format", local);
+                const defaultFormat = getDefaultDateFormat(this.app);
+                mf.setPlaceholder(defaultFormat);
+                mf.setDefaultFormat(defaultFormat);
+                if (value || globalValue) {
+                    mf.setValue((value || globalValue));
+                }
+                mf.onChange((newValue) => {
+                    if (newValue) {
+                        this.applySettingsUpdate({
+                            "date-display-format": {
+                                $set: newValue,
+                            },
+                        });
+                    }
+                    else {
+                        this.applySettingsUpdate({
+                            $unset: ["date-display-format"],
+                        });
+                    }
+                });
+            });
+        });
+        // new Setting(contentEl).setName("Time output format").then((setting) => {
+        //   setting.addMomentFormat((mf) => {
+        //     setting.descEl.appendChild(
+        //       createFragment((frag) => {
+        //         frag.appendText("For more syntax, refer to ");
+        //         frag.createEl(
+        //           "a",
+        //           {
+        //             text: "format reference",
+        //             href: "https://momentjs.com/docs/#/displaying/format/",
+        //           },
+        //           (a) => {
+        //             a.setAttr("target", "_blank");
+        //           }
+        //         );
+        //         frag.createEl("br");
+        //         frag.appendText("Your current syntax looks like this: ");
+        //         mf.setSampleEl(frag.createEl("b", { cls: "u-pop" }));
+        //         frag.createEl("br");
+        //       })
+        //     );
+        //     const [value, globalValue] = this.getSetting("time-format", local);
+        //     const defaultFormat = getDefaultTimeFormat(this.app);
+        //     mf.setPlaceholder(defaultFormat);
+        //     mf.setDefaultFormat(defaultFormat);
+        //     if (value || globalValue) {
+        //       mf.setValue((value || globalValue) as string);
+        //     }
+        //     mf.onChange((newValue) => {
+        //       if (newValue) {
+        //         this.applySettingsUpdate({
+        //           "time-format": {
+        //             $set: newValue,
+        //           },
+        //         });
+        //       } else {
+        //         this.applySettingsUpdate({
+        //           $unset: ["time-format"],
+        //         });
+        //       }
+        //     });
+        //   });
+        // });
+        // new Setting(contentEl)
+        //   .setName("Time trigger")
+        //   .setDesc("When this is typed, it will trigger the time selector")
+        //   .addText((text) => {
+        //     const [value, globalValue] = this.getSetting("time-trigger", local);
+        //     if (value || globalValue) {
+        //       text.setValue((value || globalValue) as string);
+        //     }
+        //     text.setPlaceholder((globalValue as string) || defaultTimeTrigger);
+        //     text.onChange((newValue) => {
+        //       if (newValue) {
+        //         this.applySettingsUpdate({
+        //           "time-trigger": {
+        //             $set: newValue,
+        //           },
+        //         });
+        //       } else {
+        //         this.applySettingsUpdate({
+        //           $unset: ["time-trigger"],
+        //         });
+        //       }
+        //     });
+        //   });
+        new obsidian.Setting(contentEl)
+            .setName("Hide dates in card titles")
+            .setDesc("When toggled, dates and times will be hidden card titles. This will prevent dates from being included in the title when creating new notes.")
+            .addToggle((toggle) => {
+            const [value, globalValue] = this.getSetting("hide-date-in-title", local);
+            if (value !== undefined) {
+                toggle.setValue(value);
+            }
+            else if (globalValue !== undefined) {
+                toggle.setValue(globalValue);
+            }
+            toggle.onChange((newValue) => {
+                this.applySettingsUpdate({
+                    "hide-date-in-title": {
+                        $set: newValue,
+                    },
+                });
+            });
+        })
+            .addExtraButton((b) => {
+            b.setIcon("reset")
+                .setTooltip(`Revert to ${local ? "global" : "default"} setting`)
+                .onClick(() => {
+                this.applySettingsUpdate({
+                    $unset: ["hide-date-in-title"],
+                });
+            });
+        });
+        new obsidian.Setting(contentEl)
+            .setName("Link dates to daily notes")
+            .setDesc("When toggled, dates will link to daily notes. Eg. [[2021-04-26]]")
+            .addToggle((toggle) => {
+            const [value, globalValue] = this.getSetting("link-date-to-daily-note", local);
+            if (value !== undefined) {
+                toggle.setValue(value);
+            }
+            else if (globalValue !== undefined) {
+                toggle.setValue(globalValue);
+            }
+            toggle.onChange((newValue) => {
+                this.applySettingsUpdate({
+                    "link-date-to-daily-note": {
+                        $set: newValue,
+                    },
+                });
+            });
+        })
+            .addExtraButton((b) => {
+            b.setIcon("reset")
+                .setTooltip(`Revert to ${local ? "global" : "default"} setting`)
+                .onClick(() => {
+                this.applySettingsUpdate({
+                    $unset: ["link-date-to-daily-note"],
+                });
+            });
+        });
     }
     cleanUp() {
         this.cleanupFns.forEach((fn) => fn());
@@ -34073,8 +38315,10 @@ class KanbanView extends obsidian.TextFileView {
             reactDom.unmountComponentAtNode(this.contentEl);
         });
     }
-    getSetting(key) {
-        const localSetting = this.dataBridge.getData().settings[key];
+    getSetting(key, local) {
+        const localSetting = local
+            ? local[key]
+            : this.dataBridge.getData().settings[key];
         if (localSetting)
             return localSetting;
         const globalSetting = this.plugin.settings[key];
@@ -34107,6 +38351,9 @@ class KanbanView extends obsidian.TextFileView {
                                 $set: settings,
                             },
                         }));
+                        setTimeout(() => {
+                            this.setViewData(this.data, true);
+                        }, 100);
                     },
                 }, board.settings).open();
             });
@@ -34123,7 +38370,7 @@ class KanbanView extends obsidian.TextFileView {
     setViewData(data, clear) {
         const trimmedContent = data.trim();
         const board = trimmedContent
-            ? mdToBoard(trimmedContent)
+            ? mdToBoard(trimmedContent, this)
             : { lanes: [], archive: [], settings: { "kanban-plugin": "basic" } };
         if (clear) {
             this.clear();
@@ -34164,6 +38411,11 @@ class KanbanPlugin extends obsidian.Plugin {
                 onSettingsChange: (newSettings) => __awaiter(this, void 0, void 0, function* () {
                     this.settings = newSettings;
                     yield this.saveSettings();
+                    // Force a complete re-render when settings change
+                    this.app.workspace.getLeavesOfType(kanbanViewType).forEach(leaf => {
+                        const view = leaf.view;
+                        view.setViewData(view.data, true);
+                    });
                 }),
             }, this.settings);
             this.addSettingTab(this.settingsTab);
@@ -34260,25 +38512,6 @@ class KanbanPlugin extends obsidian.Plugin {
                 callback: () => this.newKanban(),
             });
             this.registerEvent(this.app.workspace.on("file-menu", (menu, file, source, leaf) => {
-                // if (leaf?.view.getViewType() === "markdown") {
-                //   const cache = this.app.metadataCache.getFileCache(file);
-                //   if (cache?.frontmatter && cache.frontmatter[frontMatterKey]) {
-                //     setTimeout(() =>
-                //       menu.addSeparator().addItem((item) => {
-                //         item
-                //           .setTitle("Open as kanban board")
-                //           .setIcon(kanbanIcon)
-                //           .onClick(() => {
-                //             this.kanbanFileModes[
-                //               (leaf as any).id || file.path
-                //             ] = kanbanViewType;
-                //             this.setKanbanView(leaf);
-                //           });
-                //       })
-                //     );
-                //   }
-                //   return;
-                // }
                 // Add a menu item to the folder context menu to create a board
                 if (file instanceof obsidian.TFolder) {
                     menu.addItem((item) => {

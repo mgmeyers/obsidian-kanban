@@ -36,6 +36,7 @@
     "babel": "^6.23.0",
     "choices.js": "^9.0.1",
     "dotenv": "^8.2.0",
+    "flatpickr": "^4.6.9",
     "fuse.js": "^6.4.6",
     "immutability-helper": "^3.1.1",
     "js-yaml": "^4.1.0",

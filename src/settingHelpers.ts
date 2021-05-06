@@ -4,6 +4,9 @@ import { App, Setting, TFile, TFolder, Vault } from "obsidian";
 import KanbanPlugin from "./main";
 import { KanbanSettings, SettingsManager } from "./Settings";
 
+export const defaultDateTrigger = "@";
+export const defaultTimeTrigger = "@@";
+
 export function getFolderChoices(app: App) {
   const folderList: IChoices.Choice[] = [];
 

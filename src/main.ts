@@ -16,6 +16,7 @@ import { KanbanSettings, KanbanSettingsTab } from "./Settings";
 // import { KanbanEmbed } from "./KanbanEmbed";
 
 import "choices.js/public/assets/styles/choices.css";
+import "flatpickr/dist/flatpickr.min.css";
 import "./main.css";
 
 export default class KanbanPlugin extends Plugin {
@@ -37,6 +38,12 @@ export default class KanbanPlugin extends Plugin {
         onSettingsChange: async (newSettings) => {
           this.settings = newSettings;
           await this.saveSettings();
+
+          // Force a complete re-render when settings change
+          this.app.workspace.getLeavesOfType(kanbanViewType).forEach(leaf => {
+            const view = (leaf.view as KanbanView);
+            view.setViewData(view.data, true);
+          })
         },
       },
       this.settings
@@ -168,28 +175,6 @@ export default class KanbanPlugin extends Plugin {
 
     this.registerEvent(
       this.app.workspace.on("file-menu", (menu, file: TFile, source, leaf) => {
-        // if (leaf?.view.getViewType() === "markdown") {
-        //   const cache = this.app.metadataCache.getFileCache(file);
-
-        //   if (cache?.frontmatter && cache.frontmatter[frontMatterKey]) {
-        //     setTimeout(() =>
-        //       menu.addSeparator().addItem((item) => {
-        //         item
-        //           .setTitle("Open as kanban board")
-        //           .setIcon(kanbanIcon)
-        //           .onClick(() => {
-        //             this.kanbanFileModes[
-        //               (leaf as any).id || file.path
-        //             ] = kanbanViewType;
-        //             this.setKanbanView(leaf);
-        //           });
-        //       })
-        //     );
-        //   }
-
-        //   return;
-        // }
-
         // Add a menu item to the folder context menu to create a board
         if (file instanceof TFolder) {
           menu.addItem((item) => {

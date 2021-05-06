@@ -15,9 +15,15 @@ export interface ItemData {
   isComplete?: boolean;
 }
 
+export interface ItemMetaData {
+  date?: moment.Moment
+}
+
 export interface Item {
   id: string;
   title: string;
+  titleRaw: string;
+  metadata: ItemMetaData;
   data: ItemData;
 }
 
