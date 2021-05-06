@@ -785,6 +785,7 @@ button.kanban-plugin__cancel-action-button {
 }
 
 .kanban-plugin__date-picker .flatpickr-day.today:hover {
+  color: var(--text-normal);
   border-color: var(--interactive-accent);
   background-color: var(--background-primary-alt);
 }
