@@ -37412,7 +37412,7 @@ function draggableItemFactory({ items, laneIndex, }) {
                         }, className: c$2("item-prefix-button"), "aria-label": "Archive item" },
                         react.createElement(Icon, { name: "sheets-in-box" })))),
                 react.createElement(ItemContent, { isSettingsVisible: isEditing, setIsSettingsVisible: setIsEditing, item: item, onChange: (e) => {
-                        const titleRaw = e.target.value;
+                        const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
                         const processed = processTitle(titleRaw, view);
                         boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, {
                             title: { $set: processed.title },
@@ -37468,7 +37468,7 @@ function ItemForm({ addItem }) {
         return (react.createElement(react.Fragment, null,
             react.createElement("div", { className: c$2("item-input-wrapper") },
                 react.createElement("div", { "data-replicated-value": itemTitle, className: c$2("grow-wrap") },
-                    react.createElement("textarea", Object.assign({ rows: 1, value: itemTitle, className: c$2("item-input"), placeholder: "Item title...", onChange: (e) => setItemTitle(e.target.value) }, autocompleteProps)))),
+                    react.createElement("textarea", Object.assign({ rows: 1, value: itemTitle, className: c$2("item-input"), placeholder: "Item title...", onChange: (e) => setItemTitle(e.target.value.replace(/[\r\n]+/g, " ")) }, autocompleteProps)))),
             react.createElement("div", { className: c$2("item-input-actions") },
                 react.createElement("button", { className: c$2("item-action-add"), onClick: createItem }, "Add item"),
                 react.createElement("button", { className: c$2("item-action-cancel"), onClick: clear }, "Cancel"))));

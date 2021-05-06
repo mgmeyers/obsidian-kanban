@@ -77,7 +77,7 @@ export function draggableItemFactory({
       if (date.isSame(new Date(), "day")) {
         classModifiers.push("is-today");
       }
-      
+
       if (date.isAfter(new Date(), "day")) {
         classModifiers.push("is-future");
       }
@@ -121,7 +121,7 @@ export function draggableItemFactory({
             setIsSettingsVisible={setIsEditing}
             item={item}
             onChange={(e) => {
-              const titleRaw = e.target.value;
+              const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
               const processed = processTitle(titleRaw, view);
 
               boardModifiers.updateItem(

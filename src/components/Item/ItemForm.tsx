@@ -56,7 +56,7 @@ export function ItemForm({ addItem }: ItemFormProps) {
               value={itemTitle}
               className={c("item-input")}
               placeholder="Item title..."
-              onChange={(e) => setItemTitle(e.target.value)}
+              onChange={(e) => setItemTitle(e.target.value.replace(/[\r\n]+/g, " "))}
               {...autocompleteProps}
             />
           </div>
