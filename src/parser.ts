@@ -12,7 +12,7 @@ import { KanbanView } from "./KanbanView";
 
 export const frontMatterKey = "kanban-plugin";
 
-const frontmatterRegEx = /^---([\w\W]+)---/;
+const frontmatterRegEx = /^---([\w\W]+?)---/;
 const newLineRegex = /[\r\n]+/g;
 
 // Begins with one or more # followed by a space
