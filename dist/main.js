@@ -19211,7 +19211,7 @@ var jsYaml = {
 };
 
 const frontMatterKey = "kanban-plugin";
-const frontmatterRegEx = /^---([\w\W]+)---/;
+const frontmatterRegEx = /^---([\w\W]+?)---/;
 const newLineRegex = /[\r\n]+/g;
 // Begins with one or more # followed by a space
 const laneRegex = /^#+\s+(.+)$/;
