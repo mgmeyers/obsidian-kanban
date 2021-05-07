@@ -38497,34 +38497,6 @@ class SettingsManager {
             });
         });
         new obsidian.Setting(contentEl)
-            .setName("Hide dates")
-            .setDesc("When toggled, card dates will not be shown. Relative dates will still be displayed if they are enabled.")
-            .addToggle((toggle) => {
-            const [value, globalValue] = this.getSetting("hide-date-display", local);
-            if (value !== undefined) {
-                toggle.setValue(value);
-            }
-            else if (globalValue !== undefined) {
-                toggle.setValue(globalValue);
-            }
-            toggle.onChange((newValue) => {
-                this.applySettingsUpdate({
-                    "hide-date-display": {
-                        $set: newValue,
-                    },
-                });
-            });
-        })
-            .addExtraButton((b) => {
-            b.setIcon("reset")
-                .setTooltip("Reset to default")
-                .onClick(() => {
-                this.applySettingsUpdate({
-                    $unset: ["hide-date-display"],
-                });
-            });
-        });
-        new obsidian.Setting(contentEl)
             .setName("Show relative date")
             .setDesc("When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'")
             .addToggle((toggle) => {
@@ -38619,8 +38591,36 @@ class SettingsManager {
         //     });
         //   });
         new obsidian.Setting(contentEl)
+            .setName("Hide card display dates")
+            .setDesc("When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.")
+            .addToggle((toggle) => {
+            const [value, globalValue] = this.getSetting("hide-date-display", local);
+            if (value !== undefined) {
+                toggle.setValue(value);
+            }
+            else if (globalValue !== undefined) {
+                toggle.setValue(globalValue);
+            }
+            toggle.onChange((newValue) => {
+                this.applySettingsUpdate({
+                    "hide-date-display": {
+                        $set: newValue,
+                    },
+                });
+            });
+        })
+            .addExtraButton((b) => {
+            b.setIcon("reset")
+                .setTooltip("Reset to default")
+                .onClick(() => {
+                this.applySettingsUpdate({
+                    $unset: ["hide-date-display"],
+                });
+            });
+        });
+        new obsidian.Setting(contentEl)
             .setName("Hide dates in card titles")
-            .setDesc("When toggled, dates and times will be hidden card titles. This will prevent dates from being included in the title when creating new notes.")
+            .setDesc("When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes.")
             .addToggle((toggle) => {
             const [value, globalValue] = this.getSetting("hide-date-in-title", local);
             if (value !== undefined) {
