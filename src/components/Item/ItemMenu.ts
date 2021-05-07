@@ -91,11 +91,16 @@ export function useItemMenu({
 
     const menu = new Menu(view.app)
       .addItem((i) => {
+        i.setIcon("pencil")
+          .setTitle("Edit card")
+          .onClick(() => setIsEditing(true));
+      })
+      .addItem((i) => {
         const hasDate = !!item.metadata.date;
 
         i.setIcon("calendar-with-checkmark")
           .setTitle(hasDate ? "Edit date" : "Add date")
-          .onClick((e) => {
+          .onClick(() => {
             const dateFormat =
               view.getSetting("date-format") || getDefaultDateFormat(view.app);
             const shouldLinkDates = view.getSetting("link-date-to-daily-note");
@@ -147,11 +152,6 @@ export function useItemMenu({
               item.metadata.date?.toDate()
             );
           });
-      })
-      .addItem((i) => {
-        i.setIcon("pencil")
-          .setTitle("Edit card")
-          .onClick(() => setIsEditing(true));
       })
       .addItem((i) => {
         i.setIcon("create-new")

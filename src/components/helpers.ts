@@ -83,12 +83,22 @@ export function moveItem({ boardData, dropResult }: BoardDropMutationParams) {
     .shouldMarkItemsComplete;
 
   let item = lanes[sourceLaneIndex].items[dropResult.source.index];
+  let isComplete = !!item.data.isComplete;
+
+  if (shouldMarkAsComplete) {
+    isComplete = true;
+  } else if (
+    !shouldMarkAsComplete &&
+    !!lanes[sourceLaneIndex].data.shouldMarkItemsComplete
+  ) {
+    isComplete = false;
+  }
 
   if (shouldMarkAsComplete !== item.data.isComplete) {
     item = update(item, {
       data: {
         isComplete: {
-          $set: shouldMarkAsComplete,
+          $set: isComplete,
         },
       },
     });

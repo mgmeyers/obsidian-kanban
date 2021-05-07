@@ -8927,11 +8927,19 @@ function moveItem({ boardData, dropResult }) {
     const shouldMarkAsComplete = !!lanes[destinationLaneIndex].data
         .shouldMarkItemsComplete;
     let item = lanes[sourceLaneIndex].items[dropResult.source.index];
+    let isComplete = !!item.data.isComplete;
+    if (shouldMarkAsComplete) {
+        isComplete = true;
+    }
+    else if (!shouldMarkAsComplete &&
+        !!lanes[sourceLaneIndex].data.shouldMarkItemsComplete) {
+        isComplete = false;
+    }
     if (shouldMarkAsComplete !== item.data.isComplete) {
         item = update$2(item, {
             data: {
                 isComplete: {
-                    $set: shouldMarkAsComplete,
+                    $set: isComplete,
                 },
             },
         });
@@ -37213,6 +37221,26 @@ function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, onChange, 
         onEnter: onAction,
         onEscape: onAction,
     });
+    const [isCtrlHovering, setIsCtrlHovering] = react.useState(false);
+    const [isHovering, setIsHovering] = react.useState(false);
+    react.useEffect(() => {
+        if (isHovering) {
+            const handler = (e) => {
+                if (e.metaKey || e.ctrlKey) {
+                    setIsCtrlHovering(true);
+                }
+                else {
+                    setIsCtrlHovering(false);
+                }
+            };
+            window.addEventListener("keydown", handler);
+            window.addEventListener("keyup", handler);
+            return () => {
+                window.removeEventListener("keydown", handler);
+                window.removeEventListener("keyup", handler);
+            };
+        }
+    }, [isHovering]);
     const markdownContent = react.useMemo(() => {
         const tempEl = createDiv();
         obsidian.MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
@@ -37232,7 +37260,23 @@ function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, onChange, 
         : null;
     const date = datePath && shouldLinkDate ? (react.createElement("a", { href: datePath, "data-href": datePath, className: `internal-link ${isResolved ? "" : "is-unresolved"}`, target: "blank", rel: "noopener" }, dateDisplayStr)) : (dateDisplayStr);
     return (react.createElement("div", { className: c$2("item-title") },
-        react.createElement("div", { className: `markdown-preview-view ${c$2("item-markdown")}`, dangerouslySetInnerHTML: markdownContent.innerHTML }),
+        react.createElement("div", { onMouseEnter: (e) => {
+                setIsHovering(true);
+                if (e.ctrlKey || e.metaKey) {
+                    setIsCtrlHovering(true);
+                }
+            }, onMouseLeave: () => {
+                setIsHovering(false);
+                if (isCtrlHovering) {
+                    setIsCtrlHovering(false);
+                }
+            }, onClick: (e) => {
+                if (e.metaKey || e.ctrlKey) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setIsSettingsVisible(true);
+                }
+            }, className: `markdown-preview-view ${c$2("item-markdown")} ${isCtrlHovering ? "is-ctrl-hovering" : ""}`, dangerouslySetInnerHTML: markdownContent.innerHTML }),
         react.createElement("div", { className: c$2("item-metadata") }, dateStr && react.createElement("span", { className: c$2("item-metadata-date") }, date))));
 }
 
@@ -37282,10 +37326,15 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
         const coordinates = { x: 0, y: 0 };
         const menu = new obsidian.Menu(view.app)
             .addItem((i) => {
+            i.setIcon("pencil")
+                .setTitle("Edit card")
+                .onClick(() => setIsEditing(true));
+        })
+            .addItem((i) => {
             const hasDate = !!item.metadata.date;
             i.setIcon("calendar-with-checkmark")
                 .setTitle(hasDate ? "Edit date" : "Add date")
-                .onClick((e) => {
+                .onClick(() => {
                 var _a;
                 const dateFormat = view.getSetting("date-format") || getDefaultDateFormat(view.app);
                 const shouldLinkDates = view.getSetting("link-date-to-daily-note");
@@ -37319,11 +37368,6 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
                     }));
                 }, (_a = item.metadata.date) === null || _a === void 0 ? void 0 : _a.toDate());
             });
-        })
-            .addItem((i) => {
-            i.setIcon("pencil")
-                .setTitle("Edit card")
-                .onClick(() => setIsEditing(true));
         })
             .addItem((i) => {
             i.setIcon("create-new")
@@ -37363,12 +37407,35 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
     }, [view, setIsEditing, boardModifiers, laneIndex, itemIndex, item]);
 }
 
+function getClassModifiers(item) {
+    const date = item.metadata.date;
+    const classModifiers = [];
+    if (date) {
+        if (date.isSame(new Date(), "day")) {
+            classModifiers.push("is-today");
+        }
+        if (date.isAfter(new Date(), "day")) {
+            classModifiers.push("is-future");
+        }
+        if (date.isBefore(new Date(), "day")) {
+            classModifiers.push("is-past");
+        }
+    }
+    if (item.data.isComplete) {
+        classModifiers.push("is-complete");
+    }
+    return classModifiers;
+}
 function GhostItem({ item, shouldShowArchiveButton }) {
-    return (react.createElement("div", { className: c$2("item") },
+    const { view } = react.useContext(ObsidianContext);
+    const classModifiers = getClassModifiers(item);
+    const shouldShowCheckbox = view.getSetting("show-checkboxes");
+    return (react.createElement("div", { className: `${c$2("item")} ${classModifiers.join(" ")}` },
         react.createElement("div", { className: c$2("item-content-wrapper") },
-            shouldShowArchiveButton && (react.createElement("div", { className: c$2("item-prefix-button-wrapper") },
-                react.createElement("button", { className: c$2("item-prefix-button"), "aria-label": "Archive item" },
-                    react.createElement(Icon, { name: "sheets-in-box" })))),
+            (shouldShowArchiveButton || shouldShowCheckbox) && (react.createElement("div", { className: c$2("item-prefix-button-wrapper") },
+                shouldShowCheckbox && (react.createElement("input", { readOnly: true, type: "checkbox", className: "task-list-item-checkbox", checked: !!item.data.isComplete })),
+                shouldShowArchiveButton && (react.createElement("button", { className: c$2("item-prefix-button"), "aria-label": "Archive item" },
+                    react.createElement(Icon, { name: "sheets-in-box" }))))),
             react.createElement(ItemContent, { isSettingsVisible: false, item: item }),
             react.createElement("div", { className: c$2("item-postfix-button-wrapper") },
                 react.createElement("button", { className: c$2("item-postfix-button"), "aria-label": "More options" },
@@ -37378,25 +37445,35 @@ function draggableItemFactory({ items, laneIndex, }) {
     return (provided, snapshot, rubric) => {
         const { boardModifiers, board } = react.useContext(KanbanContext);
         const { view } = react.useContext(ObsidianContext);
+        const [isEditing, setIsEditing] = react.useState(false);
+        const [isCtrlHovering, setIsCtrlHovering] = react.useState(false);
+        const [isHovering, setIsHovering] = react.useState(false);
+        react.useEffect(() => {
+            if (isHovering) {
+                const handler = (e) => {
+                    if (e.metaKey || e.ctrlKey) {
+                        setIsCtrlHovering(true);
+                    }
+                    else {
+                        setIsCtrlHovering(false);
+                    }
+                };
+                window.addEventListener("keydown", handler);
+                window.addEventListener("keyup", handler);
+                return () => {
+                    window.removeEventListener("keydown", handler);
+                    window.removeEventListener("keyup", handler);
+                };
+            }
+        }, [isHovering]);
         const itemIndex = rubric.source.index;
         const item = items[itemIndex];
         const lane = board.lanes[laneIndex];
-        const [isEditing, setIsEditing] = react.useState(false);
-        const date = item.metadata.date;
-        const classModifiers = [];
+        const shouldShowCheckbox = view.getSetting("show-checkboxes");
+        const shouldMarkItemsComplete = lane.data.shouldMarkItemsComplete;
+        const classModifiers = getClassModifiers(item);
         if (snapshot.isDragging)
             classModifiers.push("is-dragging");
-        if (date) {
-            if (date.isSame(new Date(), "day")) {
-                classModifiers.push("is-today");
-            }
-            if (date.isAfter(new Date(), "day")) {
-                classModifiers.push("is-future");
-            }
-            if (date.isBefore(new Date(), "day")) {
-                classModifiers.push("is-past");
-            }
-        }
         const showMenu = useItemMenu({
             setIsEditing,
             item,
@@ -37406,11 +37483,29 @@ function draggableItemFactory({ items, laneIndex, }) {
         });
         return (react.createElement("div", Object.assign({ className: `${c$2("item")} ${classModifiers.join(" ")}`, ref: provided.innerRef }, provided.draggableProps, provided.dragHandleProps),
             react.createElement("div", { className: c$2("item-content-wrapper") },
-                lane.data.shouldMarkItemsComplete && (react.createElement("div", { className: c$2("item-prefix-button-wrapper") },
-                    react.createElement("button", { onClick: () => {
+                (shouldMarkItemsComplete || shouldShowCheckbox) && (react.createElement("div", { onMouseEnter: (e) => {
+                        setIsHovering(true);
+                        if (e.ctrlKey || e.metaKey) {
+                            setIsCtrlHovering(true);
+                        }
+                    }, onMouseLeave: () => {
+                        setIsHovering(false);
+                        if (isCtrlHovering) {
+                            setIsCtrlHovering(false);
+                        }
+                    }, className: c$2("item-prefix-button-wrapper") },
+                    shouldShowCheckbox && !isCtrlHovering && (react.createElement("input", { onChange: () => {
+                            boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, {
+                                data: {
+                                    $toggle: ["isComplete"],
+                                },
+                            }));
+                        }, type: "checkbox", className: "task-list-item-checkbox", checked: !!item.data.isComplete })),
+                    (isCtrlHovering ||
+                        (!shouldShowCheckbox && shouldMarkItemsComplete)) && (react.createElement("button", { onClick: () => {
                             boardModifiers.archiveItem(laneIndex, itemIndex, item);
-                        }, className: c$2("item-prefix-button"), "aria-label": "Archive item" },
-                        react.createElement(Icon, { name: "sheets-in-box" })))),
+                        }, className: c$2("item-prefix-button"), "aria-label": isCtrlHovering ? undefined : "Archive item" },
+                        react.createElement(Icon, { name: "sheets-in-box" }))))),
                 react.createElement(ItemContent, { isSettingsVisible: isEditing, setIsSettingsVisible: setIsEditing, item: item, onChange: (e) => {
                         const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
                         const processed = processTitle(titleRaw, view);
@@ -38042,6 +38137,34 @@ class SettingsManager {
                 }
             });
         });
+        new obsidian.Setting(contentEl)
+            .setName("Display card checkbox")
+            .setDesc("When toggled, a checkbox will be displayed with each card")
+            .addToggle((toggle) => {
+            const [value, globalValue] = this.getSetting("show-checkboxes", local);
+            if (value !== undefined) {
+                toggle.setValue(value);
+            }
+            else if (globalValue !== undefined) {
+                toggle.setValue(globalValue);
+            }
+            toggle.onChange((newValue) => {
+                this.applySettingsUpdate({
+                    "show-checkboxes": {
+                        $set: newValue,
+                    },
+                });
+            });
+        })
+            .addExtraButton((b) => {
+            b.setIcon("reset")
+                .setTooltip("Reset to default")
+                .onClick(() => {
+                this.applySettingsUpdate({
+                    $unset: ["show-checkboxes"],
+                });
+            });
+        });
         contentEl.createEl("h4", { text: "Date & Time" });
         new obsidian.Setting(contentEl)
             .setName("Date trigger")
@@ -38234,7 +38357,7 @@ class SettingsManager {
         })
             .addExtraButton((b) => {
             b.setIcon("reset")
-                .setTooltip(`Revert to ${local ? "global" : "default"} setting`)
+                .setTooltip("Reset to default")
                 .onClick(() => {
                 this.applySettingsUpdate({
                     $unset: ["hide-date-in-title"],
@@ -38262,7 +38385,7 @@ class SettingsManager {
         })
             .addExtraButton((b) => {
             b.setIcon("reset")
-                .setTooltip(`Revert to ${local ? "global" : "default"} setting`)
+                .setTooltip("Reset to default")
                 .onClick(() => {
                 this.applySettingsUpdate({
                     $unset: ["link-date-to-daily-note"],
@@ -38329,9 +38452,9 @@ class KanbanView extends obsidian.TextFileView {
             reactDom.unmountComponentAtNode(this.contentEl);
         });
     }
-    getSetting(key, local) {
-        const localSetting = local
-            ? local[key]
+    getSetting(key, suppliedLocalSettings) {
+        const localSetting = suppliedLocalSettings
+            ? suppliedLocalSettings[key]
             : this.dataBridge.getData().settings[key];
         if (localSetting)
             return localSetting;

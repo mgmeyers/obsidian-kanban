@@ -24,18 +24,57 @@ interface GhostItemProps {
   item: Item;
 }
 
+function getClassModifiers(item: Item) {
+  const date = item.metadata.date;
+  const classModifiers: string[] = [];
+
+  if (date) {
+    if (date.isSame(new Date(), "day")) {
+      classModifiers.push("is-today");
+    }
+
+    if (date.isAfter(new Date(), "day")) {
+      classModifiers.push("is-future");
+    }
+
+    if (date.isBefore(new Date(), "day")) {
+      classModifiers.push("is-past");
+    }
+  }
+
+  if (item.data.isComplete) {
+    classModifiers.push("is-complete");
+  }
+
+  return classModifiers;
+}
+
 export function GhostItem({ item, shouldShowArchiveButton }: GhostItemProps) {
+  const { view } = React.useContext(ObsidianContext);
+  const classModifiers = getClassModifiers(item);
+  const shouldShowCheckbox = view.getSetting("show-checkboxes");
+
   return (
-    <div className={c("item")}>
+    <div className={`${c("item")} ${classModifiers.join(" ")}`}>
       <div className={c("item-content-wrapper")}>
-        {shouldShowArchiveButton && (
+        {(shouldShowArchiveButton || shouldShowCheckbox) && (
           <div className={c("item-prefix-button-wrapper")}>
-            <button
-              className={c("item-prefix-button")}
-              aria-label="Archive item"
-            >
-              <Icon name="sheets-in-box" />
-            </button>
+            {shouldShowCheckbox && (
+              <input
+                readOnly
+                type="checkbox"
+                className="task-list-item-checkbox"
+                checked={!!item.data.isComplete}
+              />
+            )}
+            {shouldShowArchiveButton && (
+              <button
+                className={c("item-prefix-button")}
+                aria-label="Archive item"
+              >
+                <Icon name="sheets-in-box" />
+              </button>
+            )}
           </div>
         )}
         <ItemContent isSettingsVisible={false} item={item} />
@@ -63,29 +102,39 @@ export function draggableItemFactory({
   ) => {
     const { boardModifiers, board } = React.useContext(KanbanContext);
     const { view } = React.useContext(ObsidianContext);
+    const [isEditing, setIsEditing] = React.useState(false);
+    const [isCtrlHovering, setIsCtrlHovering] = React.useState(false);
+    const [isHovering, setIsHovering] = React.useState(false);
+
+    React.useEffect(() => {
+      if (isHovering) {
+        const handler = (e: KeyboardEvent) => {
+          if (e.metaKey || e.ctrlKey) {
+            setIsCtrlHovering(true);
+          } else {
+            setIsCtrlHovering(false);
+          }
+        };
+
+        window.addEventListener("keydown", handler);
+        window.addEventListener("keyup", handler);
+
+        return () => {
+          window.removeEventListener("keydown", handler);
+          window.removeEventListener("keyup", handler);
+        };
+      }
+    }, [isHovering]);
+
     const itemIndex = rubric.source.index;
     const item = items[itemIndex];
     const lane = board.lanes[laneIndex];
-    const [isEditing, setIsEditing] = React.useState(false);
+    const shouldShowCheckbox = view.getSetting("show-checkboxes");
+    const shouldMarkItemsComplete = lane.data.shouldMarkItemsComplete;
 
-    const date = item.metadata.date;
-    const classModifiers: string[] = [];
+    const classModifiers: string[] = getClassModifiers(item);
 
     if (snapshot.isDragging) classModifiers.push("is-dragging");
-
-    if (date) {
-      if (date.isSame(new Date(), "day")) {
-        classModifiers.push("is-today");
-      }
-
-      if (date.isAfter(new Date(), "day")) {
-        classModifiers.push("is-future");
-      }
-
-      if (date.isBefore(new Date(), "day")) {
-        classModifiers.push("is-past");
-      }
-    }
 
     const showMenu = useItemMenu({
       setIsEditing,
@@ -103,17 +152,54 @@ export function draggableItemFactory({
         {...provided.dragHandleProps}
       >
         <div className={c("item-content-wrapper")}>
-          {lane.data.shouldMarkItemsComplete && (
-            <div className={c("item-prefix-button-wrapper")}>
-              <button
-                onClick={() => {
-                  boardModifiers.archiveItem(laneIndex, itemIndex, item);
-                }}
-                className={c("item-prefix-button")}
-                aria-label="Archive item"
-              >
-                <Icon name="sheets-in-box" />
-              </button>
+          {(shouldMarkItemsComplete || shouldShowCheckbox) && (
+            <div
+              onMouseEnter={(e) => {
+                setIsHovering(true);
+
+                if (e.ctrlKey || e.metaKey) {
+                  setIsCtrlHovering(true);
+                }
+              }}
+              onMouseLeave={() => {
+                setIsHovering(false);
+
+                if (isCtrlHovering) {
+                  setIsCtrlHovering(false);
+                }
+              }}
+              className={c("item-prefix-button-wrapper")}
+            >
+              {shouldShowCheckbox && !isCtrlHovering && (
+                <input
+                  onChange={() => {
+                    boardModifiers.updateItem(
+                      laneIndex,
+                      itemIndex,
+                      update(item, {
+                        data: {
+                          $toggle: ["isComplete"],
+                        },
+                      })
+                    );
+                  }}
+                  type="checkbox"
+                  className="task-list-item-checkbox"
+                  checked={!!item.data.isComplete}
+                />
+              )}
+              {(isCtrlHovering ||
+                (!shouldShowCheckbox && shouldMarkItemsComplete)) && (
+                <button
+                  onClick={() => {
+                    boardModifiers.archiveItem(laneIndex, itemIndex, item);
+                  }}
+                  className={c("item-prefix-button")}
+                  aria-label={isCtrlHovering ? undefined : "Archive item"}
+                >
+                  <Icon name="sheets-in-box" />
+                </button>
+              )}
             </div>
           )}
           <ItemContent

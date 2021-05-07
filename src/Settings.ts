@@ -23,14 +23,16 @@ export interface KanbanSettings {
   "new-note-folder"?: string;
   "new-note-template"?: string;
   "lane-width"?: number;
-  "display-tags"?: boolean;
+  "show-checkboxes"?: boolean;
   "date-format"?: string;
   "date-display-format"?: string;
-  "time-format"?: string;
   "date-trigger"?: string;
-  "time-trigger"?: string;
   "link-date-to-daily-note"?: boolean;
   "hide-date-in-title"?: boolean;
+
+  "display-tags"?: boolean;
+  "time-format"?: string;
+  "time-trigger"?: string;
 }
 
 export interface SettingsManagerConfig {
@@ -154,6 +156,36 @@ export class SettingsManager {
             });
           }
         });
+      });
+
+    new Setting(contentEl)
+      .setName("Display card checkbox")
+      .setDesc("When toggled, a checkbox will be displayed with each card")
+      .addToggle((toggle) => {
+        const [value, globalValue] = this.getSetting("show-checkboxes", local);
+
+        if (value !== undefined) {
+          toggle.setValue(value as boolean);
+        } else if (globalValue !== undefined) {
+          toggle.setValue(globalValue as boolean);
+        }
+
+        toggle.onChange((newValue) => {
+          this.applySettingsUpdate({
+            "show-checkboxes": {
+              $set: newValue,
+            },
+          });
+        });
+      })
+      .addExtraButton((b) => {
+        b.setIcon("reset")
+          .setTooltip("Reset to default")
+          .onClick(() => {
+            this.applySettingsUpdate({
+              $unset: ["show-checkboxes"],
+            });
+          });
       });
 
     contentEl.createEl("h4", { text: "Date & Time" });
@@ -394,7 +426,7 @@ export class SettingsManager {
       })
       .addExtraButton((b) => {
         b.setIcon("reset")
-          .setTooltip(`Revert to ${local ? "global" : "default"} setting`)
+          .setTooltip("Reset to default")
           .onClick(() => {
             this.applySettingsUpdate({
               $unset: ["hide-date-in-title"],
@@ -429,7 +461,7 @@ export class SettingsManager {
       })
       .addExtraButton((b) => {
         b.setIcon("reset")
-          .setTooltip(`Revert to ${local ? "global" : "default"} setting`)
+          .setTooltip("Reset to default")
           .onClick(() => {
             this.applySettingsUpdate({
               $unset: ["link-date-to-daily-note"],

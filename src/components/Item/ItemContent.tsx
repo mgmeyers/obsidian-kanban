@@ -2,7 +2,7 @@ import { MarkdownRenderer, getLinkpath } from "obsidian";
 import React from "react";
 import { Item } from "../types";
 import { c, getDefaultDateFormat } from "../helpers";
-import { KanbanContext, ObsidianContext } from "../context";
+import { ObsidianContext } from "../context";
 import { useAutocompleteInputProps } from "./autocomplete";
 
 export interface ItemContentProps {
@@ -36,6 +36,29 @@ export function ItemContent({
     onEnter: onAction,
     onEscape: onAction,
   });
+
+  const [isCtrlHovering, setIsCtrlHovering] = React.useState(false);
+  const [isHovering, setIsHovering] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isHovering) {
+      const handler = (e: KeyboardEvent) => {
+        if (e.metaKey || e.ctrlKey) {
+          setIsCtrlHovering(true);
+        } else {
+          setIsCtrlHovering(false);
+        }
+      };
+
+      window.addEventListener("keydown", handler);
+      window.addEventListener("keyup", handler);
+
+      return () => {
+        window.removeEventListener("keydown", handler);
+        window.removeEventListener("keyup", handler);
+      };
+    }
+  }, [isHovering]);
 
   const markdownContent = React.useMemo(() => {
     const tempEl = createDiv();
@@ -86,7 +109,30 @@ export function ItemContent({
   return (
     <div className={c("item-title")}>
       <div
-        className={`markdown-preview-view ${c("item-markdown")}`}
+        onMouseEnter={(e) => {
+          setIsHovering(true);
+
+          if (e.ctrlKey || e.metaKey) {
+            setIsCtrlHovering(true);
+          }
+        }}
+        onMouseLeave={() => {
+          setIsHovering(false);
+
+          if (isCtrlHovering) {
+            setIsCtrlHovering(false);
+          }
+        }}
+        onClick={(e) => {
+          if (e.metaKey || e.ctrlKey) {
+            e.stopPropagation();
+            e.preventDefault();
+            setIsSettingsVisible(true);
+          }
+        }}
+        className={`markdown-preview-view ${c("item-markdown")} ${
+          isCtrlHovering ? "is-ctrl-hovering" : ""
+        }`}
         dangerouslySetInnerHTML={markdownContent.innerHTML}
       />
       <div className={c("item-metadata")}>

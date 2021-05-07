@@ -146,8 +146,8 @@ button.kanban-plugin__new-lane-button:hover {
 }
 
 .kanban-plugin__item button.kanban-plugin__item-prefix-button {
-  margin-right: 5px;
-  margin-left: 0;
+  margin: 4px 7px 4px 0px;
+  padding: 0;
 }
 
 .kanban-plugin__item button.kanban-plugin__item-prefix-button.is-enabled,
@@ -275,8 +275,12 @@ button.kanban-plugin__lane-settings-button
   -webkit-user-select: unset;
 }
 
+.markdown-preview-view.kanban-plugin__item-markdown.is-ctrl-hovering {
+  cursor: text;
+}
+
 .kanban-plugin__item-metadata:not(:empty) {
-  padding-top: 10px;
+  padding-top: 5px;
   font-size: 12px;
   font-weight: 500;
   color: var(--text-muted);
@@ -291,6 +295,18 @@ button.kanban-plugin__lane-settings-button
   display: flex;
   flex-grow: 0;
   flex-shrink: 0;
+}
+
+.kanban-plugin__item-prefix-button-wrapper {
+  flex-direction: column;
+}
+
+.kanban-plugin__item-prefix-button-wrapper input[type="checkbox"] {
+  margin: 4px 7px 4px 0px;
+}
+
+.kanban-plugin__item-prefix-button-wrapper input[type="checkbox"] + button {
+  margin-top: 10px;
 }
 
 button.kanban-plugin__item-postfix-button {

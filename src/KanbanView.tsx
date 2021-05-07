@@ -46,9 +46,9 @@ export class KanbanView extends TextFileView implements HoverParent {
     ReactDOM.unmountComponentAtNode(this.contentEl);
   }
 
-  getSetting(key: keyof KanbanSettings, local?: KanbanSettings) {
-    const localSetting = local
-      ? local[key]
+  getSetting(key: keyof KanbanSettings, suppliedLocalSettings?: KanbanSettings) {
+    const localSetting = suppliedLocalSettings
+      ? suppliedLocalSettings[key]
       : this.dataBridge.getData().settings[key];
 
     if (localSetting) return localSetting;
