@@ -5,7 +5,7 @@ import {
   getDefaultDateFormat,
 } from "./components/helpers";
 import { Board, Item, Lane } from "./components/types";
-import {KanbanSettings} from "./Settings";
+import { KanbanSettings } from "./Settings";
 import { defaultDateTrigger } from "./settingHelpers";
 import yaml from "js-yaml";
 import { KanbanView } from "./KanbanView";
@@ -28,6 +28,15 @@ const laneRegex = /^#+\s+(.+)$/;
  */
 const taskRegex = /^([\s\t]*)([-+*])\s+\[([^\]]+)]\s+(.+)$/;
 
+/**
+ * Match groups:
+ *
+ * 1. indent
+ * 2. bulletChar
+ * 3. content
+ */
+const listRegex = /^([\s\t]*)([-+*])\s+?(.+)$/;
+
 const completeString = "**Complete**";
 const completeRegex = /^\*\*Complete\*\*$/i;
 const archiveString = "***";
@@ -44,7 +53,8 @@ export function processTitle(
 ) {
   const dateFormat =
     view.getSetting("date-format", settings) || getDefaultDateFormat(view.app);
-  const dateTrigger = view.getSetting("date-trigger", settings) || defaultDateTrigger;
+  const dateTrigger =
+    view.getSetting("date-trigger", settings) || defaultDateTrigger;
   const shouldHideDate = view.getSetting("hide-date-in-title", settings);
   const shouldLinkDate = view.getSetting("link-date-to-daily-note", settings);
 
@@ -63,7 +73,6 @@ export function processTitle(
     date = moment(match[1], dateFormat as string);
   }
 
-
   if (shouldHideDate) {
     processedTitle = processedTitle.replace(dateRegEx, "");
   }
@@ -77,17 +86,32 @@ export function processTitle(
 function mdToItem(
   itemMd: string,
   view: KanbanView,
-  settings: KanbanSettings
+  settings: KanbanSettings,
+  isListItem?: boolean
 ): Item {
-  const match = itemMd.match(taskRegex);
-  const processed = processTitle(match[4], view, settings);
+  let titleRaw = "";
+  let isComplete = false;
+
+  if (isListItem) {
+    const match = itemMd.match(listRegex);
+
+    titleRaw = match[3];
+    isComplete = false;
+  } else {
+    const match = itemMd.match(taskRegex);
+
+    titleRaw = match[4];
+    isComplete = match[3] !== " ";
+  }
+
+  const processed = processTitle(titleRaw, view, settings);
 
   return {
     id: generateInstanceId(),
     title: processed.title,
-    titleRaw: match[4],
+    titleRaw,
     data: {
-      isComplete: match[3] !== " ",
+      isComplete,
     },
     metadata: {
       date: processed.date,
@@ -194,12 +218,15 @@ export function mdToBoard(boardMd: string, view: KanbanView): Board {
       return;
     }
 
+    const isTask = taskRegex.test(line);
+    const isListItem = !isTask && listRegex.test(line);
+
     // Create an item from tasks
-    if (taskRegex.test(line)) {
+    if (isTask || isListItem) {
       if (haveSeenArchiveMarker) {
-        archive.push(mdToItem(line, view, settings));
+        archive.push(mdToItem(line, view, settings, isListItem));
       } else {
-        currentLane.items.push(mdToItem(line, view, settings));
+        currentLane.items.push(mdToItem(line, view, settings, isListItem));
       }
     }
   });

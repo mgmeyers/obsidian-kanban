@@ -225,7 +225,7 @@ export function constructAutocomplete({
     ],
     {
       dropdown: {
-        className: c("autocomplete"),
+        className: `${c("autocomplete")} ${c("ignore-click-outside")}`,
         rotate: true,
         item: {
           className: c("autocomplete-item"),
@@ -326,7 +326,7 @@ export function constructAutocomplete({
         datePickerEl.style.top = `${position.top || 0}px`;
       } else {
         datePickerEl = document.body.createDiv(
-          { cls: c("date-picker") },
+          { cls: `${c("date-picker")} ${c("ignore-click-outside")}` },
           (div) => {
             div.style.left = `${position.left || 0}px`;
             div.style.top = `${position.top || 0}px`;

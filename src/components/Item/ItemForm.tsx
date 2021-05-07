@@ -1,4 +1,5 @@
 import React from "react";
+import useOnclickOutside from "react-cool-onclickoutside";
 
 import { Item } from "../types";
 import { c, generateInstanceId } from "../helpers";
@@ -14,6 +15,12 @@ export function ItemForm({ addItem }: ItemFormProps) {
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const [itemTitle, setItemTitle] = React.useState("");
   const { view } = React.useContext(ObsidianContext);
+
+  const clickOutsideRef = useOnclickOutside(() => {
+    setIsInputVisible(false);
+  }, {
+    ignoreClass: c("ignore-click-outside")
+  })
 
   const clear = () => {
     setItemTitle("");
@@ -48,7 +55,7 @@ export function ItemForm({ addItem }: ItemFormProps) {
 
   if (isInputVisible) {
     return (
-      <>
+      <div ref={clickOutsideRef}>
         <div className={c("item-input-wrapper")}>
           <div data-replicated-value={itemTitle} className={c("grow-wrap")}>
             <textarea
@@ -69,7 +76,7 @@ export function ItemForm({ addItem }: ItemFormProps) {
             Cancel
           </button>
         </div>
-      </>
+      </div>
     );
   }
 

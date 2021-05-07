@@ -19232,6 +19232,14 @@ const laneRegex = /^#+\s+(.+)$/;
  * 4. content
  */
 const taskRegex = /^([\s\t]*)([-+*])\s+\[([^\]]+)]\s+(.+)$/;
+/**
+ * Match groups:
+ *
+ * 1. indent
+ * 2. bulletChar
+ * 3. content
+ */
+const listRegex = /^([\s\t]*)([-+*])\s+?(.+)$/;
 const completeString = "**Complete**";
 const completeRegex = /^\*\*Complete\*\*$/i;
 const archiveString = "***";
@@ -19260,15 +19268,26 @@ function processTitle(title, view, settings) {
         date,
     };
 }
-function mdToItem(itemMd, view, settings) {
-    const match = itemMd.match(taskRegex);
-    const processed = processTitle(match[4], view, settings);
+function mdToItem(itemMd, view, settings, isListItem) {
+    let titleRaw = "";
+    let isComplete = false;
+    if (isListItem) {
+        const match = itemMd.match(listRegex);
+        titleRaw = match[3];
+        isComplete = false;
+    }
+    else {
+        const match = itemMd.match(taskRegex);
+        titleRaw = match[4];
+        isComplete = match[3] !== " ";
+    }
+    const processed = processTitle(titleRaw, view, settings);
     return {
         id: generateInstanceId(),
         title: processed.title,
-        titleRaw: match[4],
+        titleRaw,
         data: {
-            isComplete: match[3] !== " ",
+            isComplete,
         },
         metadata: {
             date: processed.date,
@@ -19346,13 +19365,15 @@ function mdToBoard(boardMd, view) {
             currentLane.data.shouldMarkItemsComplete = true;
             return;
         }
+        const isTask = taskRegex.test(line);
+        const isListItem = !isTask && listRegex.test(line);
         // Create an item from tasks
-        if (taskRegex.test(line)) {
+        if (isTask || isListItem) {
             if (haveSeenArchiveMarker) {
-                archive.push(mdToItem(line, view, settings));
+                archive.push(mdToItem(line, view, settings, isListItem));
             }
             else {
-                currentLane.items.push(mdToItem(line, view, settings));
+                currentLane.items.push(mdToItem(line, view, settings, isListItem));
             }
         }
     });
@@ -37066,7 +37087,7 @@ function constructAutocomplete({ inputRef, isAutocompleteVisibleRef, obsidianCon
         getFileSearchConfig(files, fileSearch, filePath, view, true),
     ], {
         dropdown: {
-            className: c$2("autocomplete"),
+            className: `${c$2("autocomplete")} ${c$2("ignore-click-outside")}`,
             rotate: true,
             item: {
                 className: c$2("autocomplete-item"),
@@ -37141,7 +37162,7 @@ function constructAutocomplete({ inputRef, isAutocompleteVisibleRef, obsidianCon
                 datePickerEl.style.top = `${position.top || 0}px`;
             }
             else {
-                datePickerEl = document.body.createDiv({ cls: c$2("date-picker") }, (div) => {
+                datePickerEl = document.body.createDiv({ cls: `${c$2("date-picker")} ${c$2("ignore-click-outside")}` }, (div) => {
                     div.style.left = `${position.left || 0}px`;
                     div.style.top = `${position.top || 0}px`;
                     constructDatePicker$1({
@@ -37207,6 +37228,20 @@ function useAutocompleteInputProps({ isInputVisible, onEnter, onEscape, }) {
     };
 }
 
+function getRelativeDate(date) {
+    const today = obsidian.moment().startOf("day");
+    if (today.isSame(date, "day")) {
+        return "today";
+    }
+    const diff = date.diff(today, "day");
+    if (diff === -1) {
+        return "yesterday";
+    }
+    if (diff === 1) {
+        return "tomorrow";
+    }
+    return date.from(today);
+}
 function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, onChange, }) {
     var _a, _b;
     const obsidianContext = react.useContext(ObsidianContext);
@@ -37215,6 +37250,8 @@ function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, onChange, 
     const dateFormat = view.getSetting("date-format") || getDefaultDateFormat(view.app);
     const dateDisplayFormat = view.getSetting("date-display-format") || dateFormat;
     const shouldLinkDate = view.getSetting("link-date-to-daily-note");
+    const shouldShowRelativeDate = view.getSetting("show-relative-date");
+    const hideDateDisplay = view.getSetting("hide-date-display");
     const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false);
     const autocompleteProps = useAutocompleteInputProps({
         isInputVisible: isSettingsVisible,
@@ -37252,13 +37289,20 @@ function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, onChange, 
         return (react.createElement("div", { "data-replicated-value": item.titleRaw, className: c$2("grow-wrap") },
             react.createElement("textarea", Object.assign({ rows: 1, ref: inputRef, className: c$2("item-input"), value: item.titleRaw, onChange: onChange }, autocompleteProps))));
     }
-    const dateStr = (_a = item.metadata.date) === null || _a === void 0 ? void 0 : _a.format(dateFormat);
-    const dateDisplayStr = (_b = item.metadata.date) === null || _b === void 0 ? void 0 : _b.format(dateDisplayFormat);
+    const dateStr = hideDateDisplay
+        ? null
+        : (_a = item.metadata.date) === null || _a === void 0 ? void 0 : _a.format(dateFormat);
+    const dateDisplayStr = hideDateDisplay
+        ? null
+        : (_b = item.metadata.date) === null || _b === void 0 ? void 0 : _b.format(dateDisplayFormat);
     const datePath = dateStr ? obsidian.getLinkpath(dateStr) : null;
     const isResolved = dateStr
         ? view.app.metadataCache.getFirstLinkpathDest(datePath, filePath)
         : null;
     const date = datePath && shouldLinkDate ? (react.createElement("a", { href: datePath, "data-href": datePath, className: `internal-link ${isResolved ? "" : "is-unresolved"}`, target: "blank", rel: "noopener" }, dateDisplayStr)) : (dateDisplayStr);
+    const relativeDate = shouldShowRelativeDate && item.metadata.date
+        ? getRelativeDate(item.metadata.date)
+        : null;
     return (react.createElement("div", { className: c$2("item-title") },
         react.createElement("div", { onMouseEnter: (e) => {
                 setIsHovering(true);
@@ -37277,12 +37321,15 @@ function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, onChange, 
                     setIsSettingsVisible(true);
                 }
             }, className: `markdown-preview-view ${c$2("item-markdown")} ${isCtrlHovering ? "is-ctrl-hovering" : ""}`, dangerouslySetInnerHTML: markdownContent.innerHTML }),
-        react.createElement("div", { className: c$2("item-metadata") }, dateStr && react.createElement("span", { className: c$2("item-metadata-date") }, date))));
+        react.createElement("div", { className: c$2("item-metadata") },
+            react.createElement(react.Fragment, null,
+                relativeDate && (react.createElement("span", { className: c$2("item-metadata-date-relative") }, relativeDate)),
+                !hideDateDisplay && dateStr && (react.createElement("span", { className: c$2("item-metadata-date") }, date))))));
 }
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
 function constructDatePicker(coordinates, onChange, date) {
-    return document.body.createDiv({ cls: c$2("date-picker") }, (div) => {
+    return document.body.createDiv({ cls: `${c$2("date-picker")} ${c$2("ignore-click-outside")}` }, (div) => {
         div.style.left = `${coordinates.x || 0}px`;
         div.style.top = `${coordinates.y || 0}px`;
         div.createEl("input", { type: "text" }, (input) => {
@@ -37529,10 +37576,143 @@ function draggableItemFactory({ items, laneIndex, }) {
     };
 }
 
+var canUsePassiveEvents = function () {
+  if (typeof window === "undefined" || typeof window.addEventListener !== "function") return false;
+  var passive = false;
+  var options = Object.defineProperty({}, "passive", {
+    // eslint-disable-next-line getter-return
+    get: function get() {
+      passive = true;
+    }
+  });
+
+  var noop = function noop() {
+    return null;
+  };
+
+  window.addEventListener("test", noop, options);
+  window.removeEventListener("test", noop, options);
+  return passive;
+};
+
+var DEFAULT_IGNORE_CLASS = "ignore-onclickoutside";
+
+var hasIgnoreClass = function hasIgnoreClass(e, ignoreClass) {
+  var el = e.target || e;
+
+  while (el) {
+    var _el$classList;
+
+    if ((_el$classList = el.classList) != null && _el$classList.contains(ignoreClass)) return true;
+    el = el.parentElement;
+  }
+
+  return false;
+};
+
+var clickedOnScrollbar = function clickedOnScrollbar(e) {
+  return document.documentElement.clientWidth <= e.clientX || document.documentElement.clientHeight <= e.clientY;
+};
+
+var getEventOptions = function getEventOptions(type) {
+  return type.includes("touch") && canUsePassiveEvents() ? {
+    passive: true
+  } : false;
+};
+
+var useOnclickOutside = function useOnclickOutside(callback, _temp) {
+  var _ref = _temp === void 0 ? {} : _temp,
+      refsOpt = _ref.refs,
+      disabled = _ref.disabled,
+      _ref$eventTypes = _ref.eventTypes,
+      eventTypes = _ref$eventTypes === void 0 ? ["mousedown", "touchstart"] : _ref$eventTypes,
+      excludeScrollbar = _ref.excludeScrollbar,
+      _ref$ignoreClass = _ref.ignoreClass,
+      ignoreClass = _ref$ignoreClass === void 0 ? DEFAULT_IGNORE_CLASS : _ref$ignoreClass,
+      _ref$detectIFrame = _ref.detectIFrame,
+      detectIFrame = _ref$detectIFrame === void 0 ? true : _ref$detectIFrame;
+
+  var callbackRef = react.useRef(callback);
+
+  var _useState = react.useState([]),
+      refsState = _useState[0],
+      setRefsState = _useState[1];
+
+  react.useEffect(function () {
+    callbackRef.current = callback;
+  }, [callback]);
+  var ref = react.useCallback(function (el) {
+    return setRefsState(function (prevState) {
+      return [].concat(prevState, [{
+        current: el
+      }]);
+    });
+  }, []);
+  react.useEffect(function () {
+    if (!(refsOpt != null && refsOpt.length) && !refsState.length) return;
+
+    var getEls = function getEls() {
+      var els = [];
+      (refsOpt || refsState).forEach(function (_ref2) {
+        var current = _ref2.current;
+        return current && els.push(current);
+      });
+      return els;
+    };
+
+    var handler = function handler(e) {
+      if (!hasIgnoreClass(e, ignoreClass) && !(excludeScrollbar && clickedOnScrollbar(e)) && getEls().every(function (el) {
+        return !el.contains(e.target);
+      })) callbackRef.current(e);
+    };
+
+    var blurHandler = function blurHandler(e) {
+      return (// On firefox the iframe becomes document.activeElement in the next event loop
+        setTimeout(function () {
+          var _document = document,
+              activeElement = _document.activeElement;
+          if ((activeElement == null ? void 0 : activeElement.tagName) === "IFRAME" && !hasIgnoreClass(activeElement, ignoreClass) && !getEls().includes(activeElement)) callbackRef.current(e);
+        }, 0)
+      );
+    };
+
+    var removeEventListener = function removeEventListener() {
+      eventTypes.forEach(function (type) {
+        return (// @ts-expect-error
+          document.removeEventListener(type, handler, getEventOptions(type))
+        );
+      });
+      if (detectIFrame) window.removeEventListener("blur", blurHandler);
+    };
+
+    if (disabled) {
+      removeEventListener();
+      return;
+    }
+
+    eventTypes.forEach(function (type) {
+      return document.addEventListener(type, handler, getEventOptions(type));
+    });
+    if (detectIFrame) window.addEventListener("blur", blurHandler); // eslint-disable-next-line consistent-return
+
+    return function () {
+      return removeEventListener();
+    };
+  }, // eslint-disable-next-line react-hooks/exhaustive-deps
+  [refsState, ignoreClass, excludeScrollbar, disabled, detectIFrame, // eslint-disable-next-line react-hooks/exhaustive-deps
+  JSON.stringify(eventTypes)]);
+  return ref;
+};
+
 function ItemForm({ addItem }) {
     const [isInputVisible, setIsInputVisible] = react.useState(false);
     const [itemTitle, setItemTitle] = react.useState("");
     const { view } = react.useContext(ObsidianContext);
+    const clickOutsideRef = useOnclickOutside(() => {
+        setIsInputVisible(false);
+    }, {
+        ignoreClass: c$2("ignore-click-outside")
+    });
     const clear = () => {
         setItemTitle("");
         setIsInputVisible(false);
@@ -37560,7 +37740,7 @@ function ItemForm({ addItem }) {
         onEscape: clear,
     });
     if (isInputVisible) {
-        return (react.createElement(react.Fragment, null,
+        return (react.createElement("div", { ref: clickOutsideRef },
             react.createElement("div", { className: c$2("item-input-wrapper") },
                 react.createElement("div", { "data-replicated-value": itemTitle, className: c$2("grow-wrap") },
                     react.createElement("textarea", Object.assign({ rows: 1, value: itemTitle, className: c$2("item-input"), placeholder: "Item title...", onChange: (e) => setItemTitle(e.target.value.replace(/[\r\n]+/g, " ")) }, autocompleteProps)))),
@@ -37763,6 +37943,11 @@ function LaneForm() {
     const [shouldMarkAsComplete, setShouldMarkAsComplete] = react.useState(false);
     const [laneTitle, setLaneTitle] = react.useState("");
     const inputRef = react.useRef();
+    const clickOutsideRef = useOnclickOutside(() => {
+        setIsInputVisible(false);
+    }, {
+        ignoreClass: c$2("ignore-click-outside"),
+    });
     const _a = useIMEInputProps(), { getShouldIMEBlockAction } = _a, inputProps = __rest(_a, ["getShouldIMEBlockAction"]);
     react.useEffect(() => {
         var _a;
@@ -37788,7 +37973,7 @@ function LaneForm() {
         clear();
     };
     if (isInputVisible) {
-        return (react.createElement("div", { className: c$2("lane") },
+        return (react.createElement("div", { ref: clickOutsideRef, className: c$2("lane") },
             react.createElement("div", { className: c$2("lane-input-wrapper") },
                 react.createElement("div", { "data-replicated-value": laneTitle, className: c$2("grow-wrap") },
                     react.createElement("textarea", Object.assign({ rows: 1, value: laneTitle, ref: inputRef, className: c$2("lane-input"), placeholder: "Enter list title...", onChange: (e) => setLaneTitle(e.target.value), onKeyDown: (e) => {
@@ -37946,6 +38131,7 @@ function getBoardModifiers({ boardData, setBoardData, }) {
 }
 const Kanban = ({ filePath, view, dataBridge }) => {
     const [boardData, setBoardData] = react.useState(dataBridge.data);
+    const maxArchiveLength = view.getSetting("max-archive-size");
     react.useEffect(() => {
         dataBridge.onExternalSet((data) => {
             setBoardData(data);
@@ -37956,6 +38142,19 @@ const Kanban = ({ filePath, view, dataBridge }) => {
             dataBridge.setInternal(boardData);
         }
     }, [boardData]);
+    react.useEffect(() => {
+        if (maxArchiveLength === undefined || maxArchiveLength === -1) {
+            return;
+        }
+        if (typeof maxArchiveLength === "number" &&
+            boardData.archive.length > maxArchiveLength) {
+            setBoardData(update$2(boardData, {
+                archive: {
+                    $set: boardData.archive.slice(maxArchiveLength * -1),
+                },
+            }));
+        }
+    }, [boardData.archive.length, maxArchiveLength]);
     const boardModifiers = react.useMemo(() => {
         return getBoardModifiers({ boardData, setBoardData });
     }, [boardData, setBoardData]);
@@ -38121,20 +38320,47 @@ class SettingsManager {
             text.inputEl.placeholder = `${globalValue ? globalValue : "272"} (default)`;
             text.inputEl.value = value ? value.toString() : "";
             text.onChange((val) => {
-                if (numberRegEx.test(val)) {
+                if (val && numberRegEx.test(val)) {
                     text.inputEl.removeClass("error");
                     this.applySettingsUpdate({
                         "lane-width": {
                             $set: parseInt(val),
                         },
                     });
+                    return;
                 }
-                else {
+                if (val) {
                     text.inputEl.addClass("error");
-                    this.applySettingsUpdate({
-                        $unset: ["lane-width"],
-                    });
                 }
+                this.applySettingsUpdate({
+                    $unset: ["lane-width"],
+                });
+            });
+        });
+        new obsidian.Setting(contentEl)
+            .setName("Maximum number of archived cards")
+            .setDesc("Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.")
+            .addText((text) => {
+            const [value, globalValue] = this.getSetting("max-archive-size", local);
+            text.inputEl.setAttr("type", "number");
+            text.inputEl.placeholder = `${globalValue ? globalValue : "-1"} (default)`;
+            text.inputEl.value = value ? value.toString() : "";
+            text.onChange((val) => {
+                if (val && numberRegEx.test(val)) {
+                    text.inputEl.removeClass("error");
+                    this.applySettingsUpdate({
+                        "max-archive-size": {
+                            $set: parseInt(val),
+                        },
+                    });
+                    return;
+                }
+                if (val) {
+                    text.inputEl.addClass("error");
+                }
+                this.applySettingsUpdate({
+                    $unset: ["max-archive-size"],
+                });
             });
         });
         new obsidian.Setting(contentEl)
@@ -38267,6 +38493,62 @@ class SettingsManager {
                             $unset: ["date-display-format"],
                         });
                     }
+                });
+            });
+        });
+        new obsidian.Setting(contentEl)
+            .setName("Hide dates")
+            .setDesc("When toggled, card dates will not be shown. Relative dates will still be displayed if they are enabled.")
+            .addToggle((toggle) => {
+            const [value, globalValue] = this.getSetting("hide-date-display", local);
+            if (value !== undefined) {
+                toggle.setValue(value);
+            }
+            else if (globalValue !== undefined) {
+                toggle.setValue(globalValue);
+            }
+            toggle.onChange((newValue) => {
+                this.applySettingsUpdate({
+                    "hide-date-display": {
+                        $set: newValue,
+                    },
+                });
+            });
+        })
+            .addExtraButton((b) => {
+            b.setIcon("reset")
+                .setTooltip("Reset to default")
+                .onClick(() => {
+                this.applySettingsUpdate({
+                    $unset: ["hide-date-display"],
+                });
+            });
+        });
+        new obsidian.Setting(contentEl)
+            .setName("Show relative date")
+            .setDesc("When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'")
+            .addToggle((toggle) => {
+            const [value, globalValue] = this.getSetting("show-relative-date", local);
+            if (value !== undefined) {
+                toggle.setValue(value);
+            }
+            else if (globalValue !== undefined) {
+                toggle.setValue(globalValue);
+            }
+            toggle.onChange((newValue) => {
+                this.applySettingsUpdate({
+                    "show-relative-date": {
+                        $set: newValue,
+                    },
+                });
+            });
+        })
+            .addExtraButton((b) => {
+            b.setIcon("reset")
+                .setTooltip("Reset to default")
+                .onClick(() => {
+                this.applySettingsUpdate({
+                    $unset: ["show-relative-date"],
                 });
             });
         });

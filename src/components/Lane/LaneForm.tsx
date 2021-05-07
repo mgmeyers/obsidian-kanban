@@ -2,6 +2,7 @@ import React from "react";
 import { Lane } from "../types";
 import { c, generateInstanceId, useIMEInputProps } from "../helpers";
 import { KanbanContext } from "../context";
+import useOnclickOutside from "react-cool-onclickoutside";
 
 export function LaneForm() {
   const { boardModifiers } = React.useContext(KanbanContext);
@@ -10,11 +11,16 @@ export function LaneForm() {
   const [laneTitle, setLaneTitle] = React.useState("");
 
   const inputRef = React.useRef<HTMLTextAreaElement>();
+  const clickOutsideRef = useOnclickOutside(
+    () => {
+      setIsInputVisible(false);
+    },
+    {
+      ignoreClass: c("ignore-click-outside"),
+    }
+  );
 
-  const {
-    getShouldIMEBlockAction,
-    ...inputProps
-  } = useIMEInputProps();
+  const { getShouldIMEBlockAction, ...inputProps } = useIMEInputProps();
 
   React.useEffect(() => {
     if (isInputVisible) {
@@ -44,7 +50,7 @@ export function LaneForm() {
 
   if (isInputVisible) {
     return (
-      <div className={c("lane")}>
+      <div ref={clickOutsideRef} className={c("lane")}>
         <div className={c("lane-input-wrapper")}>
           <div data-replicated-value={laneTitle} className={c("grow-wrap")}>
             <textarea

@@ -26,9 +26,12 @@ export interface KanbanSettings {
   "show-checkboxes"?: boolean;
   "date-format"?: string;
   "date-display-format"?: string;
+  "hide-date-display"?: boolean;
+  "show-relative-date"?: boolean;
   "date-trigger"?: string;
   "link-date-to-daily-note"?: boolean;
   "hide-date-in-title"?: boolean;
+  "max-archive-size"?: number;
 
   "display-tags"?: boolean;
   "time-format"?: string;
@@ -140,7 +143,7 @@ export class SettingsManager {
         text.inputEl.value = value ? value.toString() : "";
 
         text.onChange((val) => {
-          if (numberRegEx.test(val)) {
+          if (val && numberRegEx.test(val)) {
             text.inputEl.removeClass("error");
 
             this.applySettingsUpdate({
@@ -148,13 +151,54 @@ export class SettingsManager {
                 $set: parseInt(val),
               },
             });
-          } else {
+
+            return;
+          }
+
+          if (val) {
             text.inputEl.addClass("error");
+          }
+
+          this.applySettingsUpdate({
+            $unset: ["lane-width"],
+          });
+        });
+      });
+
+    new Setting(contentEl)
+      .setName("Maximum number of archived cards")
+      .setDesc(
+        "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely."
+      )
+      .addText((text) => {
+        const [value, globalValue] = this.getSetting("max-archive-size", local);
+
+        text.inputEl.setAttr("type", "number");
+        text.inputEl.placeholder = `${
+          globalValue ? globalValue : "-1"
+        } (default)`;
+        text.inputEl.value = value ? value.toString() : "";
+
+        text.onChange((val) => {
+          if (val && numberRegEx.test(val)) {
+            text.inputEl.removeClass("error");
 
             this.applySettingsUpdate({
-              $unset: ["lane-width"],
+              "max-archive-size": {
+                $set: parseInt(val),
+              },
             });
+
+            return;
           }
+
+          if (val) {
+            text.inputEl.addClass("error");
+          }
+
+          this.applySettingsUpdate({
+            $unset: ["max-archive-size"],
+          });
         });
       });
 
@@ -323,6 +367,76 @@ export class SettingsManager {
         });
       });
     });
+
+    new Setting(contentEl)
+      .setName("Hide dates")
+      .setDesc(
+        "When toggled, card dates will not be shown. Relative dates will still be displayed if they are enabled."
+      )
+      .addToggle((toggle) => {
+        const [value, globalValue] = this.getSetting(
+          "hide-date-display",
+          local
+        );
+
+        if (value !== undefined) {
+          toggle.setValue(value as boolean);
+        } else if (globalValue !== undefined) {
+          toggle.setValue(globalValue as boolean);
+        }
+
+        toggle.onChange((newValue) => {
+          this.applySettingsUpdate({
+            "hide-date-display": {
+              $set: newValue,
+            },
+          });
+        });
+      })
+      .addExtraButton((b) => {
+        b.setIcon("reset")
+          .setTooltip("Reset to default")
+          .onClick(() => {
+            this.applySettingsUpdate({
+              $unset: ["hide-date-display"],
+            });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName("Show relative date")
+      .setDesc(
+        "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'"
+      )
+      .addToggle((toggle) => {
+        const [value, globalValue] = this.getSetting(
+          "show-relative-date",
+          local
+        );
+
+        if (value !== undefined) {
+          toggle.setValue(value as boolean);
+        } else if (globalValue !== undefined) {
+          toggle.setValue(globalValue as boolean);
+        }
+
+        toggle.onChange((newValue) => {
+          this.applySettingsUpdate({
+            "show-relative-date": {
+              $set: newValue,
+            },
+          });
+        });
+      })
+      .addExtraButton((b) => {
+        b.setIcon("reset")
+          .setTooltip("Reset to default")
+          .onClick(() => {
+            this.applySettingsUpdate({
+              $unset: ["show-relative-date"],
+            });
+          });
+      });
 
     // new Setting(contentEl).setName("Time output format").then((setting) => {
     //   setting.addMomentFormat((mf) => {

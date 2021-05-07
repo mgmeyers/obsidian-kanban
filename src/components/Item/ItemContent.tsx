@@ -1,4 +1,4 @@
-import { MarkdownRenderer, getLinkpath } from "obsidian";
+import { MarkdownRenderer, getLinkpath, moment } from "obsidian";
 import React from "react";
 import { Item } from "../types";
 import { c, getDefaultDateFormat } from "../helpers";
@@ -11,6 +11,26 @@ export interface ItemContentProps {
   setIsSettingsVisible?: React.Dispatch<boolean>;
   onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
   onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>;
+}
+
+function getRelativeDate(date: moment.Moment) {
+  const today = moment().startOf("day");
+
+  if (today.isSame(date, "day")) {
+    return "today";
+  }
+
+  const diff = date.diff(today, "day");
+
+  if (diff === -1) {
+    return "yesterday";
+  }
+
+  if (diff === 1) {
+    return "tomorrow";
+  }
+
+  return date.from(today);
 }
 
 export function ItemContent({
@@ -28,6 +48,8 @@ export function ItemContent({
   const dateDisplayFormat =
     view.getSetting("date-display-format") || dateFormat;
   const shouldLinkDate = view.getSetting("link-date-to-daily-note");
+  const shouldShowRelativeDate = view.getSetting("show-relative-date");
+  const hideDateDisplay = view.getSetting("hide-date-display");
 
   const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false);
 
@@ -84,8 +106,12 @@ export function ItemContent({
     );
   }
 
-  const dateStr = item.metadata.date?.format(dateFormat);
-  const dateDisplayStr = item.metadata.date?.format(dateDisplayFormat);
+  const dateStr = hideDateDisplay
+    ? null
+    : item.metadata.date?.format(dateFormat);
+  const dateDisplayStr = hideDateDisplay
+    ? null
+    : item.metadata.date?.format(dateDisplayFormat);
 
   const datePath = dateStr ? getLinkpath(dateStr) : null;
   const isResolved = dateStr
@@ -105,6 +131,11 @@ export function ItemContent({
     ) : (
       dateDisplayStr
     );
+
+  const relativeDate =
+    shouldShowRelativeDate && item.metadata.date
+      ? getRelativeDate(item.metadata.date)
+      : null;
 
   return (
     <div className={c("item-title")}>
@@ -136,7 +167,16 @@ export function ItemContent({
         dangerouslySetInnerHTML={markdownContent.innerHTML}
       />
       <div className={c("item-metadata")}>
-        {dateStr && <span className={c("item-metadata-date")}>{date}</span>}
+        <>
+          {relativeDate && (
+            <span className={c("item-metadata-date-relative")}>
+              {relativeDate}
+            </span>
+          )}
+          {!hideDateDisplay && dateStr && (
+            <span className={c("item-metadata-date")}>{date}</span>
+          )}
+        </>
       </div>
     </div>
   );

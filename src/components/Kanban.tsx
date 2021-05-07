@@ -211,6 +211,8 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
     dataBridge.data
   );
 
+  const maxArchiveLength = view.getSetting("max-archive-size");
+
   React.useEffect(() => {
     dataBridge.onExternalSet((data) => {
       setBoardData(data);
@@ -222,6 +224,25 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
       dataBridge.setInternal(boardData);
     }
   }, [boardData]);
+
+  React.useEffect(() => {
+    if (maxArchiveLength === undefined || maxArchiveLength === -1) {
+      return;
+    }
+
+    if (
+      typeof maxArchiveLength === "number" &&
+      boardData.archive.length > maxArchiveLength
+    ) {
+      setBoardData(
+        update(boardData, {
+          archive: {
+            $set: boardData.archive.slice(maxArchiveLength * -1),
+          },
+        })
+      );
+    }
+  }, [boardData.archive.length, maxArchiveLength]);
 
   const boardModifiers = React.useMemo(() => {
     return getBoardModifiers({ boardData, setBoardData });

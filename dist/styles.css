@@ -286,6 +286,14 @@ button.kanban-plugin__lane-settings-button
   color: var(--text-muted);
 }
 
+.kanban-plugin__item-metadata > span {
+  display: block;
+}
+
+.kanban-plugin__item-metadata-date-relative::first-letter {
+  text-transform: uppercase;
+}
+
 .kanban-plugin__item-metadata a {
   text-decoration: none;
 }

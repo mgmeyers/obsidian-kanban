@@ -30,51 +30,54 @@ function constructDatePicker(
   onChange: (dates: Date[]) => void,
   date?: Date
 ) {
-  return document.body.createDiv({ cls: c("date-picker") }, (div) => {
-    div.style.left = `${coordinates.x || 0}px`;
-    div.style.top = `${coordinates.y || 0}px`;
+  return document.body.createDiv(
+    { cls: `${c("date-picker")} ${c("ignore-click-outside")}` },
+    (div) => {
+      div.style.left = `${coordinates.x || 0}px`;
+      div.style.top = `${coordinates.y || 0}px`;
 
-    div.createEl("input", { type: "text" }, (input) => {
-      setTimeout(() => {
-        let picker: flatpickr.Instance | null = null;
+      div.createEl("input", { type: "text" }, (input) => {
+        setTimeout(() => {
+          let picker: flatpickr.Instance | null = null;
 
-        const clickHandler = (e: MouseEvent) => {
-          if (
-            e.target instanceof HTMLElement &&
-            e.target.closest(`.${c("date-picker")}`) === null
-          ) {
-            selfDestruct();
-          }
-        };
+          const clickHandler = (e: MouseEvent) => {
+            if (
+              e.target instanceof HTMLElement &&
+              e.target.closest(`.${c("date-picker")}`) === null
+            ) {
+              selfDestruct();
+            }
+          };
 
-        const keyHandler = (e: KeyboardEvent) => {
-          if (e.key === "Escape") {
-            selfDestruct();
-          }
-        };
+          const keyHandler = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+              selfDestruct();
+            }
+          };
 
-        const selfDestruct = () => {
-          picker.destroy();
-          div.remove();
-          document.body.removeEventListener("click", clickHandler);
-          document.removeEventListener("keydown", keyHandler);
-        };
+          const selfDestruct = () => {
+            picker.destroy();
+            div.remove();
+            document.body.removeEventListener("click", clickHandler);
+            document.removeEventListener("keydown", keyHandler);
+          };
 
-        picker = flatpickr(input, {
-          locale: getDefaultLocale(),
-          defaultDate: date,
-          inline: true,
-          onChange: (dates) => {
-            onChange(dates);
-            selfDestruct();
-          },
+          picker = flatpickr(input, {
+            locale: getDefaultLocale(),
+            defaultDate: date,
+            inline: true,
+            onChange: (dates) => {
+              onChange(dates);
+              selfDestruct();
+            },
+          });
+
+          document.body.addEventListener("click", clickHandler);
+          document.addEventListener("keydown", keyHandler);
         });
-
-        document.body.addEventListener("click", clickHandler);
-        document.addEventListener("keydown", keyHandler);
       });
-    });
-  });
+    }
+  );
 }
 
 export function useItemMenu({
