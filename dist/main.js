@@ -37420,6 +37420,7 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
             i.setIcon("create-new")
                 .setTitle("New note from card")
                 .onClick(() => __awaiter(this, void 0, void 0, function* () {
+                const prevTitle = item.title;
                 const sanitizedTitle = item.title.replace(illegalCharsRegEx, " ");
                 const newNoteFolder = view.getSetting("new-note-folder");
                 const newNoteTemplatePath = view.getSetting("new-note-template");
@@ -37432,7 +37433,12 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
                 yield newLeaf.openFile(newFile);
                 view.app.workspace.setActiveLeaf(newLeaf, false, true);
                 yield applyTemplate(view, newNoteTemplatePath);
-                boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, { title: { $set: `[[${sanitizedTitle}]]` } }));
+                const newTitleRaw = item.titleRaw.replace(prevTitle, `[[${sanitizedTitle}]]`);
+                const processed = processTitle(newTitleRaw, view);
+                boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, {
+                    title: { $set: processed.title },
+                    titleRaw: { $set: newTitleRaw },
+                }));
             }));
         })
             .addSeparator()

@@ -160,6 +160,7 @@ export function useItemMenu({
         i.setIcon("create-new")
           .setTitle("New note from card")
           .onClick(async () => {
+            const prevTitle = item.title;
             const sanitizedTitle = item.title.replace(illegalCharsRegEx, " ");
 
             const newNoteFolder = view.getSetting("new-note-folder");
@@ -188,10 +189,16 @@ export function useItemMenu({
               newNoteTemplatePath as string | undefined
             );
 
+            const newTitleRaw = item.titleRaw.replace(prevTitle, `[[${sanitizedTitle}]]`);
+            const processed = processTitle(newTitleRaw, view);
+
             boardModifiers.updateItem(
               laneIndex,
               itemIndex,
-              update(item, { title: { $set: `[[${sanitizedTitle}]]` } })
+              update(item, { 
+                title: { $set: processed.title },
+                titleRaw: { $set: newTitleRaw },
+              })
             );
           });
       })
