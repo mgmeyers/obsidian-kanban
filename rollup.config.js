@@ -50,11 +50,11 @@ if (isProd) {
   });
 }
 
-if (process.env.PLUGIN_DEST) {
+if (process.env.PLUGIN_DEST || !isProd) {
   output.push({
     input: "./src/main.ts",
     output: {
-      dir: process.env.PLUGIN_DEST,
+      dir: process.env.PLUGIN_DEST || "./dist",
       sourcemap: "inline",
       sourcemapExcludeSources: isProd,
       format: "cjs",
@@ -77,7 +77,9 @@ if (process.env.PLUGIN_DEST) {
       }),
       commonjs(),
       copy({
-        targets: [{ src: "./manifest.json", dest: process.env.PLUGIN_DEST }],
+        targets: [
+          { src: "./manifest.json", dest: process.env.PLUGIN_DEST || "./dist" },
+        ],
       }),
     ],
   });
