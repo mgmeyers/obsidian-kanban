@@ -1,19 +1,17 @@
 import { MarkdownRenderer, getLinkpath, moment } from "obsidian";
 import React from "react";
 import { Item } from "../types";
-import { c, getDefaultDateFormat } from "../helpers";
+import { c, getDefaultDateFormat, getDefaultTimeFormat } from "../helpers";
 import { ObsidianContext } from "../context";
 import { useAutocompleteInputProps } from "./autocomplete";
+import { KanbanView } from "src/KanbanView";
+import { constructTimePicker } from "./helpers";
 
-export interface ItemContentProps {
-  item: Item;
-  isSettingsVisible: boolean;
-  setIsSettingsVisible?: React.Dispatch<boolean>;
-  onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
-  onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>;
-}
+function getRelativeDate(date: moment.Moment, time: moment.Moment) {
+  if (time) {
+    return time.from(moment());
+  }
 
-function getRelativeDate(date: moment.Moment) {
   const today = moment().startOf("day");
 
   if (today.isSame(date, "day")) {
@@ -33,85 +31,59 @@ function getRelativeDate(date: moment.Moment) {
   return date.from(today);
 }
 
-export function ItemContent({
-  item,
-  isSettingsVisible,
-  setIsSettingsVisible,
-  onChange,
-}: ItemContentProps) {
-  const obsidianContext = React.useContext(ObsidianContext);
-  const inputRef = React.useRef<HTMLTextAreaElement>();
+interface MetadataProps {
+  item: Item;
+  view: KanbanView;
+}
 
-  const { view, filePath } = obsidianContext;
+function RelativeDate({ item, view }: MetadataProps) {
+  const shouldShowRelativeDate = view.getSetting("show-relative-date");
+
+  if (!shouldShowRelativeDate || !item.metadata.date) {
+    return null;
+  }
+
+  const relativeDate = getRelativeDate(item.metadata.date, item.metadata.time);
+
+  return (
+    <span className={c("item-metadata-date-relative")}>{relativeDate}</span>
+  );
+}
+
+interface DateAndTimeProps {
+  onEditDate?: React.MouseEventHandler;
+  onEditTime?: React.MouseEventHandler;
+  filePath: string;
+}
+
+function DateAndTime({
+  item,
+  view,
+  filePath,
+  onEditDate,
+  onEditTime,
+}: MetadataProps & DateAndTimeProps) {
+  const hideDateDisplay = view.getSetting("hide-date-display");
+
+  if (hideDateDisplay || !item.metadata.date) return null;
+
   const dateFormat =
     view.getSetting("date-format") || getDefaultDateFormat(view.app);
+  const timeFormat =
+    view.getSetting("time-format") || getDefaultTimeFormat(view.app);
   const dateDisplayFormat =
     view.getSetting("date-display-format") || dateFormat;
   const shouldLinkDate = view.getSetting("link-date-to-daily-note");
-  const shouldShowRelativeDate = view.getSetting("show-relative-date");
-  const hideDateDisplay = view.getSetting("hide-date-display");
 
-  const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false);
+  const dateStr = item.metadata.date.format(dateFormat);
 
-  const autocompleteProps = useAutocompleteInputProps({
-    isInputVisible: isSettingsVisible,
-    onEnter: onAction,
-    onEscape: onAction,
-  });
+  if (!dateStr) return null;
 
-  const [isCtrlHovering, setIsCtrlHovering] = React.useState(false);
-  const [isHovering, setIsHovering] = React.useState(false);
-
-  React.useEffect(() => {
-    if (isHovering) {
-      const handler = (e: KeyboardEvent) => {
-        if (e.metaKey || e.ctrlKey) {
-          setIsCtrlHovering(true);
-        } else {
-          setIsCtrlHovering(false);
-        }
-      };
-
-      window.addEventListener("keydown", handler);
-      window.addEventListener("keyup", handler);
-
-      return () => {
-        window.removeEventListener("keydown", handler);
-        window.removeEventListener("keyup", handler);
-      };
-    }
-  }, [isHovering]);
-
-  const markdownContent = React.useMemo(() => {
-    const tempEl = createDiv();
-    MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
-
-    return {
-      innerHTML: { __html: tempEl.innerHTML.toString() },
-    };
-  }, [item, filePath, dateFormat, view]);
-
-  if (isSettingsVisible) {
-    return (
-      <div data-replicated-value={item.titleRaw} className={c("grow-wrap")}>
-        <textarea
-          rows={1}
-          ref={inputRef}
-          className={c("item-input")}
-          value={item.titleRaw}
-          onChange={onChange}
-          {...autocompleteProps}
-        />
-      </div>
-    );
-  }
-
-  const dateStr = hideDateDisplay
+  const hasTime = !!item.metadata.time;
+  const dateDisplayStr = item.metadata.date.format(dateDisplayFormat);
+  const timeDisplayStr = !hasTime
     ? null
-    : item.metadata.date?.format(dateFormat);
-  const dateDisplayStr = hideDateDisplay
-    ? null
-    : item.metadata.date?.format(dateDisplayFormat);
+    : item.metadata.time.format(timeFormat);
 
   const datePath = dateStr ? getLinkpath(dateStr) : null;
   const isResolved = dateStr
@@ -132,51 +104,105 @@ export function ItemContent({
       dateDisplayStr
     );
 
-  const relativeDate =
-    shouldShowRelativeDate && item.metadata.date
-      ? getRelativeDate(item.metadata.date)
-      : null;
+  const dateProps: React.HTMLAttributes<HTMLSpanElement> = {};
+
+  if (!shouldLinkDate) {
+    dateProps["aria-label"] = "Change date";
+    dateProps.onClick = onEditDate;
+  }
+
+  return (
+    <span className={c("item-metadata-date-wrapper")}>
+      <span
+        {...dateProps}
+        className={`${c("item-metadata-date")} ${
+          !shouldLinkDate ? "is-button" : ""
+        }`}
+      >
+        {date}
+      </span>{" "}
+      {hasTime && (
+        <span
+          onClick={onEditTime}
+          className={`${c("item-metadata-time")} is-button`}
+        >
+          {timeDisplayStr}
+        </span>
+      )}
+    </span>
+  );
+}
+
+export interface ItemContentProps {
+  item: Item;
+  isSettingsVisible: boolean;
+  setIsSettingsVisible?: React.Dispatch<boolean>;
+  onEditDate?: React.MouseEventHandler;
+  onEditTime?: React.MouseEventHandler;
+  onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
+  onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>;
+}
+
+export function ItemContent({
+  item,
+  isSettingsVisible,
+  setIsSettingsVisible,
+  onEditDate,
+  onEditTime,
+  onChange,
+}: ItemContentProps) {
+  const obsidianContext = React.useContext(ObsidianContext);
+  const inputRef = React.useRef<HTMLTextAreaElement>();
+
+  const { view, filePath } = obsidianContext;
+
+  const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false);
+
+  const autocompleteProps = useAutocompleteInputProps({
+    isInputVisible: isSettingsVisible,
+    onEnter: onAction,
+    onEscape: onAction,
+  });
+
+  const markdownContent = React.useMemo(() => {
+    const tempEl = createDiv();
+    MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
+
+    return {
+      innerHTML: { __html: tempEl.innerHTML.toString() },
+    };
+  }, [item, filePath, view]);
+
+  if (isSettingsVisible) {
+    return (
+      <div data-replicated-value={item.titleRaw} className={c("grow-wrap")}>
+        <textarea
+          rows={1}
+          ref={inputRef}
+          className={c("item-input")}
+          value={item.titleRaw}
+          onChange={onChange}
+          {...autocompleteProps}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={c("item-title")}>
       <div
-        onMouseEnter={(e) => {
-          setIsHovering(true);
-
-          if (e.ctrlKey || e.metaKey) {
-            setIsCtrlHovering(true);
-          }
-        }}
-        onMouseLeave={() => {
-          setIsHovering(false);
-
-          if (isCtrlHovering) {
-            setIsCtrlHovering(false);
-          }
-        }}
-        onClick={(e) => {
-          if (e.metaKey || e.ctrlKey) {
-            e.stopPropagation();
-            e.preventDefault();
-            setIsSettingsVisible(true);
-          }
-        }}
-        className={`markdown-preview-view ${c("item-markdown")} ${
-          isCtrlHovering ? "is-ctrl-hovering" : ""
-        }`}
+        className={`markdown-preview-view ${c("item-markdown")}`}
         dangerouslySetInnerHTML={markdownContent.innerHTML}
       />
       <div className={c("item-metadata")}>
-        <>
-          {relativeDate && (
-            <span className={c("item-metadata-date-relative")}>
-              {relativeDate}
-            </span>
-          )}
-          {!hideDateDisplay && dateStr && (
-            <span className={c("item-metadata-date")}>{date}</span>
-          )}
-        </>
+        <RelativeDate item={item} view={view} />
+        <DateAndTime
+          item={item}
+          view={view}
+          filePath={filePath}
+          onEditDate={onEditDate}
+          onEditTime={onEditTime}
+        />
       </div>
     </div>
   );

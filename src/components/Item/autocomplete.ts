@@ -1,14 +1,13 @@
 import { TFile, moment } from "obsidian";
 import React from "react";
 
-import { StrategyProps, Textcomplete } from "@textcomplete/core";
+import { CursorOffset, StrategyProps, Textcomplete } from "@textcomplete/core";
 import { TextareaEditor } from "@textcomplete/textarea";
 import Fuse from "fuse.js";
 import {
   c,
   escapeRegExpStr,
   getDefaultDateFormat,
-  getDefaultTimeFormat,
   useIMEInputProps,
 } from "../helpers";
 import { ObsidianContext, ObsidianContextProps } from "../context";
@@ -17,12 +16,13 @@ import flatpickr from "flatpickr";
 import { KanbanView } from "src/KanbanView";
 import { defaultDateTrigger, defaultTimeTrigger } from "src/settingHelpers";
 import { getDefaultLocale } from "./datePickerLocale";
+import { buildTimeArray } from "./helpers";
 
 const tagRegex = /\B#([^\s]*)?$/;
 const linkRegex = /\B\[\[([^\]]*)?$/;
 const embedRegex = /\B!\[\[([^\]]*)?$/;
 
-function forceChangeEvent(input: HTMLTextAreaElement, value: string) {
+export function forceChangeEvent(input: HTMLTextAreaElement, value: string) {
   Object.getOwnPropertyDescriptor(
     HTMLTextAreaElement.prototype,
     "value"
@@ -31,7 +31,7 @@ function forceChangeEvent(input: HTMLTextAreaElement, value: string) {
   input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
-function applyDate(
+export function applyDate(
   date: Date,
   inputRef: React.MutableRefObject<HTMLTextAreaElement>,
   view: KanbanView
@@ -76,6 +76,49 @@ function constructDatePicker({
       )
     );
   });
+}
+
+export function ensureDatePickerIsOnScreen(
+  position: CursorOffset,
+  div: HTMLElement
+) {
+  const height = div.clientHeight;
+  const width = div.clientWidth;
+
+  if (position.top + height > window.innerHeight) {
+    div.style.top = `${(position.clientTop || 0) - height}px`;
+  }
+
+  if (position.left + width > window.innerWidth) {
+    div.style.left = `${(position.left || 0) - width}px`;
+  }
+}
+
+function getTimePickerConfig(view: KanbanView): StrategyProps<string> {
+  const timeTrigger = view.getSetting("time-trigger") || defaultTimeTrigger;
+  const timeTriggerRegex = new RegExp(
+    `\\B${escapeRegExpStr(timeTrigger as string)}{?([^}]*)$`
+  );
+  const times = buildTimeArray(view);
+
+  return {
+    id: "time",
+    match: timeTriggerRegex,
+    index: 1,
+    search: (term: string, callback: (results: string[]) => void) => {
+      if (!term) {
+        callback(times);
+      } else {
+        callback(times.filter((t) => t.startsWith(term)));
+      }
+    },
+    template: (result: string) => {
+      return result;
+    },
+    replace: (result: string): string => {
+      return `${timeTrigger}{${result}} `;
+    },
+  };
 }
 
 function getTagSearchConfig(
@@ -190,21 +233,8 @@ export function constructAutocomplete({
   let datePickerInstance: flatpickr.Instance | null = null;
 
   const dateTrigger = view.getSetting("date-trigger") || defaultDateTrigger;
-  const timeTrigger = view.getSetting("time-trigger") || defaultTimeTrigger;
-
-  const destroyDatePicker = () => {
-    isAutocompleteVisibleRef.current = false;
-    datePickerInstance.destroy();
-    datePickerEl.remove();
-    setTimeout(() => (datePickerEl = null));
-  };
-
   const dateTriggerRegex = new RegExp(
     `(?:^|\\s)${escapeRegExpStr(dateTrigger as string)}$`
-  );
-
-  const timeTriggerRegex = new RegExp(
-    `(?:^|\\s)${escapeRegExpStr(timeTrigger as string)}$`
   );
 
   const tags = Object.keys((view.app.metadataCache as any).getTags()).sort();
@@ -222,18 +252,31 @@ export function constructAutocomplete({
       getTagSearchConfig(tags, tagSearch),
       getFileSearchConfig(files, fileSearch, filePath, view, false),
       getFileSearchConfig(files, fileSearch, filePath, view, true),
+      getTimePickerConfig(view),
     ],
     {
       dropdown: {
         className: `${c("autocomplete")} ${c("ignore-click-outside")}`,
         rotate: true,
         item: {
-          className: c("autocomplete-item"),
-          activeClassName: c("autocomplete-item-active"),
+          className: `${c("autocomplete-item")} ${c("ignore-click-outside")}`,
+          activeClassName: `${c("autocomplete-item-active")} ${c(
+            "ignore-click-outside"
+          )}`,
         },
       },
     }
   );
+
+  const destroyDatePicker = () => {
+    if (!autocomplete.isShown()) {
+      isAutocompleteVisibleRef.current = false;
+    }
+
+    datePickerInstance.destroy();
+    datePickerEl.remove();
+    setTimeout(() => (datePickerEl = null));
+  };
 
   autocomplete.on("show", () => {
     isAutocompleteVisibleRef.current = true;
@@ -324,6 +367,7 @@ export function constructAutocomplete({
       if (datePickerEl) {
         datePickerEl.style.left = `${position.left || 0}px`;
         datePickerEl.style.top = `${position.top || 0}px`;
+        ensureDatePickerIsOnScreen(position, datePickerEl);
       } else {
         datePickerEl = document.body.createDiv(
           { cls: `${c("date-picker")} ${c("ignore-click-outside")}` },
@@ -338,6 +382,7 @@ export function constructAutocomplete({
               cb: (picker) => {
                 datePickerInstance = picker;
                 isAutocompleteVisibleRef.current = true;
+                ensureDatePickerIsOnScreen(position, datePickerEl);
               },
             });
           }
@@ -376,11 +421,8 @@ export function useAutocompleteInputProps({
   const obsidianContext = React.useContext(ObsidianContext);
   const isAutocompleteVisibleRef = React.useRef<boolean>(false);
   const inputRef = React.useRef<HTMLTextAreaElement>();
-  const {
-    onCompositionStart,
-    onCompositionEnd,
-    getShouldIMEBlockAction,
-  } = useIMEInputProps();
+  const { onCompositionStart, onCompositionEnd, getShouldIMEBlockAction } =
+    useIMEInputProps();
 
   React.useEffect(() => {
     const input = inputRef.current;

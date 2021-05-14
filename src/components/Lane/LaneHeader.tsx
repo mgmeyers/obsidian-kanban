@@ -30,7 +30,10 @@ export function LaneHeader({
 
   return (
     <>
-      <div className={c("lane-header-wrapper")}>
+      <div
+        onDoubleClick={() => setIsEditing(true)}
+        className={c("lane-header-wrapper")}
+      >
         <div
           className={c("lane-grip")}
           {...dragHandleProps}

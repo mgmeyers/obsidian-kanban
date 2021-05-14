@@ -13,6 +13,12 @@ import { KanbanContext, ObsidianContext } from "../context";
 import { ItemContent } from "./ItemContent";
 import { useItemMenu } from "./ItemMenu";
 import { processTitle } from "src/parser";
+import {
+  constructDatePicker,
+  constructMenuDatePickerOnChange,
+  constructMenuTimePickerOnChange,
+  constructTimePicker,
+} from "./helpers";
 
 export interface DraggableItemFactoryParams {
   items: Item[];
@@ -103,16 +109,17 @@ export function draggableItemFactory({
     const { boardModifiers, board } = React.useContext(KanbanContext);
     const { view } = React.useContext(ObsidianContext);
     const [isEditing, setIsEditing] = React.useState(false);
-    const [isCtrlHovering, setIsCtrlHovering] = React.useState(false);
-    const [isHovering, setIsHovering] = React.useState(false);
+    const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] =
+      React.useState(false);
+    const [isHoveringCheckbox, setIsHoveringCheckbox] = React.useState(false);
 
     React.useEffect(() => {
-      if (isHovering) {
+      if (isHoveringCheckbox) {
         const handler = (e: KeyboardEvent) => {
           if (e.metaKey || e.ctrlKey) {
-            setIsCtrlHovering(true);
+            setIsCtrlHoveringCheckbox(true);
           } else {
-            setIsCtrlHovering(false);
+            setIsCtrlHoveringCheckbox(false);
           }
         };
 
@@ -124,7 +131,7 @@ export function draggableItemFactory({
           window.removeEventListener("keyup", handler);
         };
       }
-    }, [isHovering]);
+    }, [isHoveringCheckbox]);
 
     const itemIndex = rubric.source.index;
     const item = items[itemIndex];
@@ -146,6 +153,14 @@ export function draggableItemFactory({
 
     return (
       <div
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          showMenu(e.nativeEvent);
+        }}
+        onDoubleClick={() => {
+          setIsEditing(true);
+        }}
         className={`${c("item")} ${classModifiers.join(" ")}`}
         ref={provided.innerRef}
         {...provided.draggableProps}
@@ -155,22 +170,22 @@ export function draggableItemFactory({
           {(shouldMarkItemsComplete || shouldShowCheckbox) && (
             <div
               onMouseEnter={(e) => {
-                setIsHovering(true);
+                setIsHoveringCheckbox(true);
 
                 if (e.ctrlKey || e.metaKey) {
-                  setIsCtrlHovering(true);
+                  setIsCtrlHoveringCheckbox(true);
                 }
               }}
               onMouseLeave={() => {
-                setIsHovering(false);
+                setIsHoveringCheckbox(false);
 
-                if (isCtrlHovering) {
-                  setIsCtrlHovering(false);
+                if (isCtrlHoveringCheckbox) {
+                  setIsCtrlHoveringCheckbox(false);
                 }
               }}
               className={c("item-prefix-button-wrapper")}
             >
-              {shouldShowCheckbox && !isCtrlHovering && (
+              {shouldShowCheckbox && !isCtrlHoveringCheckbox && (
                 <input
                   onChange={() => {
                     boardModifiers.updateItem(
@@ -188,14 +203,16 @@ export function draggableItemFactory({
                   checked={!!item.data.isComplete}
                 />
               )}
-              {(isCtrlHovering ||
+              {(isCtrlHoveringCheckbox ||
                 (!shouldShowCheckbox && shouldMarkItemsComplete)) && (
                 <button
                   onClick={() => {
                     boardModifiers.archiveItem(laneIndex, itemIndex, item);
                   }}
                   className={c("item-prefix-button")}
-                  aria-label={isCtrlHovering ? undefined : "Archive item"}
+                  aria-label={
+                    isCtrlHoveringCheckbox ? undefined : "Archive item"
+                  }
                 >
                   <Icon name="sheets-in-box" />
                 </button>
@@ -206,6 +223,35 @@ export function draggableItemFactory({
             isSettingsVisible={isEditing}
             setIsSettingsVisible={setIsEditing}
             item={item}
+            onEditDate={(e) => {
+              constructDatePicker(
+                { x: e.clientX, y: e.clientY },
+                constructMenuDatePickerOnChange({
+                  view,
+                  boardModifiers,
+                  item,
+                  hasDate: true,
+                  laneIndex,
+                  itemIndex,
+                }),
+                item.metadata.date?.toDate()
+              );
+            }}
+            onEditTime={(e) => {
+              constructTimePicker(
+                view,
+                { x: e.clientX, y: e.clientY },
+                constructMenuTimePickerOnChange({
+                  view,
+                  boardModifiers,
+                  item,
+                  hasTime: true,
+                  laneIndex,
+                  itemIndex,
+                }),
+                item.metadata.time
+              );
+            }}
             onChange={(e) => {
               const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
               const processed = processTitle(titleRaw, view);
@@ -219,6 +265,9 @@ export function draggableItemFactory({
                   metadata: {
                     date: {
                       $set: processed.date,
+                    },
+                    time: {
+                      $set: processed.time,
                     },
                   },
                 })

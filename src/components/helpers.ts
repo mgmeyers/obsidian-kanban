@@ -79,8 +79,8 @@ export function moveItem({ boardData, dropResult }: BoardDropMutationParams) {
     (lane) => lane.id === dropResult.destination.droppableId
   );
 
-  const shouldMarkAsComplete = !!lanes[destinationLaneIndex].data
-    .shouldMarkItemsComplete;
+  const shouldMarkAsComplete =
+    !!lanes[destinationLaneIndex].data.shouldMarkItemsComplete;
 
   let item = lanes[sourceLaneIndex].items[dropResult.source.index];
   let isComplete = !!item.data.isComplete;
@@ -144,11 +144,8 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
     : null;
 
   if (templateFile && templateFile instanceof TFile) {
-    const {
-      templatesEnabled,
-      templaterPlugin,
-      templatesPlugin,
-    } = view.plugin.getTemplatePlugins();
+    const { templatesEnabled, templaterPlugin, templatesPlugin } =
+      view.plugin.getTemplatePlugins();
 
     const templateContent = await view.app.vault.read(templateFile);
 

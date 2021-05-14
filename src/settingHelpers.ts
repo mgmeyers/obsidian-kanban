@@ -48,11 +48,8 @@ export function getTemplateChoices(app: App, folderStr?: string) {
 }
 
 export function getListOptions(app: App, plugin: KanbanPlugin) {
-  const {
-    templateFolder,
-    templatesEnabled,
-    templaterPlugin,
-  } = plugin.getTemplatePlugins();
+  const { templateFolder, templatesEnabled, templaterPlugin } =
+    plugin.getTemplatePlugins();
 
   const templateFiles = getTemplateChoices(app, templateFolder);
   const vaultFolders = getFolderChoices(app);

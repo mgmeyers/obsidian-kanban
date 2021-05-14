@@ -264,6 +264,7 @@ button.kanban-plugin__lane-settings-button
 .kanban-plugin
   .kanban-plugin__item
   .markdown-preview-view.kanban-plugin__item-markdown {
+  font-size: 0.875rem;
   padding: unset;
   width: unset;
   height: unset;
@@ -273,10 +274,6 @@ button.kanban-plugin__lane-settings-button
   color: unset;
   user-select: unset;
   -webkit-user-select: unset;
-}
-
-.markdown-preview-view.kanban-plugin__item-markdown.is-ctrl-hovering {
-  cursor: text;
 }
 
 .kanban-plugin__item-metadata:not(:empty) {
@@ -290,12 +287,28 @@ button.kanban-plugin__lane-settings-button
   display: block;
 }
 
+.kanban-plugin__item-metadata .is-button {
+  cursor: pointer;
+}
+
+.kanban-plugin__item-metadata .is-button:hover {
+  color: var(--text-normal);
+}
+
 .kanban-plugin__item-metadata-date-relative::first-letter {
   text-transform: uppercase;
 }
 
 .kanban-plugin__item-metadata a {
   text-decoration: none;
+}
+
+.kanban-plugin__item-metadata-time::before {
+  content: " • ";
+}
+
+.kanban-plugin__item-metadata-time.is-button:hover::before {
+  color: var(--text-muted);
 }
 
 .kanban-plugin__item-prefix-button-wrapper,
@@ -859,4 +872,46 @@ button.kanban-plugin__cancel-action-button {
 .kanban-plugin__date-picker .flatpickr-day.notAllowed.prevMonthDay,
 .kanban-plugin__date-picker .flatpickr-day.notAllowed.nextMonthDay {
   color: var(--text-faint);
+}
+
+.kanban-plugin__time-picker {
+  position: absolute;
+  max-height: 250px;
+  overflow: auto;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: 0 2px 8px var(--background-modifier-box-shadow);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 14px;
+  z-index: var(--layer-menu);
+}
+
+.kanban-plugin__time-picker-item {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+  padding: 6px 8px;
+}
+
+.kanban-plugin__time-picker-check {
+  visibility: hidden;
+  display: inline-flex;
+  margin-right: 5px;
+}
+
+.kanban-plugin__time-picker-item.is-hour {
+  color: var(--text-normal);
+  font-weight: 600;
+}
+
+.kanban-plugin__time-picker-item.is-selected .kanban-plugin__time-picker-check {
+  visibility: visible;
+}
+
+.kanban-plugin__time-picker-item:hover,
+.kanban-plugin__time-picker-item.is-selected {
+  background: var(--background-secondary);
 }

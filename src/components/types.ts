@@ -17,6 +17,7 @@ export interface ItemData {
 
 export interface ItemMetaData {
   date?: moment.Moment
+  time?: moment.Moment
 }
 
 export interface Item {

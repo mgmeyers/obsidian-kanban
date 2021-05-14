@@ -40,10 +40,10 @@ export default class KanbanPlugin extends Plugin {
           await this.saveSettings();
 
           // Force a complete re-render when settings change
-          this.app.workspace.getLeavesOfType(kanbanViewType).forEach(leaf => {
-            const view = (leaf.view as KanbanView);
+          this.app.workspace.getLeavesOfType(kanbanViewType).forEach((leaf) => {
+            const view = leaf.view as KanbanView;
             view.setViewData(view.data, true);
-          })
+          });
         },
       },
       this.settings
@@ -151,9 +151,8 @@ export default class KanbanPlugin extends Plugin {
                   .setTitle("Open as kanban board")
                   .setIcon(kanbanIcon)
                   .onClick(() => {
-                    self.kanbanFileModes[
-                      this.leaf.id || file.path
-                    ] = kanbanViewType;
+                    self.kanbanFileModes[this.leaf.id || file.path] =
+                      kanbanViewType;
                     self.setKanbanView(this.leaf);
                   });
               })
@@ -205,7 +204,9 @@ export default class KanbanPlugin extends Plugin {
   async newKanban(folder?: TFolder) {
     const targetFolder = folder
       ? folder
-      : this.app.fileManager.getNewFileParent("");
+      : this.app.fileManager.getNewFileParent(
+          this.app.workspace.getActiveFile().path
+        );
 
     // Forcing frontmatter for now until more options are available
     const frontmatter = [

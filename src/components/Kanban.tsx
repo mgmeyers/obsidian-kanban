@@ -1,3 +1,4 @@
+import { moment } from "obsidian";
 import update from "immutability-helper";
 import React from "react";
 import { DataBridge } from "../DataBridge";
@@ -16,12 +17,14 @@ import {
   swapLanes,
   swapItems,
   moveItem,
+  getDefaultDateFormat,
+  getDefaultTimeFormat,
 } from "./helpers";
 import { draggableLaneFactory } from "./Lane/Lane";
 import { LaneForm } from "./Lane/LaneForm";
 import { KanbanContext, ObsidianContext } from "./context";
 import { KanbanView } from "src/KanbanView";
-import { frontMatterKey } from "../parser";
+import { frontMatterKey, processTitle } from "../parser";
 
 interface KanbanProps {
   dataBridge: DataBridge;
@@ -30,6 +33,7 @@ interface KanbanProps {
 }
 
 interface BoardStateProps {
+  view: KanbanView;
   boardData: Board;
   setBoardData: React.Dispatch<Board>;
 }
@@ -73,9 +77,37 @@ export function getBoardDragHandler({
 }
 
 function getBoardModifiers({
+  view,
   boardData,
   setBoardData,
 }: BoardStateProps): BoardModifiers {
+  const shouldAppendArchiveDate = !!view.getSetting("prepend-archive-date");
+  const dateFmt =
+    view.getSetting("date-format") || getDefaultDateFormat(view.app);
+  const timeFmt =
+    view.getSetting("time-format") || getDefaultTimeFormat(view.app);
+  const archiveDateSeparator =
+    (view.getSetting("prepend-archive-separator") as string) || "";
+  const archiveDateFormat =
+    (view.getSetting("prepend-archive-format") as string) ||
+    `${dateFmt} ${timeFmt}`;
+
+  const appendArchiveDate = (item: Item) => {
+    const newTitle = [moment().format(archiveDateFormat)];
+
+    if (archiveDateSeparator) newTitle.push(archiveDateSeparator);
+
+    newTitle.push(item.titleRaw);
+
+    const titleRaw = newTitle.join(" ");
+    const processed = processTitle(titleRaw, view);
+
+    return update(item, {
+      title: { $set: processed.title },
+      titleRaw: { $set: titleRaw },
+    });
+  };
+
   return {
     addItemToLane: (laneIndex: number, item: Item) => {
       setBoardData(
@@ -132,7 +164,9 @@ function getBoardModifiers({
             $splice: [[laneIndex, 1]],
           },
           archive: {
-            $push: items,
+            $push: shouldAppendArchiveDate
+              ? items.map(appendArchiveDate)
+              : items,
           },
         })
       );
@@ -151,7 +185,9 @@ function getBoardModifiers({
             },
           },
           archive: {
-            $push: items,
+            $push: shouldAppendArchiveDate
+              ? items.map(appendArchiveDate)
+              : items,
           },
         })
       );
@@ -198,7 +234,7 @@ function getBoardModifiers({
             },
           },
           archive: {
-            $push: [item],
+            $push: [shouldAppendArchiveDate ? appendArchiveDate(item) : item],
           },
         })
       );
@@ -245,12 +281,12 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
   }, [boardData.archive.length, maxArchiveLength]);
 
   const boardModifiers = React.useMemo(() => {
-    return getBoardModifiers({ boardData, setBoardData });
-  }, [boardData, setBoardData]);
+    return getBoardModifiers({ view, boardData, setBoardData });
+  }, [view, boardData, setBoardData]);
 
   const onDragEnd = React.useMemo(() => {
-    return getBoardDragHandler({ boardData, setBoardData });
-  }, [boardData, setBoardData]);
+    return getBoardDragHandler({ view, boardData, setBoardData });
+  }, [view, boardData, setBoardData]);
 
   if (boardData === null) return null;
 

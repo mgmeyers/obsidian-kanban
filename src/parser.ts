@@ -3,10 +3,11 @@ import {
   escapeRegExpStr,
   generateInstanceId,
   getDefaultDateFormat,
+  getDefaultTimeFormat,
 } from "./components/helpers";
 import { Board, Item, Lane } from "./components/types";
 import { KanbanSettings } from "./Settings";
-import { defaultDateTrigger } from "./settingHelpers";
+import { defaultDateTrigger, defaultTimeTrigger } from "./settingHelpers";
 import yaml from "js-yaml";
 import { KanbanView } from "./KanbanView";
 
@@ -55,31 +56,53 @@ export function processTitle(
     view.getSetting("date-format", settings) || getDefaultDateFormat(view.app);
   const dateTrigger =
     view.getSetting("date-trigger", settings) || defaultDateTrigger;
+  const timeFormat =
+    view.getSetting("time-format", settings) || getDefaultTimeFormat(view.app);
+  const timeTrigger =
+    view.getSetting("time-trigger", settings) || defaultTimeTrigger;
   const shouldHideDate = view.getSetting("hide-date-in-title", settings);
   const shouldLinkDate = view.getSetting("link-date-to-daily-note", settings);
 
   let date: undefined | moment.Moment = undefined;
+  let time: undefined | moment.Moment = undefined;
   let processedTitle = title;
 
   const contentMatch = shouldLinkDate ? "\\[\\[([^}]+)\\]\\]" : "{([^}]+)}";
   const dateRegEx = new RegExp(
-    `(?:^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`,
-    "g"
+    `(?:^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`
+  );
+  const timeRegEx = new RegExp(
+    `(?:^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
   );
 
-  const match = dateRegEx.exec(title);
+  const dateMatch = dateRegEx.exec(title);
+  const timeMatch = timeRegEx.exec(title);
 
-  if (match) {
-    date = moment(match[1], dateFormat as string);
+  if (dateMatch) {
+    date = moment(dateMatch[1], dateFormat as string);
+  }
+
+  if (timeMatch) {
+    time = moment(timeMatch[1], timeFormat as string);
+
+    if (date) {
+      date.hour(time.hour())
+      date.minute(time.minute())
+
+      time = date.clone();
+    }
   }
 
   if (shouldHideDate) {
-    processedTitle = processedTitle.replace(dateRegEx, "");
+    processedTitle = processedTitle
+      .replace(dateRegEx, "")
+      .replace(timeRegEx, "");
   }
 
   return {
     title: processedTitle,
     date,
+    time,
   };
 }
 
@@ -115,6 +138,7 @@ function mdToItem(
     },
     metadata: {
       date: processed.date,
+      time: processed.time,
     },
   };
 }

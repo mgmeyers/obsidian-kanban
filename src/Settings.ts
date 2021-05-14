@@ -11,6 +11,7 @@ import KanbanPlugin from "./main";
 import {
   createSearchSelect,
   defaultDateTrigger,
+  defaultTimeTrigger,
   getListOptions,
 } from "./settingHelpers";
 
@@ -26,16 +27,20 @@ export interface KanbanSettings {
   "show-checkboxes"?: boolean;
   "date-format"?: string;
   "date-display-format"?: string;
+  "date-time-display-format"?: string;
   "hide-date-display"?: boolean;
   "show-relative-date"?: boolean;
   "date-trigger"?: string;
+  "time-trigger"?: string;
   "link-date-to-daily-note"?: boolean;
   "hide-date-in-title"?: boolean;
   "max-archive-size"?: number;
+  "time-format"?: string;
+  "prepend-archive-date"?: boolean;
+  "prepend-archive-separator"?: string;
+  "prepend-archive-format"?: string;
 
   "display-tags"?: boolean;
-  "time-format"?: string;
-  "time-trigger"?: string;
 }
 
 export interface SettingsManagerConfig {
@@ -89,13 +94,11 @@ export class SettingsManager {
 
     if (local) {
       contentEl.createEl("p", {
-        text:
-          "These settings will take precedence over the default Kanban board settings.",
+        text: "These settings will take precedence over the default Kanban board settings.",
       });
     } else {
       contentEl.createEl("p", {
-        text:
-          "Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.",
+        text: "Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.",
       });
     }
 
@@ -261,6 +264,33 @@ export class SettingsManager {
         });
       });
 
+    new Setting(contentEl)
+      .setName("Time trigger")
+      .setDesc("When this is typed, it will trigger the time selector")
+      .addText((text) => {
+        const [value, globalValue] = this.getSetting("time-trigger", local);
+
+        if (value || globalValue) {
+          text.setValue((value || globalValue) as string);
+        }
+
+        text.setPlaceholder((globalValue as string) || defaultTimeTrigger);
+
+        text.onChange((newValue) => {
+          if (newValue) {
+            this.applySettingsUpdate({
+              "time-trigger": {
+                $set: newValue,
+              },
+            });
+          } else {
+            this.applySettingsUpdate({
+              $unset: ["time-trigger"],
+            });
+          }
+        });
+      });
+
     new Setting(contentEl).setName("Date format").then((setting) => {
       setting.addMomentFormat((mf) => {
         setting.descEl.appendChild(
@@ -307,6 +337,54 @@ export class SettingsManager {
           } else {
             this.applySettingsUpdate({
               $unset: ["date-format"],
+            });
+          }
+        });
+      });
+    });
+
+    new Setting(contentEl).setName("Time format").then((setting) => {
+      setting.addMomentFormat((mf) => {
+        setting.descEl.appendChild(
+          createFragment((frag) => {
+            frag.appendText("For more syntax, refer to ");
+            frag.createEl(
+              "a",
+              {
+                text: "format reference",
+                href: "https://momentjs.com/docs/#/displaying/format/",
+              },
+              (a) => {
+                a.setAttr("target", "_blank");
+              }
+            );
+            frag.createEl("br");
+            frag.appendText("Your current syntax looks like this: ");
+            mf.setSampleEl(frag.createEl("b", { cls: "u-pop" }));
+            frag.createEl("br");
+          })
+        );
+
+        const [value, globalValue] = this.getSetting("time-format", local);
+        const defaultFormat = getDefaultTimeFormat(this.app);
+
+        mf.setPlaceholder(defaultFormat);
+        mf.setDefaultFormat(defaultFormat);
+
+        if (value || globalValue) {
+          mf.setValue((value || globalValue) as string);
+        }
+
+        mf.onChange((newValue) => {
+          if (newValue) {
+            this.applySettingsUpdate({
+              "time-format": {
+                $set: newValue,
+              },
+            });
+          } else {
+            this.applySettingsUpdate({
+              $unset: ["time-format"],
             });
           }
         });
@@ -402,81 +480,6 @@ export class SettingsManager {
             });
           });
       });
-
-    // new Setting(contentEl).setName("Time output format").then((setting) => {
-    //   setting.addMomentFormat((mf) => {
-    //     setting.descEl.appendChild(
-    //       createFragment((frag) => {
-    //         frag.appendText("For more syntax, refer to ");
-    //         frag.createEl(
-    //           "a",
-    //           {
-    //             text: "format reference",
-    //             href: "https://momentjs.com/docs/#/displaying/format/",
-    //           },
-    //           (a) => {
-    //             a.setAttr("target", "_blank");
-    //           }
-    //         );
-    //         frag.createEl("br");
-    //         frag.appendText("Your current syntax looks like this: ");
-    //         mf.setSampleEl(frag.createEl("b", { cls: "u-pop" }));
-    //         frag.createEl("br");
-    //       })
-    //     );
-
-    //     const [value, globalValue] = this.getSetting("time-format", local);
-    //     const defaultFormat = getDefaultTimeFormat(this.app);
-
-    //     mf.setPlaceholder(defaultFormat);
-    //     mf.setDefaultFormat(defaultFormat);
-
-    //     if (value || globalValue) {
-    //       mf.setValue((value || globalValue) as string);
-    //     }
-
-    //     mf.onChange((newValue) => {
-    //       if (newValue) {
-    //         this.applySettingsUpdate({
-    //           "time-format": {
-    //             $set: newValue,
-    //           },
-    //         });
-    //       } else {
-    //         this.applySettingsUpdate({
-    //           $unset: ["time-format"],
-    //         });
-    //       }
-    //     });
-    //   });
-    // });
-
-    // new Setting(contentEl)
-    //   .setName("Time trigger")
-    //   .setDesc("When this is typed, it will trigger the time selector")
-    //   .addText((text) => {
-    //     const [value, globalValue] = this.getSetting("time-trigger", local);
-
-    //     if (value || globalValue) {
-    //       text.setValue((value || globalValue) as string);
-    //     }
-
-    //     text.setPlaceholder((globalValue as string) || defaultTimeTrigger);
-
-    //     text.onChange((newValue) => {
-    //       if (newValue) {
-    //         this.applySettingsUpdate({
-    //           "time-trigger": {
-    //             $set: newValue,
-    //           },
-    //         });
-    //       } else {
-    //         this.applySettingsUpdate({
-    //           $unset: ["time-trigger"],
-    //         });
-    //       }
-    //     });
-    //   });
 
     new Setting(contentEl)
       .setName("Hide card display dates")
@@ -581,6 +584,141 @@ export class SettingsManager {
               $unset: ["link-date-to-daily-note"],
             });
           });
+      });
+
+    new Setting(contentEl)
+      .setName("Add date and time to archived cards")
+      .setDesc(
+        "When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title"
+      )
+      .addToggle((toggle) => {
+        const [value, globalValue] = this.getSetting(
+          "prepend-archive-date",
+          local
+        );
+
+        if (value !== undefined) {
+          toggle.setValue(value as boolean);
+        } else if (globalValue !== undefined) {
+          toggle.setValue(globalValue as boolean);
+        }
+
+        toggle.onChange((newValue) => {
+          this.applySettingsUpdate({
+            "prepend-archive-date": {
+              $set: newValue,
+            },
+          });
+        });
+      })
+      .addExtraButton((b) => {
+        b.setIcon("reset")
+          .setTooltip("Reset to default")
+          .onClick(() => {
+            this.applySettingsUpdate({
+              $unset: ["prepend-archive-date"],
+            });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName("Archive date/time separator")
+      .setDesc(
+        "This will be used to separate the archived date/time from the title"
+      )
+      .addText((text) => {
+        const [value, globalValue] = this.getSetting(
+          "prepend-archive-separator",
+          local
+        );
+
+        text.inputEl.placeholder = globalValue
+          ? `${globalValue} (default)`
+          : "";
+        text.inputEl.value = value ? (value as string) : "";
+
+        text.onChange((val) => {
+          if (val) {
+            this.applySettingsUpdate({
+              "prepend-archive-separator": {
+                $set: val,
+              },
+            });
+
+            return;
+          }
+
+          this.applySettingsUpdate({
+            $unset: ["prepend-archive-separator"],
+          });
+        });
+      });
+
+    new Setting(contentEl)
+      .setName("Archive date/time format")
+      .then((setting) => {
+        setting.addMomentFormat((mf) => {
+          setting.descEl.appendChild(
+            createFragment((frag) => {
+              frag.appendText("For more syntax, refer to ");
+              frag.createEl(
+                "a",
+                {
+                  text: "format reference",
+                  href: "https://momentjs.com/docs/#/displaying/format/",
+                },
+                (a) => {
+                  a.setAttr("target", "_blank");
+                }
+              );
+              frag.createEl("br");
+              frag.appendText("Your current syntax looks like this: ");
+              mf.setSampleEl(frag.createEl("b", { cls: "u-pop" }));
+              frag.createEl("br");
+            })
+          );
+
+          const [value, globalValue] = this.getSetting(
+            "prepend-archive-format",
+            local
+          );
+
+          const [dateFmt, globalDateFmt] = this.getSetting(
+            "date-format",
+            local
+          );
+          const defaultDateFmt =
+            dateFmt || globalDateFmt || getDefaultDateFormat(this.app);
+          const [timeFmt, globalTimeFmt] = this.getSetting(
+            "time-format",
+            local
+          );
+          const defaultTimeFmt =
+            timeFmt || globalTimeFmt || getDefaultTimeFormat(this.app);
+
+          const defaultFormat = `${defaultDateFmt} ${defaultTimeFmt}`;
+
+          mf.setPlaceholder(defaultFormat);
+          mf.setDefaultFormat(defaultFormat);
+
+          if (value || globalValue) {
+            mf.setValue((value || globalValue) as string);
+          }
+
+          mf.onChange((newValue) => {
+            if (newValue) {
+              this.applySettingsUpdate({
+                "prepend-archive-format": {
+                  $set: newValue,
+                },
+              });
+            } else {
+              this.applySettingsUpdate({
+                $unset: ["prepend-archive-format"],
+              });
+            }
+          });
+        });
       });
   }
 
