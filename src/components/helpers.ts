@@ -35,6 +35,7 @@ export function reorderList<T>({
 }
 
 export interface BoardDropMutationParams {
+  view: KanbanView;
   boardData: Board;
   dropResult: DropResult;
 }
@@ -69,7 +70,11 @@ export function swapItems({ boardData, dropResult }: BoardDropMutationParams) {
   });
 }
 
-export function moveItem({ boardData, dropResult }: BoardDropMutationParams) {
+export function moveItem({
+  view,
+  boardData,
+  dropResult,
+}: BoardDropMutationParams) {
   const { lanes } = boardData;
 
   const sourceLaneIndex = lanes.findIndex(
@@ -84,6 +89,14 @@ export function moveItem({ boardData, dropResult }: BoardDropMutationParams) {
 
   let item = lanes[sourceLaneIndex].items[dropResult.source.index];
   let isComplete = !!item.data.isComplete;
+
+  view.app.workspace.trigger(
+    "kanban:card-moved",
+    view.file,
+    lanes[sourceLaneIndex],
+    lanes[destinationLaneIndex],
+    item
+  );
 
   if (shouldMarkAsComplete) {
     isComplete = true;

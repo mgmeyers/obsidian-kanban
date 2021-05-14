@@ -8920,13 +8920,14 @@ function swapItems({ boardData, dropResult }) {
         },
     });
 }
-function moveItem({ boardData, dropResult }) {
+function moveItem({ view, boardData, dropResult, }) {
     const { lanes } = boardData;
     const sourceLaneIndex = lanes.findIndex((lane) => lane.id === dropResult.source.droppableId);
     const destinationLaneIndex = lanes.findIndex((lane) => lane.id === dropResult.destination.droppableId);
     const shouldMarkAsComplete = !!lanes[destinationLaneIndex].data.shouldMarkItemsComplete;
     let item = lanes[sourceLaneIndex].items[dropResult.source.index];
     let isComplete = !!item.data.isComplete;
+    view.app.workspace.trigger("kanban:card-moved", view.file, lanes[sourceLaneIndex], lanes[destinationLaneIndex], item);
     if (shouldMarkAsComplete) {
         isComplete = true;
     }
@@ -38283,7 +38284,7 @@ function LaneForm() {
             " Add a list")));
 }
 
-function getBoardDragHandler({ boardData, setBoardData, }) {
+function getBoardDragHandler({ view, boardData, setBoardData, }) {
     return (dropResult) => {
         const { source, destination } = dropResult;
         // Bail out early if we're not dropping anywhere
@@ -38293,6 +38294,7 @@ function getBoardDragHandler({ boardData, setBoardData, }) {
             return;
         }
         const mutationParams = {
+            view,
             boardData,
             dropResult,
         };
@@ -38331,6 +38333,7 @@ function getBoardModifiers({ view, boardData, setBoardData, }) {
     };
     return {
         addItemToLane: (laneIndex, item) => {
+            view.app.workspace.trigger("kanban:card-added", view.file, item);
             setBoardData(update$2(boardData, {
                 lanes: {
                     [laneIndex]: {
@@ -38342,6 +38345,7 @@ function getBoardModifiers({ view, boardData, setBoardData, }) {
             }));
         },
         addLane: (lane) => {
+            view.app.workspace.trigger("kanban:lane-added", view.file, lane);
             setBoardData(update$2(boardData, {
                 lanes: {
                     $push: [lane],
@@ -38349,6 +38353,7 @@ function getBoardModifiers({ view, boardData, setBoardData, }) {
             }));
         },
         updateLane: (laneIndex, lane) => {
+            view.app.workspace.trigger("kanban:lane-updated", view.file, lane);
             setBoardData(update$2(boardData, {
                 lanes: {
                     [laneIndex]: {
@@ -38358,6 +38363,7 @@ function getBoardModifiers({ view, boardData, setBoardData, }) {
             }));
         },
         deleteLane: (laneIndex) => {
+            view.app.workspace.trigger("kanban:lane-deleted", view.file, boardData.lanes[laneIndex]);
             setBoardData(update$2(boardData, {
                 lanes: {
                     $splice: [[laneIndex, 1]],
@@ -38365,6 +38371,7 @@ function getBoardModifiers({ view, boardData, setBoardData, }) {
             }));
         },
         archiveLane: (laneIndex) => {
+            view.app.workspace.trigger("kanban:lane-archived", view.file, boardData.lanes[laneIndex]);
             const items = boardData.lanes[laneIndex].items;
             setBoardData(update$2(boardData, {
                 lanes: {
@@ -38379,6 +38386,7 @@ function getBoardModifiers({ view, boardData, setBoardData, }) {
         },
         archiveLaneItems: (laneIndex) => {
             const items = boardData.lanes[laneIndex].items;
+            view.app.workspace.trigger("kanban:lane-cards-archived", view.file, items);
             setBoardData(update$2(boardData, {
                 lanes: {
                     [laneIndex]: {
@@ -38395,6 +38403,7 @@ function getBoardModifiers({ view, boardData, setBoardData, }) {
             }));
         },
         deleteItem: (laneIndex, itemIndex) => {
+            view.app.workspace.trigger("kanban:card-deleted", view.file, boardData.lanes[laneIndex].items[itemIndex]);
             setBoardData(update$2(boardData, {
                 lanes: {
                     [laneIndex]: {
@@ -38406,6 +38415,7 @@ function getBoardModifiers({ view, boardData, setBoardData, }) {
             }));
         },
         updateItem: (laneIndex, itemIndex, item) => {
+            view.app.workspace.trigger("kanban:card-updated", view.file, boardData.lanes[laneIndex], item);
             setBoardData(update$2(boardData, {
                 lanes: {
                     [laneIndex]: {
@@ -38419,6 +38429,7 @@ function getBoardModifiers({ view, boardData, setBoardData, }) {
             }));
         },
         archiveItem: (laneIndex, itemIndex, item) => {
+            view.app.workspace.trigger("kanban:card-archived", view.file, boardData.lanes[laneIndex], item);
             setBoardData(update$2(boardData, {
                 lanes: {
                     [laneIndex]: {
@@ -39214,18 +39225,37 @@ class KanbanView extends obsidian.TextFileView {
     archiveCompletedCards() {
         const archived = [];
         const board = this.dataBridge.data;
+        const shouldAppendArchiveDate = !!this.getSetting("prepend-archive-date");
+        const dateFmt = this.getSetting("date-format") || getDefaultDateFormat(this.app);
+        const timeFmt = this.getSetting("time-format") || getDefaultTimeFormat(this.app);
+        const archiveDateSeparator = this.getSetting("prepend-archive-separator") || "";
+        const archiveDateFormat = this.getSetting("prepend-archive-format") ||
+            `${dateFmt} ${timeFmt}`;
+        const appendArchiveDate = (item) => {
+            const newTitle = [obsidian.moment().format(archiveDateFormat)];
+            if (archiveDateSeparator)
+                newTitle.push(archiveDateSeparator);
+            newTitle.push(item.titleRaw);
+            const titleRaw = newTitle.join(" ");
+            const processed = processTitle(titleRaw, this);
+            return update$2(item, {
+                title: { $set: processed.title },
+                titleRaw: { $set: titleRaw },
+            });
+        };
         const lanes = board.lanes.map((lane) => {
             return update$2(lane, {
                 items: {
                     $set: lane.items.filter((item) => {
                         if (item.data.isComplete) {
-                            archived.push(item);
+                            archived.push(shouldAppendArchiveDate ? appendArchiveDate(item) : item);
                         }
                         return !item.data.isComplete;
                     }),
                 },
             });
         });
+        this.app.workspace.trigger("kanban:board-cards-archived", this.file, archived);
         this.dataBridge.setExternal(update$2(board, {
             lanes: {
                 $set: lanes,

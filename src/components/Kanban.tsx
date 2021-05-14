@@ -39,6 +39,7 @@ interface BoardStateProps {
 }
 
 export function getBoardDragHandler({
+  view,
   boardData,
   setBoardData,
 }: BoardStateProps) {
@@ -55,6 +56,7 @@ export function getBoardDragHandler({
     }
 
     const mutationParams: BoardDropMutationParams = {
+      view,
       boardData,
       dropResult,
     };
@@ -110,6 +112,8 @@ function getBoardModifiers({
 
   return {
     addItemToLane: (laneIndex: number, item: Item) => {
+      view.app.workspace.trigger("kanban:card-added", view.file, item);
+
       setBoardData(
         update(boardData, {
           lanes: {
@@ -124,6 +128,8 @@ function getBoardModifiers({
     },
 
     addLane: (lane: Lane) => {
+      view.app.workspace.trigger("kanban:lane-added", view.file, lane);
+
       setBoardData(
         update(boardData, {
           lanes: {
@@ -134,6 +140,8 @@ function getBoardModifiers({
     },
 
     updateLane: (laneIndex: number, lane: Lane) => {
+      view.app.workspace.trigger("kanban:lane-updated", view.file, lane);
+
       setBoardData(
         update(boardData, {
           lanes: {
@@ -146,6 +154,12 @@ function getBoardModifiers({
     },
 
     deleteLane: (laneIndex: number) => {
+      view.app.workspace.trigger(
+        "kanban:lane-deleted",
+        view.file,
+        boardData.lanes[laneIndex]
+      );
+
       setBoardData(
         update(boardData, {
           lanes: {
@@ -156,6 +170,12 @@ function getBoardModifiers({
     },
 
     archiveLane: (laneIndex: number) => {
+      view.app.workspace.trigger(
+        "kanban:lane-archived",
+        view.file,
+        boardData.lanes[laneIndex]
+      );
+
       const items = boardData.lanes[laneIndex].items;
 
       setBoardData(
@@ -174,6 +194,11 @@ function getBoardModifiers({
 
     archiveLaneItems: (laneIndex: number) => {
       const items = boardData.lanes[laneIndex].items;
+      view.app.workspace.trigger(
+        "kanban:lane-cards-archived",
+        view.file,
+        items
+      );
 
       setBoardData(
         update(boardData, {
@@ -194,6 +219,12 @@ function getBoardModifiers({
     },
 
     deleteItem: (laneIndex: number, itemIndex: number) => {
+      view.app.workspace.trigger(
+        "kanban:card-deleted",
+        view.file,
+        boardData.lanes[laneIndex].items[itemIndex]
+      );
+
       setBoardData(
         update(boardData, {
           lanes: {
@@ -208,6 +239,13 @@ function getBoardModifiers({
     },
 
     updateItem: (laneIndex: number, itemIndex: number, item: Item) => {
+      view.app.workspace.trigger(
+        "kanban:card-updated",
+        view.file,
+        boardData.lanes[laneIndex],
+        item
+      );
+
       setBoardData(
         update(boardData, {
           lanes: {
@@ -224,6 +262,13 @@ function getBoardModifiers({
     },
 
     archiveItem: (laneIndex: number, itemIndex: number, item: Item) => {
+      view.app.workspace.trigger(
+        "kanban:card-archived",
+        view.file,
+        boardData.lanes[laneIndex],
+        item
+      );
+
       setBoardData(
         update(boardData, {
           lanes: {

@@ -7,14 +7,19 @@ import {
   Menu,
   TextFileView,
   WorkspaceLeaf,
+  moment,
 } from "obsidian";
 
-import { boardToMd, mdToBoard } from "./parser";
+import { boardToMd, mdToBoard, processTitle } from "./parser";
 import { Kanban } from "./components/Kanban";
 import { DataBridge } from "./DataBridge";
 import { Board, Item } from "./components/types";
 import KanbanPlugin from "./main";
 import { KanbanSettings, SettingsModal } from "./Settings";
+import {
+  getDefaultDateFormat,
+  getDefaultTimeFormat,
+} from "./components/helpers";
 
 export const kanbanViewType = "kanban";
 export const kanbanIcon = "blocks";
@@ -154,13 +159,41 @@ export class KanbanView extends TextFileView implements HoverParent {
   archiveCompletedCards() {
     const archived: Item[] = [];
     const board = this.dataBridge.data;
+    const shouldAppendArchiveDate = !!this.getSetting("prepend-archive-date");
+    const dateFmt =
+      this.getSetting("date-format") || getDefaultDateFormat(this.app);
+    const timeFmt =
+      this.getSetting("time-format") || getDefaultTimeFormat(this.app);
+    const archiveDateSeparator =
+      (this.getSetting("prepend-archive-separator") as string) || "";
+    const archiveDateFormat =
+      (this.getSetting("prepend-archive-format") as string) ||
+      `${dateFmt} ${timeFmt}`;
+
+    const appendArchiveDate = (item: Item) => {
+      const newTitle = [moment().format(archiveDateFormat)];
+
+      if (archiveDateSeparator) newTitle.push(archiveDateSeparator);
+
+      newTitle.push(item.titleRaw);
+
+      const titleRaw = newTitle.join(" ");
+      const processed = processTitle(titleRaw, this);
+
+      return update(item, {
+        title: { $set: processed.title },
+        titleRaw: { $set: titleRaw },
+      });
+    };
 
     const lanes = board.lanes.map((lane) => {
       return update(lane, {
         items: {
           $set: lane.items.filter((item) => {
             if (item.data.isComplete) {
-              archived.push(item);
+              archived.push(
+                shouldAppendArchiveDate ? appendArchiveDate(item) : item
+              );
             }
 
             return !item.data.isComplete;
@@ -168,6 +201,12 @@ export class KanbanView extends TextFileView implements HoverParent {
         },
       });
     });
+
+    this.app.workspace.trigger(
+      "kanban:board-cards-archived",
+      this.file,
+      archived
+    );
 
     this.dataBridge.setExternal(
       update(board, {
