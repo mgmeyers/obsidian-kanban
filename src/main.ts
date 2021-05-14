@@ -250,7 +250,7 @@ export default class KanbanPlugin extends Plugin {
     const targetFolder = folder
       ? folder
       : this.app.fileManager.getNewFileParent(
-          this.app.workspace.getActiveFile().path
+          this.app.workspace.getActiveFile()?.path || ""
         );
 
     // Forcing frontmatter for now until more options are available

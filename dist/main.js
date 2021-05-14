@@ -39456,10 +39456,11 @@ class KanbanPlugin extends obsidian.Plugin {
         });
     }
     newKanban(folder) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             const targetFolder = folder
                 ? folder
-                : this.app.fileManager.getNewFileParent(this.app.workspace.getActiveFile().path);
+                : this.app.fileManager.getNewFileParent(((_a = this.app.workspace.getActiveFile()) === null || _a === void 0 ? void 0 : _a.path) || "");
             // Forcing frontmatter for now until more options are available
             const frontmatter = [
                 "---",
