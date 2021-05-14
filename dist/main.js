@@ -37539,7 +37539,7 @@ function DateAndTime({ item, view, filePath, onEditDate, onEditTime, }) {
     return (react.createElement("span", { className: c$2("item-metadata-date-wrapper") },
         react.createElement("span", Object.assign({}, dateProps, { className: `${c$2("item-metadata-date")} ${!shouldLinkDate ? "is-button" : ""}` }), date),
         " ",
-        hasTime && (react.createElement("span", { onClick: onEditTime, className: `${c$2("item-metadata-time")} is-button` }, timeDisplayStr))));
+        hasTime && (react.createElement("span", { onClick: onEditTime, className: `${c$2("item-metadata-time")} is-button`, "aria-label": "Change time" }, timeDisplayStr))));
 }
 function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, onEditDate, onEditTime, onChange, }) {
     const obsidianContext = react.useContext(ObsidianContext);

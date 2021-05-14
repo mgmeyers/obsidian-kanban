@@ -125,6 +125,7 @@ function DateAndTime({
         <span
           onClick={onEditTime}
           className={`${c("item-metadata-time")} is-button`}
+          aria-label="Change time"
         >
           {timeDisplayStr}
         </span>
