@@ -6,6 +6,7 @@ import {
   ViewState,
   MarkdownView,
   Menu,
+  Notice,
 } from "obsidian";
 import { around } from "monkey-around";
 
@@ -170,6 +171,50 @@ export default class KanbanPlugin extends Plugin {
       id: "create-new-kanban-board",
       name: "Create new board",
       callback: () => this.newKanban(),
+    });
+
+    this.addCommand({
+      id: "archive-completed-cards",
+      name: "Archive completed cards in the active board",
+      callback: () => {
+        const view = this.app.workspace.getActiveViewOfType(KanbanView);
+
+        if (view) {
+          view.archiveCompletedCards();
+        } else {
+          new Notice("Error: current file is not a Kanban board", 5000);
+        }
+      },
+    });
+
+    this.addCommand({
+      id: "convert-to-kanban",
+      name: "Convert empty note to Kanban",
+      callback: async () => {
+        const activeLeaf = this.app.workspace.activeLeaf;
+        const activeFile = this.app.workspace.getActiveFile();
+
+        if (activeFile && activeFile.stat.size === 0) {
+          const frontmatter = [
+            "---",
+            "",
+            `${frontMatterKey}: basic`,
+            "",
+            "---",
+            "",
+            "",
+          ].join("\n");
+
+          await this.app.vault.modify(activeFile, frontmatter);
+
+          this.setKanbanView(activeLeaf);
+        } else {
+          new Notice(
+            "Error: cannot create Kanban, the current note is not empty",
+            5000
+          );
+        }
+      },
     });
 
     this.registerEvent(

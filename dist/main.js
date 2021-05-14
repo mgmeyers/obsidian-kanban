@@ -39173,6 +39173,14 @@ class KanbanView extends obsidian.TextFileView {
                 }, board.settings).open();
             });
         })
+            .addItem((item) => {
+            item
+                .setTitle("Archive all completed cards")
+                .setIcon("sheets-in-box")
+                .onClick(() => {
+                this.archiveCompletedCards();
+            });
+        })
             .addSeparator();
         super.onMoreOptionsMenu(menu);
     }
@@ -39202,6 +39210,30 @@ class KanbanView extends obsidian.TextFileView {
             // Tell react we have a new board
             this.dataBridge.setExternal(board);
         }
+    }
+    archiveCompletedCards() {
+        const archived = [];
+        const board = this.dataBridge.data;
+        const lanes = board.lanes.map((lane) => {
+            return update$2(lane, {
+                items: {
+                    $set: lane.items.filter((item) => {
+                        if (item.data.isComplete) {
+                            archived.push(item);
+                        }
+                        return !item.data.isComplete;
+                    }),
+                },
+            });
+        });
+        this.dataBridge.setExternal(update$2(board, {
+            lanes: {
+                $set: lanes,
+            },
+            archive: {
+                $push: archived,
+            },
+        }));
     }
     constructKanban() {
         var _a;
@@ -39326,6 +39358,43 @@ class KanbanPlugin extends obsidian.Plugin {
                 id: "create-new-kanban-board",
                 name: "Create new board",
                 callback: () => this.newKanban(),
+            });
+            this.addCommand({
+                id: "archive-completed-cards",
+                name: "Archive completed cards in the active board",
+                callback: () => {
+                    const view = this.app.workspace.getActiveViewOfType(KanbanView);
+                    if (view) {
+                        view.archiveCompletedCards();
+                    }
+                    else {
+                        new obsidian.Notice("Error: current file is not a Kanban board", 5000);
+                    }
+                },
+            });
+            this.addCommand({
+                id: "convert-to-kanban",
+                name: "Convert empty note to Kanban",
+                callback: () => __awaiter(this, void 0, void 0, function* () {
+                    const activeLeaf = this.app.workspace.activeLeaf;
+                    const activeFile = this.app.workspace.getActiveFile();
+                    if (activeFile && activeFile.stat.size === 0) {
+                        const frontmatter = [
+                            "---",
+                            "",
+                            `${frontMatterKey}: basic`,
+                            "",
+                            "---",
+                            "",
+                            "",
+                        ].join("\n");
+                        yield this.app.vault.modify(activeFile, frontmatter);
+                        this.setKanbanView(activeLeaf);
+                    }
+                    else {
+                        new obsidian.Notice("Error: cannot create Kanban, the current note is not empty", 5000);
+                    }
+                }),
             });
             this.registerEvent(this.app.workspace.on("file-menu", (menu, file, source, leaf) => {
                 // Add a menu item to the folder context menu to create a board

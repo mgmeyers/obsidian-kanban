@@ -12,7 +12,7 @@ import {
 import { boardToMd, mdToBoard } from "./parser";
 import { Kanban } from "./components/Kanban";
 import { DataBridge } from "./DataBridge";
-import { Board } from "./components/types";
+import { Board, Item } from "./components/types";
 import KanbanPlugin from "./main";
 import { KanbanSettings, SettingsModal } from "./Settings";
 
@@ -46,7 +46,10 @@ export class KanbanView extends TextFileView implements HoverParent {
     ReactDOM.unmountComponentAtNode(this.contentEl);
   }
 
-  getSetting(key: keyof KanbanSettings, suppliedLocalSettings?: KanbanSettings) {
+  getSetting(
+    key: keyof KanbanSettings,
+    suppliedLocalSettings?: KanbanSettings
+  ) {
     const localSetting = suppliedLocalSettings
       ? suppliedLocalSettings[key]
       : this.dataBridge.getData().settings[key];
@@ -95,11 +98,19 @@ export class KanbanView extends TextFileView implements HoverParent {
 
                   setTimeout(() => {
                     this.setViewData(this.data, true);
-                  }, 100)
+                  }, 100);
                 },
               },
               board.settings
             ).open();
+          });
+      })
+      .addItem((item) => {
+        item
+          .setTitle("Archive all completed cards")
+          .setIcon("sheets-in-box")
+          .onClick(() => {
+            this.archiveCompletedCards();
           });
       })
       .addSeparator();
@@ -138,6 +149,36 @@ export class KanbanView extends TextFileView implements HoverParent {
       // Tell react we have a new board
       this.dataBridge.setExternal(board);
     }
+  }
+
+  archiveCompletedCards() {
+    const archived: Item[] = [];
+    const board = this.dataBridge.data;
+
+    const lanes = board.lanes.map((lane) => {
+      return update(lane, {
+        items: {
+          $set: lane.items.filter((item) => {
+            if (item.data.isComplete) {
+              archived.push(item);
+            }
+
+            return !item.data.isComplete;
+          }),
+        },
+      });
+    });
+
+    this.dataBridge.setExternal(
+      update(board, {
+        lanes: {
+          $set: lanes,
+        },
+        archive: {
+          $push: archived,
+        },
+      })
+    );
   }
 
   constructKanban() {
