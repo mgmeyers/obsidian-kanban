@@ -1,3 +1,5 @@
+// Deutsch
+
 export default {
     // main.ts
     "Open as kanban board": "Öffne als Kanban-Board",
@@ -142,4 +144,5 @@ export default {
     "Archive list": "Archiviere List",
     "Delete list": "Lösche Liste",
   };
-  
+
+export default {};

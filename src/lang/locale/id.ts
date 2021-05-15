@@ -1,1 +1,3 @@
+// Bahasa Indonesia
+
 export default {};

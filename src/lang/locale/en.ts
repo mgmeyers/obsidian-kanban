@@ -1,3 +1,5 @@
+// English
+
 export default {
   // main.ts
   "Open as kanban board": "Open as kanban board",

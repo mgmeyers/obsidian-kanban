@@ -1,1 +1,3 @@
+// Dansk
+
 export default {};
