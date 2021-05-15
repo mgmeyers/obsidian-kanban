@@ -3,6 +3,7 @@ import Choices, { Choices as IChoices } from "choices.js";
 import { App, Setting, TFile, TFolder, Vault } from "obsidian";
 import KanbanPlugin from "./main";
 import { KanbanSettings, SettingsManager } from "./Settings";
+import { t } from "./lang/helpers";
 
 export const defaultDateTrigger = "@";
 export const defaultTimeTrigger = "@@";
@@ -57,7 +58,7 @@ export function getListOptions(app: App, plugin: KanbanPlugin) {
   let templateWarning = "";
 
   if (!templatesEnabled && !templaterPlugin) {
-    templateWarning = "Note: No template plugins are currently enabled.";
+    templateWarning = t("Note: No template plugins are currently enabled.");
   }
 
   return {
@@ -107,7 +108,7 @@ export function createSearchSelect({
                   $set: "",
                 },
                 label: {
-                  $apply: (v) => `${v} (default)`,
+                  $apply: (v) => `${v} (${t("default")})`,
                 },
               }),
             ],
@@ -129,7 +130,7 @@ export function createSearchSelect({
         const c = new Choices(el, {
           placeholder: true,
           position: "bottom" as "auto",
-          searchPlaceholderValue: "Search...",
+          searchPlaceholderValue: t("Search..."),
           searchEnabled: list.length > 10,
           choices: list,
         }).setChoiceByValue("");

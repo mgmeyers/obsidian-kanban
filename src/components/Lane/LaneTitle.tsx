@@ -1,4 +1,5 @@
 import React from "react";
+import { t } from "src/lang/helpers";
 import { c, useIMEInputProps } from "../helpers";
 
 export interface LaneTitleProps {
@@ -37,7 +38,7 @@ export function LaneTitle({
             rows={1}
             value={title}
             className={c("lane-input")}
-            placeholder="Enter list title..."
+            placeholder={t("Enter list title...")}
             onChange={onChange}
             onKeyDown={(e) => {
               if (getShouldIMEBlockAction()) return;

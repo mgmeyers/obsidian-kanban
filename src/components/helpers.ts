@@ -4,7 +4,6 @@ import { DropResult } from "react-beautiful-dnd";
 import { Board, Item, Lane } from "./types";
 import { KanbanView } from "src/KanbanView";
 import { App, TFile } from "obsidian";
-import { SettingsManager } from "src/Settings";
 
 export const baseClassName = "kanban-plugin";
 

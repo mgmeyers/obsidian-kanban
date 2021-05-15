@@ -13,6 +13,7 @@ import {
   constructMenuTimePickerOnChange,
   constructTimePicker,
 } from "./helpers";
+import { t } from "src/lang/helpers";
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
 
@@ -41,14 +42,14 @@ export function useItemMenu({
 
     const menu = new Menu(view.app).addItem((i) => {
       i.setIcon("pencil")
-        .setTitle("Edit card")
+        .setTitle(t("Edit card"))
         .onClick(() => setIsEditing(true));
     });
 
     menu
       .addItem((i) => {
         i.setIcon("create-new")
-          .setTitle("New note from card")
+          .setTitle(t("New note from card"))
           .onClick(async () => {
             const prevTitle = item.title;
             const sanitizedTitle = item.title.replace(illegalCharsRegEx, " ");
@@ -98,20 +99,20 @@ export function useItemMenu({
       .addSeparator()
       .addItem((i) => {
         i.setIcon("sheets-in-box")
-          .setTitle("Archive card")
+          .setTitle(t("Archive card"))
           .onClick(() =>
             boardModifiers.archiveItem(laneIndex, itemIndex, item)
           );
       })
       .addItem((i) => {
         i.setIcon("trash")
-          .setTitle("Delete card")
+          .setTitle(t("Delete card"))
           .onClick(() => boardModifiers.deleteItem(laneIndex, itemIndex));
       })
       .addSeparator()
       .addItem((i) => {
         i.setIcon("calendar-with-checkmark")
-          .setTitle(hasDate ? "Edit date" : "Add date")
+          .setTitle(hasDate ? t("Edit date") : t("Add date"))
           .onClick(() => {
             constructDatePicker(
               coordinates,
@@ -131,7 +132,7 @@ export function useItemMenu({
     if (hasDate) {
       menu.addItem((i) => {
         i.setIcon("cross")
-          .setTitle("Remove date")
+          .setTitle(t("Remove date"))
           .onClick(() => {
             const shouldLinkDates = view.getSetting("link-date-to-daily-note");
             const dateTrigger =
@@ -167,7 +168,7 @@ export function useItemMenu({
 
       menu.addItem((i) => {
         i.setIcon("clock")
-          .setTitle(hasTime ? "Edit time" : "Add time")
+          .setTitle(hasTime ? t("Edit time") : t("Add time"))
           .onClick(() => {
             constructTimePicker(
               view,
@@ -188,7 +189,7 @@ export function useItemMenu({
       if (hasTime) {
         menu.addItem((i) => {
           i.setIcon("cross")
-            .setTitle("Remove time")
+            .setTitle(t("Remove time"))
             .onClick(() => {
               const timeTrigger =
                 view.getSetting("time-trigger") || defaultTimeTrigger;

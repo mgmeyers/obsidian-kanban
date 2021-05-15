@@ -3,22 +3,26 @@ import { Lane } from "../types";
 import { c } from "../helpers";
 import { ObsidianContext } from "../context";
 import { Menu } from "obsidian";
+import { t } from "src/lang/helpers";
 
 export type LaneAction = "delete" | "archive" | "archive-items" | null;
 
 const actionLabels = {
   delete: {
-    description: "Are you sure you want to delete this list and all its cards?",
-    confirm: "Yes, delete list",
+    description: t(
+      "Are you sure you want to delete this list and all its cards?"
+    ),
+    confirm: t("Yes, delete list"),
   },
   archive: {
-    description:
-      "Are you sure you want to archive this list and all its cards?",
-    confirm: "Yes, archive list",
+    description: t(
+      "Are you sure you want to archive this list and all its cards?"
+    ),
+    confirm: t("Yes, archive list"),
   },
   "archive-items": {
-    description: "Are you sure you want to archive all cards in this list?",
-    confirm: "Yes, archive cards",
+    description: t("Are you sure you want to archive all cards in this list?"),
+    confirm: t("Yes, archive cards"),
   },
 };
 
@@ -74,26 +78,26 @@ export function useSettingsMenu({ setIsEditing }: UseSettingsMenuParams) {
       .addItem((item) => {
         item
           .setIcon("pencil")
-          .setTitle("Edit list")
+          .setTitle(t("Edit list"))
           .onClick(() => setIsEditing(true));
       })
       .addItem((item) => {
         item
           .setIcon("documents")
-          .setTitle("Archive cards")
+          .setTitle(t("Archive cards"))
           .onClick(() => setConfirmAction("archive-items"));
       })
       .addSeparator()
       .addItem((item) => {
         item
           .setIcon("sheets-in-box")
-          .setTitle("Archive list")
+          .setTitle(t("Archive list"))
           .onClick(() => setConfirmAction("archive"));
       })
       .addItem((item) => {
         item
           .setIcon("trash")
-          .setTitle("Delete list")
+          .setTitle(t("Delete list"))
           .onClick(() => setConfirmAction("delete"));
       });
   }, [view, setConfirmAction]);

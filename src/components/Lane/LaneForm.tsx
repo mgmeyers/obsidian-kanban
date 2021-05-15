@@ -3,6 +3,7 @@ import { Lane } from "../types";
 import { c, generateInstanceId, useIMEInputProps } from "../helpers";
 import { KanbanContext } from "../context";
 import useOnclickOutside from "react-cool-onclickoutside";
+import { t } from "src/lang/helpers";
 
 export function LaneForm() {
   const { boardModifiers } = React.useContext(KanbanContext);
@@ -58,7 +59,7 @@ export function LaneForm() {
               value={laneTitle}
               ref={inputRef}
               className={c("lane-input")}
-              placeholder="Enter list title..."
+              placeholder={t("Enter list title...")}
               onChange={(e) => setLaneTitle(e.target.value)}
               onKeyDown={(e) => {
                 if (getShouldIMEBlockAction()) return;
@@ -76,7 +77,7 @@ export function LaneForm() {
         </div>
         <div className={c("checkbox-wrapper")}>
           <div className={c("checkbox-label")}>
-            Mark items in this list as complete
+            {t("Mark items in this list as complete")}
           </div>
           <div
             onClick={() => setShouldMarkAsComplete(!shouldMarkAsComplete)}
@@ -87,10 +88,10 @@ export function LaneForm() {
         </div>
         <div className={c("lane-input-actions")}>
           <button className={c("lane-action-add")} onClick={createLane}>
-            Add list
+            {t("Add list")}
           </button>
           <button className={c("lane-action-cancel")} onClick={clear}>
-            Cancel
+            {t("Cancel")}
           </button>
         </div>
       </div>
@@ -103,7 +104,7 @@ export function LaneForm() {
         className={c("new-lane-button")}
         onClick={() => setIsInputVisible(true)}
       >
-        <span className={c("new-lane-button-plus")}>+</span> Add a list
+        <span className={c("new-lane-button-plus")}>+</span> {t("Add a list")}
       </button>
     </div>
   );

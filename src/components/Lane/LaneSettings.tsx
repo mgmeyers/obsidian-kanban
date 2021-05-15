@@ -3,6 +3,7 @@ import React from "react";
 import { Lane } from "../types";
 import { c } from "../helpers";
 import { KanbanContext } from "../context";
+import { t } from "src/lang/helpers";
 
 export interface LaneSettingsProps {
   lane: Lane;
@@ -16,7 +17,7 @@ export function LaneSettings({ lane, laneIndex }: LaneSettingsProps) {
     <div className={c("lane-setting-wrapper")}>
       <div className={c("checkbox-wrapper")}>
         <div className={c("checkbox-label")}>
-          Mark items in this list as complete
+          {t("Mark items in this list as complete")}
         </div>
         <div
           onClick={() =>

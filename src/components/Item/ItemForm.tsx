@@ -6,6 +6,7 @@ import { c, generateInstanceId } from "../helpers";
 import { useAutocompleteInputProps } from "./autocomplete";
 import { ObsidianContext } from "../context";
 import { processTitle } from "src/parser";
+import { t } from "src/lang/helpers";
 
 interface ItemFormProps {
   addItem: (item: Item) => void;
@@ -16,11 +17,14 @@ export function ItemForm({ addItem }: ItemFormProps) {
   const [itemTitle, setItemTitle] = React.useState("");
   const { view } = React.useContext(ObsidianContext);
 
-  const clickOutsideRef = useOnclickOutside(() => {
-    setIsInputVisible(false);
-  }, {
-    ignoreClass: c("ignore-click-outside")
-  })
+  const clickOutsideRef = useOnclickOutside(
+    () => {
+      setIsInputVisible(false);
+    },
+    {
+      ignoreClass: c("ignore-click-outside"),
+    }
+  );
 
   const clear = () => {
     setItemTitle("");
@@ -63,18 +67,20 @@ export function ItemForm({ addItem }: ItemFormProps) {
               rows={1}
               value={itemTitle}
               className={c("item-input")}
-              placeholder="Item title..."
-              onChange={(e) => setItemTitle(e.target.value.replace(/[\r\n]+/g, " "))}
+              placeholder={t("Item title...")}
+              onChange={(e) =>
+                setItemTitle(e.target.value.replace(/[\r\n]+/g, " "))
+              }
               {...autocompleteProps}
             />
           </div>
         </div>
         <div className={c("item-input-actions")}>
           <button className={c("item-action-add")} onClick={createItem}>
-            Add item
+            {t("Add item")}
           </button>
           <button className={c("item-action-cancel")} onClick={clear}>
-            Cancel
+            {t("Cancel")}
           </button>
         </div>
       </div>
@@ -87,7 +93,7 @@ export function ItemForm({ addItem }: ItemFormProps) {
         className={c("new-item-button")}
         onClick={() => setIsInputVisible(true)}
       >
-        <span className={c("item-button-plus")}>+</span> Add a card
+        <span className={c("item-button-plus")}>+</span> {t("Add a card")}
       </button>
     </div>
   );

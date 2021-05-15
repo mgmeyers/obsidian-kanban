@@ -2,11 +2,9 @@ import { moment } from "obsidian";
 import l10n from "flatpickr/dist/l10n";
 import { CustomLocale } from "flatpickr/dist/types/locale";
 
-const momentLocale = moment.locale();
-
 const localeMap: { [k: string]: CustomLocale } = {
   ar: l10n.ar,
-  cz: l10n.cs,
+  cs: l10n.cs,
   da: l10n.da,
   de: l10n.de,
   en: l10n.en,
@@ -18,17 +16,19 @@ const localeMap: { [k: string]: CustomLocale } = {
   ja: l10n.ja,
   ko: l10n.ko,
   nl: l10n.nl,
-  no: l10n.no,
+  nn: l10n.no,
   pl: l10n.pl,
   pt: l10n.pt,
-  "pt-BR": l10n.pt,
+  "pt-br": l10n.pt,
   ro: l10n.ro,
   ru: l10n.ru,
   tr: l10n.tr,
-  zh: l10n.zh,
-  "zh-TW": l10n.zh_tw,
+  "zh-cn": l10n.zh,
+  "zh-tw": l10n.zh_tw,
 };
 
+const locale = localeMap[moment.locale()]
+
 export function getDefaultLocale() {
-  return localeMap[momentLocale];
+  return locale;
 }

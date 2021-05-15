@@ -12,10 +12,8 @@ import {
 import { Item, Lane } from "../types";
 import { c } from "../helpers";
 import { draggableItemFactory, GhostItem } from "../Item/Item";
-import { ItemContent } from "../Item/ItemContent";
 import { ItemForm } from "../Item/ItemForm";
 import { LaneHeader } from "./LaneHeader";
-import { Icon } from "../Icon/Icon";
 import { KanbanContext, ObsidianContext } from "../context";
 
 export interface DraggableLaneFactoryParams {

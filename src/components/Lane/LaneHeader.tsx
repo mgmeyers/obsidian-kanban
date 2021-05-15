@@ -9,6 +9,7 @@ import { KanbanContext } from "../context";
 import { LaneTitle } from "./LaneTitle";
 import { LaneSettings } from "./LaneSettings";
 import { useSettingsMenu, ConfirmAction } from "./LaneMenu";
+import { t } from "src/lang/helpers";
 
 interface LaneHeaderProps {
   lane: Lane;
@@ -37,7 +38,7 @@ export function LaneHeader({
         <div
           className={c("lane-grip")}
           {...dragHandleProps}
-          aria-label="Move list"
+          aria-label={t("Move list")}
         >
           <GripIcon />
         </div>
@@ -73,7 +74,7 @@ export function LaneHeader({
             </button>
           ) : (
             <button
-              aria-label="More options"
+              aria-label={t("More options")}
               className={c("lane-settings-button")}
               onClick={(e) => {
                 settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });

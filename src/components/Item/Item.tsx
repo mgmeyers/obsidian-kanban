@@ -19,6 +19,7 @@ import {
   constructMenuTimePickerOnChange,
   constructTimePicker,
 } from "./helpers";
+import { t } from "src/lang/helpers";
 
 export interface DraggableItemFactoryParams {
   items: Item[];
@@ -76,7 +77,7 @@ export function GhostItem({ item, shouldShowArchiveButton }: GhostItemProps) {
             {shouldShowArchiveButton && (
               <button
                 className={c("item-prefix-button")}
-                aria-label="Archive item"
+                aria-label={t("Archive item")}
               >
                 <Icon name="sheets-in-box" />
               </button>
@@ -87,7 +88,7 @@ export function GhostItem({ item, shouldShowArchiveButton }: GhostItemProps) {
         <div className={c("item-postfix-button-wrapper")}>
           <button
             className={c("item-postfix-button")}
-            aria-label="More options"
+            aria-label={t("More options")}
           >
             <Icon name="vertical-three-dots" />
           </button>
@@ -281,7 +282,7 @@ export function draggableItemFactory({
                   setIsEditing(false);
                 }}
                 className={`${c("item-postfix-button")} is-enabled`}
-                aria-label="Cancel"
+                aria-label={t("Cancel")}
               >
                 <Icon name="cross" />
               </button>
@@ -291,7 +292,7 @@ export function draggableItemFactory({
                   showMenu(e.nativeEvent);
                 }}
                 className={c("item-postfix-button")}
-                aria-label="More options"
+                aria-label={t("More options")}
               >
                 <Icon name="vertical-three-dots" />
               </button>

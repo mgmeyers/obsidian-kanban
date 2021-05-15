@@ -5,7 +5,7 @@ import { c, getDefaultDateFormat, getDefaultTimeFormat } from "../helpers";
 import { ObsidianContext } from "../context";
 import { useAutocompleteInputProps } from "./autocomplete";
 import { KanbanView } from "src/KanbanView";
-import { constructTimePicker } from "./helpers";
+import { t } from "src/lang/helpers";
 
 function getRelativeDate(date: moment.Moment, time: moment.Moment) {
   if (time) {
@@ -15,17 +15,17 @@ function getRelativeDate(date: moment.Moment, time: moment.Moment) {
   const today = moment().startOf("day");
 
   if (today.isSame(date, "day")) {
-    return "today";
+    return t("today");
   }
 
   const diff = date.diff(today, "day");
 
   if (diff === -1) {
-    return "yesterday";
+    return t("yesterday");
   }
 
   if (diff === 1) {
-    return "tomorrow";
+    return t("tomorrow");
   }
 
   return date.from(today);
@@ -107,7 +107,7 @@ function DateAndTime({
   const dateProps: React.HTMLAttributes<HTMLSpanElement> = {};
 
   if (!shouldLinkDate) {
-    dateProps["aria-label"] = "Change date";
+    dateProps["aria-label"] = t("Change date");
     dateProps.onClick = onEditDate;
   }
 
@@ -125,7 +125,7 @@ function DateAndTime({
         <span
           onClick={onEditTime}
           className={`${c("item-metadata-time")} is-button`}
-          aria-label="Change time"
+          aria-label={t("Change time")}
         >
           {timeDisplayStr}
         </span>

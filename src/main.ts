@@ -19,6 +19,7 @@ import { KanbanSettings, KanbanSettingsTab } from "./Settings";
 import "choices.js/public/assets/styles/choices.css";
 import "flatpickr/dist/flatpickr.min.css";
 import "./main.css";
+import { t } from "./lang/helpers";
 
 export default class KanbanPlugin extends Plugin {
   settingsTab: KanbanSettingsTab;
@@ -149,7 +150,7 @@ export default class KanbanPlugin extends Plugin {
             menu
               .addItem((item) => {
                 item
-                  .setTitle("Open as kanban board")
+                  .setTitle(t("Open as kanban board"))
                   .setIcon(kanbanIcon)
                   .onClick(() => {
                     self.kanbanFileModes[this.leaf.id || file.path] =
@@ -169,27 +170,27 @@ export default class KanbanPlugin extends Plugin {
 
     this.addCommand({
       id: "create-new-kanban-board",
-      name: "Create new board",
+      name: t("Create new board"),
       callback: () => this.newKanban(),
     });
 
     this.addCommand({
       id: "archive-completed-cards",
-      name: "Archive completed cards in the active board",
+      name: t("Archive completed cards in active board"),
       callback: () => {
         const view = this.app.workspace.getActiveViewOfType(KanbanView);
 
         if (view) {
           view.archiveCompletedCards();
         } else {
-          new Notice("Error: current file is not a Kanban board", 5000);
+          new Notice(t("Error: current file is not a Kanban board"), 5000);
         }
       },
     });
 
     this.addCommand({
       id: "convert-to-kanban",
-      name: "Convert empty note to Kanban",
+      name: t("Convert empty note to Kanban"),
       callback: async () => {
         const activeLeaf = this.app.workspace.activeLeaf;
         const activeFile = this.app.workspace.getActiveFile();
@@ -210,7 +211,7 @@ export default class KanbanPlugin extends Plugin {
           this.setKanbanView(activeLeaf);
         } else {
           new Notice(
-            "Error: cannot create Kanban, the current note is not empty",
+            t("Error: cannot create Kanban, the current note is not empty"),
             5000
           );
         }
@@ -223,7 +224,7 @@ export default class KanbanPlugin extends Plugin {
         if (file instanceof TFolder) {
           menu.addItem((item) => {
             item
-              .setTitle("New kanban board")
+              .setTitle(t("New kanban board"))
               .setIcon(kanbanIcon)
               .onClick(() => this.newKanban(file));
           });
@@ -268,7 +269,7 @@ export default class KanbanPlugin extends Plugin {
       // @ts-ignore
       const kanban: TFile = await this.app.fileManager.createNewMarkdownFile(
         targetFolder,
-        "Untitled Kanban"
+        t("Untitled Kanban")
       );
 
       await this.app.vault.modify(kanban, frontmatter);

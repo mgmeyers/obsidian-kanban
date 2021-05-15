@@ -10,6 +10,7 @@ import { KanbanSettings } from "./Settings";
 import { defaultDateTrigger, defaultTimeTrigger } from "./settingHelpers";
 import yaml from "js-yaml";
 import { KanbanView } from "./KanbanView";
+import { t } from "./lang/helpers";
 
 export const frontMatterKey = "kanban-plugin";
 
@@ -38,8 +39,8 @@ const taskRegex = /^([\s\t]*)([-+*])\s+\[([^\]]+)]\s+(.+)$/;
  */
 const listRegex = /^([\s\t]*)([-+*])\s+?(.+)$/;
 
-const completeString = "**Complete**";
-const completeRegex = /^\*\*Complete\*\*$/i;
+const completeString = `**${t("Complete")}**`;
+const completeRegex = new RegExp(`^${escapeRegExpStr(completeString)}$`, "i");
 const archiveString = "***";
 const archiveMarkerRegex = /^\*\*\*$/;
 
@@ -167,7 +168,7 @@ function laneToMd(lane: Lane) {
 
 function archiveToMd(archive: Item[]) {
   if (archive.length) {
-    const lines: string[] = [archiveString, "", "## Archive", ""];
+    const lines: string[] = [archiveString, "", `## ${t("Archive")}`, ""];
 
     archive.forEach((item) => {
       lines.push(itemToMd(item));

@@ -14,6 +14,7 @@ import {
   defaultTimeTrigger,
   getListOptions,
 } from "./settingHelpers";
+import { t } from "./lang/helpers";
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
@@ -94,18 +95,24 @@ export class SettingsManager {
 
     if (local) {
       contentEl.createEl("p", {
-        text: "These settings will take precedence over the default Kanban board settings.",
+        text: t(
+          "These settings will take precedence over the default Kanban board settings."
+        ),
       });
     } else {
       contentEl.createEl("p", {
-        text: "Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.",
+        text: t(
+          "Set the default Kanban board settings. Settings can be overridden on a board-by-board basis."
+        ),
       });
     }
 
     new Setting(contentEl)
-      .setName("Note template")
+      .setName(t("Note template"))
       .setDesc(
-        "This template will be used when creating new notes from Kanban cards."
+        t(
+          "This template will be used when creating new notes from Kanban cards."
+        )
       )
       .then(
         createSearchSelect({
@@ -113,29 +120,31 @@ export class SettingsManager {
           key: "new-note-template",
           warningText: templateWarning,
           local,
-          placeHolderStr: "No template",
+          placeHolderStr: t("No template"),
           manager: this,
         })
       );
 
     new Setting(contentEl)
-      .setName("Note folder")
+      .setName(t("Note folder"))
       .setDesc(
-        "Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault."
+        t(
+          "Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault."
+        )
       )
       .then(
         createSearchSelect({
           choices: vaultFolders,
           key: "new-note-folder",
           local,
-          placeHolderStr: "Default folder",
+          placeHolderStr: t("Default folder"),
           manager: this,
         })
       );
 
     new Setting(contentEl)
-      .setName("Lane width")
-      .setDesc("Enter a number to set the lane width in pixels.")
+      .setName(t("Lane width"))
+      .setDesc(t("Enter a number to set the lane width in pixels."))
       .addText((text) => {
         const [value, globalValue] = this.getSetting("lane-width", local);
 
@@ -169,9 +178,11 @@ export class SettingsManager {
       });
 
     new Setting(contentEl)
-      .setName("Maximum number of archived cards")
+      .setName(t("Maximum number of archived cards"))
       .setDesc(
-        "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely."
+        t(
+          "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely."
+        )
       )
       .addText((text) => {
         const [value, globalValue] = this.getSetting("max-archive-size", local);
@@ -206,8 +217,8 @@ export class SettingsManager {
       });
 
     new Setting(contentEl)
-      .setName("Display card checkbox")
-      .setDesc("When toggled, a checkbox will be displayed with each card")
+      .setName(t("Display card checkbox"))
+      .setDesc(t("When toggled, a checkbox will be displayed with each card"))
       .addToggle((toggle) => {
         const [value, globalValue] = this.getSetting("show-checkboxes", local);
 
@@ -227,7 +238,7 @@ export class SettingsManager {
       })
       .addExtraButton((b) => {
         b.setIcon("reset")
-          .setTooltip("Reset to default")
+          .setTooltip(t("Reset to default"))
           .onClick(() => {
             this.applySettingsUpdate({
               $unset: ["show-checkboxes"],
@@ -235,11 +246,11 @@ export class SettingsManager {
           });
       });
 
-    contentEl.createEl("h4", { text: "Date & Time" });
+    contentEl.createEl("h4", { text: t("Date & Time") });
 
     new Setting(contentEl)
-      .setName("Date trigger")
-      .setDesc("When this is typed, it will trigger the date selector")
+      .setName(t("Date trigger"))
+      .setDesc(t("When this is typed, it will trigger the date selector"))
       .addText((text) => {
         const [value, globalValue] = this.getSetting("date-trigger", local);
 
@@ -265,8 +276,8 @@ export class SettingsManager {
       });
 
     new Setting(contentEl)
-      .setName("Time trigger")
-      .setDesc("When this is typed, it will trigger the time selector")
+      .setName(t("Time trigger"))
+      .setDesc(t("When this is typed, it will trigger the time selector"))
       .addText((text) => {
         const [value, globalValue] = this.getSetting("time-trigger", local);
 
@@ -291,19 +302,19 @@ export class SettingsManager {
         });
       });
 
-    new Setting(contentEl).setName("Date format").then((setting) => {
+    new Setting(contentEl).setName(t("Date format")).then((setting) => {
       setting.addMomentFormat((mf) => {
         setting.descEl.appendChild(
           createFragment((frag) => {
             frag.appendText(
-              "This format will be used when saving dates in markdown."
+              t("This format will be used when saving dates in markdown.")
             );
             frag.createEl("br");
-            frag.appendText("For more syntax, refer to ");
+            frag.appendText(t("For more syntax, refer to") + " ");
             frag.createEl(
               "a",
               {
-                text: "format reference",
+                text: t("format reference"),
                 href: "https://momentjs.com/docs/#/displaying/format/",
               },
               (a) => {
@@ -311,7 +322,7 @@ export class SettingsManager {
               }
             );
             frag.createEl("br");
-            frag.appendText("Your current syntax looks like this: ");
+            frag.appendText(t("Your current syntax looks like this") + ": ");
             mf.setSampleEl(frag.createEl("b", { cls: "u-pop" }));
             frag.createEl("br");
           })
@@ -343,15 +354,15 @@ export class SettingsManager {
       });
     });
 
-    new Setting(contentEl).setName("Time format").then((setting) => {
+    new Setting(contentEl).setName(t("Time format")).then((setting) => {
       setting.addMomentFormat((mf) => {
         setting.descEl.appendChild(
           createFragment((frag) => {
-            frag.appendText("For more syntax, refer to ");
+            frag.appendText(t("For more syntax, refer to") + " ");
             frag.createEl(
               "a",
               {
-                text: "format reference",
+                text: t("format reference"),
                 href: "https://momentjs.com/docs/#/displaying/format/",
               },
               (a) => {
@@ -359,7 +370,7 @@ export class SettingsManager {
               }
             );
             frag.createEl("br");
-            frag.appendText("Your current syntax looks like this: ");
+            frag.appendText(t("Your current syntax looks like this") + ": ");
             mf.setSampleEl(frag.createEl("b", { cls: "u-pop" }));
             frag.createEl("br");
           })
@@ -391,19 +402,21 @@ export class SettingsManager {
       });
     });
 
-    new Setting(contentEl).setName("Date display format").then((setting) => {
+    new Setting(contentEl).setName(t("Date display format")).then((setting) => {
       setting.addMomentFormat((mf) => {
         setting.descEl.appendChild(
           createFragment((frag) => {
             frag.appendText(
-              "This format will be used when displaying dates in Kanban cards."
+              t(
+                "This format will be used when displaying dates in Kanban cards."
+              )
             );
             frag.createEl("br");
-            frag.appendText("For more syntax, refer to ");
+            frag.appendText(t("For more syntax, refer to") + " ");
             frag.createEl(
               "a",
               {
-                text: "format reference",
+                text: t("format reference"),
                 href: "https://momentjs.com/docs/#/displaying/format/",
               },
               (a) => {
@@ -411,7 +424,7 @@ export class SettingsManager {
               }
             );
             frag.createEl("br");
-            frag.appendText("Your current syntax looks like this: ");
+            frag.appendText(t("Your current syntax looks like this") + ": ");
             mf.setSampleEl(frag.createEl("b", { cls: "u-pop" }));
             frag.createEl("br");
           })
@@ -447,9 +460,11 @@ export class SettingsManager {
     });
 
     new Setting(contentEl)
-      .setName("Show relative date")
+      .setName(t("Show relative date"))
       .setDesc(
-        "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'"
+        t(
+          "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'"
+        )
       )
       .addToggle((toggle) => {
         const [value, globalValue] = this.getSetting(
@@ -473,7 +488,7 @@ export class SettingsManager {
       })
       .addExtraButton((b) => {
         b.setIcon("reset")
-          .setTooltip("Reset to default")
+          .setTooltip(t("Reset to default"))
           .onClick(() => {
             this.applySettingsUpdate({
               $unset: ["show-relative-date"],
@@ -482,9 +497,11 @@ export class SettingsManager {
       });
 
     new Setting(contentEl)
-      .setName("Hide card display dates")
+      .setName(t("Hide card display dates"))
       .setDesc(
-        "When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled."
+        t(
+          "When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled."
+        )
       )
       .addToggle((toggle) => {
         const [value, globalValue] = this.getSetting(
@@ -508,7 +525,7 @@ export class SettingsManager {
       })
       .addExtraButton((b) => {
         b.setIcon("reset")
-          .setTooltip("Reset to default")
+          .setTooltip(t("Reset to default"))
           .onClick(() => {
             this.applySettingsUpdate({
               $unset: ["hide-date-display"],
@@ -517,9 +534,11 @@ export class SettingsManager {
       });
 
     new Setting(contentEl)
-      .setName("Hide dates in card titles")
+      .setName(t("Hide dates in card titles"))
       .setDesc(
-        "When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes."
+        t(
+          "When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes."
+        )
       )
       .addToggle((toggle) => {
         const [value, globalValue] = this.getSetting(
@@ -543,7 +562,7 @@ export class SettingsManager {
       })
       .addExtraButton((b) => {
         b.setIcon("reset")
-          .setTooltip("Reset to default")
+          .setTooltip(t("Reset to default"))
           .onClick(() => {
             this.applySettingsUpdate({
               $unset: ["hide-date-in-title"],
@@ -552,9 +571,9 @@ export class SettingsManager {
       });
 
     new Setting(contentEl)
-      .setName("Link dates to daily notes")
+      .setName(t("Link dates to daily notes"))
       .setDesc(
-        "When toggled, dates will link to daily notes. Eg. [[2021-04-26]]"
+        t("When toggled, dates will link to daily notes. Eg. [[2021-04-26]]")
       )
       .addToggle((toggle) => {
         const [value, globalValue] = this.getSetting(
@@ -578,7 +597,7 @@ export class SettingsManager {
       })
       .addExtraButton((b) => {
         b.setIcon("reset")
-          .setTooltip("Reset to default")
+          .setTooltip(t("Reset to default"))
           .onClick(() => {
             this.applySettingsUpdate({
               $unset: ["link-date-to-daily-note"],
@@ -587,9 +606,11 @@ export class SettingsManager {
       });
 
     new Setting(contentEl)
-      .setName("Add date and time to archived cards")
+      .setName(t("Add date and time to archived cards"))
       .setDesc(
-        "When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title"
+        t(
+          "When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title"
+        )
       )
       .addToggle((toggle) => {
         const [value, globalValue] = this.getSetting(
@@ -613,7 +634,7 @@ export class SettingsManager {
       })
       .addExtraButton((b) => {
         b.setIcon("reset")
-          .setTooltip("Reset to default")
+          .setTooltip(t("Reset to default"))
           .onClick(() => {
             this.applySettingsUpdate({
               $unset: ["prepend-archive-date"],
@@ -622,9 +643,9 @@ export class SettingsManager {
       });
 
     new Setting(contentEl)
-      .setName("Archive date/time separator")
+      .setName(t("Archive date/time separator"))
       .setDesc(
-        "This will be used to separate the archived date/time from the title"
+        t("This will be used to separate the archived date/time from the title")
       )
       .addText((text) => {
         const [value, globalValue] = this.getSetting(
@@ -655,16 +676,16 @@ export class SettingsManager {
       });
 
     new Setting(contentEl)
-      .setName("Archive date/time format")
+      .setName(t("Archive date/time format"))
       .then((setting) => {
         setting.addMomentFormat((mf) => {
           setting.descEl.appendChild(
             createFragment((frag) => {
-              frag.appendText("For more syntax, refer to ");
+              frag.appendText(t("For more syntax, refer to") + " ");
               frag.createEl(
                 "a",
                 {
-                  text: "format reference",
+                  text: t("format reference"),
                   href: "https://momentjs.com/docs/#/displaying/format/",
                 },
                 (a) => {
@@ -672,7 +693,7 @@ export class SettingsManager {
                 }
               );
               frag.createEl("br");
-              frag.appendText("Your current syntax looks like this: ");
+              frag.appendText(t("Your current syntax looks like this") + ": ");
               mf.setSampleEl(frag.createEl("b", { cls: "u-pop" }));
               frag.createEl("br");
             })
@@ -786,6 +807,6 @@ export class KanbanSettingsTab extends PluginSettingTab {
     containerEl.empty();
     containerEl.addClass(c("board-settings-modal"));
 
-    this.settingsManager.constructUI(containerEl, "Kanban Plugin", false);
+    this.settingsManager.constructUI(containerEl, t("Kanban Plugin"), false);
   }
 }

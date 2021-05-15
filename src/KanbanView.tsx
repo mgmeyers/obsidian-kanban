@@ -20,6 +20,7 @@ import {
   getDefaultDateFormat,
   getDefaultTimeFormat,
 } from "./components/helpers";
+import { t } from "./lang/helpers";
 
 export const kanbanViewType = "kanban";
 export const kanbanIcon = "blocks";
@@ -73,7 +74,7 @@ export class KanbanView extends TextFileView implements HoverParent {
     menu
       .addItem((item) => {
         item
-          .setTitle("Open as markdown")
+          .setTitle(t("Open as markdown"))
           .setIcon("document")
           .onClick(() => {
             this.plugin.kanbanFileModes[
@@ -84,7 +85,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       })
       .addItem((item) => {
         item
-          .setTitle("Open board settings")
+          .setTitle(t("Open board settings"))
           .setIcon("gear")
           .onClick(() => {
             const board = this.dataBridge.getData();
@@ -112,7 +113,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       })
       .addItem((item) => {
         item
-          .setTitle("Archive all completed cards")
+          .setTitle(t("Archive completed cards"))
           .setIcon("sheets-in-box")
           .onClick(() => {
             this.archiveCompletedCards();
