@@ -117,7 +117,7 @@ export default {
   "Remove date": "日付を削除",
   "Edit time": "時間を編集",
   "Add time": "時間を追加",
-  "Remove time": "時間を取り除く",
+  "Remove time": "時間を削除",
 
   // components/Lane/LaneForm.tsx
   "Enter list title...": "リストタイトルを編集…",
