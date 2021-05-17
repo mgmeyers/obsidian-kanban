@@ -15620,8 +15620,117 @@ var pl = {};
 // Português
 var pt = {};
 
-// Portugues do Brasil
-var ptBR = {};
+// Português do Brasil
+// Brazilian Portuguese
+var ptBR = {
+    // main.ts
+    "Open as Kanban board": "Abrir como quadro Kanban",
+    "Create new board": "Criar um novo quadro",
+    "Archive completed cards in active board": "Arquivar cartões concluídos no quadro ativo.",
+    "Error: current file is not a Kanban board": "Erro: o arquivo atual não é um quadro Kanban",
+    "Convert empty note to Kanban": "Converter nota vazia em Kanban",
+    "Error: cannot create Kanban, the current note is not empty": "Erro: não é possível criar o quadro Kanban, a nota atual não está vazia",
+    "New Kanban board": "Novo quadro Kanban",
+    "Untitled Kanban": "Kanban sem título",
+    // KanbanView.tsx
+    "Open as markdown": "Abrir como markdown",
+    "Open board settings": "Abrir configurações do quadro Kanban",
+    "Archive completed cards": "Arquivar cartões concluídos",
+    // parser.ts
+    Complete: "Concluído",
+    Archive: "Arquivo",
+    // settingHelpers.ts
+    "Note: No template plugins are currently enabled.": "Nota: Não há plug-ins de modelo habilitados no momento.",
+    default: "padrão",
+    "Search...": "Pesquisar...",
+    // Settings.ts
+    "These settings will take precedence over the default Kanban board settings.": "Essas configurações sobrescreverão as configurações padrão do quadro Kanban.",
+    "Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.": "Defina as configurações padrão do quadro Kanban. Cada quadro Kanban pode ter sua própria configuração.",
+    "Note template": "Modelo de nota",
+    "This template will be used when creating new notes from Kanban cards.": "Este modelo será usado quando uma nova nota Kanban for criada.",
+    "No template": "Sem modelo",
+    "Note folder": "Pasta de notas",
+    "Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.": "As notas criadas pelos links dos cartões Kanban serão colocadas nesta pasta. Se estiver em branco, serão colocadas no local configurado como padrão deste cofre.",
+    "Default folder": "Pasta padrão",
+    "Lane width": "Largura das listas",
+    "Enter a number to set the lane width in pixels.": "Insira um número para definir a largura das listas em pixels.",
+    "Maximum number of archived cards": "Quantidade máxima de cartões arquivados.",
+    "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.": "Os cartões arquivados podem ser vistos no modo Markdown. Esta configuração excluirá os cartões antigos assim que o limite for atingido. Inserir o valor -1 retira o limite para cartões arquivados.",
+    "Display card checkbox": "Exibir caixa de seleção do cartão.",
+    "When toggled, a checkbox will be displayed with each card": "Quando ativada, uma caixa de seleção será exibida em cada cartão.",
+    "Reset to default": "Redefinir configurações padrão",
+    "Date & Time": "Data e Hora",
+    "Date trigger": "Gatilho de data",
+    "When this is typed, it will trigger the date selector": "Quando este caractere é digitado, o seletor de data é exibido",
+    "Time trigger": "Gatilho de hora",
+    "When this is typed, it will trigger the time selector": "Quando este caractere é digitado, o seletor de hora é exibido",
+    "Date format": "Formado da data",
+    "This format will be used when saving dates in markdown.": "Este formato será usado quando datas forem armazenadas no Markdown.",
+    "For more syntax, refer to": "Para mais informações sobre esta sintaxe, consulte",
+    "format reference": "modelos de formato",
+    "Your current syntax looks like this": "Sua atual sintaxe está assim",
+    "Time format": "Formato da hora",
+    "Date display format": "Formato de exibição da data",
+    "This format will be used when displaying dates in Kanban cards.": "Este será o formato das datas exibido nos cartões do Kanban.",
+    "Show relative date": "Exibir datas relativas",
+    "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'": "Ao ativar, os cartões exibirão o intervalo de tempo entre hoje e a data do cartão: Ex.: 'Em 3 dias', 'Um mês atrás'",
+    "Hide card display dates": "Esconder datas dos cartões",
+    "When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.": "Ao ativar, as datas formatadas não serão exibidas no cartão. As datas relativas ainda serão exibidas se estiverem ativadas .",
+    "Hide dates in card titles": "Esconder datas dos títulos dos cartões",
+    "When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes.": "Ao ativar, as datas serão títulos de cartões ocultos. Isso impedirá que datas sejam incluídas no título ao criar novas notas.",
+    "Link dates to daily notes": "Vincular datas a notas diárias",
+    "When toggled, dates will link to daily notes. Eg. [[2021-04-26]]": "Ao ativar, as datas serão vinculadas às notas diárias. Ex.: [[2021-04-26]] ",
+    "Add date and time to archived cards": "Adicionar data e hora aos cartões arquivados",
+    "When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title": "Quando alternado, a data e a hora atuais serão adicionadas ao início de um cartão quando ele for arquivado. Ex.: - [] 2021-05-14 10:00 Título do meu cartão ",
+    "Archive date/time separator": "Separador de data/hora do arquivo",
+    "This will be used to separate the archived date/time from the title": "Isso será usado para separar a data/hora arquivada do título",
+    "Archive date/time format": "Formato de data/hora do arquivo",
+    "Kanban Plugin": "Plugin Kanban",
+    // components/Item/Item.tsx
+    "Archive item": "Arquivar item",
+    "More options": "Mais opções",
+    Cancel: "Cancelar",
+    // components/Item/ItemContent.tsx
+    today: "hoje",
+    yesterday: "ontem",
+    tomorrow: "amanhã",
+    "Change date": "Alterar data",
+    "Change time": "Mudar hora",
+    // components/Item/ItemForm.tsx
+    "Item title...": "Título do item...",
+    "Add item": "Adicionar Item",
+    "Add a card": "Adicione um cartão",
+    // components/Item/ItemMenu.ts
+    "Edit card": "Editar cartão",
+    "New note from card": "Nova nota do cartão",
+    "Archive card": "Arquivar cartão",
+    "Delete card": "Excluir cartão",
+    "Edit date": "Editar data",
+    "Add date": "Adicionar data",
+    "Remove date": "Remover data",
+    "Edit time": "Editar hora",
+    "Add time": "Adicionar hora",
+    "Remove time": "Remover hora",
+    // components/Lane/LaneForm.tsx
+    "Enter list title...": "Insira o título da lista ...",
+    "Mark items in this list as complete": "Marcar os itens nesta lista como concluídos",
+    "Add list": "Adicionar lista",
+    "Add a list": "Adicionar uma lista",
+    // components/Lane/LaneHeader.tsx
+    "Move list": "Mover lista",
+    Close: "Fechar",
+    // components/Lane/LaneMenu.tsx
+    "Are you sure you want to delete this list and all its cards?": "Tem certeza de que deseja excluir esta lista e todos os seus cartões?",
+    "Yes, delete list": "Sim, excluir esta lista",
+    "Are you sure you want to archive this list and all its cards?": "Tem certeza de que deseja arquivar esta lista e todos os seus cartões?",
+    "Yes, archive list": "Sim, arquivar esta lista",
+    "Are you sure you want to archive all cards in this list?": "Tem certeza de que deseja arquivar todos os cartões desta lista?",
+    "Yes, archive cards": "Sim, arquivar cartões",
+    "Edit list": "Editar lista",
+    "Archive cards": "Arquivar cartões",
+    "Archive list": "Arquivar lista",
+    "Delete list": "Excluir lista",
+};
 
 // Română
 var ro = {};
@@ -15633,7 +15742,115 @@ var ru = {};
 var tr = {};
 
 // 简体中文
-var zhCN = {};
+var zhCN = {
+    // main.ts
+    "Open as kanban board": "打开为看板",
+    "Create new board": "创建新看板",
+    "Archive completed cards in active board": "在当前看板中归档已完成卡片",
+    "Error: current file is not a Kanban board": "错误：当前文件不是看板文件",
+    "Convert empty note to Kanban": "转换空白文档为看板",
+    "Error: cannot create Kanban, the current note is not empty": "错误：无法转换当前文件，当前文件不是空白文档",
+    "New kanban board": "新看板",
+    "Untitled Kanban": "未命名看板",
+    // KanbanView.tsx
+    "Open as markdown": "打开为 Markdown 文件",
+    "Open board settings": "打开看板设置",
+    "Archive completed cards": "归档已完成卡片",
+    // parser.ts
+    Complete: "完成",
+    Archive: "归档",
+    // settingHelpers.ts
+    "Note: No template plugins are currently enabled.": "注意：当前模板插件没有运行",
+    default: "默认",
+    "Search...": "搜索。。。",
+    // Settings.ts
+    "These settings will take precedence over the default Kanban board settings.": "当前看板设置将会覆盖默认的看板设置",
+    "Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.": "设置看板的默认设置。设置可以每个看板单独设置。",
+    "Note template": "笔记模板",
+    "This template will be used when creating new notes from Kanban cards.": "创建新看板卡片时会使用该模板",
+    "No template": "没有模板",
+    "Note folder": "笔记存放位置",
+    "Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.": "从看板卡片创建的笔记会放置到该文件夹中，如果这里为空，在看板创建的笔记会放置到 Obsidian 的默认文件存放位置。",
+    "Default folder": "默认文件夹",
+    "Lane width": "卡片宽度",
+    "Enter a number to set the lane width in pixels.": "输入一个数字来设置看板的卡片宽度",
+    "Maximum number of archived cards": "单个看板的归档卡片的最大数量",
+    "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.": "已归档的卡片可以在 Markdown 模式下查看。这个设置会导致插件在已归档的卡片数量抵达限制值时开始删除卡片。当前值设置为 -1 的话可以永久保留所有归档卡片。",
+    "Display card checkbox": "展示卡片复选框",
+    "When toggled, a checkbox will be displayed with each card": "当打开这个，复选框会出现在每个卡片上",
+    "Reset to default": "还原初始设置",
+    "Date & Time": "日期和时间",
+    "Date trigger": "日期触发指令",
+    "When this is typed, it will trigger the date selector": "当在看板卡片中输入这个时，会触发一个日期选择器",
+    "Time trigger": "时间触发指令",
+    "When this is typed, it will trigger the time selector": "当在看板卡片中输入这个时，会触发一个时间选择器",
+    "Date format": "日期格式",
+    "This format will be used when saving dates in markdown.": "这个格式会在日期保存到 Markdown 格式时使用。",
+    "For more syntax, refer to": "更多格式，请查看",
+    "format reference": "格式参考",
+    "Your current syntax looks like this": "你当前设置的格式会是",
+    "Time format": "时间格式",
+    "Date display format": "日期展示格式",
+    "This format will be used when displaying dates in Kanban cards.": "在看板卡片中，会基于该格式展示日期",
+    "Show relative date": "展示相对日期",
+    "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'": "当打开这个，卡片会展示其设置的日期与今天的日期的差值，例如三天内、一个月内等。",
+    "Hide card display dates": "隐藏卡片日期",
+    "When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.": "当打开这个，格式化的日期不会展示，但是如果你开启了相对日期的功能，相对日期还是会继续展示。",
+    "Hide dates in card titles": "在卡片标题中隐藏日期",
+    "When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes.": "当打开这个，卡片标题中的日期会隐藏，当基于卡片创建新笔记的时候可以避免日期混杂其中。",
+    "Link dates to daily notes": "链接日期到日记",
+    "When toggled, dates will link to daily notes. Eg. [[2021-04-26]]": "当打开这个，日期会自动链接到日记页面，例如 [[2021-04-26]]",
+    "Add date and time to archived cards": "添加日期和时间到归档卡片",
+    "When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title": "当打开这个，当前的日期和时间会被添加到归档的卡片的前端上，例如“- [ ] 2021-05-14 10:00am 我的卡片标题”",
+    "Archive date/time separator": "日期或时间分隔符",
+    "This will be used to separate the archived date/time from the title": "用于从分隔归档卡片的日期或时间",
+    "Archive date/time format": "归档日期或时间格式",
+    "Kanban Plugin": "看板插件",
+    // components/Item/Item.tsx
+    "Archive item": "归档卡片",
+    "More options": "更多选项",
+    Cancel: "取消",
+    // components/Item/ItemContent.tsx
+    today: "今天",
+    yesterday: "昨天",
+    tomorrow: "明天",
+    "Change date": "更改日期",
+    "Change time": "更改时间",
+    // components/Item/ItemForm.tsx
+    "Item title...": "卡片标题",
+    "Add item": "添加",
+    "Add a card": "添加卡片",
+    // components/Item/ItemMenu.ts
+    "Edit card": "编辑卡片",
+    "New note from card": "从卡片新建笔记",
+    "Archive card": "归档卡片",
+    "Delete card": "删除卡片",
+    "Edit date": "编辑日期",
+    "Add date": "添加日期",
+    "Remove date": "移除日期",
+    "Edit time": "编辑时间",
+    "Add time": "添加时间",
+    "Remove time": "移除时间",
+    // components/Lane/LaneForm.tsx
+    "Enter list title...": "输入新的列标题",
+    "Mark items in this list as complete": "将该列设置为完成列",
+    "Add list": "添加",
+    "Add a list": "添加列",
+    // components/Lane/LaneHeader.tsx
+    "Move list": "移动列",
+    Close: "关闭",
+    // components/Lane/LaneMenu.tsx
+    "Are you sure you want to delete this list and all its cards?": "你确定你要删除整列以及该列下所有卡片吗？",
+    "Yes, delete list": "是，删除列",
+    "Are you sure you want to archive this list and all its cards?": "你确定你要归档整列以及该列下所有卡片吗？",
+    "Yes, archive list": "是, 归档列",
+    "Are you sure you want to archive all cards in this list?": "你确认你要归档当前列的所有卡片吗？",
+    "Yes, archive cards": "是，归档所有卡片",
+    "Edit list": "编辑列",
+    "Archive cards": "归档卡片",
+    "Archive list": "归档列",
+    "Delete list": "删除列",
+};
 
 // 繁體中文
 var zhTW = {};
