@@ -19866,7 +19866,7 @@ var jsYaml = {
 };
 
 const frontMatterKey = "kanban-plugin";
-const frontmatterRegEx = /^---([\w\W]+?)---/;
+const frontmatterRegEx = /^---([\w\W]+?)\n---/;
 const newLineRegex = /[\r\n]+/g;
 // Begins with one or more # followed by a space
 const laneRegex = /^#+\s+(.+)$/;
@@ -38340,10 +38340,16 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
                 });
             }
         }
-        return (e) => {
+        return (e, internalLinkPath) => {
             coordinates.x = e.clientX;
             coordinates.y = e.clientY;
-            menu.showAtPosition(coordinates);
+            if (internalLinkPath) {
+                // @ts-ignore
+                view.app.workspace.onLinkContextMenu(e, obsidian.getLinkpath(internalLinkPath), view.file.path);
+            }
+            else {
+                menu.showAtPosition(coordinates);
+            }
         };
     }, [view, setIsEditing, boardModifiers, laneIndex, itemIndex, item]);
 }
@@ -38425,7 +38431,11 @@ function draggableItemFactory({ items, laneIndex, }) {
         return (react.createElement("div", Object.assign({ onContextMenu: (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                showMenu(e.nativeEvent);
+                const internalLinkPath = e.target instanceof HTMLAnchorElement &&
+                    e.target.hasClass("internal-link")
+                    ? e.target.dataset.href
+                    : undefined;
+                showMenu(e.nativeEvent, internalLinkPath);
             }, onDoubleClick: () => {
                 setIsEditing(true);
             }, className: `${c$2("item")} ${classModifiers.join(" ")}`, ref: provided.innerRef }, provided.draggableProps, provided.dragHandleProps),

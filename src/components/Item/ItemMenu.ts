@@ -1,4 +1,4 @@
-import { Menu, TFolder } from "obsidian";
+import { getLinkpath, Menu, TFolder } from "obsidian";
 import update from "immutability-helper";
 import React from "react";
 
@@ -221,11 +221,20 @@ export function useItemMenu({
       }
     }
 
-    return (e: MouseEvent) => {
+    return (e: MouseEvent, internalLinkPath?: string) => {
       coordinates.x = e.clientX;
       coordinates.y = e.clientY;
 
-      menu.showAtPosition(coordinates);
+      if (internalLinkPath) {
+        // @ts-ignore
+        view.app.workspace.onLinkContextMenu(
+          e,
+          getLinkpath(internalLinkPath),
+          view.file.path
+        );
+      } else {
+        menu.showAtPosition(coordinates);
+      }
     };
   }, [view, setIsEditing, boardModifiers, laneIndex, itemIndex, item]);
 }

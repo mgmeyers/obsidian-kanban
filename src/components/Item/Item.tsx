@@ -157,7 +157,14 @@ export function draggableItemFactory({
         onContextMenu={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          showMenu(e.nativeEvent);
+
+          const internalLinkPath =
+            e.target instanceof HTMLAnchorElement &&
+            e.target.hasClass("internal-link")
+              ? e.target.dataset.href
+              : undefined;
+
+          showMenu(e.nativeEvent, internalLinkPath);
         }}
         onDoubleClick={() => {
           setIsEditing(true);
