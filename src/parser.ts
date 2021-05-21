@@ -14,7 +14,7 @@ import { t } from "./lang/helpers";
 
 export const frontMatterKey = "kanban-plugin";
 
-const frontmatterRegEx = /^---([\w\W]+?)---/;
+const frontmatterRegEx = /^---([\w\W]+?)\n---/;
 const newLineRegex = /[\r\n]+/g;
 
 // Begins with one or more # followed by a space
