@@ -317,7 +317,7 @@ export default class KanbanPlugin extends Plugin {
 
     return {
       templatesPlugin,
-      templaterPlugin,
+      templaterPlugin: templaterPlugin?.templater,
       templatesEnabled,
       templateFolder,
     };

@@ -8985,7 +8985,7 @@ function applyTemplate(view, templatePath) {
             // If both plugins are enabled, attempt to detect templater first
             if (templatesEnabled && templaterPlugin) {
                 if (templaterDetectRegex.test(templateContent)) {
-                    return yield templaterPlugin.parser.replace_templates_and_append(templateFile);
+                    return yield templaterPlugin.append_template(templateFile);
                 }
                 return yield templatesPlugin.instance.insertTemplate(templateFile);
             }
@@ -8993,7 +8993,7 @@ function applyTemplate(view, templatePath) {
                 return yield templatesPlugin.instance.insertTemplate(templateFile);
             }
             if (templaterPlugin) {
-                return yield templaterPlugin.parser.replace_templates_and_append(templateFile);
+                return yield templaterPlugin.append_template(templateFile);
             }
             // No template plugins enabled so we can just append the template to the doc
             yield view.app.vault.modify(view.app.workspace.getActiveFile(), templateContent);
@@ -40156,7 +40156,7 @@ class KanbanPlugin extends obsidian.Plugin {
                 : undefined;
         return {
             templatesPlugin,
-            templaterPlugin,
+            templaterPlugin: templaterPlugin === null || templaterPlugin === void 0 ? void 0 : templaterPlugin.templater,
             templatesEnabled,
             templateFolder,
         };

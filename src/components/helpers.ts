@@ -164,7 +164,7 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
     // If both plugins are enabled, attempt to detect templater first
     if (templatesEnabled && templaterPlugin) {
       if (templaterDetectRegex.test(templateContent)) {
-        return await templaterPlugin.parser.replace_templates_and_append(
+        return await templaterPlugin.append_template(
           templateFile
         );
       }
@@ -177,7 +177,7 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
     }
 
     if (templaterPlugin) {
-      return await templaterPlugin.parser.replace_templates_and_append(
+      return await templaterPlugin.append_template(
         templateFile
       );
     }
