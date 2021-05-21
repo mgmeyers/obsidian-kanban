@@ -395,7 +395,7 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
         view.app.workspace.openLinkText(
           targetEl.getAttr("href"),
           filePath,
-          true
+          e.ctrlKey || e.metaKey
         );
 
         return;

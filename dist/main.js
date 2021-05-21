@@ -8980,6 +8980,10 @@ function applyTemplate(view, templatePath) {
             ? view.app.vault.getAbstractFileByPath(templatePath)
             : null;
         if (templateFile && templateFile instanceof obsidian.TFile) {
+            // Force the view to source mode, if needed
+            if (view instanceof obsidian.MarkdownView && view.getMode() !== "source") {
+                yield view.setState(Object.assign(Object.assign({}, view.getState()), { mode: "source" }), {});
+            }
             const { templatesEnabled, templaterPlugin, templatesPlugin } = view.plugin.getTemplatePlugins();
             const templateContent = yield view.app.vault.read(templateFile);
             // If both plugins are enabled, attempt to detect templater first
@@ -39165,7 +39169,7 @@ const Kanban = ({ filePath, view, dataBridge }) => {
         // Open an internal link in a new pane
         if (targetEl.hasClass("internal-link")) {
             e.preventDefault();
-            view.app.workspace.openLinkText(targetEl.getAttr("href"), filePath, true);
+            view.app.workspace.openLinkText(targetEl.getAttr("href"), filePath, e.ctrlKey || e.metaKey);
             return;
         }
         // Open a tag search

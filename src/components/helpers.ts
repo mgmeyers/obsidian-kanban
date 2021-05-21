@@ -3,7 +3,7 @@ import update from "immutability-helper";
 import { DropResult } from "react-beautiful-dnd";
 import { Board, Item, Lane } from "./types";
 import { KanbanView } from "src/KanbanView";
-import { App, TFile } from "obsidian";
+import { App, MarkdownView, TFile } from "obsidian";
 
 export const baseClassName = "kanban-plugin";
 
@@ -156,6 +156,17 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
     : null;
 
   if (templateFile && templateFile instanceof TFile) {
+    // Force the view to source mode, if needed
+    if (view instanceof MarkdownView && view.getMode() !== "source") {
+      await view.setState(
+        {
+          ...view.getState(),
+          mode: "source",
+        },
+        {}
+      );
+    }
+
     const { templatesEnabled, templaterPlugin, templatesPlugin } =
       view.plugin.getTemplatePlugins();
 
@@ -164,9 +175,7 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
     // If both plugins are enabled, attempt to detect templater first
     if (templatesEnabled && templaterPlugin) {
       if (templaterDetectRegex.test(templateContent)) {
-        return await templaterPlugin.append_template(
-          templateFile
-        );
+        return await templaterPlugin.append_template(templateFile);
       }
 
       return await templatesPlugin.instance.insertTemplate(templateFile);
@@ -177,9 +186,7 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
     }
 
     if (templaterPlugin) {
-      return await templaterPlugin.append_template(
-        templateFile
-      );
+      return await templaterPlugin.append_template(templateFile);
     }
 
     // No template plugins enabled so we can just append the template to the doc
