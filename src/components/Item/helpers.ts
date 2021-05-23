@@ -135,6 +135,7 @@ export function constructMenuDatePickerOnChange({
       update(item, {
         title: { $set: processed.title },
         titleRaw: { $set: titleRaw },
+        titleSearch: { $set: processed.titleSearch },
         metadata: {
           date: {
             $set: processed.date,
@@ -312,6 +313,7 @@ export function constructMenuTimePickerOnChange({
       update(item, {
         title: { $set: processed.title },
         titleRaw: { $set: titleRaw },
+        titleSearch: { $set: processed.titleSearch },
         metadata: {
           date: {
             $set: processed.date,

@@ -24,11 +24,13 @@ export interface Item {
   id: string;
   title: string;
   titleRaw: string;
+  titleSearch: string;
   metadata: ItemMetaData;
   data: ItemData;
 }
 
 export interface Board {
+  isSearching: boolean;
   settings: KanbanSettings;
   lanes: Lane[];
   archive: Item[];

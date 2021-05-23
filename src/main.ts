@@ -174,6 +174,31 @@ export default class KanbanPlugin extends Plugin {
       callback: () => this.newKanban(),
     });
 
+    this.app.workspace.onLayoutReady(() => {
+      this.register(
+        around(
+          (this.app as any).commands.commands["editor:open-search"],
+          {
+            checkCallback(next) {
+              return function (isChecking: boolean) {
+                if (isChecking) {
+                  return next.call(this, isChecking);
+                }
+                const view = self.app.workspace.getActiveViewOfType(KanbanView);
+  
+                if (view) {
+                  view.toggleSearch();
+                } else {
+                  next.call(this, false);
+                }
+              };
+            },
+          }
+        )
+      );
+    })
+
+
     this.addCommand({
       id: "archive-completed-cards",
       name: t("Archive completed cards in active board"),

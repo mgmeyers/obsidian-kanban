@@ -9,7 +9,7 @@ import {
 import { Item } from "../types";
 import { c } from "../helpers";
 import { Icon } from "../Icon/Icon";
-import { KanbanContext, ObsidianContext } from "../context";
+import { KanbanContext, ObsidianContext, SearchContext } from "../context";
 import { ItemContent } from "./ItemContent";
 import { useItemMenu } from "./ItemMenu";
 import { processTitle } from "src/parser";
@@ -20,6 +20,7 @@ import {
   constructTimePicker,
 } from "./helpers";
 import { t } from "src/lang/helpers";
+import { fuzzySearch } from "obsidian";
 
 export interface DraggableItemFactoryParams {
   items: Item[];
@@ -109,6 +110,7 @@ export function draggableItemFactory({
   ) => {
     const { boardModifiers, board } = React.useContext(KanbanContext);
     const { view } = React.useContext(ObsidianContext);
+    const { query } = React.useContext(SearchContext);
     const [isEditing, setIsEditing] = React.useState(false);
     const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] =
       React.useState(false);
@@ -139,10 +141,18 @@ export function draggableItemFactory({
     const lane = board.lanes[laneIndex];
     const shouldShowCheckbox = view.getSetting("show-checkboxes");
     const shouldMarkItemsComplete = lane.data.shouldMarkItemsComplete;
+    const queryResults = query ? fuzzySearch(query, item.titleSearch) : null;
 
     const classModifiers: string[] = getClassModifiers(item);
 
     if (snapshot.isDragging) classModifiers.push("is-dragging");
+    if (query) {
+      if (queryResults) {
+        classModifiers.push("is-search-hit");
+      } else {
+        classModifiers.push("is-search-miss");
+      }
+    }
 
     const showMenu = useItemMenu({
       setIsEditing,
@@ -231,6 +241,7 @@ export function draggableItemFactory({
             isSettingsVisible={isEditing}
             setIsSettingsVisible={setIsEditing}
             item={item}
+            searchResult={queryResults}
             onEditDate={(e) => {
               constructDatePicker(
                 { x: e.clientX, y: e.clientY },
@@ -270,6 +281,7 @@ export function draggableItemFactory({
                 update(item, {
                   title: { $set: processed.title },
                   titleRaw: { $set: titleRaw },
+                  titleSearch: { $set: processed.titleSearch },
                   metadata: {
                     date: {
                       $set: processed.date,

@@ -1,4 +1,4 @@
-import { moment } from "obsidian";
+import { moment, prepareQuery } from "obsidian";
 import update from "immutability-helper";
 import React from "react";
 import { DataBridge } from "../DataBridge";
@@ -22,9 +22,11 @@ import {
 } from "./helpers";
 import { draggableLaneFactory } from "./Lane/Lane";
 import { LaneForm } from "./Lane/LaneForm";
-import { KanbanContext, ObsidianContext } from "./context";
+import { KanbanContext, ObsidianContext, SearchContext } from "./context";
 import { KanbanView } from "src/KanbanView";
 import { frontMatterKey, processTitle } from "../parser";
+import { t } from "src/lang/helpers";
+import { Icon } from "./Icon/Icon";
 
 interface KanbanProps {
   dataBridge: DataBridge;
@@ -107,6 +109,7 @@ function getBoardModifiers({
     return update(item, {
       title: { $set: processed.title },
       titleRaw: { $set: titleRaw },
+      titleSearch: { $set: processed.titleSearch },
     });
   };
 
@@ -292,6 +295,9 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
     dataBridge.data
   );
 
+  const [searchQuery, setSearchQuery] = React.useState<string>("");
+  const searchRef = React.useRef<HTMLInputElement>();
+
   const maxArchiveLength = view.getSetting("max-archive-size");
 
   React.useEffect(() => {
@@ -305,6 +311,12 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
       dataBridge.setInternal(boardData);
     }
   }, [boardData]);
+
+  React.useEffect(() => {
+    if (boardData.isSearching) {
+      searchRef.current?.focus();
+    }
+  }, [boardData.isSearching]);
 
   React.useEffect(() => {
     if (maxArchiveLength === undefined || maxArchiveLength === -1) {
@@ -330,7 +342,11 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
   }, [view, boardData, setBoardData]);
 
   const onDragEnd = React.useMemo(() => {
-    return getBoardDragHandler({ view, boardData, setBoardData });
+    return getBoardDragHandler({
+      view,
+      boardData,
+      setBoardData,
+    });
   }, [view, boardData, setBoardData]);
 
   if (boardData === null) return null;
@@ -424,23 +440,58 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
   return (
     <ObsidianContext.Provider value={{ filePath, view }}>
       <KanbanContext.Provider value={{ boardModifiers, board: boardData }}>
-        <div
-          className={baseClassName}
-          onMouseOver={onMouseOver}
-          onClick={onClick}
+        <SearchContext.Provider
+          value={{ query: searchQuery ? prepareQuery(searchQuery) : null }}
         >
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable
-              droppableId="board"
-              type="LANE"
-              direction="horizontal"
-              ignoreContainerClipping={false}
-              renderClone={renderLaneGhost}
-            >
-              {renderLanes}
-            </Droppable>
-          </DragDropContext>
-        </div>
+          {boardData.isSearching && (
+            <div className={c("search-wrapper")}>
+              <input
+                ref={searchRef}
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setSearchQuery("");
+                    (e.target as HTMLInputElement).blur();
+                    view.toggleSearch();
+                  }
+                }}
+                type="text"
+                className={c("filter-input")}
+                placeholder={t("Search...")}
+              />
+              <button
+                className={c("search-cancel-button")}
+                onClick={() => {
+                  setSearchQuery("");
+                  view.toggleSearch();
+                }}
+                aria-label={t("Cancel")}
+              >
+                <Icon name="cross" />
+              </button>
+            </div>
+          )}
+          <div
+            className={baseClassName}
+            onMouseOver={onMouseOver}
+            onClick={onClick}
+          >
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable
+                droppableId="board"
+                type="LANE"
+                direction="horizontal"
+                ignoreContainerClipping={false}
+                renderClone={renderLaneGhost}
+              >
+                {renderLanes}
+              </Droppable>
+            </DragDropContext>
+          </div>
+        </SearchContext.Provider>
       </KanbanContext.Provider>
     </ObsidianContext.Provider>
   );

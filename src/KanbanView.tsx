@@ -128,6 +128,14 @@ export class KanbanView extends TextFileView implements HoverParent {
     this.dataBridge.reset();
   }
 
+  toggleSearch() {
+    this.dataBridge.setExternal(
+      update(this.dataBridge.data, {
+        $toggle: ['isSearching']
+      })
+    );
+  }
+
   getViewData() {
     return boardToMd(this.dataBridge.getData());
   }
@@ -136,7 +144,12 @@ export class KanbanView extends TextFileView implements HoverParent {
     const trimmedContent = data.trim();
     const board: Board = trimmedContent
       ? mdToBoard(trimmedContent, this)
-      : { lanes: [], archive: [], settings: { "kanban-plugin": "basic" } };
+      : {
+          lanes: [],
+          archive: [],
+          settings: { "kanban-plugin": "basic" },
+          isSearching: false,
+        };
 
     if (clear) {
       this.clear();
@@ -184,6 +197,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       return update(item, {
         title: { $set: processed.title },
         titleRaw: { $set: titleRaw },
+        titleSearch: { $set: processed.titleSearch },
       });
     };
 

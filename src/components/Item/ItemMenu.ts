@@ -92,6 +92,7 @@ export function useItemMenu({
               update(item, {
                 title: { $set: processed.title },
                 titleRaw: { $set: newTitleRaw },
+                titleSearch: { $set: processed.titleSearch },
               })
             );
           });
@@ -153,6 +154,7 @@ export function useItemMenu({
               update(item, {
                 title: { $set: processed.title },
                 titleRaw: { $set: titleRaw },
+                titleSearch: { $set: processed.titleSearch },
                 metadata: {
                   date: {
                     $set: processed.date,
@@ -206,6 +208,7 @@ export function useItemMenu({
                 update(item, {
                   title: { $set: processed.title },
                   titleRaw: { $set: titleRaw },
+                  titleSearch: { $set: processed.titleSearch },
                   metadata: {
                     date: {
                       $set: processed.date,

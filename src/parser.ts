@@ -1,4 +1,4 @@
-import { moment } from "obsidian";
+import { MarkdownRenderer, moment } from "obsidian";
 import {
   escapeRegExpStr,
   generateInstanceId,
@@ -48,6 +48,12 @@ function itemToMd(item: Item) {
   return `- [${item.data.isComplete ? "x" : " "}] ${item.titleRaw}`;
 }
 
+function getSearchTitle(title: string, view: KanbanView) {
+  const tempEl = createDiv();
+  MarkdownRenderer.renderMarkdown(title, tempEl, view.file.path, view);
+  return tempEl.innerText;
+}
+
 export function processTitle(
   title: string,
   view: KanbanView,
@@ -87,8 +93,8 @@ export function processTitle(
     time = moment(timeMatch[1], timeFormat as string);
 
     if (date) {
-      date.hour(time.hour())
-      date.minute(time.minute())
+      date.hour(time.hour());
+      date.minute(time.minute());
 
       time = date.clone();
     }
@@ -102,6 +108,7 @@ export function processTitle(
 
   return {
     title: processedTitle,
+    titleSearch: getSearchTitle(processedTitle, view),
     date,
     time,
   };
@@ -133,6 +140,7 @@ function mdToItem(
   return {
     id: generateInstanceId(),
     title: processed.title,
+    titleSearch: processed.titleSearch,
     titleRaw,
     data: {
       isComplete,
@@ -265,5 +273,6 @@ export function mdToBoard(boardMd: string, view: KanbanView): Board {
     settings,
     lanes,
     archive,
+    isSearching: false,
   };
 }

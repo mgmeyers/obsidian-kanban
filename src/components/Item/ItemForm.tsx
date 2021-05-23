@@ -40,6 +40,7 @@ export function ItemForm({ addItem }: ItemFormProps) {
         id: generateInstanceId(),
         title: processed.title,
         titleRaw: title,
+        titleSearch: processed.titleSearch,
         data: {},
         metadata: {
           date: processed.date,

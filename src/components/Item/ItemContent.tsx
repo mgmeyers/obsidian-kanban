@@ -1,5 +1,7 @@
-import { MarkdownRenderer, getLinkpath, moment } from "obsidian";
+import { MarkdownRenderer, getLinkpath, moment, SearchResult } from "obsidian";
 import React from "react";
+import Mark from "mark.js";
+
 import { Item } from "../types";
 import { c, getDefaultDateFormat, getDefaultTimeFormat } from "../helpers";
 import { ObsidianContext } from "../context";
@@ -138,6 +140,7 @@ export interface ItemContentProps {
   item: Item;
   isSettingsVisible: boolean;
   setIsSettingsVisible?: React.Dispatch<boolean>;
+  searchResult?: SearchResult;
   onEditDate?: React.MouseEventHandler;
   onEditTime?: React.MouseEventHandler;
   onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
@@ -148,6 +151,7 @@ export function ItemContent({
   item,
   isSettingsVisible,
   setIsSettingsVisible,
+  searchResult,
   onEditDate,
   onEditTime,
   onChange,
@@ -169,10 +173,21 @@ export function ItemContent({
     const tempEl = createDiv();
     MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
 
+    if (searchResult) {
+      new Mark(tempEl).markRanges(
+        searchResult.matches.map((r) => {
+          return {
+            start: r[0],
+            length: r[1] - r[0],
+          };
+        })
+      );
+    }
+
     return {
       innerHTML: { __html: tempEl.innerHTML.toString() },
     };
-  }, [item, filePath, view]);
+  }, [item, filePath, view, searchResult]);
 
   if (isSettingsVisible) {
     return (

@@ -14,7 +14,7 @@ import { c } from "../helpers";
 import { draggableItemFactory, GhostItem } from "../Item/Item";
 import { ItemForm } from "../Item/ItemForm";
 import { LaneHeader } from "./LaneHeader";
-import { KanbanContext, ObsidianContext } from "../context";
+import { KanbanContext, ObsidianContext, SearchContext } from "../context";
 
 export interface DraggableLaneFactoryParams {
   lanes: Lane[];
@@ -101,9 +101,15 @@ export function draggableLaneFactory({
       ...settingStyles,
     };
 
+    const classList = [c("lane")]
+
+    if (snapshot.isDragging) {
+      classList.push('is-dragging');
+    }
+
     return (
       <div
-        className={`${c("lane")} ${snapshot.isDragging ? "is-dragging" : ""}`}
+        className={classList.join(' ')}
         ref={provided.innerRef}
         {...provided.draggableProps}
         style={style}

@@ -15,6 +15,35 @@
   position: relative;
 }
 
+.kanban-plugin__search-wrapper {
+  width: 100%;
+  position: sticky;
+  top: 0;
+  left: 0;
+  padding: 10px 13px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  z-index: 2;
+  background-color: var(--background-secondary);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+button.kanban-plugin__search-cancel-button {
+  display: flex;
+  line-height: 1;
+  padding: 6px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary-alt);
+  color: var(--text-muted);
+  margin: 0 0 0 5px;
+  font-size: 16px;
+}
+
+button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
+  display: flex;
+}
+
 .kanban-plugin__item button,
 .kanban-plugin__lane button,
 .kanban-plugin button {
@@ -50,6 +79,10 @@
   margin-right: 10px;
   flex-shrink: 0;
   border: 1px solid var(--background-modifier-border);
+}
+
+.kanban-plugin__lane.is-hidden {
+  display: none;
 }
 
 .kanban-plugin__lane button {
@@ -215,7 +248,8 @@ button.kanban-plugin__lane-settings-button
   display: flex;
 }
 
-.kanban-plugin__new-item-button {
+button.kanban-plugin__new-item-button {
+  background-color: transparent;
   color: var(--text-muted);
 }
 
@@ -230,12 +264,28 @@ button.kanban-plugin__lane-settings-button
   margin-bottom: 5px;
   border-radius: 6px;
   overflow: hidden;
+  transition: 300ms opacity cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .kanban-plugin__item.is-dragging {
   border-color: var(--interactive-accent);
   box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.2),
     0 0 0 2px rgba(var(--interactive-accent-rgb), 0.8);
+}
+
+.kanban-plugin__item.is-search-hit {
+  box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.2),
+    0 0 0 1px var(--background-modifier-border);
+}
+
+.kanban-plugin__item.is-search-miss {
+  font-size: 0.75rem;
+  opacity: 0.5;
+}
+
+.kanban-plugin__item.is-search-miss .kanban-plugin__item-title p {
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .kanban-plugin__item-content-wrapper {
@@ -914,4 +964,8 @@ button.kanban-plugin__cancel-action-button {
 .kanban-plugin__time-picker-item:hover,
 .kanban-plugin__time-picker-item.is-selected {
   background: var(--background-secondary);
+}
+
+.kanban-plugin mark {
+  background-color: var(--text-highlight-bg);
 }
