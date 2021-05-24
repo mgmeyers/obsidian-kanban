@@ -39598,7 +39598,9 @@ function draggableItemFactory({ items, laneIndex, }) {
         const lane = board.lanes[laneIndex];
         const shouldShowCheckbox = view.getSetting("show-checkboxes");
         const shouldMarkItemsComplete = lane.data.shouldMarkItemsComplete;
-        const isMatch = query ? item.titleSearch.toLocaleLowerCase().contains(query) : false;
+        const isMatch = query
+            ? item.titleSearch.toLocaleLowerCase().contains(query)
+            : false;
         const classModifiers = getClassModifiers(item);
         if (snapshot.isDragging)
             classModifiers.push("is-dragging");
@@ -40557,28 +40559,35 @@ class SettingsManager {
         new obsidian.Setting(contentEl)
             .setName(t$2("Display card checkbox"))
             .setDesc(t$2("When toggled, a checkbox will be displayed with each card"))
-            .addToggle((toggle) => {
-            const [value, globalValue] = this.getSetting("show-checkboxes", local);
-            if (value !== undefined) {
-                toggle.setValue(value);
-            }
-            else if (globalValue !== undefined) {
-                toggle.setValue(globalValue);
-            }
-            toggle.onChange((newValue) => {
-                this.applySettingsUpdate({
-                    "show-checkboxes": {
-                        $set: newValue,
-                    },
+            .then((setting) => {
+            let toggleComponent;
+            setting
+                .addToggle((toggle) => {
+                toggleComponent = toggle;
+                const [value, globalValue] = this.getSetting("show-checkboxes", local);
+                if (value !== undefined) {
+                    toggle.setValue(value);
+                }
+                else if (globalValue !== undefined) {
+                    toggle.setValue(globalValue);
+                }
+                toggle.onChange((newValue) => {
+                    this.applySettingsUpdate({
+                        "show-checkboxes": {
+                            $set: newValue,
+                        },
+                    });
                 });
-            });
-        })
-            .addExtraButton((b) => {
-            b.setIcon("reset")
-                .setTooltip(t$2("Reset to default"))
-                .onClick(() => {
-                this.applySettingsUpdate({
-                    $unset: ["show-checkboxes"],
+            })
+                .addExtraButton((b) => {
+                b.setIcon("reset")
+                    .setTooltip(t$2("Reset to default"))
+                    .onClick(() => {
+                    const [, globalValue] = this.getSetting("show-checkboxes", local);
+                    toggleComponent.setValue(!!globalValue);
+                    this.applySettingsUpdate({
+                        $unset: ["show-checkboxes"],
+                    });
                 });
             });
         });
@@ -40752,140 +40761,175 @@ class SettingsManager {
         new obsidian.Setting(contentEl)
             .setName(t$2("Show relative date"))
             .setDesc(t$2("When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'"))
-            .addToggle((toggle) => {
-            const [value, globalValue] = this.getSetting("show-relative-date", local);
-            if (value !== undefined) {
-                toggle.setValue(value);
-            }
-            else if (globalValue !== undefined) {
-                toggle.setValue(globalValue);
-            }
-            toggle.onChange((newValue) => {
-                this.applySettingsUpdate({
-                    "show-relative-date": {
-                        $set: newValue,
-                    },
+            .then((setting) => {
+            let toggleComponent;
+            setting
+                .addToggle((toggle) => {
+                toggleComponent = toggle;
+                const [value, globalValue] = this.getSetting("show-relative-date", local);
+                if (value !== undefined) {
+                    toggle.setValue(value);
+                }
+                else if (globalValue !== undefined) {
+                    toggle.setValue(globalValue);
+                }
+                toggle.onChange((newValue) => {
+                    this.applySettingsUpdate({
+                        "show-relative-date": {
+                            $set: newValue,
+                        },
+                    });
                 });
-            });
-        })
-            .addExtraButton((b) => {
-            b.setIcon("reset")
-                .setTooltip(t$2("Reset to default"))
-                .onClick(() => {
-                this.applySettingsUpdate({
-                    $unset: ["show-relative-date"],
+            })
+                .addExtraButton((b) => {
+                b.setIcon("reset")
+                    .setTooltip(t$2("Reset to default"))
+                    .onClick(() => {
+                    const [, globalValue] = this.getSetting("show-relative-date", local);
+                    toggleComponent.setValue(!!globalValue);
+                    this.applySettingsUpdate({
+                        $unset: ["show-relative-date"],
+                    });
                 });
             });
         });
         new obsidian.Setting(contentEl)
             .setName(t$2("Hide card display dates"))
             .setDesc(t$2("When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled."))
-            .addToggle((toggle) => {
-            const [value, globalValue] = this.getSetting("hide-date-display", local);
-            if (value !== undefined) {
-                toggle.setValue(value);
-            }
-            else if (globalValue !== undefined) {
-                toggle.setValue(globalValue);
-            }
-            toggle.onChange((newValue) => {
-                this.applySettingsUpdate({
-                    "hide-date-display": {
-                        $set: newValue,
-                    },
+            .then((setting) => {
+            let toggleComponent;
+            setting
+                .addToggle((toggle) => {
+                toggleComponent = toggle;
+                const [value, globalValue] = this.getSetting("hide-date-display", local);
+                if (value !== undefined) {
+                    toggle.setValue(value);
+                }
+                else if (globalValue !== undefined) {
+                    toggle.setValue(globalValue);
+                }
+                toggle.onChange((newValue) => {
+                    this.applySettingsUpdate({
+                        "hide-date-display": {
+                            $set: newValue,
+                        },
+                    });
                 });
-            });
-        })
-            .addExtraButton((b) => {
-            b.setIcon("reset")
-                .setTooltip(t$2("Reset to default"))
-                .onClick(() => {
-                this.applySettingsUpdate({
-                    $unset: ["hide-date-display"],
+            })
+                .addExtraButton((b) => {
+                b.setIcon("reset")
+                    .setTooltip(t$2("Reset to default"))
+                    .onClick(() => {
+                    const [, globalValue] = this.getSetting("hide-date-display", local);
+                    toggleComponent.setValue(!!globalValue);
+                    this.applySettingsUpdate({
+                        $unset: ["hide-date-display"],
+                    });
                 });
             });
         });
         new obsidian.Setting(contentEl)
             .setName(t$2("Hide dates in card titles"))
             .setDesc(t$2("When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes."))
-            .addToggle((toggle) => {
-            const [value, globalValue] = this.getSetting("hide-date-in-title", local);
-            if (value !== undefined) {
-                toggle.setValue(value);
-            }
-            else if (globalValue !== undefined) {
-                toggle.setValue(globalValue);
-            }
-            toggle.onChange((newValue) => {
-                this.applySettingsUpdate({
-                    "hide-date-in-title": {
-                        $set: newValue,
-                    },
+            .then((setting) => {
+            let toggleComponent;
+            setting
+                .addToggle((toggle) => {
+                toggleComponent = toggle;
+                const [value, globalValue] = this.getSetting("hide-date-in-title", local);
+                if (value !== undefined) {
+                    toggle.setValue(value);
+                }
+                else if (globalValue !== undefined) {
+                    toggle.setValue(globalValue);
+                }
+                toggle.onChange((newValue) => {
+                    this.applySettingsUpdate({
+                        "hide-date-in-title": {
+                            $set: newValue,
+                        },
+                    });
                 });
-            });
-        })
-            .addExtraButton((b) => {
-            b.setIcon("reset")
-                .setTooltip(t$2("Reset to default"))
-                .onClick(() => {
-                this.applySettingsUpdate({
-                    $unset: ["hide-date-in-title"],
+            })
+                .addExtraButton((b) => {
+                b.setIcon("reset")
+                    .setTooltip(t$2("Reset to default"))
+                    .onClick(() => {
+                    const [, globalValue] = this.getSetting("hide-date-in-title", local);
+                    toggleComponent.setValue(!!globalValue);
+                    this.applySettingsUpdate({
+                        $unset: ["hide-date-in-title"],
+                    });
                 });
             });
         });
         new obsidian.Setting(contentEl)
             .setName(t$2("Link dates to daily notes"))
             .setDesc(t$2("When toggled, dates will link to daily notes. Eg. [[2021-04-26]]"))
-            .addToggle((toggle) => {
-            const [value, globalValue] = this.getSetting("link-date-to-daily-note", local);
-            if (value !== undefined) {
-                toggle.setValue(value);
-            }
-            else if (globalValue !== undefined) {
-                toggle.setValue(globalValue);
-            }
-            toggle.onChange((newValue) => {
-                this.applySettingsUpdate({
-                    "link-date-to-daily-note": {
-                        $set: newValue,
-                    },
+            .then((setting) => {
+            let toggleComponent;
+            setting
+                .addToggle((toggle) => {
+                toggleComponent = toggle;
+                const [value, globalValue] = this.getSetting("link-date-to-daily-note", local);
+                if (value !== undefined) {
+                    toggle.setValue(value);
+                }
+                else if (globalValue !== undefined) {
+                    toggle.setValue(globalValue);
+                }
+                toggle.onChange((newValue) => {
+                    this.applySettingsUpdate({
+                        "link-date-to-daily-note": {
+                            $set: newValue,
+                        },
+                    });
                 });
-            });
-        })
-            .addExtraButton((b) => {
-            b.setIcon("reset")
-                .setTooltip(t$2("Reset to default"))
-                .onClick(() => {
-                this.applySettingsUpdate({
-                    $unset: ["link-date-to-daily-note"],
+            })
+                .addExtraButton((b) => {
+                b.setIcon("reset")
+                    .setTooltip(t$2("Reset to default"))
+                    .onClick(() => {
+                    const [, globalValue] = this.getSetting("link-date-to-daily-note", local);
+                    toggleComponent.setValue(!!globalValue);
+                    this.applySettingsUpdate({
+                        $unset: ["link-date-to-daily-note"],
+                    });
                 });
             });
         });
         new obsidian.Setting(contentEl)
             .setName(t$2("Add date and time to archived cards"))
             .setDesc(t$2("When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title"))
-            .addToggle((toggle) => {
-            const [value, globalValue] = this.getSetting("prepend-archive-date", local);
-            if (value !== undefined) {
-                toggle.setValue(value);
-            }
-            else if (globalValue !== undefined) {
-                toggle.setValue(globalValue);
-            }
-            toggle.onChange((newValue) => {
-                this.applySettingsUpdate({
-                    "prepend-archive-date": {
-                        $set: newValue,
-                    },
+            .then((setting) => {
+            let toggleComponent;
+            setting
+                .addToggle((toggle) => {
+                toggleComponent = toggle;
+                const [value, globalValue] = this.getSetting("prepend-archive-date", local);
+                if (value !== undefined) {
+                    toggle.setValue(value);
+                }
+                else if (globalValue !== undefined) {
+                    toggle.setValue(globalValue);
+                }
+                toggle.onChange((newValue) => {
+                    this.applySettingsUpdate({
+                        "prepend-archive-date": {
+                            $set: newValue,
+                        },
+                    });
                 });
-            });
-        })
-            .addExtraButton((b) => {
-            b.setIcon("reset")
-                .setTooltip(t$2("Reset to default"))
-                .onClick(() => {
-                this.applySettingsUpdate({
-                    $unset: ["prepend-archive-date"],
+            })
+                .addExtraButton((b) => {
+                b.setIcon("reset")
+                    .setTooltip(t$2("Reset to default"))
+                    .onClick(() => {
+                    const [, globalValue] = this.getSetting("prepend-archive-date", local);
+                    toggleComponent.setValue(!!globalValue);
+                    this.applySettingsUpdate({
+                        $unset: ["prepend-archive-date"],
+                    });
                 });
             });
         });
@@ -41020,10 +41064,10 @@ class KanbanView extends obsidian.TextFileView {
         const localSetting = suppliedLocalSettings
             ? suppliedLocalSettings[key]
             : this.dataBridge.getData().settings[key];
-        if (localSetting)
+        if (localSetting !== undefined)
             return localSetting;
         const globalSetting = this.plugin.settings[key];
-        if (globalSetting)
+        if (globalSetting !== undefined)
             return globalSetting;
         return null;
     }

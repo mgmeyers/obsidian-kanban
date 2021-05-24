@@ -60,11 +60,11 @@ export class KanbanView extends TextFileView implements HoverParent {
       ? suppliedLocalSettings[key]
       : this.dataBridge.getData().settings[key];
 
-    if (localSetting) return localSetting;
+    if (localSetting !== undefined) return localSetting;
 
     const globalSetting = this.plugin.settings[key];
 
-    if (globalSetting) return globalSetting;
+    if (globalSetting !== undefined) return globalSetting;
 
     return null;
   }

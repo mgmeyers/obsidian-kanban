@@ -1,5 +1,11 @@
 import update, { Spec } from "immutability-helper";
-import { App, Modal, PluginSettingTab, Setting } from "obsidian";
+import {
+  App,
+  Modal,
+  PluginSettingTab,
+  Setting,
+  ToggleComponent,
+} from "obsidian";
 import {
   c,
   getDefaultDateFormat,
@@ -219,30 +225,46 @@ export class SettingsManager {
     new Setting(contentEl)
       .setName(t("Display card checkbox"))
       .setDesc(t("When toggled, a checkbox will be displayed with each card"))
-      .addToggle((toggle) => {
-        const [value, globalValue] = this.getSetting("show-checkboxes", local);
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
 
-        if (value !== undefined) {
-          toggle.setValue(value as boolean);
-        } else if (globalValue !== undefined) {
-          toggle.setValue(globalValue as boolean);
-        }
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
 
-        toggle.onChange((newValue) => {
-          this.applySettingsUpdate({
-            "show-checkboxes": {
-              $set: newValue,
-            },
-          });
-        });
-      })
-      .addExtraButton((b) => {
-        b.setIcon("reset")
-          .setTooltip(t("Reset to default"))
-          .onClick(() => {
-            this.applySettingsUpdate({
-              $unset: ["show-checkboxes"],
+            const [value, globalValue] = this.getSetting(
+              "show-checkboxes",
+              local
+            );
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                "show-checkboxes": {
+                  $set: newValue,
+                },
+              });
             });
+          })
+          .addExtraButton((b) => {
+            b.setIcon("reset")
+              .setTooltip(t("Reset to default"))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting(
+                  "show-checkboxes",
+                  local
+                );
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ["show-checkboxes"],
+                });
+              });
           });
       });
 
@@ -466,33 +488,46 @@ export class SettingsManager {
           "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'"
         )
       )
-      .addToggle((toggle) => {
-        const [value, globalValue] = this.getSetting(
-          "show-relative-date",
-          local
-        );
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
 
-        if (value !== undefined) {
-          toggle.setValue(value as boolean);
-        } else if (globalValue !== undefined) {
-          toggle.setValue(globalValue as boolean);
-        }
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
 
-        toggle.onChange((newValue) => {
-          this.applySettingsUpdate({
-            "show-relative-date": {
-              $set: newValue,
-            },
-          });
-        });
-      })
-      .addExtraButton((b) => {
-        b.setIcon("reset")
-          .setTooltip(t("Reset to default"))
-          .onClick(() => {
-            this.applySettingsUpdate({
-              $unset: ["show-relative-date"],
+            const [value, globalValue] = this.getSetting(
+              "show-relative-date",
+              local
+            );
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                "show-relative-date": {
+                  $set: newValue,
+                },
+              });
             });
+          })
+          .addExtraButton((b) => {
+            b.setIcon("reset")
+              .setTooltip(t("Reset to default"))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting(
+                  "show-relative-date",
+                  local
+                );
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ["show-relative-date"],
+                });
+              });
           });
       });
 
@@ -503,33 +538,46 @@ export class SettingsManager {
           "When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled."
         )
       )
-      .addToggle((toggle) => {
-        const [value, globalValue] = this.getSetting(
-          "hide-date-display",
-          local
-        );
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
 
-        if (value !== undefined) {
-          toggle.setValue(value as boolean);
-        } else if (globalValue !== undefined) {
-          toggle.setValue(globalValue as boolean);
-        }
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
 
-        toggle.onChange((newValue) => {
-          this.applySettingsUpdate({
-            "hide-date-display": {
-              $set: newValue,
-            },
-          });
-        });
-      })
-      .addExtraButton((b) => {
-        b.setIcon("reset")
-          .setTooltip(t("Reset to default"))
-          .onClick(() => {
-            this.applySettingsUpdate({
-              $unset: ["hide-date-display"],
+            const [value, globalValue] = this.getSetting(
+              "hide-date-display",
+              local
+            );
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                "hide-date-display": {
+                  $set: newValue,
+                },
+              });
             });
+          })
+          .addExtraButton((b) => {
+            b.setIcon("reset")
+              .setTooltip(t("Reset to default"))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting(
+                  "hide-date-display",
+                  local
+                );
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ["hide-date-display"],
+                });
+              });
           });
       });
 
@@ -540,33 +588,46 @@ export class SettingsManager {
           "When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes."
         )
       )
-      .addToggle((toggle) => {
-        const [value, globalValue] = this.getSetting(
-          "hide-date-in-title",
-          local
-        );
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
 
-        if (value !== undefined) {
-          toggle.setValue(value as boolean);
-        } else if (globalValue !== undefined) {
-          toggle.setValue(globalValue as boolean);
-        }
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
 
-        toggle.onChange((newValue) => {
-          this.applySettingsUpdate({
-            "hide-date-in-title": {
-              $set: newValue,
-            },
-          });
-        });
-      })
-      .addExtraButton((b) => {
-        b.setIcon("reset")
-          .setTooltip(t("Reset to default"))
-          .onClick(() => {
-            this.applySettingsUpdate({
-              $unset: ["hide-date-in-title"],
+            const [value, globalValue] = this.getSetting(
+              "hide-date-in-title",
+              local
+            );
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                "hide-date-in-title": {
+                  $set: newValue,
+                },
+              });
             });
+          })
+          .addExtraButton((b) => {
+            b.setIcon("reset")
+              .setTooltip(t("Reset to default"))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting(
+                  "hide-date-in-title",
+                  local
+                );
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ["hide-date-in-title"],
+                });
+              });
           });
       });
 
@@ -575,33 +636,46 @@ export class SettingsManager {
       .setDesc(
         t("When toggled, dates will link to daily notes. Eg. [[2021-04-26]]")
       )
-      .addToggle((toggle) => {
-        const [value, globalValue] = this.getSetting(
-          "link-date-to-daily-note",
-          local
-        );
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
 
-        if (value !== undefined) {
-          toggle.setValue(value as boolean);
-        } else if (globalValue !== undefined) {
-          toggle.setValue(globalValue as boolean);
-        }
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
 
-        toggle.onChange((newValue) => {
-          this.applySettingsUpdate({
-            "link-date-to-daily-note": {
-              $set: newValue,
-            },
-          });
-        });
-      })
-      .addExtraButton((b) => {
-        b.setIcon("reset")
-          .setTooltip(t("Reset to default"))
-          .onClick(() => {
-            this.applySettingsUpdate({
-              $unset: ["link-date-to-daily-note"],
+            const [value, globalValue] = this.getSetting(
+              "link-date-to-daily-note",
+              local
+            );
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                "link-date-to-daily-note": {
+                  $set: newValue,
+                },
+              });
             });
+          })
+          .addExtraButton((b) => {
+            b.setIcon("reset")
+              .setTooltip(t("Reset to default"))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting(
+                  "link-date-to-daily-note",
+                  local
+                );
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ["link-date-to-daily-note"],
+                });
+              });
           });
       });
 
@@ -612,33 +686,46 @@ export class SettingsManager {
           "When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title"
         )
       )
-      .addToggle((toggle) => {
-        const [value, globalValue] = this.getSetting(
-          "prepend-archive-date",
-          local
-        );
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
 
-        if (value !== undefined) {
-          toggle.setValue(value as boolean);
-        } else if (globalValue !== undefined) {
-          toggle.setValue(globalValue as boolean);
-        }
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
 
-        toggle.onChange((newValue) => {
-          this.applySettingsUpdate({
-            "prepend-archive-date": {
-              $set: newValue,
-            },
-          });
-        });
-      })
-      .addExtraButton((b) => {
-        b.setIcon("reset")
-          .setTooltip(t("Reset to default"))
-          .onClick(() => {
-            this.applySettingsUpdate({
-              $unset: ["prepend-archive-date"],
+            const [value, globalValue] = this.getSetting(
+              "prepend-archive-date",
+              local
+            );
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                "prepend-archive-date": {
+                  $set: newValue,
+                },
+              });
             });
+          })
+          .addExtraButton((b) => {
+            b.setIcon("reset")
+              .setTooltip(t("Reset to default"))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting(
+                  "prepend-archive-date",
+                  local
+                );
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ["prepend-archive-date"],
+                });
+              });
           });
       });
 
