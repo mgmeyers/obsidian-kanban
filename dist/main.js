@@ -15483,6 +15483,9 @@ var en = {
     "Delete list": "Delete list",
 };
 
+// British English
+var enGB = {};
+
 // Español
 var es = {};
 
@@ -15865,6 +15868,7 @@ const localeMap$1 = {
     da,
     de,
     en,
+    "en-gb": enGB,
     es,
     fr,
     hi,
@@ -38777,6 +38781,7 @@ const localeMap = {
     da: l10n$1.da,
     de: l10n$1.de,
     en: l10n$1.en,
+    "en-gb": l10n$1.en,
     es: l10n$1.es,
     fr: l10n$1.fr,
     hi: l10n$1.hi,
@@ -38797,7 +38802,7 @@ const localeMap = {
 };
 const locale = localeMap[obsidian.moment.locale()];
 function getDefaultLocale() {
-    return locale;
+    return locale || localeMap.en;
 }
 
 function constructDatePicker$1(coordinates, onChange, date) {
@@ -39349,7 +39354,7 @@ function DateAndTime({ item, view, filePath, onEditDate, onEditTime, }) {
         " ",
         hasTime && (react.createElement("span", { onClick: onEditTime, className: `${c$2("item-metadata-time")} is-button`, "aria-label": t$2("Change time") }, timeDisplayStr))));
 }
-function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, searchResult, onEditDate, onEditTime, onChange, }) {
+function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, searchQuery, onEditDate, onEditTime, onChange, }) {
     const obsidianContext = react.useContext(ObsidianContext);
     const inputRef = react.useRef();
     const { view, filePath } = obsidianContext;
@@ -39362,18 +39367,13 @@ function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, searchResu
     const markdownContent = react.useMemo(() => {
         const tempEl = createDiv();
         obsidian.MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
-        if (searchResult) {
-            new mark(tempEl).markRanges(searchResult.matches.map((r) => {
-                return {
-                    start: r[0],
-                    length: r[1] - r[0],
-                };
-            }));
+        if (searchQuery) {
+            new mark(tempEl).mark(searchQuery);
         }
         return {
             innerHTML: { __html: tempEl.innerHTML.toString() },
         };
-    }, [item, filePath, view, searchResult]);
+    }, [item, filePath, view, searchQuery]);
     if (isSettingsVisible) {
         return (react.createElement("div", { "data-replicated-value": item.titleRaw, className: c$2("grow-wrap") },
             react.createElement("textarea", Object.assign({ rows: 1, ref: inputRef, className: c$2("item-input"), value: item.titleRaw, onChange: onChange }, autocompleteProps))));
@@ -39598,12 +39598,12 @@ function draggableItemFactory({ items, laneIndex, }) {
         const lane = board.lanes[laneIndex];
         const shouldShowCheckbox = view.getSetting("show-checkboxes");
         const shouldMarkItemsComplete = lane.data.shouldMarkItemsComplete;
-        const queryResults = query ? obsidian.fuzzySearch(query, item.titleSearch) : null;
+        const isMatch = query ? item.titleSearch.toLocaleLowerCase().contains(query) : false;
         const classModifiers = getClassModifiers(item);
         if (snapshot.isDragging)
             classModifiers.push("is-dragging");
         if (query) {
-            if (queryResults) {
+            if (isMatch) {
                 classModifiers.push("is-search-hit");
             }
             else {
@@ -39652,7 +39652,7 @@ function draggableItemFactory({ items, laneIndex, }) {
                             boardModifiers.archiveItem(laneIndex, itemIndex, item);
                         }, className: c$2("item-prefix-button"), "aria-label": isCtrlHoveringCheckbox ? undefined : "Archive item" },
                         react.createElement(Icon, { name: "sheets-in-box" }))))),
-                react.createElement(ItemContent, { isSettingsVisible: isEditing, setIsSettingsVisible: setIsEditing, item: item, searchResult: queryResults, onEditDate: (e) => {
+                react.createElement(ItemContent, { isSettingsVisible: isEditing, setIsSettingsVisible: setIsEditing, item: item, searchQuery: isMatch ? query : undefined, onEditDate: (e) => {
                         var _a;
                         constructDatePicker$1({ x: e.clientX, y: e.clientY }, constructMenuDatePickerOnChange({
                             view,
@@ -40392,7 +40392,7 @@ const Kanban = ({ filePath, view, dataBridge }) => {
     }, [view, filePath]);
     return (react.createElement(ObsidianContext.Provider, { value: { filePath, view } },
         react.createElement(KanbanContext.Provider, { value: { boardModifiers, board: boardData } },
-            react.createElement(SearchContext.Provider, { value: { query: searchQuery ? obsidian.prepareQuery(searchQuery) : null } },
+            react.createElement(SearchContext.Provider, { value: { query: searchQuery.toLocaleLowerCase() } },
                 boardData.isSearching && (react.createElement("div", { className: c$2("search-wrapper") },
                     react.createElement("input", { ref: searchRef, value: searchQuery, onChange: (e) => {
                             setSearchQuery(e.target.value);

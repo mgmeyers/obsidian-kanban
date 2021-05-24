@@ -141,13 +141,16 @@ export function draggableItemFactory({
     const lane = board.lanes[laneIndex];
     const shouldShowCheckbox = view.getSetting("show-checkboxes");
     const shouldMarkItemsComplete = lane.data.shouldMarkItemsComplete;
-    const queryResults = query ? fuzzySearch(query, item.titleSearch) : null;
+    const isMatch = query
+      ? item.titleSearch.toLocaleLowerCase().contains(query)
+      : false;
 
     const classModifiers: string[] = getClassModifiers(item);
 
     if (snapshot.isDragging) classModifiers.push("is-dragging");
+
     if (query) {
-      if (queryResults) {
+      if (isMatch) {
         classModifiers.push("is-search-hit");
       } else {
         classModifiers.push("is-search-miss");
@@ -241,7 +244,7 @@ export function draggableItemFactory({
             isSettingsVisible={isEditing}
             setIsSettingsVisible={setIsEditing}
             item={item}
-            searchResult={queryResults}
+            searchQuery={isMatch ? query : undefined}
             onEditDate={(e) => {
               constructDatePicker(
                 { x: e.clientX, y: e.clientY },

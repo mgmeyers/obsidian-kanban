@@ -8,6 +8,7 @@ const localeMap: { [k: string]: CustomLocale } = {
   da: l10n.da,
   de: l10n.de,
   en: l10n.en,
+  "en-gb": l10n.en,
   es: l10n.es,
   fr: l10n.fr,
   hi: l10n.hi,
@@ -30,5 +31,5 @@ const localeMap: { [k: string]: CustomLocale } = {
 const locale = localeMap[moment.locale()]
 
 export function getDefaultLocale() {
-  return locale;
+  return locale || localeMap.en;
 }

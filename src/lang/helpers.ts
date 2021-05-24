@@ -4,6 +4,7 @@ import cz from "./locale/cz";
 import da from "./locale/da";
 import de from "./locale/de";
 import en from "./locale/en";
+import enGB from "./locale/en-gb";
 import es from "./locale/es";
 import fr from "./locale/fr";
 import hi from "./locale/hi";
@@ -28,6 +29,7 @@ const localeMap: { [k: string]: Partial<typeof en> } = {
   da,
   de,
   en,
+  "en-gb": enGB,
   es,
   fr,
   hi,

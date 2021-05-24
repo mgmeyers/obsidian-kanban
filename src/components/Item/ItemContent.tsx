@@ -140,7 +140,7 @@ export interface ItemContentProps {
   item: Item;
   isSettingsVisible: boolean;
   setIsSettingsVisible?: React.Dispatch<boolean>;
-  searchResult?: SearchResult;
+  searchQuery?: string;
   onEditDate?: React.MouseEventHandler;
   onEditTime?: React.MouseEventHandler;
   onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
@@ -151,7 +151,7 @@ export function ItemContent({
   item,
   isSettingsVisible,
   setIsSettingsVisible,
-  searchResult,
+  searchQuery,
   onEditDate,
   onEditTime,
   onChange,
@@ -173,21 +173,14 @@ export function ItemContent({
     const tempEl = createDiv();
     MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
 
-    if (searchResult) {
-      new Mark(tempEl).markRanges(
-        searchResult.matches.map((r) => {
-          return {
-            start: r[0],
-            length: r[1] - r[0],
-          };
-        })
-      );
+    if (searchQuery) {
+      new Mark(tempEl).mark(searchQuery);
     }
 
     return {
       innerHTML: { __html: tempEl.innerHTML.toString() },
     };
-  }, [item, filePath, view, searchResult]);
+  }, [item, filePath, view, searchQuery]);
 
   if (isSettingsVisible) {
     return (

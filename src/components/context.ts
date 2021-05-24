@@ -1,4 +1,3 @@
-import { PreparedQuery } from "obsidian";
 import React from "react";
 import { KanbanView } from "src/KanbanView";
 import { Board, BoardModifiers } from "./types";
@@ -18,7 +17,7 @@ export interface KanbanContextProps {
 export const KanbanContext = React.createContext<KanbanContextProps>(null);
 
 export interface SearchContextProps {
-  query: PreparedQuery | null;
+  query: string;
 }
 
 export const SearchContext = React.createContext<SearchContextProps>(null);

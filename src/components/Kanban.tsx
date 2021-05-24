@@ -1,4 +1,4 @@
-import { moment, prepareQuery } from "obsidian";
+import { moment } from "obsidian";
 import update from "immutability-helper";
 import React from "react";
 import { DataBridge } from "../DataBridge";
@@ -441,7 +441,7 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
     <ObsidianContext.Provider value={{ filePath, view }}>
       <KanbanContext.Provider value={{ boardModifiers, board: boardData }}>
         <SearchContext.Provider
-          value={{ query: searchQuery ? prepareQuery(searchQuery) : null }}
+          value={{ query: searchQuery.toLocaleLowerCase() }}
         >
           {boardData.isSearching && (
             <div className={c("search-wrapper")}>
