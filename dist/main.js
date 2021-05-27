@@ -8980,9 +8980,10 @@ function applyTemplate(view, templatePath) {
             ? view.app.vault.getAbstractFileByPath(templatePath)
             : null;
         if (templateFile && templateFile instanceof obsidian.TFile) {
+            const activeView = view.app.workspace.activeLeaf.view;
             // Force the view to source mode, if needed
-            if (view instanceof obsidian.MarkdownView && view.getMode() !== "source") {
-                yield view.setState(Object.assign(Object.assign({}, view.getState()), { mode: "source" }), {});
+            if (activeView instanceof obsidian.MarkdownView && activeView.getMode() !== "source") {
+                yield activeView.setState(Object.assign(Object.assign({}, activeView.getState()), { mode: "source" }), {});
             }
             const { templatesEnabled, templaterPlugin, templatesPlugin } = view.plugin.getTemplatePlugins();
             const templateContent = yield view.app.vault.read(templateFile);

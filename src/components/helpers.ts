@@ -156,11 +156,12 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
     : null;
 
   if (templateFile && templateFile instanceof TFile) {
+    const activeView = view.app.workspace.activeLeaf.view
     // Force the view to source mode, if needed
-    if (view instanceof MarkdownView && view.getMode() !== "source") {
-      await view.setState(
+    if (activeView instanceof MarkdownView && activeView.getMode() !== "source") {
+      await activeView.setState(
         {
-          ...view.getState(),
+          ...activeView.getState(),
           mode: "source",
         },
         {}
