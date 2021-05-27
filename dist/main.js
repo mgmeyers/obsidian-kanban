@@ -20016,7 +20016,7 @@ function mdToSettings(boardMd) {
 }
 function mdToBoard(boardMd, view) {
     const settings = mdToSettings(boardMd);
-    const lines = boardMd.split(newLineRegex);
+    const lines = boardMd.replace(frontmatterRegEx, '').split(newLineRegex);
     const lanes = [];
     const archive = [];
     let haveSeenArchiveMarker = false;

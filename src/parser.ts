@@ -214,7 +214,7 @@ export function mdToSettings(boardMd: string): KanbanSettings {
 
 export function mdToBoard(boardMd: string, view: KanbanView): Board {
   const settings = mdToSettings(boardMd);
-  const lines = boardMd.split(newLineRegex);
+  const lines = boardMd.replace(frontmatterRegEx, '').split(newLineRegex);
   const lanes: Lane[] = [];
   const archive: Item[] = [];
 
