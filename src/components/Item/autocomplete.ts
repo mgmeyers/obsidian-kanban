@@ -220,12 +220,14 @@ export interface ConstructAutocompleteParams {
   inputRef: React.MutableRefObject<HTMLTextAreaElement>;
   isAutocompleteVisibleRef: React.MutableRefObject<boolean>;
   obsidianContext: ObsidianContextProps;
+  excludeDatePicker?: boolean;
 }
 
 export function constructAutocomplete({
   inputRef,
   isAutocompleteVisibleRef,
   obsidianContext,
+  excludeDatePicker,
 }: ConstructAutocompleteParams) {
   const { view, filePath } = obsidianContext;
 
@@ -245,15 +247,22 @@ export function constructAutocomplete({
     keys: ["name"],
   });
 
+  const configs: StrategyProps[] = [
+    getTagSearchConfig(tags, tagSearch),
+    getFileSearchConfig(files, fileSearch, filePath, view, false),
+    getFileSearchConfig(files, fileSearch, filePath, view, true),
+  ];
+
+  if (!excludeDatePicker) {
+    configs.push(
+      getTimePickerConfig(view)
+    )
+  }
+
   const editor = new TextareaEditor(inputRef.current);
   const autocomplete = new Textcomplete(
     editor,
-    [
-      getTagSearchConfig(tags, tagSearch),
-      getFileSearchConfig(files, fileSearch, filePath, view, false),
-      getFileSearchConfig(files, fileSearch, filePath, view, true),
-      getTimePickerConfig(view),
-    ],
+    configs,
     {
       dropdown: {
         className: `${c("autocomplete")} ${c("ignore-click-outside")}`,
@@ -286,115 +295,119 @@ export function constructAutocomplete({
     isAutocompleteVisibleRef.current = false;
   });
 
-  const keydownHandler = (e: KeyboardEvent) => {
-    if (!datePickerEl) {
-      return;
-    }
+  let keydownHandler: (e: KeyboardEvent) => void;
 
-    if (e.key === "Enter") {
-      e.preventDefault();
-
-      const selectedDates = datePickerInstance.selectedDates;
-
-      if (selectedDates.length) {
-        applyDate(selectedDates[0], inputRef, view);
-      } else {
-        applyDate(new Date(), inputRef, view);
+  if (!excludeDatePicker) {
+    keydownHandler = (e: KeyboardEvent) => {
+      if (!datePickerEl) {
+        return;
       }
 
-      return destroyDatePicker();
-    }
+      if (e.key === "Enter") {
+        e.preventDefault();
 
-    if (e.key === "Escape") {
-      e.preventDefault();
-      return destroyDatePicker();
-    }
+        const selectedDates = datePickerInstance.selectedDates;
 
-    const currentDate = moment(
-      datePickerInstance.selectedDates[0] || new Date()
-    );
+        if (selectedDates.length) {
+          applyDate(selectedDates[0], inputRef, view);
+        } else {
+          applyDate(new Date(), inputRef, view);
+        }
 
-    if (e.key === "ArrowRight") {
-      e.preventDefault();
-      if (currentDate.weekday() === 6) {
-        datePickerInstance.setDate(toNextMonth(currentDate).toDate(), false);
-      } else {
-        datePickerInstance.setDate(currentDate.add(1, "day").toDate(), false);
+        return destroyDatePicker();
       }
-      return;
-    }
 
-    if (e.key === "ArrowLeft") {
-      e.preventDefault();
-      if (currentDate.weekday() === 0) {
-        datePickerInstance.setDate(
-          toPreviousMonth(currentDate).toDate(),
-          false
-        );
-      } else {
-        datePickerInstance.setDate(
-          currentDate.subtract(1, "day").toDate(),
-          false
-        );
+      if (e.key === "Escape") {
+        e.preventDefault();
+        return destroyDatePicker();
       }
-      return;
-    }
 
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      datePickerInstance.setDate(
-        currentDate.subtract(1, "week").toDate(),
-        false
+      const currentDate = moment(
+        datePickerInstance.selectedDates[0] || new Date()
       );
-      return;
-    }
 
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      datePickerInstance.setDate(currentDate.add(1, "week").toDate(), false);
-      return;
-    }
-  };
-
-  inputRef.current.addEventListener("keydown", keydownHandler);
-
-  editor.on("change", (e: CustomEvent) => {
-    const beforeCursor = e.detail.beforeCursor as string;
-
-    if (beforeCursor && dateTriggerRegex.test(beforeCursor)) {
-      const position = editor.getCursorOffset();
-
-      if (datePickerEl) {
-        datePickerEl.style.left = `${position.left || 0}px`;
-        datePickerEl.style.top = `${position.top || 0}px`;
-        ensureDatePickerIsOnScreen(position, datePickerEl);
-      } else {
-        datePickerEl = document.body.createDiv(
-          { cls: `${c("date-picker")} ${c("ignore-click-outside")}` },
-          (div) => {
-            div.style.left = `${position.left || 0}px`;
-            div.style.top = `${position.top || 0}px`;
-
-            constructDatePicker({
-              div,
-              inputRef,
-              view,
-              cb: (picker) => {
-                datePickerInstance = picker;
-                isAutocompleteVisibleRef.current = true;
-                ensureDatePickerIsOnScreen(position, datePickerEl);
-              },
-            });
-          }
-        );
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        if (currentDate.weekday() === 6) {
+          datePickerInstance.setDate(toNextMonth(currentDate).toDate(), false);
+        } else {
+          datePickerInstance.setDate(currentDate.add(1, "day").toDate(), false);
+        }
+        return;
       }
-    } else if (datePickerEl) {
-      destroyDatePicker();
-    }
-  });
+
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        if (currentDate.weekday() === 0) {
+          datePickerInstance.setDate(
+            toPreviousMonth(currentDate).toDate(),
+            false
+          );
+        } else {
+          datePickerInstance.setDate(
+            currentDate.subtract(1, "day").toDate(),
+            false
+          );
+        }
+        return;
+      }
+
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        datePickerInstance.setDate(
+          currentDate.subtract(1, "week").toDate(),
+          false
+        );
+        return;
+      }
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        datePickerInstance.setDate(currentDate.add(1, "week").toDate(), false);
+        return;
+      }
+    };
+
+    inputRef.current.addEventListener("keydown", keydownHandler);
+
+    editor.on("change", (e: CustomEvent) => {
+      const beforeCursor = e.detail.beforeCursor as string;
+
+      if (beforeCursor && dateTriggerRegex.test(beforeCursor)) {
+        const position = editor.getCursorOffset();
+
+        if (datePickerEl) {
+          datePickerEl.style.left = `${position.left || 0}px`;
+          datePickerEl.style.top = `${position.top || 0}px`;
+          ensureDatePickerIsOnScreen(position, datePickerEl);
+        } else {
+          datePickerEl = document.body.createDiv(
+            { cls: `${c("date-picker")} ${c("ignore-click-outside")}` },
+            (div) => {
+              div.style.left = `${position.left || 0}px`;
+              div.style.top = `${position.top || 0}px`;
+
+              constructDatePicker({
+                div,
+                inputRef,
+                view,
+                cb: (picker) => {
+                  datePickerInstance = picker;
+                  isAutocompleteVisibleRef.current = true;
+                  ensureDatePickerIsOnScreen(position, datePickerEl);
+                },
+              });
+            }
+          );
+        }
+      } else if (datePickerEl) {
+        destroyDatePicker();
+      }
+    });
+  }
 
   return () => {
-    if (inputRef.current) {
+    if (!excludeDatePicker && inputRef.current) {
       inputRef.current.removeEventListener("keydown", keydownHandler);
     }
 
@@ -411,12 +424,14 @@ export interface UseAutocompleteInputPropsParams {
   isInputVisible: boolean;
   onEnter: () => void;
   onEscape: () => void;
+  excludeDatePicker?: boolean;
 }
 
 export function useAutocompleteInputProps({
   isInputVisible,
   onEnter,
   onEscape,
+  excludeDatePicker,
 }: UseAutocompleteInputPropsParams) {
   const obsidianContext = React.useContext(ObsidianContext);
   const isAutocompleteVisibleRef = React.useRef<boolean>(false);
@@ -435,6 +450,7 @@ export function useAutocompleteInputProps({
         inputRef,
         isAutocompleteVisibleRef,
         obsidianContext,
+        excludeDatePicker,
       });
     }
   }, [isInputVisible]);

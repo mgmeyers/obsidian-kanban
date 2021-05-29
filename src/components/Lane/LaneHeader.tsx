@@ -53,11 +53,8 @@ export function LaneHeader({
               update(lane, { title: { $set: e.target.value } })
             )
           }
-          onKeyDown={(e) => {
-            if (e.key === "Escape" || e.key === "Enter") {
-              e.preventDefault();
-              setIsEditing(false);
-            }
+          cancelEditing={() => {
+            setIsEditing(false);
           }}
         />
 

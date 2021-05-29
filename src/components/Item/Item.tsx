@@ -20,7 +20,6 @@ import {
   constructTimePicker,
 } from "./helpers";
 import { t } from "src/lang/helpers";
-import { fuzzySearch } from "obsidian";
 
 export interface DraggableItemFactoryParams {
   items: Item[];

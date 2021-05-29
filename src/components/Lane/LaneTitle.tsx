@@ -1,13 +1,16 @@
+import { getLinkpath, MarkdownRenderer } from "obsidian";
 import React from "react";
 import { t } from "src/lang/helpers";
+import { ObsidianContext } from "../context";
 import { c, useIMEInputProps } from "../helpers";
+import { useAutocompleteInputProps } from "../Item/autocomplete";
 
 export interface LaneTitleProps {
   itemCount: number;
   title: string;
   isEditing: boolean;
   onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
-  onKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement>;
+  cancelEditing: () => void;
 }
 
 export function LaneTitle({
@@ -15,10 +18,17 @@ export function LaneTitle({
   isEditing,
   title,
   onChange,
-  onKeyDown,
+  cancelEditing,
 }: LaneTitleProps) {
-  const { getShouldIMEBlockAction, ...inputProps } = useIMEInputProps();
+  const { view, filePath } = React.useContext(ObsidianContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
+
+  const autocompleteProps = useAutocompleteInputProps({
+    isInputVisible: isEditing,
+    onEnter: cancelEditing,
+    onEscape: cancelEditing,
+    excludeDatePicker: true,
+  });
 
   React.useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -28,6 +38,15 @@ export function LaneTitle({
       input.selectionStart = input.selectionEnd = input.value.length;
     }
   }, [isEditing]);
+
+  const markdownContent = React.useMemo(() => {
+    const tempEl = createDiv();
+    MarkdownRenderer.renderMarkdown(title, tempEl, filePath, view);
+
+    return {
+      innerHTML: { __html: tempEl.innerHTML.toString() },
+    };
+  }, [title, filePath, view]);
 
   return (
     <div className={c("lane-title")}>
@@ -40,16 +59,34 @@ export function LaneTitle({
             className={c("lane-input")}
             placeholder={t("Enter list title...")}
             onChange={onChange}
-            onKeyDown={(e) => {
-              if (getShouldIMEBlockAction()) return;
-              onKeyDown(e);
-            }}
-            {...inputProps}
+            {...autocompleteProps}
           />
         </div>
       ) : (
         <>
-          <span className={c("lane-title-text")}>{title}</span>
+          <span
+            className={c("lane-title-text")}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+
+              const internalLinkPath =
+                e.target instanceof HTMLAnchorElement &&
+                e.target.hasClass("internal-link")
+                  ? e.target.dataset.href
+                  : undefined;
+
+              if (internalLinkPath) {
+                // @ts-ignore
+                view.app.workspace.onLinkContextMenu(
+                  e,
+                  getLinkpath(internalLinkPath),
+                  view.file.path
+                );
+              }
+            }}
+            dangerouslySetInnerHTML={markdownContent.innerHTML}
+          ></span>
           <span className={c("lane-title-count")}>{itemCount}</span>
         </>
       )}

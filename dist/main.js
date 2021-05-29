@@ -39236,7 +39236,7 @@ function toNextMonth(date) {
     }
     return date;
 }
-function constructAutocomplete({ inputRef, isAutocompleteVisibleRef, obsidianContext, }) {
+function constructAutocomplete({ inputRef, isAutocompleteVisibleRef, obsidianContext, excludeDatePicker, }) {
     const { view, filePath } = obsidianContext;
     let datePickerEl = null;
     let datePickerInstance = null;
@@ -39248,13 +39248,16 @@ function constructAutocomplete({ inputRef, isAutocompleteVisibleRef, obsidianCon
     const fileSearch = new Fuse(files, {
         keys: ["name"],
     });
-    const editor = new dist.TextareaEditor(inputRef.current);
-    const autocomplete = new dist$3.Textcomplete(editor, [
+    const configs = [
         getTagSearchConfig(tags, tagSearch),
         getFileSearchConfig(files, fileSearch, filePath, view, false),
         getFileSearchConfig(files, fileSearch, filePath, view, true),
-        getTimePickerConfig(view),
-    ], {
+    ];
+    if (!excludeDatePicker) {
+        configs.push(getTimePickerConfig(view));
+    }
+    const editor = new dist.TextareaEditor(inputRef.current);
+    const autocomplete = new dist$3.Textcomplete(editor, configs, {
         dropdown: {
             className: `${c$2("autocomplete")} ${c$2("ignore-click-outside")}`,
             rotate: true,
@@ -39278,90 +39281,93 @@ function constructAutocomplete({ inputRef, isAutocompleteVisibleRef, obsidianCon
     autocomplete.on("hidden", () => {
         isAutocompleteVisibleRef.current = false;
     });
-    const keydownHandler = (e) => {
-        if (!datePickerEl) {
-            return;
-        }
-        if (e.key === "Enter") {
-            e.preventDefault();
-            const selectedDates = datePickerInstance.selectedDates;
-            if (selectedDates.length) {
-                applyDate(selectedDates[0], inputRef, view);
+    let keydownHandler;
+    if (!excludeDatePicker) {
+        keydownHandler = (e) => {
+            if (!datePickerEl) {
+                return;
             }
-            else {
-                applyDate(new Date(), inputRef, view);
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const selectedDates = datePickerInstance.selectedDates;
+                if (selectedDates.length) {
+                    applyDate(selectedDates[0], inputRef, view);
+                }
+                else {
+                    applyDate(new Date(), inputRef, view);
+                }
+                return destroyDatePicker();
             }
-            return destroyDatePicker();
-        }
-        if (e.key === "Escape") {
-            e.preventDefault();
-            return destroyDatePicker();
-        }
-        const currentDate = obsidian.moment(datePickerInstance.selectedDates[0] || new Date());
-        if (e.key === "ArrowRight") {
-            e.preventDefault();
-            if (currentDate.weekday() === 6) {
-                datePickerInstance.setDate(toNextMonth(currentDate).toDate(), false);
+            if (e.key === "Escape") {
+                e.preventDefault();
+                return destroyDatePicker();
             }
-            else {
-                datePickerInstance.setDate(currentDate.add(1, "day").toDate(), false);
+            const currentDate = obsidian.moment(datePickerInstance.selectedDates[0] || new Date());
+            if (e.key === "ArrowRight") {
+                e.preventDefault();
+                if (currentDate.weekday() === 6) {
+                    datePickerInstance.setDate(toNextMonth(currentDate).toDate(), false);
+                }
+                else {
+                    datePickerInstance.setDate(currentDate.add(1, "day").toDate(), false);
+                }
+                return;
             }
-            return;
-        }
-        if (e.key === "ArrowLeft") {
-            e.preventDefault();
-            if (currentDate.weekday() === 0) {
-                datePickerInstance.setDate(toPreviousMonth(currentDate).toDate(), false);
+            if (e.key === "ArrowLeft") {
+                e.preventDefault();
+                if (currentDate.weekday() === 0) {
+                    datePickerInstance.setDate(toPreviousMonth(currentDate).toDate(), false);
+                }
+                else {
+                    datePickerInstance.setDate(currentDate.subtract(1, "day").toDate(), false);
+                }
+                return;
             }
-            else {
-                datePickerInstance.setDate(currentDate.subtract(1, "day").toDate(), false);
+            if (e.key === "ArrowUp") {
+                e.preventDefault();
+                datePickerInstance.setDate(currentDate.subtract(1, "week").toDate(), false);
+                return;
             }
-            return;
-        }
-        if (e.key === "ArrowUp") {
-            e.preventDefault();
-            datePickerInstance.setDate(currentDate.subtract(1, "week").toDate(), false);
-            return;
-        }
-        if (e.key === "ArrowDown") {
-            e.preventDefault();
-            datePickerInstance.setDate(currentDate.add(1, "week").toDate(), false);
-            return;
-        }
-    };
-    inputRef.current.addEventListener("keydown", keydownHandler);
-    editor.on("change", (e) => {
-        const beforeCursor = e.detail.beforeCursor;
-        if (beforeCursor && dateTriggerRegex.test(beforeCursor)) {
-            const position = editor.getCursorOffset();
-            if (datePickerEl) {
-                datePickerEl.style.left = `${position.left || 0}px`;
-                datePickerEl.style.top = `${position.top || 0}px`;
-                ensureDatePickerIsOnScreen(position, datePickerEl);
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                datePickerInstance.setDate(currentDate.add(1, "week").toDate(), false);
+                return;
             }
-            else {
-                datePickerEl = document.body.createDiv({ cls: `${c$2("date-picker")} ${c$2("ignore-click-outside")}` }, (div) => {
-                    div.style.left = `${position.left || 0}px`;
-                    div.style.top = `${position.top || 0}px`;
-                    constructDatePicker({
-                        div,
-                        inputRef,
-                        view,
-                        cb: (picker) => {
-                            datePickerInstance = picker;
-                            isAutocompleteVisibleRef.current = true;
-                            ensureDatePickerIsOnScreen(position, datePickerEl);
-                        },
+        };
+        inputRef.current.addEventListener("keydown", keydownHandler);
+        editor.on("change", (e) => {
+            const beforeCursor = e.detail.beforeCursor;
+            if (beforeCursor && dateTriggerRegex.test(beforeCursor)) {
+                const position = editor.getCursorOffset();
+                if (datePickerEl) {
+                    datePickerEl.style.left = `${position.left || 0}px`;
+                    datePickerEl.style.top = `${position.top || 0}px`;
+                    ensureDatePickerIsOnScreen(position, datePickerEl);
+                }
+                else {
+                    datePickerEl = document.body.createDiv({ cls: `${c$2("date-picker")} ${c$2("ignore-click-outside")}` }, (div) => {
+                        div.style.left = `${position.left || 0}px`;
+                        div.style.top = `${position.top || 0}px`;
+                        constructDatePicker({
+                            div,
+                            inputRef,
+                            view,
+                            cb: (picker) => {
+                                datePickerInstance = picker;
+                                isAutocompleteVisibleRef.current = true;
+                                ensureDatePickerIsOnScreen(position, datePickerEl);
+                            },
+                        });
                     });
-                });
+                }
             }
-        }
-        else if (datePickerEl) {
-            destroyDatePicker();
-        }
-    });
+            else if (datePickerEl) {
+                destroyDatePicker();
+            }
+        });
+    }
     return () => {
-        if (inputRef.current) {
+        if (!excludeDatePicker && inputRef.current) {
             inputRef.current.removeEventListener("keydown", keydownHandler);
         }
         if (datePickerEl) {
@@ -39371,7 +39377,7 @@ function constructAutocomplete({ inputRef, isAutocompleteVisibleRef, obsidianCon
         editor.destroy();
     };
 }
-function useAutocompleteInputProps({ isInputVisible, onEnter, onEscape, }) {
+function useAutocompleteInputProps({ isInputVisible, onEnter, onEscape, excludeDatePicker, }) {
     const obsidianContext = react.useContext(ObsidianContext);
     const isAutocompleteVisibleRef = react.useRef(false);
     const inputRef = react.useRef();
@@ -39385,6 +39391,7 @@ function useAutocompleteInputProps({ isInputVisible, onEnter, onEscape, }) {
                 inputRef,
                 isAutocompleteVisibleRef,
                 obsidianContext,
+                excludeDatePicker,
             });
         }
     }, [isInputVisible]);
@@ -39995,9 +40002,15 @@ function GripIcon(props) {
         react.createElement("path", { fill: "currentColor", d: "M5 3h2v2H5zm0 4h2v2H5zm0 4h2v2H5zm4-8h2v2H9zm0 4h2v2H9zm0 4h2v2H9z" })));
 }
 
-function LaneTitle({ itemCount, isEditing, title, onChange, onKeyDown, }) {
-    const _a = useIMEInputProps(), { getShouldIMEBlockAction } = _a, inputProps = __rest(_a, ["getShouldIMEBlockAction"]);
+function LaneTitle({ itemCount, isEditing, title, onChange, cancelEditing, }) {
+    const { view, filePath } = react.useContext(ObsidianContext);
     const inputRef = react.useRef();
+    const autocompleteProps = useAutocompleteInputProps({
+        isInputVisible: isEditing,
+        onEnter: cancelEditing,
+        onEscape: cancelEditing,
+        excludeDatePicker: true,
+    });
     react.useEffect(() => {
         if (isEditing && inputRef.current) {
             const input = inputRef.current;
@@ -40005,13 +40018,27 @@ function LaneTitle({ itemCount, isEditing, title, onChange, onKeyDown, }) {
             input.selectionStart = input.selectionEnd = input.value.length;
         }
     }, [isEditing]);
+    const markdownContent = react.useMemo(() => {
+        const tempEl = createDiv();
+        obsidian.MarkdownRenderer.renderMarkdown(title, tempEl, filePath, view);
+        return {
+            innerHTML: { __html: tempEl.innerHTML.toString() },
+        };
+    }, [title, filePath, view]);
     return (react.createElement("div", { className: c$2("lane-title") }, isEditing ? (react.createElement("div", { "data-replicated-value": title, className: c$2("grow-wrap") },
-        react.createElement("textarea", Object.assign({ ref: inputRef, rows: 1, value: title, className: c$2("lane-input"), placeholder: t$2("Enter list title..."), onChange: onChange, onKeyDown: (e) => {
-                if (getShouldIMEBlockAction())
-                    return;
-                onKeyDown(e);
-            } }, inputProps)))) : (react.createElement(react.Fragment, null,
-        react.createElement("span", { className: c$2("lane-title-text") }, title),
+        react.createElement("textarea", Object.assign({ ref: inputRef, rows: 1, value: title, className: c$2("lane-input"), placeholder: t$2("Enter list title..."), onChange: onChange }, autocompleteProps)))) : (react.createElement(react.Fragment, null,
+        react.createElement("span", { className: c$2("lane-title-text"), onContextMenu: (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const internalLinkPath = e.target instanceof HTMLAnchorElement &&
+                    e.target.hasClass("internal-link")
+                    ? e.target.dataset.href
+                    : undefined;
+                if (internalLinkPath) {
+                    // @ts-ignore
+                    view.app.workspace.onLinkContextMenu(e, obsidian.getLinkpath(internalLinkPath), view.file.path);
+                }
+            }, dangerouslySetInnerHTML: markdownContent.innerHTML }),
         react.createElement("span", { className: c$2("lane-title-count") }, itemCount)))));
 }
 
@@ -40102,11 +40129,8 @@ function LaneHeader({ lane, laneIndex, dragHandleProps, }) {
         react.createElement("div", { onDoubleClick: () => setIsEditing(true), className: c$2("lane-header-wrapper") },
             react.createElement("div", Object.assign({ className: c$2("lane-grip") }, dragHandleProps, { "aria-label": t$2("Move list") }),
                 react.createElement(GripIcon, null)),
-            react.createElement(LaneTitle, { isEditing: isEditing, itemCount: lane.items.length, title: lane.title, onChange: (e) => boardModifiers.updateLane(laneIndex, update$2(lane, { title: { $set: e.target.value } })), onKeyDown: (e) => {
-                    if (e.key === "Escape" || e.key === "Enter") {
-                        e.preventDefault();
-                        setIsEditing(false);
-                    }
+            react.createElement(LaneTitle, { isEditing: isEditing, itemCount: lane.items.length, title: lane.title, onChange: (e) => boardModifiers.updateLane(laneIndex, update$2(lane, { title: { $set: e.target.value } })), cancelEditing: () => {
+                    setIsEditing(false);
                 } }),
             react.createElement("div", { className: c$2("lane-settings-button-wrapper") }, isEditing ? (react.createElement("button", { onClick: () => {
                     setIsEditing(false);
