@@ -15463,6 +15463,7 @@ var en = {
     "Edit time": "Edit time",
     "Add time": "Add time",
     "Remove time": "Remove time",
+    "Duplicate card": "Duplicate card",
     // components/Lane/LaneForm.tsx
     "Enter list title...": "Enter list title...",
     "Mark items in this list as complete": "Mark items in this list as complete",
@@ -39470,7 +39471,7 @@ function DateAndTime({ item, view, filePath, onEditDate, onEditTime, }) {
         " ",
         hasTime && (react.createElement("span", { onClick: onEditTime, className: `${c$2("item-metadata-time")} is-button`, "aria-label": t$2("Change time") }, timeDisplayStr))));
 }
-function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, searchQuery, onEditDate, onEditTime, onChange, }) {
+const ItemContent = react.memo(({ item, isSettingsVisible, setIsSettingsVisible, searchQuery, onEditDate, onEditTime, onChange, }) => {
     const obsidianContext = react.useContext(ObsidianContext);
     const inputRef = react.useRef();
     const { view, filePath } = obsidianContext;
@@ -39499,7 +39500,7 @@ function ItemContent({ item, isSettingsVisible, setIsSettingsVisible, searchQuer
         react.createElement("div", { className: c$2("item-metadata") },
             react.createElement(RelativeDate, { item: item, view: view }),
             react.createElement(DateAndTime, { item: item, view: view, filePath: filePath, onEditDate: onEditDate, onEditTime: onEditTime }))));
-}
+});
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
 function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers, }) {
@@ -39541,6 +39542,11 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
             }));
         })
             .addSeparator()
+            .addItem((i) => {
+            i.setIcon("documents")
+                .setTitle(t$2("Duplicate card"))
+                .onClick(() => boardModifiers.duplicateItem(laneIndex, itemIndex));
+        })
             .addItem((i) => {
             i.setIcon("sheets-in-box")
                 .setTitle(t$2("Archive card"))
@@ -40002,13 +40008,14 @@ function GripIcon(props) {
         react.createElement("path", { fill: "currentColor", d: "M5 3h2v2H5zm0 4h2v2H5zm0 4h2v2H5zm4-8h2v2H9zm0 4h2v2H9zm0 4h2v2H9z" })));
 }
 
-function LaneTitle({ itemCount, isEditing, title, onChange, cancelEditing, }) {
+function LaneTitle({ itemCount, isEditing, setIsEditing, title, onChange, }) {
     const { view, filePath } = react.useContext(ObsidianContext);
     const inputRef = react.useRef();
+    const onAction = () => isEditing && setIsEditing(false);
     const autocompleteProps = useAutocompleteInputProps({
         isInputVisible: isEditing,
-        onEnter: cancelEditing,
-        onEscape: cancelEditing,
+        onEnter: onAction,
+        onEscape: onAction,
         excludeDatePicker: true,
     });
     react.useEffect(() => {
@@ -40119,7 +40126,7 @@ function useSettingsMenu({ setIsEditing }) {
     };
 }
 
-function LaneHeader({ lane, laneIndex, dragHandleProps, }) {
+const LaneHeader = react.memo(({ lane, laneIndex, dragHandleProps }) => {
     const { boardModifiers } = react.useContext(KanbanContext);
     const [isEditing, setIsEditing] = react.useState(false);
     const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
@@ -40129,9 +40136,7 @@ function LaneHeader({ lane, laneIndex, dragHandleProps, }) {
         react.createElement("div", { onDoubleClick: () => setIsEditing(true), className: c$2("lane-header-wrapper") },
             react.createElement("div", Object.assign({ className: c$2("lane-grip") }, dragHandleProps, { "aria-label": t$2("Move list") }),
                 react.createElement(GripIcon, null)),
-            react.createElement(LaneTitle, { isEditing: isEditing, itemCount: lane.items.length, title: lane.title, onChange: (e) => boardModifiers.updateLane(laneIndex, update$2(lane, { title: { $set: e.target.value } })), cancelEditing: () => {
-                    setIsEditing(false);
-                } }),
+            react.createElement(LaneTitle, { isEditing: isEditing, setIsEditing: setIsEditing, itemCount: lane.items.length, title: lane.title, onChange: (e) => boardModifiers.updateLane(laneIndex, update$2(lane, { title: { $set: e.target.value } })) }),
             react.createElement("div", { className: c$2("lane-settings-button-wrapper") }, isEditing ? (react.createElement("button", { onClick: () => {
                     setIsEditing(false);
                 }, "aria-label": "Close", className: `${c$2("lane-settings-button")} is-enabled` },
@@ -40154,7 +40159,7 @@ function LaneHeader({ lane, laneIndex, dragHandleProps, }) {
                 }
                 setConfirmAction(null);
             }, cancel: () => setConfirmAction(null) }))));
-}
+});
 
 function LaneItems({ isGhost, items, laneId, laneIndex, shouldShowArchiveButton, }) {
     const renderItem = draggableItemFactory({
@@ -40422,6 +40427,20 @@ function getBoardModifiers({ view, boardData, setBoardData, }) {
                 },
                 archive: {
                     $push: [shouldAppendArchiveDate ? appendArchiveDate(item) : item],
+                },
+            }));
+        },
+        duplicateItem: (laneIndex, itemIndex) => {
+            view.app.workspace.trigger("kanban:card-duplicated", view.file, boardData.lanes[laneIndex], itemIndex);
+            setBoardData(update$2(boardData, {
+                lanes: {
+                    [laneIndex]: {
+                        items: {
+                            $splice: [
+                                [itemIndex, 0, boardData.lanes[laneIndex].items[itemIndex]],
+                            ],
+                        },
+                    },
                 },
             }));
         },

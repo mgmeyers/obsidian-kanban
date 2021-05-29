@@ -46,4 +46,5 @@ export interface BoardModifiers {
   deleteLane: (laneIndex: number) => void;
   updateItem: (laneIndex: number, itemIndex: number, item: Item) => void;
   updateLane: (laneIndex: number, lane: Lane) => void;
+  duplicateItem: (laneIndex: number, itemIndex: number) => void;
 }

@@ -147,72 +147,74 @@ export interface ItemContentProps {
   onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>;
 }
 
-export function ItemContent({
-  item,
-  isSettingsVisible,
-  setIsSettingsVisible,
-  searchQuery,
-  onEditDate,
-  onEditTime,
-  onChange,
-}: ItemContentProps) {
-  const obsidianContext = React.useContext(ObsidianContext);
-  const inputRef = React.useRef<HTMLTextAreaElement>();
+export const ItemContent = React.memo(
+  ({
+    item,
+    isSettingsVisible,
+    setIsSettingsVisible,
+    searchQuery,
+    onEditDate,
+    onEditTime,
+    onChange,
+  }: ItemContentProps) => {
+    const obsidianContext = React.useContext(ObsidianContext);
+    const inputRef = React.useRef<HTMLTextAreaElement>();
 
-  const { view, filePath } = obsidianContext;
+    const { view, filePath } = obsidianContext;
 
-  const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false);
+    const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false);
 
-  const autocompleteProps = useAutocompleteInputProps({
-    isInputVisible: isSettingsVisible,
-    onEnter: onAction,
-    onEscape: onAction,
-  });
+    const autocompleteProps = useAutocompleteInputProps({
+      isInputVisible: isSettingsVisible,
+      onEnter: onAction,
+      onEscape: onAction,
+    });
 
-  const markdownContent = React.useMemo(() => {
-    const tempEl = createDiv();
-    MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
+    const markdownContent = React.useMemo(() => {
+      const tempEl = createDiv();
+      MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
 
-    if (searchQuery) {
-      new Mark(tempEl).mark(searchQuery);
+      if (searchQuery) {
+        new Mark(tempEl).mark(searchQuery);
+      }
+
+      return {
+        innerHTML: { __html: tempEl.innerHTML.toString() },
+      };
+    }, [item, filePath, view, searchQuery]);
+
+    if (isSettingsVisible) {
+      return (
+        <div data-replicated-value={item.titleRaw} className={c("grow-wrap")}>
+          <textarea
+            rows={1}
+            ref={inputRef}
+            className={c("item-input")}
+            value={item.titleRaw}
+            onChange={onChange}
+            {...autocompleteProps}
+          />
+        </div>
+      );
     }
 
-    return {
-      innerHTML: { __html: tempEl.innerHTML.toString() },
-    };
-  }, [item, filePath, view, searchQuery]);
-
-  if (isSettingsVisible) {
     return (
-      <div data-replicated-value={item.titleRaw} className={c("grow-wrap")}>
-        <textarea
-          rows={1}
-          ref={inputRef}
-          className={c("item-input")}
-          value={item.titleRaw}
-          onChange={onChange}
-          {...autocompleteProps}
+      <div className={c("item-title")}>
+        <div
+          className={`markdown-preview-view ${c("item-markdown")}`}
+          dangerouslySetInnerHTML={markdownContent.innerHTML}
         />
+        <div className={c("item-metadata")}>
+          <RelativeDate item={item} view={view} />
+          <DateAndTime
+            item={item}
+            view={view}
+            filePath={filePath}
+            onEditDate={onEditDate}
+            onEditTime={onEditTime}
+          />
+        </div>
       </div>
     );
   }
-
-  return (
-    <div className={c("item-title")}>
-      <div
-        className={`markdown-preview-view ${c("item-markdown")}`}
-        dangerouslySetInnerHTML={markdownContent.innerHTML}
-      />
-      <div className={c("item-metadata")}>
-        <RelativeDate item={item} view={view} />
-        <DateAndTime
-          item={item}
-          view={view}
-          filePath={filePath}
-          onEditDate={onEditDate}
-          onEditTime={onEditTime}
-        />
-      </div>
-    </div>
-  );
-}
+);

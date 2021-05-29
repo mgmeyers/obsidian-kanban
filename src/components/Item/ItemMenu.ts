@@ -99,6 +99,11 @@ export function useItemMenu({
       })
       .addSeparator()
       .addItem((i) => {
+        i.setIcon("documents")
+          .setTitle(t("Duplicate card"))
+          .onClick(() => boardModifiers.duplicateItem(laneIndex, itemIndex));
+      })
+      .addItem((i) => {
         i.setIcon("sheets-in-box")
           .setTitle(t("Archive card"))
           .onClick(() =>

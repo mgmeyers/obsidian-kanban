@@ -17,96 +17,92 @@ interface LaneHeaderProps {
   dragHandleProps?: DraggableProvidedDragHandleProps;
 }
 
-export function LaneHeader({
-  lane,
-  laneIndex,
-  dragHandleProps,
-}: LaneHeaderProps) {
-  const { boardModifiers } = React.useContext(KanbanContext);
-  const [isEditing, setIsEditing] = React.useState(false);
+export const LaneHeader = React.memo(
+  ({ lane, laneIndex, dragHandleProps }: LaneHeaderProps) => {
+    const { boardModifiers } = React.useContext(KanbanContext);
+    const [isEditing, setIsEditing] = React.useState(false);
 
-  const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
-    setIsEditing,
-  });
+    const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
+      setIsEditing,
+    });
 
-  return (
-    <>
-      <div
-        onDoubleClick={() => setIsEditing(true)}
-        className={c("lane-header-wrapper")}
-      >
+    return (
+      <>
         <div
-          className={c("lane-grip")}
-          {...dragHandleProps}
-          aria-label={t("Move list")}
+          onDoubleClick={() => setIsEditing(true)}
+          className={c("lane-header-wrapper")}
         >
-          <GripIcon />
-        </div>
+          <div
+            className={c("lane-grip")}
+            {...dragHandleProps}
+            aria-label={t("Move list")}
+          >
+            <GripIcon />
+          </div>
 
-        <LaneTitle
-          isEditing={isEditing}
-          itemCount={lane.items.length}
-          title={lane.title}
-          onChange={(e) =>
-            boardModifiers.updateLane(
-              laneIndex,
-              update(lane, { title: { $set: e.target.value } })
-            )
-          }
-          cancelEditing={() => {
-            setIsEditing(false);
-          }}
-        />
-
-        <div className={c("lane-settings-button-wrapper")}>
-          {isEditing ? (
-            <button
-              onClick={() => {
-                setIsEditing(false);
-              }}
-              aria-label="Close"
-              className={`${c("lane-settings-button")} is-enabled`}
-            >
-              <Icon name="cross" />
-            </button>
-          ) : (
-            <button
-              aria-label={t("More options")}
-              className={c("lane-settings-button")}
-              onClick={(e) => {
-                settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
-              }}
-            >
-              <Icon name="vertical-three-dots" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {isEditing && <LaneSettings lane={lane} laneIndex={laneIndex} />}
-
-      {confirmAction && (
-        <ConfirmAction
-          lane={lane}
-          action={confirmAction}
-          onAction={() => {
-            switch (confirmAction) {
-              case "archive":
-                boardModifiers.archiveLane(laneIndex);
-                break;
-              case "archive-items":
-                boardModifiers.archiveLaneItems(laneIndex);
-                break;
-              case "delete":
-                boardModifiers.deleteLane(laneIndex);
-                break;
+          <LaneTitle
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+            itemCount={lane.items.length}
+            title={lane.title}
+            onChange={(e) =>
+              boardModifiers.updateLane(
+                laneIndex,
+                update(lane, { title: { $set: e.target.value } })
+              )
             }
+          />
 
-            setConfirmAction(null);
-          }}
-          cancel={() => setConfirmAction(null)}
-        />
-      )}
-    </>
-  );
-}
+          <div className={c("lane-settings-button-wrapper")}>
+            {isEditing ? (
+              <button
+                onClick={() => {
+                  setIsEditing(false);
+                }}
+                aria-label="Close"
+                className={`${c("lane-settings-button")} is-enabled`}
+              >
+                <Icon name="cross" />
+              </button>
+            ) : (
+              <button
+                aria-label={t("More options")}
+                className={c("lane-settings-button")}
+                onClick={(e) => {
+                  settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
+                }}
+              >
+                <Icon name="vertical-three-dots" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {isEditing && <LaneSettings lane={lane} laneIndex={laneIndex} />}
+
+        {confirmAction && (
+          <ConfirmAction
+            lane={lane}
+            action={confirmAction}
+            onAction={() => {
+              switch (confirmAction) {
+                case "archive":
+                  boardModifiers.archiveLane(laneIndex);
+                  break;
+                case "archive-items":
+                  boardModifiers.archiveLaneItems(laneIndex);
+                  break;
+                case "delete":
+                  boardModifiers.deleteLane(laneIndex);
+                  break;
+              }
+
+              setConfirmAction(null);
+            }}
+            cancel={() => setConfirmAction(null)}
+          />
+        )}
+      </>
+    );
+  }
+);

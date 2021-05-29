@@ -9,24 +9,26 @@ export interface LaneTitleProps {
   itemCount: number;
   title: string;
   isEditing: boolean;
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
-  cancelEditing: () => void;
 }
 
 export function LaneTitle({
   itemCount,
   isEditing,
+  setIsEditing,
   title,
   onChange,
-  cancelEditing,
 }: LaneTitleProps) {
   const { view, filePath } = React.useContext(ObsidianContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
 
+  const onAction = () => isEditing && setIsEditing(false);
+
   const autocompleteProps = useAutocompleteInputProps({
     isInputVisible: isEditing,
-    onEnter: cancelEditing,
-    onEscape: cancelEditing,
+    onEnter: onAction,
+    onEscape: onAction,
     excludeDatePicker: true,
   });
 

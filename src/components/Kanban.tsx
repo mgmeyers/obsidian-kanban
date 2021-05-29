@@ -287,6 +287,29 @@ function getBoardModifiers({
         })
       );
     },
+
+    duplicateItem: (laneIndex: number, itemIndex: number) => {
+      view.app.workspace.trigger(
+        "kanban:card-duplicated",
+        view.file,
+        boardData.lanes[laneIndex],
+        itemIndex
+      );
+
+      setBoardData(
+        update(boardData, {
+          lanes: {
+            [laneIndex]: {
+              items: {
+                $splice: [
+                  [itemIndex, 0, boardData.lanes[laneIndex].items[itemIndex]],
+                ],
+              },
+            },
+          },
+        })
+      );
+    },
   };
 }
 

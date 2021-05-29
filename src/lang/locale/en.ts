@@ -118,6 +118,7 @@ export default {
   "Edit time": "Edit time",
   "Add time": "Add time",
   "Remove time": "Remove time",
+  "Duplicate card": "Duplicate card",
 
   // components/Lane/LaneForm.tsx
   "Enter list title...": "Enter list title...",
