@@ -15384,6 +15384,7 @@ var en = {
     "Error: cannot create Kanban, the current note is not empty": "Error: cannot create Kanban, the current note is not empty",
     "New kanban board": "New kanban board",
     "Untitled Kanban": "Untitled Kanban",
+    "Toggle between Kanban and markdown mode": "Toggle between Kanban and markdown mode",
     // KanbanView.tsx
     "Open as markdown": "Open as markdown",
     "Open board settings": "Open board settings",
@@ -41492,22 +41493,50 @@ class KanbanPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: "archive-completed-cards",
                 name: t$2("Archive completed cards in active board"),
-                callback: () => {
-                    const view = this.app.workspace.getActiveViewOfType(KanbanView);
-                    if (view) {
-                        view.archiveCompletedCards();
+                checkCallback: (checking) => {
+                    const activeView = this.app.workspace.activeLeaf.view;
+                    if (checking) {
+                        return activeView && activeView instanceof KanbanView;
+                    }
+                    if (activeView instanceof KanbanView) {
+                        activeView.archiveCompletedCards();
+                    }
+                },
+            });
+            this.addCommand({
+                id: "toggle-kanban-view",
+                name: t$2("Toggle between Kanban and markdown mode"),
+                checkCallback: (checking) => {
+                    const activeFile = this.app.workspace.getActiveFile();
+                    if (checking) {
+                        if (!activeFile) {
+                            return false;
+                        }
+                        const fileCache = this.app.metadataCache.getFileCache(activeFile);
+                        return (fileCache.frontmatter && !!fileCache.frontmatter[frontMatterKey]);
+                    }
+                    const activeLeaf = this.app.workspace.activeLeaf;
+                    if (activeLeaf.view instanceof KanbanView) {
+                        this.kanbanFileModes[activeLeaf.id || activeFile.path] =
+                            "markdown";
+                        this.setMarkdownView(activeLeaf);
                     }
                     else {
-                        new obsidian.Notice(t$2("Error: current file is not a Kanban board"), 5000);
+                        this.kanbanFileModes[activeLeaf.id || activeFile.path] =
+                            kanbanViewType;
+                        this.setKanbanView(activeLeaf);
                     }
                 },
             });
             this.addCommand({
                 id: "convert-to-kanban",
                 name: t$2("Convert empty note to Kanban"),
-                callback: () => __awaiter(this, void 0, void 0, function* () {
-                    const activeLeaf = this.app.workspace.activeLeaf;
+                checkCallback: (checking) => {
                     const activeFile = this.app.workspace.getActiveFile();
+                    if (checking) {
+                        return activeFile && activeFile.stat.size === 0;
+                    }
+                    const activeLeaf = this.app.workspace.activeLeaf;
                     if (activeFile && activeFile.stat.size === 0) {
                         const frontmatter = [
                             "---",
@@ -41518,13 +41547,11 @@ class KanbanPlugin extends obsidian.Plugin {
                             "",
                             "",
                         ].join("\n");
-                        yield this.app.vault.modify(activeFile, frontmatter);
-                        this.setKanbanView(activeLeaf);
+                        this.app.vault.modify(activeFile, frontmatter).then(() => {
+                            this.setKanbanView(activeLeaf);
+                        });
                     }
-                    else {
-                        new obsidian.Notice(t$2("Error: cannot create Kanban, the current note is not empty"), 5000);
-                    }
-                }),
+                },
             });
             this.registerEvent(this.app.workspace.on("file-menu", (menu, file, source, leaf) => {
                 // Add a menu item to the folder context menu to create a board
@@ -41541,6 +41568,10 @@ class KanbanPlugin extends obsidian.Plugin {
     }
     setMarkdownView(leaf) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log({
+                type: "markdown",
+                state: leaf.view.getState(),
+            });
             yield leaf.setViewState({
                 type: "markdown",
                 state: leaf.view.getState(),

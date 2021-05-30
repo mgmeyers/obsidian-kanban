@@ -176,39 +176,69 @@ export default class KanbanPlugin extends Plugin {
 
     this.app.workspace.onLayoutReady(() => {
       this.register(
-        around(
-          (this.app as any).commands.commands["editor:open-search"],
-          {
-            checkCallback(next) {
-              return function (isChecking: boolean) {
-                if (isChecking) {
-                  return next.call(this, isChecking);
-                }
-                const view = self.app.workspace.getActiveViewOfType(KanbanView);
-  
-                if (view) {
-                  view.toggleSearch();
-                } else {
-                  next.call(this, false);
-                }
-              };
-            },
-          }
-        )
-      );
-    })
+        around((this.app as any).commands.commands["editor:open-search"], {
+          checkCallback(next) {
+            return function (isChecking: boolean) {
+              if (isChecking) {
+                return next.call(this, isChecking);
+              }
+              const view = self.app.workspace.getActiveViewOfType(KanbanView);
 
+              if (view) {
+                view.toggleSearch();
+              } else {
+                next.call(this, false);
+              }
+            };
+          },
+        })
+      );
+    });
 
     this.addCommand({
       id: "archive-completed-cards",
       name: t("Archive completed cards in active board"),
-      callback: () => {
-        const view = this.app.workspace.getActiveViewOfType(KanbanView);
+      checkCallback: (checking) => {
+        const activeView = this.app.workspace.activeLeaf.view;
 
-        if (view) {
-          view.archiveCompletedCards();
+        if (checking) {
+          return activeView && activeView instanceof KanbanView;
+        }
+
+        if (activeView instanceof KanbanView) {
+          activeView.archiveCompletedCards();
+        }
+      },
+    });
+
+    this.addCommand({
+      id: "toggle-kanban-view",
+      name: t("Toggle between Kanban and markdown mode"),
+      checkCallback: (checking) => {
+        const activeFile = this.app.workspace.getActiveFile();
+
+        if (checking) {
+          if (!activeFile) {
+            return false;
+          }
+
+          const fileCache = this.app.metadataCache.getFileCache(activeFile);
+
+          return (
+            fileCache.frontmatter && !!fileCache.frontmatter[frontMatterKey]
+          );
+        }
+
+        const activeLeaf = this.app.workspace.activeLeaf;
+
+        if (activeLeaf.view instanceof KanbanView) {
+          this.kanbanFileModes[(activeLeaf as any).id || activeFile.path] =
+            "markdown";
+          this.setMarkdownView(activeLeaf);
         } else {
-          new Notice(t("Error: current file is not a Kanban board"), 5000);
+          this.kanbanFileModes[(activeLeaf as any).id || activeFile.path] =
+            kanbanViewType;
+          this.setKanbanView(activeLeaf);
         }
       },
     });
@@ -216,9 +246,14 @@ export default class KanbanPlugin extends Plugin {
     this.addCommand({
       id: "convert-to-kanban",
       name: t("Convert empty note to Kanban"),
-      callback: async () => {
-        const activeLeaf = this.app.workspace.activeLeaf;
+      checkCallback: (checking) => {
         const activeFile = this.app.workspace.getActiveFile();
+
+        if (checking) {
+          return activeFile && activeFile.stat.size === 0;
+        }
+
+        const activeLeaf = this.app.workspace.activeLeaf;
 
         if (activeFile && activeFile.stat.size === 0) {
           const frontmatter = [
@@ -231,14 +266,9 @@ export default class KanbanPlugin extends Plugin {
             "",
           ].join("\n");
 
-          await this.app.vault.modify(activeFile, frontmatter);
-
-          this.setKanbanView(activeLeaf);
-        } else {
-          new Notice(
-            t("Error: cannot create Kanban, the current note is not empty"),
-            5000
-          );
+          this.app.vault.modify(activeFile, frontmatter).then(() => {
+            this.setKanbanView(activeLeaf);
+          });
         }
       },
     });
@@ -259,6 +289,10 @@ export default class KanbanPlugin extends Plugin {
   }
 
   async setMarkdownView(leaf: WorkspaceLeaf) {
+    console.log({
+      type: "markdown",
+      state: leaf.view.getState(),
+    });
     await leaf.setViewState({
       type: "markdown",
       state: leaf.view.getState(),
