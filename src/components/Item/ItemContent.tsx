@@ -344,6 +344,19 @@ export const ItemContent = React.memo(
       const tempEl = createDiv();
       MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
 
+      tempEl.findAll(".internal-embed").forEach(el => {
+        const src = el.getAttribute("src");
+        const target = typeof src === "string" && view.app.metadataCache.getFirstLinkpathDest(src, filePath);
+        if (target instanceof TFile && target.extension !== "md") {
+          el.innerText = '';
+          el.createEl("img", {attr: {src: view.app.vault.getResourcePath(target)}}, img => {
+            if (el.hasAttribute("width")) img.setAttribute("width", el.getAttribute("width"));
+            if (el.hasAttribute("alt"))   img.setAttribute("alt",   el.getAttribute("alt"));
+          })
+          el.addClasses(["image-embed", "is-loaded"]);
+        }
+      });
+
       if (searchQuery) {
         new Mark(tempEl).mark(searchQuery);
       }
