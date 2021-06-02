@@ -419,6 +419,7 @@ button.kanban-plugin__new-item-button {
 }
 
 .kanban-plugin__meta-table td.kanban-plugin__meta-key {
+  white-space: nowrap;
   padding-right: 5px;
   color: var(--text-muted);
 }
@@ -1056,7 +1057,10 @@ button.kanban-plugin__cancel-action-button {
   flex-shrink: 0;
 }
 
-.kanban-plugin__setting-input-wrapper > input:first-child {
+.kanban-plugin__setting-input-wrapper > input,
+.kanban-plugin__setting-input-wrapper > span {
+  display: block;
+  width: 217px;
   margin-right: 10px;
 }
 
@@ -1075,6 +1079,23 @@ button.kanban-plugin__cancel-action-button {
   margin-top: 1rem;
 }
 
+.kanban-plugin__setting-key-input-wrapper > input {
+  margin-right: 10px;
+}
+
 .kanban-plugin__metadata-setting-desc {
   font-size: 14px;
+}
+
+.kanban-plugin__setting-button-spacer {
+  visibility: hidden;
+}
+
+.kanban-plugin__setting-item-labels {
+  margin: 0;
+}
+
+.kanban-plugin__setting-item-label {
+  font-size: 12px;
+  font-weight: bold;
 }

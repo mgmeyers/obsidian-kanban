@@ -15446,11 +15446,12 @@ var en = {
     "Linked Page Metadata": "Linked Page Metadata",
     "Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.": "Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.",
     // MetadataSettings.tsx
-    "Metadata key...": "Metadata key...",
-    "Display label (optional)...": "Display label (optional)...",
+    "Metadata key": "Metadata key",
+    "Display label": "Display label",
     "Hide label": "Hide label",
     "Drag to rearrange": "Drag to rearrange",
     Delete: "Delete",
+    "Add key": "Add key",
     // components/Item/Item.tsx
     "Archive item": "Archive item",
     "More options": "More options",
@@ -40760,8 +40761,8 @@ class DataBridge {
 function Item({ draggableProvided, metadataKey, label, shouldHideLabel, toggleShouldHideLabel, deleteKey, updateKey, updateLabel, }) {
     return (react.createElement("div", Object.assign({ ref: draggableProvided.innerRef }, draggableProvided.draggableProps, { className: c$2("setting-item") }),
         react.createElement("div", { className: c$2("setting-input-wrapper") },
-            react.createElement("input", { placeholder: t$2("Metadata key..."), type: "text", value: metadataKey, onChange: (e) => updateKey(e.target.value) }),
-            react.createElement("input", { placeholder: t$2("Display label (optional)..."), type: "text", value: label, onChange: (e) => updateLabel(e.target.value) })),
+            react.createElement("input", { type: "text", value: metadataKey, onChange: (e) => updateKey(e.target.value) }),
+            react.createElement("input", { type: "text", value: label, onChange: (e) => updateLabel(e.target.value) })),
         react.createElement("div", { className: c$2("setting-button-wrapper") },
             react.createElement("div", null,
                 react.createElement("div", { className: `checkbox-container ${shouldHideLabel ? "is-enabled" : ""}`, onClick: toggleShouldHideLabel, "aria-label": t$2("Hide label") })),
@@ -40843,6 +40844,16 @@ function MetadataSettings(props) {
         setKeys,
     });
     return (react.createElement(react.Fragment, null,
+        react.createElement("div", { className: `${c$2("setting-item")} ${c$2("setting-item-labels")}` },
+            react.createElement("div", { className: c$2("setting-input-wrapper") },
+                react.createElement("span", { className: c$2("setting-item-label") }, t$2("Metadata key")),
+                react.createElement("span", { className: c$2("setting-item-label") }, t$2("Display label"))),
+            react.createElement("div", { className: c$2("setting-button-wrapper") },
+                react.createElement("div", { className: c$2("setting-item-label") }, t$2("Hide label")),
+                react.createElement("div", { className: c$2("setting-button-spacer") },
+                    react.createElement(Icon, { name: "cross" })),
+                react.createElement("div", { className: c$2("setting-button-spacer") },
+                    react.createElement(Icon, { name: "three-horizontal-bars" })))),
         react.createElement(DragDropContext, { onDragEnd: moveKey },
             react.createElement(ConnectedDroppable, { droppableId: "keys", renderClone: (draggableProvided, _, rubric) => {
                     const i = rubric.source.index;
@@ -40854,7 +40865,7 @@ function MetadataSettings(props) {
                 }),
                 dropProvided.placeholder)))),
         react.createElement("div", { className: `setting-item ${c$2("setting-key-input-wrapper")}` },
-            react.createElement("input", Object.assign({ placeholder: t$2("Metadata key..."), type: "text", value: inputValue, onChange: (e) => setInputValue(e.target.value), onKeyDown: (e) => {
+            react.createElement("input", Object.assign({ placeholder: t$2("Metadata key"), type: "text", value: inputValue, onChange: (e) => setInputValue(e.target.value), onKeyDown: (e) => {
                     if (getShouldIMEBlockAction())
                         return;
                     if (e.key === "Enter") {
@@ -40870,7 +40881,16 @@ function MetadataSettings(props) {
                         setInputValue("");
                         e.target.blur();
                     }
-                } }, inputProps)))));
+                } }, inputProps)),
+            react.createElement("button", { onClick: (e) => {
+                    newKey();
+                    setInputValue("");
+                    const target = e.target;
+                    setTimeout(() => {
+                        target.scrollIntoView();
+                    });
+                    return;
+                } }, t$2("Add key")))));
 }
 function renderMetadataSettings(containerEl, keys, onChange) {
     reactDom.render(react.createElement(MetadataSettings, { dataKeys: keys, onChange: onChange }), containerEl);

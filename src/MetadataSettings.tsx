@@ -49,13 +49,11 @@ function Item({
     >
       <div className={c("setting-input-wrapper")}>
         <input
-          placeholder={t("Metadata key...")}
           type="text"
           value={metadataKey}
           onChange={(e) => updateKey(e.target.value)}
         />
         <input
-          placeholder={t("Display label (optional)...")}
           type="text"
           value={label}
           onChange={(e) => updateLabel(e.target.value)}
@@ -206,6 +204,21 @@ function MetadataSettings(props: MetadataSettingsProps) {
 
   return (
     <>
+      <div className={`${c("setting-item")} ${c("setting-item-labels")}`}>
+        <div className={c("setting-input-wrapper")}>
+          <span className={c("setting-item-label")}>{t("Metadata key")}</span>
+          <span className={c("setting-item-label")}>{t("Display label")}</span>
+        </div>
+        <div className={c("setting-button-wrapper")}>
+          <div className={c("setting-item-label")}>{t("Hide label")}</div>
+          <div className={c("setting-button-spacer")}>
+            <Icon name="cross" />
+          </div>
+          <div className={c("setting-button-spacer")}>
+            <Icon name="three-horizontal-bars" />
+          </div>
+        </div>
+      </div>
       <DragDropContext onDragEnd={moveKey}>
         <Droppable
           droppableId="keys"
@@ -253,7 +266,7 @@ function MetadataSettings(props: MetadataSettingsProps) {
       </DragDropContext>
       <div className={`setting-item ${c("setting-key-input-wrapper")}`}>
         <input
-          placeholder={t("Metadata key...")}
+          placeholder={t("Metadata key")}
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
@@ -278,6 +291,20 @@ function MetadataSettings(props: MetadataSettingsProps) {
           }}
           {...inputProps}
         />
+        <button
+          onClick={(e) => {
+            newKey();
+            setInputValue("");
+            const target = e.target as HTMLElement;
+
+            setTimeout(() => {
+              target.scrollIntoView();
+            });
+            return;
+          }}
+        >
+          {t("Add key")}
+        </button>
       </div>
     </>
   );

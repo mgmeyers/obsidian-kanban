@@ -102,11 +102,12 @@ export default {
     "Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.",
 
   // MetadataSettings.tsx
-  "Metadata key...": "Metadata key...",
-  "Display label (optional)...": "Display label (optional)...",
+  "Metadata key": "Metadata key",
+  "Display label": "Display label",
   "Hide label": "Hide label",
   "Drag to rearrange": "Drag to rearrange",
   Delete: "Delete",
+  "Add key": "Add key",
 
   // components/Item/Item.tsx
   "Archive item": "Archive item",
