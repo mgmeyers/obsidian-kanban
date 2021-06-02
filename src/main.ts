@@ -292,14 +292,16 @@ export default class KanbanPlugin extends Plugin {
     await leaf.setViewState({
       type: "markdown",
       state: leaf.view.getState(),
-    });
+      popstate: true,
+    } as ViewState);
   }
 
   async setKanbanView(leaf: WorkspaceLeaf) {
     await leaf.setViewState({
       type: kanbanViewType,
       state: leaf.view.getState(),
-    });
+      popstate: true,
+    } as ViewState);
   }
 
   async newKanban(folder?: TFolder) {
