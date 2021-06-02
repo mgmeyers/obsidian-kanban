@@ -87,6 +87,23 @@ export default {
     "用于从分隔归档卡片的日期或时间",
   "Archive date/time format": "归档日期或时间格式",
   "Kanban Plugin": "看板插件",
+  "Hide tags in card titles": "隐藏卡片标题中的标签",
+  "When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.":
+    "当打开这个，卡片标题中的标签将会被隐藏，来避免生成卡片笔记的时候附带上标签",
+  "Hide card display tags": "隐藏卡片上的标签,
+  "When toggled, tags will not be displayed below the card title.":
+    "当打开这个，卡片标题下方的标签将不会展示",
+  "Linked Page Metadata": "连接的页面元数据",
+  "Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.":
+    "展示卡片中第一个连接所对应的笔记元数据，请在下方指定哪些元数据可以展示。你可以选择展示标志，标志可以都被隐藏。",
+
+  // MetadataSettings.tsx
+  "Metadata key": "元数据参数名",
+  "Display label": "展示标志",
+  "Hide label": "隐藏标志",
+  "Drag to rearrange": "拖动来重排顺序",
+  Delete: "删除",
+  "Add key": "添加参数名",
 
   // components/Item/Item.tsx
   "Archive item": "归档卡片",
@@ -116,6 +133,7 @@ export default {
   "Edit time": "编辑时间",
   "Add time": "添加时间",
   "Remove time": "移除时间",
+  "Duplicate card": "复制卡片",
 
   // components/Lane/LaneForm.tsx
   "Enter list title...": "输入新的列标题",
