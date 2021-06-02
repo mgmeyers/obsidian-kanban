@@ -20134,9 +20134,9 @@ function extractItemTags(title, view, settings) {
     };
 }
 function extractFirstLinkedFile(title, view, settings) {
-    const localKeys = view.getSetting("metadata-keys", settings);
-    const globalKeys = view.getGlobalSetting("metadata-keys");
-    if (localKeys.length === 0 && globalKeys.length === 0) {
+    const localKeys = view.getSetting("metadata-keys", settings) || [];
+    const globalKeys = view.getGlobalSetting("metadata-keys") || [];
+    if (localKeys.length === 0 && (globalKeys === null || globalKeys === void 0 ? void 0 : globalKeys.length) === 0) {
         return null;
     }
     const match = title.match(linkRegex$1);

@@ -147,10 +147,10 @@ function extractFirstLinkedFile(
   view: KanbanView,
   settings?: KanbanSettings
 ) {
-  const localKeys = view.getSetting("metadata-keys", settings) as DataKey[];
-  const globalKeys = view.getGlobalSetting("metadata-keys") as DataKey[];
+  const localKeys = view.getSetting("metadata-keys", settings) as DataKey[] || [];
+  const globalKeys = view.getGlobalSetting("metadata-keys") as DataKey[] || [];
 
-  if (localKeys.length === 0 && globalKeys.length === 0) {
+  if (localKeys.length === 0 && globalKeys?.length === 0) {
     return null;
   }
 
