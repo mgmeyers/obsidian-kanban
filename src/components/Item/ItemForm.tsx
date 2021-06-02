@@ -45,6 +45,7 @@ export function ItemForm({ addItem }: ItemFormProps) {
         metadata: {
           date: processed.date,
           time: processed.time,
+          tags: processed.tags,
         },
       };
 

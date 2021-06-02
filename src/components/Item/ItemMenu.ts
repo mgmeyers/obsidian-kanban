@@ -167,6 +167,9 @@ export function useItemMenu({
                   time: {
                     $set: processed.time,
                   },
+                  tags: {
+                    $set: processed.tags,
+                  },
                 },
               })
             );
@@ -220,6 +223,9 @@ export function useItemMenu({
                     },
                     time: {
                       $set: processed.time,
+                    },
+                    tags: {
+                      $set: processed.tags,
                     },
                   },
                 })

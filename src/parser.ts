@@ -43,6 +43,7 @@ const completeString = `**${t("Complete")}**`;
 const completeRegex = new RegExp(`^${escapeRegExpStr(completeString)}$`, "i");
 const archiveString = "***";
 const archiveMarkerRegex = /^\*\*\*$/;
+const tagRegex = /(^|\s)(#[^#\s]+)/g;
 
 function itemToMd(item: Item) {
   return `- [${item.data.isComplete ? "x" : " "}] ${item.titleRaw}`;
@@ -54,7 +55,7 @@ function getSearchTitle(title: string, view: KanbanView) {
   return tempEl.innerText;
 }
 
-export function processTitle(
+function extractDates(
   title: string,
   view: KanbanView,
   settings?: KanbanSettings
@@ -107,10 +108,52 @@ export function processTitle(
   }
 
   return {
-    title: processedTitle,
-    titleSearch: getSearchTitle(processedTitle, view),
     date,
     time,
+    processedTitle,
+  };
+}
+
+function extractItemTags(
+  title: string,
+  view: KanbanView,
+  settings?: KanbanSettings
+) {
+  const shouldHideTags = view.getSetting("hide-tags-in-title", settings);
+  const tags: string[] = [];
+
+  let processedTitle = title;
+  let match = tagRegex.exec(title);
+
+  while (match != null) {
+    tags.push(match[2]);
+    match = tagRegex.exec(title);
+  }
+
+  if (shouldHideTags) {
+    processedTitle = processedTitle.replace(tagRegex, "$1");
+  }
+
+  return {
+    processedTitle,
+    tags,
+  };
+}
+
+export function processTitle(
+  title: string,
+  view: KanbanView,
+  settings?: KanbanSettings
+) {
+  const date = extractDates(title, view, settings);
+  const tags = extractItemTags(date.processedTitle, view, settings);
+
+  return {
+    title: tags.processedTitle.trim(),
+    titleSearch: getSearchTitle(tags.processedTitle, view).trim(),
+    date: date.date,
+    time: date.time,
+    tags: tags.tags,
   };
 }
 
@@ -148,6 +191,7 @@ function mdToItem(
     metadata: {
       date: processed.date,
       time: processed.time,
+      tags: processed.tags,
     },
   };
 }
@@ -214,7 +258,7 @@ export function mdToSettings(boardMd: string): KanbanSettings {
 
 export function mdToBoard(boardMd: string, view: KanbanView): Board {
   const settings = mdToSettings(boardMd);
-  const lines = boardMd.replace(frontmatterRegEx, '').split(newLineRegex);
+  const lines = boardMd.replace(frontmatterRegEx, "").split(newLineRegex);
   const lanes: Lane[] = [];
   const archive: Item[] = [];
 

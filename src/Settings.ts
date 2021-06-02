@@ -21,6 +21,11 @@ import {
   getListOptions,
 } from "./settingHelpers";
 import { t } from "./lang/helpers";
+import {
+  cleanupMetadataSettings,
+  DataKey,
+  renderMetadataSettings,
+} from "./MetadataSettings";
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
@@ -47,7 +52,10 @@ export interface KanbanSettings {
   "prepend-archive-separator"?: string;
   "prepend-archive-format"?: string;
 
-  "display-tags"?: boolean;
+  "hide-tags-in-title"?: boolean;
+  "hide-tags-display"?: boolean;
+
+  "metadata-keys"?: DataKey[];
 }
 
 export interface SettingsManagerConfig {
@@ -263,6 +271,104 @@ export class SettingsManager {
 
                 this.applySettingsUpdate({
                   $unset: ["show-checkboxes"],
+                });
+              });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName(t("Hide tags in card titles"))
+      .setDesc(
+        t(
+          "When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes."
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting(
+              "hide-tags-in-title",
+              local
+            );
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                "hide-tags-in-title": {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon("reset")
+              .setTooltip(t("Reset to default"))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting(
+                  "hide-tags-in-title",
+                  local
+                );
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ["hide-tags-in-title"],
+                });
+              });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName(t("Hide card display tags"))
+      .setDesc(
+        t("When toggled, tags will not be displayed below the card title.")
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting(
+              "hide-tags-display",
+              local
+            );
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                "hide-tags-display": {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon("reset")
+              .setTooltip(t("Reset to default"))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting(
+                  "hide-tags-display",
+                  local
+                );
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ["hide-tags-display"],
                 });
               });
           });
@@ -828,6 +934,37 @@ export class SettingsManager {
           });
         });
       });
+
+    contentEl.createEl("br");
+    contentEl.createEl("h4", { text: t("Linked Page Metadata") });
+    contentEl.createEl("p", {
+      cls: c("metadata-setting-desc"),
+      text: t(
+        "Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether."
+      ),
+    });
+
+    new Setting(contentEl).then((setting) => {
+      setting.settingEl.addClass(c("draggable-setting-container"));
+
+      const [value] = this.getSetting("metadata-keys", local);
+
+      const keys: DataKey[] = (value as DataKey[]) || [];
+
+      renderMetadataSettings(setting.settingEl, keys, (keys: DataKey[]) =>
+        this.applySettingsUpdate({
+          "metadata-keys": {
+            $set: keys,
+          },
+        })
+      );
+
+      this.cleanupFns.push(() => {
+        if (setting.settingEl) {
+          cleanupMetadataSettings(setting.settingEl);
+        }
+      });
+    });
   }
 
   cleanUp() {

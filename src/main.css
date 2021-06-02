@@ -289,12 +289,17 @@ button.kanban-plugin__new-item-button {
 }
 
 .kanban-plugin__item-content-wrapper {
-  border-radius: 6px;
-  padding: 6px 8px;
-  background-color: var(--background-primary);
+  background: var(--background-primary);
+}
+
+.kanban-plugin__item-title-wrapper {
+  background: var(--background-primary);
   display: flex;
-  align-items: flex-start;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 6px 8px;
+}
+
+.kanban-plugin__item-title-wrapper:not(:only-child) {
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 .kanban-plugin__item-title {
@@ -303,17 +308,19 @@ button.kanban-plugin__new-item-button {
   overflow: hidden;
 }
 
-.kanban-plugin__item-title p {
+.is-dragging .markdown-preview-view.kanban-plugin__lane-title-text p,
+.is-dragging .markdown-preview-view.kanban-plugin__item-markdown p,
+.kanban-plugin .markdown-preview-view p {
   margin: 0;
   overflow-x: auto;
   white-space: pre-wrap;
   overflow-wrap: break-word;
 }
 
+.is-dragging .markdown-preview-view.kanban-plugin__lane-title-text,
+.kanban-plugin .markdown-preview-view.kanban-plugin__lane-title-text,
 .is-dragging .markdown-preview-view.kanban-plugin__item-markdown,
-.kanban-plugin
-  .kanban-plugin__item
-  .markdown-preview-view.kanban-plugin__item-markdown {
+.kanban-plugin .markdown-preview-view.kanban-plugin__item-markdown {
   font-size: 0.875rem;
   padding: unset;
   width: unset;
@@ -324,6 +331,15 @@ button.kanban-plugin__new-item-button {
   color: unset;
   user-select: unset;
   -webkit-user-select: unset;
+}
+
+.markdown-preview-view.kanban-plugin__lane-title-text {
+  font-family: var(--default-font);
+}
+
+.kanban-plugin__item-metadata-wrapper:not(:empty) {
+  background-color: var(--background-primary-alt);
+  padding: 6px 8px;
 }
 
 .kanban-plugin__item-metadata:not(:empty) {
@@ -361,6 +377,52 @@ button.kanban-plugin__new-item-button {
   color: var(--text-muted);
 }
 
+.kanban-plugin__item-metadata-date-wrapper {
+  padding-top: 2px;
+}
+
+.kanban-plugin__item-tags:not(:empty) {
+  padding-top: 2px;
+}
+
+.kanban-plugin__item-tag {
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.kanban-plugin__item-tags .kanban-plugin__item-tag {
+  background-color: rgba(var(--interactive-accent-rgb), 0.1);
+  padding: 1px 4px;
+  border-radius: 6px;
+  margin: 3px 3px 0 0;
+}
+
+.kanban-plugin__meta-table {
+  width: 100%;
+  margin: 0;
+  line-height: 1.5;
+  font-size: 0.75rem;
+}
+
+.kanban-plugin__meta-table td {
+  vertical-align: top;
+  padding: 3px 0;
+  width: 10%;
+}
+
+.kanban-plugin__meta-table td + td {
+  width: 90%;
+}
+
+.kanban-plugin__meta-table td:only-child {
+  width: 100%;
+}
+
+.kanban-plugin__meta-table td.kanban-plugin__meta-key {
+  padding-right: 5px;
+  color: var(--text-muted);
+}
+
 .kanban-plugin__item-prefix-button-wrapper,
 .kanban-plugin__item-postfix-button-wrapper {
   display: flex;
@@ -385,6 +447,7 @@ button.kanban-plugin__item-postfix-button {
   opacity: 0;
   transition: 100ms opacity;
   display: flex;
+  align-self: flex-start;
 }
 
 button.kanban-plugin__item-postfix-button.is-enabled,
@@ -968,4 +1031,50 @@ button.kanban-plugin__cancel-action-button {
 
 .kanban-plugin mark {
   background-color: var(--text-highlight-bg);
+}
+
+.kanban-plugin__draggable-setting-container {
+  flex-direction: column;
+}
+
+.kanban-plugin__draggable-setting-container > div {
+  width: 100%;
+}
+
+.kanban-plugin__setting-item {
+  width: 100%;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  margin: 12px 0;
+  color: var(--text-muted);
+}
+
+.kanban-plugin__setting-input-wrapper {
+  display: flex;
+  flex-grow: 1;
+  flex-shrink: 0;
+}
+
+.kanban-plugin__setting-input-wrapper > input:first-child {
+  margin-right: 10px;
+}
+
+.kanban-plugin__setting-button-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  flex-grow: 1;
+  flex-shrink: 0;
+}
+
+.kanban-plugin__setting-button-wrapper > div {
+  margin-left: 12px;
+}
+
+.kanban-plugin__setting-key-input-wrapper {
+  margin-top: 1rem;
+}
+
+.kanban-plugin__metadata-setting-desc {
+  font-size: 14px;
 }

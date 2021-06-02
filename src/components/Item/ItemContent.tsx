@@ -1,4 +1,10 @@
-import { MarkdownRenderer, getLinkpath, moment, SearchResult } from "obsidian";
+import {
+  MarkdownRenderer,
+  getLinkpath,
+  moment,
+  CachedMetadata,
+  TFile,
+} from "obsidian";
 import React from "react";
 import Mark from "mark.js";
 
@@ -8,6 +14,7 @@ import { ObsidianContext } from "../context";
 import { useAutocompleteInputProps } from "./autocomplete";
 import { KanbanView } from "src/KanbanView";
 import { t } from "src/lang/helpers";
+import { DataKey } from "src/MetadataSettings";
 
 function getRelativeDate(date: moment.Moment, time: moment.Moment) {
   if (time) {
@@ -136,15 +143,183 @@ function DateAndTime({
   );
 }
 
+const linkRegex = /\[\[([^\|\]]+)(?:\||\]\])/;
+
+interface PageData extends DataKey {
+  value: string | number | Array<string | number>;
+}
+
+function getDataViewCache(view: KanbanView, file: TFile) {
+  if (
+    (view.app as any).plugins.enabledPlugins.has("dataview") &&
+    (view.app as any).plugins?.plugins?.dataview?.api
+  ) {
+    return (view.app as any).plugins.plugins.dataview.api.page(file.path, view.file.path);
+  }
+}
+
+function getLinkedPageMetadata(
+  title: string,
+  filePath: string,
+  view: KanbanView
+) {
+  const match = title.match(linkRegex);
+
+  if (!match) {
+    return null;
+  }
+
+  const globalKeys =
+    (view.getGlobalSetting("metadata-keys") as DataKey[]) || [];
+  const localKeys = (view.getSetting("metadata-keys") as DataKey[]) || [];
+  const keys = [...globalKeys, ...localKeys];
+
+  if (!keys.length) {
+    return null;
+  }
+
+  const path = match[1];
+  const file = view.app.metadataCache.getFirstLinkpathDest(path, filePath);
+
+  if (!file) {
+    return null;
+  }
+
+  const cache = view.app.metadataCache.getFileCache(file);
+  const dataviewCache = getDataViewCache(view, file);
+
+  if (!cache && !dataviewCache) {
+    return false;
+  }
+
+  const metadata: { [k: string]: PageData } = {};
+  const seenTags: { [k: string]: boolean } = {};
+  let haveData = false;
+
+  keys.forEach((k) => {
+    if (k.metadataKey === "tags") {
+      let tags = cache.tags || [];
+
+      if (cache.frontmatter?.tags) {
+        tags = [].concat(
+          tags,
+          cache.frontmatter.tags.map((tag: string) => ({ tag: `#${tag}` }))
+        );
+      }
+
+      if (tags?.length === 0) return;
+
+      metadata.tags = {
+        ...k,
+        value: tags
+          .map((t) => t.tag)
+          .filter((t) => {
+            if (seenTags[t]) {
+              return false;
+            }
+
+            seenTags[t] = true;
+            return true;
+          }),
+      };
+
+      haveData = true;
+      return;
+    }
+
+    if (cache.frontmatter && cache.frontmatter[k.metadataKey]) {
+      metadata[k.metadataKey] = {
+        ...k,
+        value: cache.frontmatter[k.metadataKey],
+      };
+      haveData = true;
+    } else if (dataviewCache && dataviewCache[k.metadataKey]) {
+      metadata[k.metadataKey] = {
+        ...k,
+        value: dataviewCache[k.metadataKey],
+      };
+      haveData = true;
+    }
+  });
+
+  return haveData ? metadata : null;
+}
+
+function LinkedPageMetadata({
+  metadata,
+}: {
+  metadata: { [k: string]: PageData } | null;
+}) {
+  if (!metadata) return null;
+
+  return (
+    <table className={c("meta-table")}>
+      <tbody>
+        {Object.keys(metadata).map((k) => {
+          const data = metadata[k];
+          return (
+            <tr key={k} className={c("meta-row")}>
+              {!data.shouldHideLabel && (
+                <td className={c("meta-key")}>{data.label || k}</td>
+              )}
+              <td
+                colSpan={data.shouldHideLabel ? 2 : 1}
+                className={c("meta-value")}
+              >
+                {k === "tags"
+                  ? (data.value as string[]).map((tag, i) => {
+                      return (
+                        <a
+                          href={tag}
+                          key={i}
+                          className={`tag ${c("item-tag")}`}
+                        >
+                          {tag}
+                        </a>
+                      );
+                    })
+                  : data.value.toString()}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
+export interface ItemMetadataProps {
+  item: Item;
+  isSettingsVisible: boolean;
+}
+
+export const ItemMetadata = React.memo(
+  ({ item, isSettingsVisible }: ItemMetadataProps) => {
+    const { view, filePath } = React.useContext(ObsidianContext);
+
+    const metadata = React.useMemo(() => {
+      return getLinkedPageMetadata(item.titleRaw, filePath, view);
+    }, [item.titleRaw, filePath, view]);
+
+    if (isSettingsVisible || !metadata) return null;
+
+    return (
+      <div className={c("item-metadata-wrapper")}>
+        <LinkedPageMetadata metadata={metadata} />
+      </div>
+    );
+  }
+);
+
 export interface ItemContentProps {
   item: Item;
   isSettingsVisible: boolean;
   setIsSettingsVisible?: React.Dispatch<boolean>;
   searchQuery?: string;
-  onEditDate?: React.MouseEventHandler;
-  onEditTime?: React.MouseEventHandler;
   onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
   onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>;
+  onEditDate?: React.MouseEventHandler;
+  onEditTime?: React.MouseEventHandler;
 }
 
 export const ItemContent = React.memo(
@@ -153,16 +328,14 @@ export const ItemContent = React.memo(
     isSettingsVisible,
     setIsSettingsVisible,
     searchQuery,
+    onChange,
     onEditDate,
     onEditTime,
-    onChange,
   }: ItemContentProps) => {
-    const obsidianContext = React.useContext(ObsidianContext);
+    const { view, filePath } = React.useContext(ObsidianContext);
     const inputRef = React.useRef<HTMLTextAreaElement>();
-
-    const { view, filePath } = obsidianContext;
-
     const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false);
+    const hideTagsDisplay = view.getSetting("hide-tags-display");
 
     const autocompleteProps = useAutocompleteInputProps({
       isInputVisible: isSettingsVisible,
@@ -213,6 +386,17 @@ export const ItemContent = React.memo(
             onEditDate={onEditDate}
             onEditTime={onEditTime}
           />
+          {!hideTagsDisplay && !!item.metadata.tags?.length && (
+            <div className={c("item-tags")}>
+              {item.metadata.tags.map((tag, i) => {
+                return (
+                  <a href={tag} key={i} className={`tag ${c("item-tag")}`}>
+                    {tag}
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     );

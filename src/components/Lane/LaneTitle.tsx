@@ -2,7 +2,7 @@ import { getLinkpath, MarkdownRenderer } from "obsidian";
 import React from "react";
 import { t } from "src/lang/helpers";
 import { ObsidianContext } from "../context";
-import { c, useIMEInputProps } from "../helpers";
+import { c } from "../helpers";
 import { useAutocompleteInputProps } from "../Item/autocomplete";
 
 export interface LaneTitleProps {
@@ -67,7 +67,7 @@ export function LaneTitle({
       ) : (
         <>
           <span
-            className={c("lane-title-text")}
+            className={`markdown-preview-view ${c("lane-title-text")}`}
             onContextMenu={(e) => {
               e.preventDefault();
               e.stopPropagation();

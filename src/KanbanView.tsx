@@ -69,6 +69,14 @@ export class KanbanView extends TextFileView implements HoverParent {
     return null;
   }
 
+  getGlobalSetting(key: keyof KanbanSettings) {
+    const globalSetting = this.plugin.settings[key];
+
+    if (globalSetting !== undefined) return globalSetting;
+
+    return null;
+  }
+
   onMoreOptionsMenu(menu: Menu) {
     // Add a menu item to force the board to markdown view
     menu
@@ -131,7 +139,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   toggleSearch() {
     this.dataBridge.setExternal(
       update(this.dataBridge.data, {
-        $toggle: ['isSearching']
+        $toggle: ["isSearching"],
       })
     );
   }

@@ -15439,6 +15439,18 @@ var en = {
     "This will be used to separate the archived date/time from the title": "This will be used to separate the archived date/time from the title",
     "Archive date/time format": "Archive date/time format",
     "Kanban Plugin": "Kanban Plugin",
+    "Hide tags in card titles": "Hide tags in card titles",
+    "When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.": "When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.",
+    "Hide card display tags": "Hide card display tags",
+    "When toggled, tags will not be displayed below the card title.": "When toggled, tags will not be displayed below the card title.",
+    "Linked Page Metadata": "Linked Page Metadata",
+    "Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.": "Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.",
+    // MetadataSettings.tsx
+    "Metadata key...": "Metadata key...",
+    "Display label (optional)...": "Display label (optional)...",
+    "Hide label": "Hide label",
+    "Drag to rearrange": "Drag to rearrange",
+    Delete: "Delete",
     // components/Item/Item.tsx
     "Archive item": "Archive item",
     "More options": "More options",
@@ -20010,6 +20022,7 @@ const completeString = `**${t$2("Complete")}**`;
 const completeRegex = new RegExp(`^${escapeRegExpStr(completeString)}$`, "i");
 const archiveString = "***";
 const archiveMarkerRegex = /^\*\*\*$/;
+const tagRegex$1 = /(^|\s)(#[^#\s]+)/g;
 function itemToMd(item) {
     return `- [${item.data.isComplete ? "x" : " "}] ${item.titleRaw}`;
 }
@@ -20018,7 +20031,7 @@ function getSearchTitle(title, view) {
     obsidian.MarkdownRenderer.renderMarkdown(title, tempEl, view.file.path, view);
     return tempEl.innerText;
 }
-function processTitle(title, view, settings) {
+function extractDates(title, view, settings) {
     const dateFormat = view.getSetting("date-format", settings) || getDefaultDateFormat(view.app);
     const dateTrigger = view.getSetting("date-trigger", settings) || defaultDateTrigger;
     const timeFormat = view.getSetting("time-format", settings) || getDefaultTimeFormat(view.app);
@@ -20050,10 +20063,37 @@ function processTitle(title, view, settings) {
             .replace(timeRegEx, "");
     }
     return {
-        title: processedTitle,
-        titleSearch: getSearchTitle(processedTitle, view),
         date,
         time,
+        processedTitle,
+    };
+}
+function extractItemTags(title, view, settings) {
+    const shouldHideTags = view.getSetting("hide-tags-in-title", settings);
+    const tags = [];
+    let processedTitle = title;
+    let match = tagRegex$1.exec(title);
+    while (match != null) {
+        tags.push(match[2]);
+        match = tagRegex$1.exec(title);
+    }
+    if (shouldHideTags) {
+        processedTitle = processedTitle.replace(tagRegex$1, "$1");
+    }
+    return {
+        processedTitle,
+        tags,
+    };
+}
+function processTitle(title, view, settings) {
+    const date = extractDates(title, view, settings);
+    const tags = extractItemTags(date.processedTitle, view, settings);
+    return {
+        title: tags.processedTitle.trim(),
+        titleSearch: getSearchTitle(tags.processedTitle, view).trim(),
+        date: date.date,
+        time: date.time,
+        tags: tags.tags,
     };
 }
 function mdToItem(itemMd, view, settings, isListItem) {
@@ -20081,6 +20121,7 @@ function mdToItem(itemMd, view, settings, isListItem) {
         metadata: {
             date: processed.date,
             time: processed.time,
+            tags: processed.tags,
         },
     };
 }
@@ -20127,7 +20168,7 @@ function mdToSettings(boardMd) {
 }
 function mdToBoard(boardMd, view) {
     const settings = mdToSettings(boardMd);
-    const lines = boardMd.replace(frontmatterRegEx, '').split(newLineRegex);
+    const lines = boardMd.replace(frontmatterRegEx, "").split(newLineRegex);
     const lanes = [];
     const archive = [];
     let haveSeenArchiveMarker = false;
@@ -38996,6 +39037,9 @@ function constructMenuDatePickerOnChange({ view, boardModifiers, item, hasDate, 
                 time: {
                     $set: processed.time,
                 },
+                tags: {
+                    $set: processed.tags,
+                }
             },
         }));
     };
@@ -39109,13 +39153,16 @@ function constructMenuTimePickerOnChange({ view, boardModifiers, item, hasTime, 
                 time: {
                     $set: processed.time,
                 },
+                tags: {
+                    $set: processed.tags,
+                },
             },
         }));
     };
 }
 
 const tagRegex = /\B#([^\s]*)?$/;
-const linkRegex = /\B\[\[([^\]]*)?$/;
+const linkRegex$1 = /\B\[\[([^\]]*)?$/;
 const embedRegex = /\B!\[\[([^\]]*)?$/;
 function forceChangeEvent(input, value) {
     Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set.call(input, value);
@@ -39198,7 +39245,7 @@ function getTagSearchConfig(tags, tagSearch) {
 function getFileSearchConfig(files, fileSearch, filePath, view, isEmbed) {
     return {
         id: "link",
-        match: isEmbed ? embedRegex : linkRegex,
+        match: isEmbed ? embedRegex : linkRegex$1,
         index: 1,
         template: (res) => {
             return view.app.metadataCache.fileToLinktext(res.item, filePath);
@@ -39472,11 +39519,101 @@ function DateAndTime({ item, view, filePath, onEditDate, onEditTime, }) {
         " ",
         hasTime && (react.createElement("span", { onClick: onEditTime, className: `${c$2("item-metadata-time")} is-button`, "aria-label": t$2("Change time") }, timeDisplayStr))));
 }
-const ItemContent = react.memo(({ item, isSettingsVisible, setIsSettingsVisible, searchQuery, onEditDate, onEditTime, onChange, }) => {
-    const obsidianContext = react.useContext(ObsidianContext);
+const linkRegex = /\[\[([^\|\]]+)(?:\||\]\])/;
+function getDataViewCache(view, file) {
+    var _a, _b, _c;
+    if (view.app.plugins.enabledPlugins.has("dataview") &&
+        ((_c = (_b = (_a = view.app.plugins) === null || _a === void 0 ? void 0 : _a.plugins) === null || _b === void 0 ? void 0 : _b.dataview) === null || _c === void 0 ? void 0 : _c.api)) {
+        return view.app.plugins.plugins.dataview.api.page(file.path, view.file.path);
+    }
+}
+function getLinkedPageMetadata(title, filePath, view) {
+    const match = title.match(linkRegex);
+    if (!match) {
+        return null;
+    }
+    const globalKeys = view.getGlobalSetting("metadata-keys") || [];
+    const localKeys = view.getSetting("metadata-keys") || [];
+    const keys = [...globalKeys, ...localKeys];
+    if (!keys.length) {
+        return null;
+    }
+    const path = match[1];
+    const file = view.app.metadataCache.getFirstLinkpathDest(path, filePath);
+    if (!file) {
+        return null;
+    }
+    const cache = view.app.metadataCache.getFileCache(file);
+    const dataviewCache = getDataViewCache(view, file);
+    if (!cache && !dataviewCache) {
+        return false;
+    }
+    const metadata = {};
+    const seenTags = {};
+    let haveData = false;
+    keys.forEach((k) => {
+        var _a;
+        if (k.metadataKey === "tags") {
+            let tags = cache.tags || [];
+            if ((_a = cache.frontmatter) === null || _a === void 0 ? void 0 : _a.tags) {
+                tags = [].concat(tags, cache.frontmatter.tags.map((tag) => ({ tag: `#${tag}` })));
+            }
+            if ((tags === null || tags === void 0 ? void 0 : tags.length) === 0)
+                return;
+            metadata.tags = Object.assign(Object.assign({}, k), { value: tags
+                    .map((t) => t.tag)
+                    .filter((t) => {
+                    if (seenTags[t]) {
+                        return false;
+                    }
+                    seenTags[t] = true;
+                    return true;
+                }) });
+            haveData = true;
+            return;
+        }
+        if (cache.frontmatter && cache.frontmatter[k.metadataKey]) {
+            metadata[k.metadataKey] = Object.assign(Object.assign({}, k), { value: cache.frontmatter[k.metadataKey] });
+            haveData = true;
+        }
+        else if (dataviewCache && dataviewCache[k.metadataKey]) {
+            metadata[k.metadataKey] = Object.assign(Object.assign({}, k), { value: dataviewCache[k.metadataKey] });
+            haveData = true;
+        }
+    });
+    return haveData ? metadata : null;
+}
+function LinkedPageMetadata({ metadata, }) {
+    if (!metadata)
+        return null;
+    return (react.createElement("table", { className: c$2("meta-table") },
+        react.createElement("tbody", null, Object.keys(metadata).map((k) => {
+            const data = metadata[k];
+            return (react.createElement("tr", { key: k, className: c$2("meta-row") },
+                !data.shouldHideLabel && (react.createElement("td", { className: c$2("meta-key") }, data.label || k)),
+                react.createElement("td", { colSpan: data.shouldHideLabel ? 2 : 1, className: c$2("meta-value") }, k === "tags"
+                    ? data.value.map((tag, i) => {
+                        return (react.createElement("a", { href: tag, key: i, className: `tag ${c$2("item-tag")}` }, tag));
+                    })
+                    : data.value.toString())));
+        }))));
+}
+const ItemMetadata = react.memo(({ item, isSettingsVisible }) => {
+    const { view, filePath } = react.useContext(ObsidianContext);
+    const metadata = react.useMemo(() => {
+        return getLinkedPageMetadata(item.titleRaw, filePath, view);
+    }, [item.titleRaw, filePath, view]);
+    if (isSettingsVisible || !metadata)
+        return null;
+    return (react.createElement("div", { className: c$2("item-metadata-wrapper") },
+        react.createElement(LinkedPageMetadata, { metadata: metadata })));
+});
+const ItemContent = react.memo(({ item, isSettingsVisible, setIsSettingsVisible, searchQuery, onChange, onEditDate, onEditTime, }) => {
+    var _a;
+    const { view, filePath } = react.useContext(ObsidianContext);
     const inputRef = react.useRef();
-    const { view, filePath } = obsidianContext;
     const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false);
+    const hideTagsDisplay = view.getSetting("hide-tags-display");
     const autocompleteProps = useAutocompleteInputProps({
         isInputVisible: isSettingsVisible,
         onEnter: onAction,
@@ -39500,7 +39637,10 @@ const ItemContent = react.memo(({ item, isSettingsVisible, setIsSettingsVisible,
         react.createElement("div", { className: `markdown-preview-view ${c$2("item-markdown")}`, dangerouslySetInnerHTML: markdownContent.innerHTML }),
         react.createElement("div", { className: c$2("item-metadata") },
             react.createElement(RelativeDate, { item: item, view: view }),
-            react.createElement(DateAndTime, { item: item, view: view, filePath: filePath, onEditDate: onEditDate, onEditTime: onEditTime }))));
+            react.createElement(DateAndTime, { item: item, view: view, filePath: filePath, onEditDate: onEditDate, onEditTime: onEditTime }),
+            !hideTagsDisplay && !!((_a = item.metadata.tags) === null || _a === void 0 ? void 0 : _a.length) && (react.createElement("div", { className: c$2("item-tags") }, item.metadata.tags.map((tag, i) => {
+                return (react.createElement("a", { href: tag, key: i, className: `tag ${c$2("item-tag")}` }, tag));
+            }))))));
 });
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
@@ -39598,6 +39738,9 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
                             time: {
                                 $set: processed.time,
                             },
+                            tags: {
+                                $set: processed.tags,
+                            },
                         },
                     }));
                 });
@@ -39635,6 +39778,9 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
                                 },
                                 time: {
                                     $set: processed.time,
+                                },
+                                tags: {
+                                    $set: processed.tags,
                                 },
                             },
                         }));
@@ -39675,20 +39821,75 @@ function getClassModifiers(item) {
     }
     return classModifiers;
 }
-function GhostItem({ item, shouldShowArchiveButton }) {
-    const { view } = react.useContext(ObsidianContext);
+function GhostItem({ item, shouldMarkItemsComplete }) {
     const classModifiers = getClassModifiers(item);
-    const shouldShowCheckbox = view.getSetting("show-checkboxes");
     return (react.createElement("div", { className: `${c$2("item")} ${classModifiers.join(" ")}` },
         react.createElement("div", { className: c$2("item-content-wrapper") },
-            (shouldShowArchiveButton || shouldShowCheckbox) && (react.createElement("div", { className: c$2("item-prefix-button-wrapper") },
-                shouldShowCheckbox && (react.createElement("input", { readOnly: true, type: "checkbox", className: "task-list-item-checkbox", checked: !!item.data.isComplete })),
-                shouldShowArchiveButton && (react.createElement("button", { className: c$2("item-prefix-button"), "aria-label": t$2("Archive item") },
-                    react.createElement(Icon, { name: "sheets-in-box" }))))),
+            react.createElement(ItemCheckbox, { item: item, shouldMarkItemsComplete: shouldMarkItemsComplete }),
             react.createElement(ItemContent, { isSettingsVisible: false, item: item }),
             react.createElement("div", { className: c$2("item-postfix-button-wrapper") },
                 react.createElement("button", { className: c$2("item-postfix-button"), "aria-label": t$2("More options") },
                     react.createElement(Icon, { name: "vertical-three-dots" }))))));
+}
+function ItemCheckbox({ shouldMarkItemsComplete, laneIndex, itemIndex, item, }) {
+    const { view } = react.useContext(ObsidianContext);
+    const { boardModifiers } = react.useContext(KanbanContext);
+    const shouldShowCheckbox = view.getSetting("show-checkboxes");
+    const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] = react.useState(false);
+    const [isHoveringCheckbox, setIsHoveringCheckbox] = react.useState(false);
+    react.useEffect(() => {
+        if (isHoveringCheckbox) {
+            const handler = (e) => {
+                if (e.metaKey || e.ctrlKey) {
+                    setIsCtrlHoveringCheckbox(true);
+                }
+                else {
+                    setIsCtrlHoveringCheckbox(false);
+                }
+            };
+            window.addEventListener("keydown", handler);
+            window.addEventListener("keyup", handler);
+            return () => {
+                window.removeEventListener("keydown", handler);
+                window.removeEventListener("keyup", handler);
+            };
+        }
+    }, [isHoveringCheckbox]);
+    if (!(shouldMarkItemsComplete || shouldShowCheckbox)) {
+        return null;
+    }
+    return (react.createElement("div", { onMouseEnter: (e) => {
+            setIsHoveringCheckbox(true);
+            if (e.ctrlKey || e.metaKey) {
+                setIsCtrlHoveringCheckbox(true);
+            }
+        }, onMouseLeave: () => {
+            setIsHoveringCheckbox(false);
+            if (isCtrlHoveringCheckbox) {
+                setIsCtrlHoveringCheckbox(false);
+            }
+        }, className: c$2("item-prefix-button-wrapper") },
+        shouldShowCheckbox && !isCtrlHoveringCheckbox && (react.createElement("input", { onChange: () => {
+                boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, {
+                    data: {
+                        $toggle: ["isComplete"],
+                    },
+                }));
+            }, type: "checkbox", className: "task-list-item-checkbox", checked: !!item.data.isComplete })),
+        (isCtrlHoveringCheckbox ||
+            (!shouldShowCheckbox && shouldMarkItemsComplete)) && (react.createElement("button", { onClick: () => {
+                boardModifiers.archiveItem(laneIndex, itemIndex, item);
+            }, className: c$2("item-prefix-button"), "aria-label": isCtrlHoveringCheckbox ? undefined : "Archive item" },
+            react.createElement(Icon, { name: "sheets-in-box" })))));
+}
+function ItemMenuButton({ isEditing, setIsEditing, showMenu, }) {
+    return (react.createElement("div", { className: c$2("item-postfix-button-wrapper") }, isEditing ? (react.createElement("button", { onClick: () => {
+            setIsEditing(false);
+        }, className: `${c$2("item-postfix-button")} is-enabled`, "aria-label": t$2("Cancel") },
+        react.createElement(Icon, { name: "cross" }))) : (react.createElement("button", { onClick: (e) => {
+            showMenu(e.nativeEvent);
+        }, className: c$2("item-postfix-button"), "aria-label": t$2("More options") },
+        react.createElement(Icon, { name: "vertical-three-dots" })))));
 }
 function draggableItemFactory({ items, laneIndex, }) {
     return (provided, snapshot, rubric) => {
@@ -39696,31 +39897,9 @@ function draggableItemFactory({ items, laneIndex, }) {
         const { view } = react.useContext(ObsidianContext);
         const { query } = react.useContext(SearchContext);
         const [isEditing, setIsEditing] = react.useState(false);
-        const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] = react.useState(false);
-        const [isHoveringCheckbox, setIsHoveringCheckbox] = react.useState(false);
-        react.useEffect(() => {
-            if (isHoveringCheckbox) {
-                const handler = (e) => {
-                    if (e.metaKey || e.ctrlKey) {
-                        setIsCtrlHoveringCheckbox(true);
-                    }
-                    else {
-                        setIsCtrlHoveringCheckbox(false);
-                    }
-                };
-                window.addEventListener("keydown", handler);
-                window.addEventListener("keyup", handler);
-                return () => {
-                    window.removeEventListener("keydown", handler);
-                    window.removeEventListener("keyup", handler);
-                };
-            }
-        }, [isHoveringCheckbox]);
         const itemIndex = rubric.source.index;
         const item = items[itemIndex];
         const lane = board.lanes[laneIndex];
-        const shouldShowCheckbox = view.getSetting("show-checkboxes");
-        const shouldMarkItemsComplete = lane.data.shouldMarkItemsComplete;
         const isMatch = query
             ? item.titleSearch.toLocaleLowerCase().contains(query)
             : false;
@@ -39754,72 +39933,49 @@ function draggableItemFactory({ items, laneIndex, }) {
                 setIsEditing(true);
             }, className: `${c$2("item")} ${classModifiers.join(" ")}`, ref: provided.innerRef }, provided.draggableProps, provided.dragHandleProps),
             react.createElement("div", { className: c$2("item-content-wrapper") },
-                (shouldMarkItemsComplete || shouldShowCheckbox) && (react.createElement("div", { onMouseEnter: (e) => {
-                        setIsHoveringCheckbox(true);
-                        if (e.ctrlKey || e.metaKey) {
-                            setIsCtrlHoveringCheckbox(true);
-                        }
-                    }, onMouseLeave: () => {
-                        setIsHoveringCheckbox(false);
-                        if (isCtrlHoveringCheckbox) {
-                            setIsCtrlHoveringCheckbox(false);
-                        }
-                    }, className: c$2("item-prefix-button-wrapper") },
-                    shouldShowCheckbox && !isCtrlHoveringCheckbox && (react.createElement("input", { onChange: () => {
+                react.createElement("div", { className: c$2("item-title-wrapper") },
+                    react.createElement(ItemCheckbox, { item: item, itemIndex: itemIndex, shouldMarkItemsComplete: lane.data.shouldMarkItemsComplete, laneIndex: laneIndex }),
+                    react.createElement(ItemContent, { isSettingsVisible: isEditing, setIsSettingsVisible: setIsEditing, item: item, searchQuery: isMatch ? query : undefined, onChange: (e) => {
+                            const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
+                            const processed = processTitle(titleRaw, view);
                             boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, {
-                                data: {
-                                    $toggle: ["isComplete"],
+                                title: { $set: processed.title },
+                                titleRaw: { $set: titleRaw },
+                                titleSearch: { $set: processed.titleSearch },
+                                metadata: {
+                                    date: {
+                                        $set: processed.date,
+                                    },
+                                    time: {
+                                        $set: processed.time,
+                                    },
+                                    tags: {
+                                        $set: processed.tags,
+                                    },
                                 },
                             }));
-                        }, type: "checkbox", className: "task-list-item-checkbox", checked: !!item.data.isComplete })),
-                    (isCtrlHoveringCheckbox ||
-                        (!shouldShowCheckbox && shouldMarkItemsComplete)) && (react.createElement("button", { onClick: () => {
-                            boardModifiers.archiveItem(laneIndex, itemIndex, item);
-                        }, className: c$2("item-prefix-button"), "aria-label": isCtrlHoveringCheckbox ? undefined : "Archive item" },
-                        react.createElement(Icon, { name: "sheets-in-box" }))))),
-                react.createElement(ItemContent, { isSettingsVisible: isEditing, setIsSettingsVisible: setIsEditing, item: item, searchQuery: isMatch ? query : undefined, onEditDate: (e) => {
-                        var _a;
-                        constructDatePicker$1({ x: e.clientX, y: e.clientY }, constructMenuDatePickerOnChange({
-                            view,
-                            boardModifiers,
-                            item,
-                            hasDate: true,
-                            laneIndex,
-                            itemIndex,
-                        }), (_a = item.metadata.date) === null || _a === void 0 ? void 0 : _a.toDate());
-                    }, onEditTime: (e) => {
-                        constructTimePicker(view, { x: e.clientX, y: e.clientY }, constructMenuTimePickerOnChange({
-                            view,
-                            boardModifiers,
-                            item,
-                            hasTime: true,
-                            laneIndex,
-                            itemIndex,
-                        }), item.metadata.time);
-                    }, onChange: (e) => {
-                        const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
-                        const processed = processTitle(titleRaw, view);
-                        boardModifiers.updateItem(laneIndex, itemIndex, update$2(item, {
-                            title: { $set: processed.title },
-                            titleRaw: { $set: titleRaw },
-                            titleSearch: { $set: processed.titleSearch },
-                            metadata: {
-                                date: {
-                                    $set: processed.date,
-                                },
-                                time: {
-                                    $set: processed.time,
-                                },
-                            },
-                        }));
-                    } }),
-                react.createElement("div", { className: c$2("item-postfix-button-wrapper") }, isEditing ? (react.createElement("button", { onClick: () => {
-                        setIsEditing(false);
-                    }, className: `${c$2("item-postfix-button")} is-enabled`, "aria-label": t$2("Cancel") },
-                    react.createElement(Icon, { name: "cross" }))) : (react.createElement("button", { onClick: (e) => {
-                        showMenu(e.nativeEvent);
-                    }, className: c$2("item-postfix-button"), "aria-label": t$2("More options") },
-                    react.createElement(Icon, { name: "vertical-three-dots" })))))));
+                        }, onEditDate: (e) => {
+                            var _a;
+                            constructDatePicker$1({ x: e.clientX, y: e.clientY }, constructMenuDatePickerOnChange({
+                                view,
+                                boardModifiers,
+                                item,
+                                hasDate: true,
+                                laneIndex,
+                                itemIndex,
+                            }), (_a = item.metadata.date) === null || _a === void 0 ? void 0 : _a.toDate());
+                        }, onEditTime: (e) => {
+                            constructTimePicker(view, { x: e.clientX, y: e.clientY }, constructMenuTimePickerOnChange({
+                                view,
+                                boardModifiers,
+                                item,
+                                hasTime: true,
+                                laneIndex,
+                                itemIndex,
+                            }), item.metadata.time);
+                        } }),
+                    react.createElement(ItemMenuButton, { isEditing: isEditing, setIsEditing: setIsEditing, showMenu: showMenu })),
+                react.createElement(ItemMetadata, { isSettingsVisible: isEditing, item: item }))));
     };
 }
 
@@ -39977,6 +40133,7 @@ function ItemForm({ addItem }) {
                 metadata: {
                     date: processed.date,
                     time: processed.time,
+                    tags: processed.tags,
                 },
             };
             addItem(newItem);
@@ -40035,7 +40192,7 @@ function LaneTitle({ itemCount, isEditing, setIsEditing, title, onChange, }) {
     }, [title, filePath, view]);
     return (react.createElement("div", { className: c$2("lane-title") }, isEditing ? (react.createElement("div", { "data-replicated-value": title, className: c$2("grow-wrap") },
         react.createElement("textarea", Object.assign({ ref: inputRef, rows: 1, value: title, className: c$2("lane-input"), placeholder: t$2("Enter list title..."), onChange: onChange }, autocompleteProps)))) : (react.createElement(react.Fragment, null,
-        react.createElement("span", { className: c$2("lane-title-text"), onContextMenu: (e) => {
+        react.createElement("span", { className: `markdown-preview-view ${c$2("lane-title-text")}`, onContextMenu: (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 const internalLinkPath = e.target instanceof HTMLAnchorElement &&
@@ -40162,14 +40319,14 @@ const LaneHeader = react.memo(({ lane, laneIndex, dragHandleProps }) => {
             }, cancel: () => setConfirmAction(null) }))));
 });
 
-function LaneItems({ isGhost, items, laneId, laneIndex, shouldShowArchiveButton, }) {
+function LaneItems({ isGhost, items, laneId, laneIndex, shouldMarkItemsComplete, }) {
     const renderItem = draggableItemFactory({
         laneIndex,
         items,
     });
     if (isGhost) {
         return (react.createElement("div", { className: c$2("lane-items") }, items.map((item, i) => {
-            return (react.createElement(GhostItem, { item: item, shouldShowArchiveButton: shouldShowArchiveButton }));
+            return (react.createElement(GhostItem, { item: item, shouldMarkItemsComplete: shouldMarkItemsComplete }));
         })));
     }
     return (react.createElement(ConnectedDroppable, { droppableId: laneId, type: "ITEM", renderClone: renderItem }, (provided, snapshot) => (react.createElement("div", Object.assign({ className: `${c$2("lane-items")} ${snapshot.isDraggingOver ? "is-dragging-over" : ""}`, ref: provided.innerRef }, provided.droppableProps),
@@ -40183,7 +40340,7 @@ function draggableLaneFactory({ lanes, isGhost, }) {
         const { boardModifiers } = react.useContext(KanbanContext);
         const { view } = react.useContext(ObsidianContext);
         const lane = lanes[rubric.source.index];
-        const shouldShowArchiveButton = !!lane.data.shouldMarkItemsComplete;
+        const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
         const laneWidth = view.getSetting("lane-width");
         const settingStyles = laneWidth ? { width: `${laneWidth}px` } : undefined;
         const style = Object.assign(Object.assign({}, provided.draggableProps.style), settingStyles);
@@ -40193,7 +40350,7 @@ function draggableLaneFactory({ lanes, isGhost, }) {
         }
         return (react.createElement("div", Object.assign({ className: classList.join(' '), ref: provided.innerRef }, provided.draggableProps, { style: style }),
             react.createElement(LaneHeader, { dragHandleProps: provided.dragHandleProps, laneIndex: rubric.source.index, lane: lane }),
-            react.createElement(LaneItems, { laneId: lane.id, items: lane.items, laneIndex: rubric.source.index, isGhost: isGhost, shouldShowArchiveButton: shouldShowArchiveButton }),
+            react.createElement(LaneItems, { laneId: lane.id, items: lane.items, laneIndex: rubric.source.index, isGhost: isGhost, shouldMarkItemsComplete: shouldMarkItemsComplete }),
             react.createElement(ItemForm, { addItem: (item) => {
                     boardModifiers.addItemToLane(rubric.source.index, update$2(item, {
                         data: {
@@ -40600,6 +40757,128 @@ class DataBridge {
     }
 }
 
+function Item({ draggableProvided, metadataKey, label, shouldHideLabel, toggleShouldHideLabel, deleteKey, updateKey, updateLabel, }) {
+    return (react.createElement("div", Object.assign({ ref: draggableProvided.innerRef }, draggableProvided.draggableProps, { className: c$2("setting-item") }),
+        react.createElement("div", { className: c$2("setting-input-wrapper") },
+            react.createElement("input", { placeholder: t$2("Metadata key..."), type: "text", value: metadataKey, onChange: (e) => updateKey(e.target.value) }),
+            react.createElement("input", { placeholder: t$2("Display label (optional)..."), type: "text", value: label, onChange: (e) => updateLabel(e.target.value) })),
+        react.createElement("div", { className: c$2("setting-button-wrapper") },
+            react.createElement("div", null,
+                react.createElement("div", { className: `checkbox-container ${shouldHideLabel ? "is-enabled" : ""}`, onClick: toggleShouldHideLabel, "aria-label": t$2("Hide label") })),
+            react.createElement("div", { onClick: deleteKey, "aria-label": t$2("Delete") },
+                react.createElement(Icon, { name: "cross" })),
+            react.createElement("div", Object.assign({ className: "mobile-option-setting-drag-icon", "aria-label": t$2("Drag to rearrange") }, draggableProvided.dragHandleProps),
+                react.createElement(Icon, { name: "three-horizontal-bars" })))));
+}
+function useKeyModifiers({ onChange, inputValue, keys, setKeys, }) {
+    const updateKeys = (keys) => {
+        onChange(keys);
+        setKeys(keys);
+    };
+    return {
+        updateKey: (i) => (value) => {
+            updateKeys(update$2(keys, {
+                [i]: {
+                    metadataKey: {
+                        $set: value,
+                    },
+                },
+            }));
+        },
+        updateLabel: (i) => (value) => {
+            updateKeys(update$2(keys, {
+                [i]: {
+                    label: {
+                        $set: value,
+                    },
+                },
+            }));
+        },
+        toggleShouldHideLabel: (i) => () => {
+            updateKeys(update$2(keys, {
+                [i]: {
+                    $toggle: ["shouldHideLabel"],
+                },
+            }));
+        },
+        deleteKey: (i) => () => {
+            updateKeys(update$2(keys, {
+                $splice: [[i, 1]],
+            }));
+        },
+        newKey: () => {
+            updateKeys(update$2(keys, {
+                $push: [
+                    {
+                        id: generateInstanceId(),
+                        metadataKey: inputValue,
+                        label: "",
+                        shouldHideLabel: false,
+                    },
+                ],
+            }));
+        },
+        moveKey: (result) => {
+            if (!result.destination) {
+                return;
+            }
+            if (result.destination.index === result.source.index) {
+                return;
+            }
+            const clone = keys.slice();
+            const [removed] = clone.splice(result.source.index, 1);
+            clone.splice(result.destination.index, 0, removed);
+            updateKeys(clone);
+        },
+    };
+}
+function MetadataSettings(props) {
+    const [keys, setKeys] = react.useState(props.dataKeys);
+    const [inputValue, setInputValue] = react.useState("");
+    const _a = useIMEInputProps(), { getShouldIMEBlockAction } = _a, inputProps = __rest(_a, ["getShouldIMEBlockAction"]);
+    const { updateKey, updateLabel, toggleShouldHideLabel, deleteKey, newKey, moveKey, } = useKeyModifiers({
+        onChange: props.onChange,
+        inputValue,
+        keys,
+        setKeys,
+    });
+    return (react.createElement(react.Fragment, null,
+        react.createElement(DragDropContext, { onDragEnd: moveKey },
+            react.createElement(ConnectedDroppable, { droppableId: "keys", renderClone: (draggableProvided, _, rubric) => {
+                    const i = rubric.source.index;
+                    const k = keys[i];
+                    return (react.createElement(Item, { draggableProvided: draggableProvided, metadataKey: k.metadataKey, label: k.label, shouldHideLabel: k.shouldHideLabel, updateKey: updateKey(i), updateLabel: updateLabel(i), toggleShouldHideLabel: toggleShouldHideLabel(i), deleteKey: deleteKey(i) }));
+                } }, (dropProvided) => (react.createElement("div", Object.assign({ ref: dropProvided.innerRef }, dropProvided.droppableProps),
+                keys.map((k, i) => {
+                    return (react.createElement(PublicDraggable, { draggableId: k.id, index: i, key: k.id }, (draggableProvided) => (react.createElement(Item, { draggableProvided: draggableProvided, metadataKey: k.metadataKey, label: k.label, shouldHideLabel: k.shouldHideLabel, updateKey: updateKey(i), updateLabel: updateLabel(i), toggleShouldHideLabel: toggleShouldHideLabel(i), deleteKey: deleteKey(i) }))));
+                }),
+                dropProvided.placeholder)))),
+        react.createElement("div", { className: `setting-item ${c$2("setting-key-input-wrapper")}` },
+            react.createElement("input", Object.assign({ placeholder: t$2("Metadata key..."), type: "text", value: inputValue, onChange: (e) => setInputValue(e.target.value), onKeyDown: (e) => {
+                    if (getShouldIMEBlockAction())
+                        return;
+                    if (e.key === "Enter") {
+                        newKey();
+                        setInputValue("");
+                        const target = e.target;
+                        setTimeout(() => {
+                            target.scrollIntoView();
+                        });
+                        return;
+                    }
+                    if (e.key === "Escape") {
+                        setInputValue("");
+                        e.target.blur();
+                    }
+                } }, inputProps)))));
+}
+function renderMetadataSettings(containerEl, keys, onChange) {
+    reactDom.render(react.createElement(MetadataSettings, { dataKeys: keys, onChange: onChange }), containerEl);
+}
+function cleanupMetadataSettings(containerEl) {
+    reactDom.unmountComponentAtNode(containerEl);
+}
+
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 class SettingsManager {
     constructor(app, plugin, config, settings) {
@@ -40740,6 +41019,76 @@ class SettingsManager {
                     toggleComponent.setValue(!!globalValue);
                     this.applySettingsUpdate({
                         $unset: ["show-checkboxes"],
+                    });
+                });
+            });
+        });
+        new obsidian.Setting(contentEl)
+            .setName(t$2("Hide tags in card titles"))
+            .setDesc(t$2("When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes."))
+            .then((setting) => {
+            let toggleComponent;
+            setting
+                .addToggle((toggle) => {
+                toggleComponent = toggle;
+                const [value, globalValue] = this.getSetting("hide-tags-in-title", local);
+                if (value !== undefined) {
+                    toggle.setValue(value);
+                }
+                else if (globalValue !== undefined) {
+                    toggle.setValue(globalValue);
+                }
+                toggle.onChange((newValue) => {
+                    this.applySettingsUpdate({
+                        "hide-tags-in-title": {
+                            $set: newValue,
+                        },
+                    });
+                });
+            })
+                .addExtraButton((b) => {
+                b.setIcon("reset")
+                    .setTooltip(t$2("Reset to default"))
+                    .onClick(() => {
+                    const [, globalValue] = this.getSetting("hide-tags-in-title", local);
+                    toggleComponent.setValue(!!globalValue);
+                    this.applySettingsUpdate({
+                        $unset: ["hide-tags-in-title"],
+                    });
+                });
+            });
+        });
+        new obsidian.Setting(contentEl)
+            .setName(t$2("Hide card display tags"))
+            .setDesc(t$2("When toggled, tags will not be displayed below the card title."))
+            .then((setting) => {
+            let toggleComponent;
+            setting
+                .addToggle((toggle) => {
+                toggleComponent = toggle;
+                const [value, globalValue] = this.getSetting("hide-tags-display", local);
+                if (value !== undefined) {
+                    toggle.setValue(value);
+                }
+                else if (globalValue !== undefined) {
+                    toggle.setValue(globalValue);
+                }
+                toggle.onChange((newValue) => {
+                    this.applySettingsUpdate({
+                        "hide-tags-display": {
+                            $set: newValue,
+                        },
+                    });
+                });
+            })
+                .addExtraButton((b) => {
+                b.setIcon("reset")
+                    .setTooltip(t$2("Reset to default"))
+                    .onClick(() => {
+                    const [, globalValue] = this.getSetting("hide-tags-display", local);
+                    toggleComponent.setValue(!!globalValue);
+                    this.applySettingsUpdate({
+                        $unset: ["hide-tags-display"],
                     });
                 });
             });
@@ -41153,6 +41502,27 @@ class SettingsManager {
                 });
             });
         });
+        contentEl.createEl("br");
+        contentEl.createEl("h4", { text: t$2("Linked Page Metadata") });
+        contentEl.createEl("p", {
+            cls: c$2("metadata-setting-desc"),
+            text: t$2("Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether."),
+        });
+        new obsidian.Setting(contentEl).then((setting) => {
+            setting.settingEl.addClass(c$2("draggable-setting-container"));
+            const [value] = this.getSetting("metadata-keys", local);
+            const keys = value || [];
+            renderMetadataSettings(setting.settingEl, keys, (keys) => this.applySettingsUpdate({
+                "metadata-keys": {
+                    $set: keys,
+                },
+            }));
+            this.cleanupFns.push(() => {
+                if (setting.settingEl) {
+                    cleanupMetadataSettings(setting.settingEl);
+                }
+            });
+        });
     }
     cleanUp() {
         this.cleanupFns.forEach((fn) => fn());
@@ -41224,6 +41594,12 @@ class KanbanView extends obsidian.TextFileView {
             return globalSetting;
         return null;
     }
+    getGlobalSetting(key) {
+        const globalSetting = this.plugin.settings[key];
+        if (globalSetting !== undefined)
+            return globalSetting;
+        return null;
+    }
     onMoreOptionsMenu(menu) {
         // Add a menu item to force the board to markdown view
         menu
@@ -41272,7 +41648,7 @@ class KanbanView extends obsidian.TextFileView {
     }
     toggleSearch() {
         this.dataBridge.setExternal(update$2(this.dataBridge.data, {
-            $toggle: ['isSearching']
+            $toggle: ["isSearching"],
         }));
     }
     getViewData() {
@@ -41568,10 +41944,6 @@ class KanbanPlugin extends obsidian.Plugin {
     }
     setMarkdownView(leaf) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log({
-                type: "markdown",
-                state: leaf.view.getState(),
-            });
             yield leaf.setViewState({
                 type: "markdown",
                 state: leaf.view.getState(),

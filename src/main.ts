@@ -289,10 +289,6 @@ export default class KanbanPlugin extends Plugin {
   }
 
   async setMarkdownView(leaf: WorkspaceLeaf) {
-    console.log({
-      type: "markdown",
-      state: leaf.view.getState(),
-    });
     await leaf.setViewState({
       type: "markdown",
       state: leaf.view.getState(),

@@ -13,7 +13,8 @@ export default {
     "Error: cannot create Kanban, the current note is not empty",
   "New kanban board": "New kanban board",
   "Untitled Kanban": "Untitled Kanban",
-  "Toggle between Kanban and markdown mode": "Toggle between Kanban and markdown mode",
+  "Toggle between Kanban and markdown mode":
+    "Toggle between Kanban and markdown mode",
 
   // KanbanView.tsx
   "Open as markdown": "Open as markdown",
@@ -90,6 +91,22 @@ export default {
     "This will be used to separate the archived date/time from the title",
   "Archive date/time format": "Archive date/time format",
   "Kanban Plugin": "Kanban Plugin",
+  "Hide tags in card titles": "Hide tags in card titles",
+  "When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.":
+    "When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.",
+  "Hide card display tags": "Hide card display tags",
+  "When toggled, tags will not be displayed below the card title.":
+    "When toggled, tags will not be displayed below the card title.",
+  "Linked Page Metadata": "Linked Page Metadata",
+  "Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.":
+    "Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.",
+
+  // MetadataSettings.tsx
+  "Metadata key...": "Metadata key...",
+  "Display label (optional)...": "Display label (optional)...",
+  "Hide label": "Hide label",
+  "Drag to rearrange": "Drag to rearrange",
+  Delete: "Delete",
 
   // components/Item/Item.tsx
   "Archive item": "Archive item",

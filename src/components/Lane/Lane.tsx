@@ -26,7 +26,7 @@ interface LaneItemsProps {
   items: Item[];
   laneId: string;
   laneIndex: number;
-  shouldShowArchiveButton: boolean;
+  shouldMarkItemsComplete: boolean;
 }
 
 function LaneItems({
@@ -34,7 +34,7 @@ function LaneItems({
   items,
   laneId,
   laneIndex,
-  shouldShowArchiveButton,
+  shouldMarkItemsComplete,
 }: LaneItemsProps) {
   const renderItem = draggableItemFactory({
     laneIndex,
@@ -48,7 +48,7 @@ function LaneItems({
           return (
             <GhostItem
               item={item}
-              shouldShowArchiveButton={shouldShowArchiveButton}
+              shouldMarkItemsComplete={shouldMarkItemsComplete}
             />
           );
         })}
@@ -92,7 +92,7 @@ export function draggableLaneFactory({
     const { boardModifiers } = React.useContext(KanbanContext);
     const { view } = React.useContext(ObsidianContext);
     const lane = lanes[rubric.source.index];
-    const shouldShowArchiveButton = !!lane.data.shouldMarkItemsComplete;
+    const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
     const laneWidth = view.getSetting("lane-width");
 
     const settingStyles = laneWidth ? { width: `${laneWidth}px` } : undefined;
@@ -124,7 +124,7 @@ export function draggableLaneFactory({
           items={lane.items}
           laneIndex={rubric.source.index}
           isGhost={isGhost}
-          shouldShowArchiveButton={shouldShowArchiveButton}
+          shouldMarkItemsComplete={shouldMarkItemsComplete}
         />
         <ItemForm
           addItem={(item: Item) => {

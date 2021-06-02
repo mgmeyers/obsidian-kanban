@@ -289,12 +289,17 @@ button.kanban-plugin__new-item-button {
 }
 
 .kanban-plugin__item-content-wrapper {
-  border-radius: 6px;
-  padding: 6px 8px;
-  background-color: var(--background-primary);
+  background: var(--background-primary);
+}
+
+.kanban-plugin__item-title-wrapper {
+  background: var(--background-primary);
   display: flex;
-  align-items: flex-start;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 6px 8px;
+}
+
+.kanban-plugin__item-title-wrapper:not(:only-child) {
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 .kanban-plugin__item-title {
@@ -303,17 +308,19 @@ button.kanban-plugin__new-item-button {
   overflow: hidden;
 }
 
-.kanban-plugin__item-title p {
+.is-dragging .markdown-preview-view.kanban-plugin__lane-title-text p,
+.is-dragging .markdown-preview-view.kanban-plugin__item-markdown p,
+.kanban-plugin .markdown-preview-view p {
   margin: 0;
   overflow-x: auto;
   white-space: pre-wrap;
   overflow-wrap: break-word;
 }
 
+.is-dragging .markdown-preview-view.kanban-plugin__lane-title-text,
+.kanban-plugin .markdown-preview-view.kanban-plugin__lane-title-text,
 .is-dragging .markdown-preview-view.kanban-plugin__item-markdown,
-.kanban-plugin
-  .kanban-plugin__item
-  .markdown-preview-view.kanban-plugin__item-markdown {
+.kanban-plugin .markdown-preview-view.kanban-plugin__item-markdown {
   font-size: 0.875rem;
   padding: unset;
   width: unset;
@@ -324,6 +331,15 @@ button.kanban-plugin__new-item-button {
   color: unset;
   user-select: unset;
   -webkit-user-select: unset;
+}
+
+.markdown-preview-view.kanban-plugin__lane-title-text {
+  font-family: var(--default-font);
+}
+
+.kanban-plugin__item-metadata-wrapper:not(:empty) {
+  background-color: var(--background-primary-alt);
+  padding: 6px 8px;
 }
 
 .kanban-plugin__item-metadata:not(:empty) {
@@ -361,6 +377,52 @@ button.kanban-plugin__new-item-button {
   color: var(--text-muted);
 }
 
+.kanban-plugin__item-metadata-date-wrapper {
+  padding-top: 2px;
+}
+
+.kanban-plugin__item-tags:not(:empty) {
+  padding-top: 2px;
+}
+
+.kanban-plugin__item-tag {
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.kanban-plugin__item-tags .kanban-plugin__item-tag {
+  background-color: rgba(var(--interactive-accent-rgb), 0.1);
+  padding: 1px 4px;
+  border-radius: 6px;
+  margin: 3px 3px 0 0;
+}
+
+.kanban-plugin__meta-table {
+  width: 100%;
+  margin: 0;
+  line-height: 1.5;
+  font-size: 0.75rem;
+}
+
+.kanban-plugin__meta-table td {
+  vertical-align: top;
+  padding: 3px 0;
+  width: 10%;
+}
+
+.kanban-plugin__meta-table td + td {
+  width: 90%;
+}
+
+.kanban-plugin__meta-table td:only-child {
+  width: 100%;
+}
+
+.kanban-plugin__meta-table td.kanban-plugin__meta-key {
+  padding-right: 5px;
+  color: var(--text-muted);
+}
+
 .kanban-plugin__item-prefix-button-wrapper,
 .kanban-plugin__item-postfix-button-wrapper {
   display: flex;
@@ -385,6 +447,7 @@ button.kanban-plugin__item-postfix-button {
   opacity: 0;
   transition: 100ms opacity;
   display: flex;
+  align-self: flex-start;
 }
 
 button.kanban-plugin__item-postfix-button.is-enabled,
@@ -968,6 +1031,52 @@ button.kanban-plugin__cancel-action-button {
 
 .kanban-plugin mark {
   background-color: var(--text-highlight-bg);
+}
+
+.kanban-plugin__draggable-setting-container {
+  flex-direction: column;
+}
+
+.kanban-plugin__draggable-setting-container > div {
+  width: 100%;
+}
+
+.kanban-plugin__setting-item {
+  width: 100%;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  margin: 12px 0;
+  color: var(--text-muted);
+}
+
+.kanban-plugin__setting-input-wrapper {
+  display: flex;
+  flex-grow: 1;
+  flex-shrink: 0;
+}
+
+.kanban-plugin__setting-input-wrapper > input:first-child {
+  margin-right: 10px;
+}
+
+.kanban-plugin__setting-button-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  flex-grow: 1;
+  flex-shrink: 0;
+}
+
+.kanban-plugin__setting-button-wrapper > div {
+  margin-left: 12px;
+}
+
+.kanban-plugin__setting-key-input-wrapper {
+  margin-top: 1rem;
+}
+
+.kanban-plugin__metadata-setting-desc {
+  font-size: 14px;
 }
 .flatpickr-calendar{background:transparent;opacity:0;display:none;text-align:center;visibility:hidden;padding:0;-webkit-animation:none;animation:none;direction:ltr;border:0;font-size:14px;line-height:24px;border-radius:5px;position:absolute;width:307.875px;-webkit-box-sizing:border-box;box-sizing:border-box;-ms-touch-action:manipulation;touch-action:manipulation;background:#fff;-webkit-box-shadow:1px 0 0 #e6e6e6,-1px 0 0 #e6e6e6,0 1px 0 #e6e6e6,0 -1px 0 #e6e6e6,0 3px 13px rgba(0,0,0,0.08);box-shadow:1px 0 0 #e6e6e6,-1px 0 0 #e6e6e6,0 1px 0 #e6e6e6,0 -1px 0 #e6e6e6,0 3px 13px rgba(0,0,0,0.08)}.flatpickr-calendar.open,.flatpickr-calendar.inline{opacity:1;max-height:640px;visibility:visible}.flatpickr-calendar.open{display:inline-block;z-index:99999}.flatpickr-calendar.animate.open{-webkit-animation:fpFadeInDown 300ms cubic-bezier(.23,1,.32,1);animation:fpFadeInDown 300ms cubic-bezier(.23,1,.32,1)}.flatpickr-calendar.inline{display:block;position:relative;top:2px}.flatpickr-calendar.static{position:absolute;top:calc(100% + 2px)}.flatpickr-calendar.static.open{z-index:999;display:block}.flatpickr-calendar.multiMonth .flatpickr-days .dayContainer:nth-child(n+1) .flatpickr-day.inRange:nth-child(7n+7){-webkit-box-shadow:none !important;box-shadow:none !important}.flatpickr-calendar.multiMonth .flatpickr-days .dayContainer:nth-child(n+2) .flatpickr-day.inRange:nth-child(7n+1){-webkit-box-shadow:-2px 0 0 #e6e6e6,5px 0 0 #e6e6e6;box-shadow:-2px 0 0 #e6e6e6,5px 0 0 #e6e6e6}.flatpickr-calendar .hasWeeks .dayContainer,.flatpickr-calendar .hasTime .dayContainer{border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0}.flatpickr-calendar .hasWeeks .dayContainer{border-left:0}.flatpickr-calendar.hasTime .flatpickr-time{height:40px;border-top:1px solid #e6e6e6}.flatpickr-calendar.noCalendar.hasTime .flatpickr-time{height:auto}.flatpickr-calendar:before,.flatpickr-calendar:after{position:absolute;display:block;pointer-events:none;border:solid transparent;content:'';height:0;width:0;left:22px}.flatpickr-calendar.rightMost:before,.flatpickr-calendar.arrowRight:before,.flatpickr-calendar.rightMost:after,.flatpickr-calendar.arrowRight:after{left:auto;right:22px}.flatpickr-calendar.arrowCenter:before,.flatpickr-calendar.arrowCenter:after{left:50%;right:50%}.flatpickr-calendar:before{border-width:5px;margin:0 -5px}.flatpickr-calendar:after{border-width:4px;margin:0 -4px}.flatpickr-calendar.arrowTop:before,.flatpickr-calendar.arrowTop:after{bottom:100%}.flatpickr-calendar.arrowTop:before{border-bottom-color:#e6e6e6}.flatpickr-calendar.arrowTop:after{border-bottom-color:#fff}.flatpickr-calendar.arrowBottom:before,.flatpickr-calendar.arrowBottom:after{top:100%}.flatpickr-calendar.arrowBottom:before{border-top-color:#e6e6e6}.flatpickr-calendar.arrowBottom:after{border-top-color:#fff}.flatpickr-calendar:focus{outline:0}.flatpickr-wrapper{position:relative;display:inline-block}.flatpickr-months{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex}.flatpickr-months .flatpickr-month{background:transparent;color:rgba(0,0,0,0.9);fill:rgba(0,0,0,0.9);height:34px;line-height:1;text-align:center;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;overflow:hidden;-webkit-box-flex:1;-webkit-flex:1;-ms-flex:1;flex:1}.flatpickr-months .flatpickr-prev-month,.flatpickr-months .flatpickr-next-month{text-decoration:none;cursor:pointer;position:absolute;top:0;height:34px;padding:10px;z-index:3;color:rgba(0,0,0,0.9);fill:rgba(0,0,0,0.9)}.flatpickr-months .flatpickr-prev-month.flatpickr-disabled,.flatpickr-months .flatpickr-next-month.flatpickr-disabled{display:none}.flatpickr-months .flatpickr-prev-month i,.flatpickr-months .flatpickr-next-month i{position:relative}.flatpickr-months .flatpickr-prev-month.flatpickr-prev-month,.flatpickr-months .flatpickr-next-month.flatpickr-prev-month{/*
       /*rtl:begin:ignore*/left:0/*
