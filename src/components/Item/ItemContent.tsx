@@ -194,9 +194,15 @@ function getLinkedPageMetadata(
 
   const metadata: { [k: string]: PageData } = {};
   const seenTags: { [k: string]: boolean } = {};
+  const seenKey: { [k: string]: boolean } = {};
+  
   let haveData = false;
 
   keys.forEach((k) => {
+    if (seenKey[k.metadataKey]) return;
+
+    seenKey[k.metadataKey] = true;
+    
     if (k.metadataKey === "tags") {
       let tags = cache.tags || [];
 

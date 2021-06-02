@@ -39551,9 +39551,13 @@ function getLinkedPageMetadata(title, filePath, view) {
     }
     const metadata = {};
     const seenTags = {};
+    const seenKey = {};
     let haveData = false;
     keys.forEach((k) => {
         var _a;
+        if (seenKey[k.metadataKey])
+            return;
+        seenKey[k.metadataKey] = true;
         if (k.metadataKey === "tags") {
             let tags = cache.tags || [];
             if ((_a = cache.frontmatter) === null || _a === void 0 ? void 0 : _a.tags) {
