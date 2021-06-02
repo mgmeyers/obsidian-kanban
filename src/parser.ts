@@ -11,6 +11,7 @@ import { defaultDateTrigger, defaultTimeTrigger } from "./settingHelpers";
 import yaml from "js-yaml";
 import { KanbanView } from "./KanbanView";
 import { t } from "./lang/helpers";
+import { DataKey } from "./MetadataSettings";
 
 export const frontMatterKey = "kanban-plugin";
 
@@ -44,6 +45,7 @@ const completeRegex = new RegExp(`^${escapeRegExpStr(completeString)}$`, "i");
 const archiveString = "***";
 const archiveMarkerRegex = /^\*\*\*$/;
 const tagRegex = /(^|\s)(#[^#\s]+)/g;
+const linkRegex = /\[\[([^\|\]]+)(?:\||\]\])/;
 
 function itemToMd(item: Item) {
   return `- [${item.data.isComplete ? "x" : " "}] ${item.titleRaw}`;
@@ -140,6 +142,37 @@ function extractItemTags(
   };
 }
 
+function extractFirstLinkedFile(
+  title: string,
+  view: KanbanView,
+  settings?: KanbanSettings
+) {
+  const localKeys = view.getSetting("metadata-keys", settings) as DataKey[];
+  const globalKeys = view.getGlobalSetting("metadata-keys") as DataKey[];
+
+  if (localKeys.length === 0 && globalKeys.length === 0) {
+    return null;
+  }
+
+  const match = title.match(linkRegex);
+
+  if (!match) {
+    return null;
+  }
+
+  const path = match[1];
+  const file = view.app.metadataCache.getFirstLinkpathDest(
+    path,
+    view.file.path
+  );
+
+  if (!file) {
+    return null;
+  }
+
+  return file;
+}
+
 export function processTitle(
   title: string,
   view: KanbanView,
@@ -147,6 +180,7 @@ export function processTitle(
 ) {
   const date = extractDates(title, view, settings);
   const tags = extractItemTags(date.processedTitle, view, settings);
+  const file = extractFirstLinkedFile(tags.processedTitle, view, settings);
 
   return {
     title: tags.processedTitle.trim(),
@@ -154,6 +188,7 @@ export function processTitle(
     date: date.date,
     time: date.time,
     tags: tags.tags,
+    file,
   };
 }
 
@@ -192,6 +227,7 @@ function mdToItem(
       date: processed.date,
       time: processed.time,
       tags: processed.tags,
+      file: processed.file,
     },
   };
 }

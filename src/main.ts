@@ -286,6 +286,15 @@ export default class KanbanPlugin extends Plugin {
         }
       })
     );
+
+    this.registerEvent(
+      this.app.metadataCache.on("changed", (file) => {
+        this.app.workspace.getLeavesOfType(kanbanViewType).forEach((leaf) => {
+          const view = leaf.view as KanbanView;
+          view.onFileMetadataChange(file);
+        });
+      })
+    );
   }
 
   async setMarkdownView(leaf: WorkspaceLeaf) {

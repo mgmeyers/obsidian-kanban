@@ -1,3 +1,4 @@
+import { TFile } from "obsidian";
 import { KanbanSettings } from "src/Settings";
 
 export interface LaneData {
@@ -19,6 +20,7 @@ export interface ItemMetaData {
   date?: moment.Moment;
   time?: moment.Moment;
   tags?: string[];
+  file?: TFile | null;
 }
 
 export interface Item {

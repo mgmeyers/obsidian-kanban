@@ -312,6 +312,9 @@ export function draggableItemFactory({
                       tags: {
                         $set: processed.tags,
                       },
+                      file: {
+                        $set: processed.file,
+                      }
                     },
                   })
                 );

@@ -46,6 +46,7 @@ export function ItemForm({ addItem }: ItemFormProps) {
           date: processed.date,
           time: processed.time,
           tags: processed.tags,
+          file: processed.file,
         },
       };
 

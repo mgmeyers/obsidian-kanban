@@ -55,6 +55,7 @@
     "redux-logger": "^3.0.6",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-css-only": "^3.1.0",
-    "styled-components": "^5.2.3"
+    "styled-components": "^5.2.3",
+    "use-bus": "^2.3.1"
   }
 }

@@ -8,7 +8,9 @@ import {
   TextFileView,
   WorkspaceLeaf,
   moment,
+  TFile,
 } from "obsidian";
+import { dispatch } from 'use-bus';
 
 import { boardToMd, mdToBoard, processTitle } from "./parser";
 import { Kanban } from "./components/Kanban";
@@ -75,6 +77,10 @@ export class KanbanView extends TextFileView implements HoverParent {
     if (globalSetting !== undefined) return globalSetting;
 
     return null;
+  }
+
+  onFileMetadataChange(file: TFile) {
+    dispatch(`metadata:update:${file.path}`);
   }
 
   onMoreOptionsMenu(menu: Menu) {

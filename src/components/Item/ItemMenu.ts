@@ -170,6 +170,9 @@ export function useItemMenu({
                   tags: {
                     $set: processed.tags,
                   },
+                  file: {
+                    $set: processed.file,
+                  }
                 },
               })
             );
@@ -227,6 +230,9 @@ export function useItemMenu({
                     tags: {
                       $set: processed.tags,
                     },
+                    file: {
+                      $set: processed.file,
+                    }
                   },
                 })
               );

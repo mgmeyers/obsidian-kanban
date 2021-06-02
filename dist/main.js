@@ -8884,6 +8884,38 @@ function checkDCE() {
 }
 });
 
+let subscribers = [];
+
+const subscribe = (filter, callback) => {
+  if (filter === undefined || filter === null) return undefined;
+  if (callback === undefined || callback === null) return undefined;
+  subscribers = [...subscribers, [filter, callback]];
+  return () => {
+    subscribers = subscribers.filter(subscriber => subscriber[1] !== callback);
+  };
+};
+
+const dispatch = event => {
+  let {
+    type
+  } = event;
+  if (typeof event === 'string') type = event;
+  const args = [];
+  if (typeof event === 'string') args.push({
+    type
+  });else args.push(event);
+  subscribers.forEach(([filter, callback]) => {
+    if (typeof filter === 'string' && filter !== type) return;
+    if (typeof filter === 'function' && !filter(...args)) return;
+    callback(...args);
+  });
+};
+
+const useBus = (type, callback, deps = []) => {
+  react.useEffect(() => subscribe(type, callback), deps);
+  return dispatch;
+};
+
 const baseClassName = "kanban-plugin";
 function c$2(className) {
     return `${baseClassName}__${className}`;
@@ -15937,6 +15969,19 @@ var zhCN = {
     "This will be used to separate the archived date/time from the title": "用于从分隔归档卡片的日期或时间",
     "Archive date/time format": "归档日期或时间格式",
     "Kanban Plugin": "看板插件",
+    "Hide tags in card titles": "隐藏卡片标题中的标签",
+    "When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.": "当打开这个，卡片标题中的标签将会被隐藏，来避免生成卡片笔记的时候附带上标签",
+    "Hide card display tags": "隐藏卡片上的标签",
+    "When toggled, tags will not be displayed below the card title.": "当打开这个，卡片标题下方的标签将不会展示",
+    "Linked Page Metadata": "连接的页面元数据",
+    "Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.": "展示卡片中第一个连接所对应的笔记元数据，请在下方指定哪些元数据可以展示。你可以选择展示标志，标志可以都被隐藏。",
+    // MetadataSettings.tsx
+    "Metadata key": "元数据参数名",
+    "Display label": "展示标志",
+    "Hide label": "隐藏标志",
+    "Drag to rearrange": "拖动来重排顺序",
+    Delete: "删除",
+    "Add key": "添加参数名",
     // components/Item/Item.tsx
     "Archive item": "归档卡片",
     "More options": "更多选项",
@@ -15962,6 +16007,7 @@ var zhCN = {
     "Edit time": "编辑时间",
     "Add time": "添加时间",
     "Remove time": "移除时间",
+    "Duplicate card": "复制卡片",
     // components/Lane/LaneForm.tsx
     "Enter list title...": "输入新的列标题",
     "Mark items in this list as complete": "将该列设置为完成列",
@@ -20024,6 +20070,7 @@ const completeRegex = new RegExp(`^${escapeRegExpStr(completeString)}$`, "i");
 const archiveString = "***";
 const archiveMarkerRegex = /^\*\*\*$/;
 const tagRegex$1 = /(^|\s)(#[^#\s]+)/g;
+const linkRegex$1 = /\[\[([^\|\]]+)(?:\||\]\])/;
 function itemToMd(item) {
     return `- [${item.data.isComplete ? "x" : " "}] ${item.titleRaw}`;
 }
@@ -20086,15 +20133,34 @@ function extractItemTags(title, view, settings) {
         tags,
     };
 }
+function extractFirstLinkedFile(title, view, settings) {
+    const localKeys = view.getSetting("metadata-keys", settings);
+    const globalKeys = view.getGlobalSetting("metadata-keys");
+    if (localKeys.length === 0 && globalKeys.length === 0) {
+        return null;
+    }
+    const match = title.match(linkRegex$1);
+    if (!match) {
+        return null;
+    }
+    const path = match[1];
+    const file = view.app.metadataCache.getFirstLinkpathDest(path, view.file.path);
+    if (!file) {
+        return null;
+    }
+    return file;
+}
 function processTitle(title, view, settings) {
     const date = extractDates(title, view, settings);
     const tags = extractItemTags(date.processedTitle, view, settings);
+    const file = extractFirstLinkedFile(tags.processedTitle, view, settings);
     return {
         title: tags.processedTitle.trim(),
         titleSearch: getSearchTitle(tags.processedTitle, view).trim(),
         date: date.date,
         time: date.time,
         tags: tags.tags,
+        file,
     };
 }
 function mdToItem(itemMd, view, settings, isListItem) {
@@ -20123,6 +20189,7 @@ function mdToItem(itemMd, view, settings, isListItem) {
             date: processed.date,
             time: processed.time,
             tags: processed.tags,
+            file: processed.file,
         },
     };
 }
@@ -39040,6 +39107,9 @@ function constructMenuDatePickerOnChange({ view, boardModifiers, item, hasDate, 
                 },
                 tags: {
                     $set: processed.tags,
+                },
+                file: {
+                    $set: processed.file,
                 }
             },
         }));
@@ -39157,13 +39227,16 @@ function constructMenuTimePickerOnChange({ view, boardModifiers, item, hasTime, 
                 tags: {
                     $set: processed.tags,
                 },
+                file: {
+                    $set: processed.file,
+                }
             },
         }));
     };
 }
 
 const tagRegex = /\B#([^\s]*)?$/;
-const linkRegex$1 = /\B\[\[([^\]]*)?$/;
+const linkRegex = /\B\[\[([^\]]*)?$/;
 const embedRegex = /\B!\[\[([^\]]*)?$/;
 function forceChangeEvent(input, value) {
     Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set.call(input, value);
@@ -39246,7 +39319,7 @@ function getTagSearchConfig(tags, tagSearch) {
 function getFileSearchConfig(files, fileSearch, filePath, view, isEmbed) {
     return {
         id: "link",
-        match: isEmbed ? embedRegex : linkRegex$1,
+        match: isEmbed ? embedRegex : linkRegex,
         index: 1,
         template: (res) => {
             return view.app.metadataCache.fileToLinktext(res.item, filePath);
@@ -39520,7 +39593,6 @@ function DateAndTime({ item, view, filePath, onEditDate, onEditTime, }) {
         " ",
         hasTime && (react.createElement("span", { onClick: onEditTime, className: `${c$2("item-metadata-time")} is-button`, "aria-label": t$2("Change time") }, timeDisplayStr))));
 }
-const linkRegex = /\[\[([^\|\]]+)(?:\||\]\])/;
 function getDataViewCache(view, file) {
     var _a, _b, _c;
     if (view.app.plugins.enabledPlugins.has("dataview") &&
@@ -39528,19 +39600,13 @@ function getDataViewCache(view, file) {
         return view.app.plugins.plugins.dataview.api.page(file.path, view.file.path);
     }
 }
-function getLinkedPageMetadata(title, filePath, view) {
-    const match = title.match(linkRegex);
-    if (!match) {
-        return null;
-    }
+function getLinkedPageMetadata(file, view) {
     const globalKeys = view.getGlobalSetting("metadata-keys") || [];
     const localKeys = view.getSetting("metadata-keys") || [];
     const keys = [...globalKeys, ...localKeys];
     if (!keys.length) {
         return null;
     }
-    const path = match[1];
-    const file = view.app.metadataCache.getFirstLinkpathDest(path, filePath);
     if (!file) {
         return null;
     }
@@ -39604,10 +39670,11 @@ function LinkedPageMetadata({ metadata, }) {
         }))));
 }
 const ItemMetadata = react.memo(({ item, isSettingsVisible }) => {
-    const { view, filePath } = react.useContext(ObsidianContext);
-    const metadata = react.useMemo(() => {
-        return getLinkedPageMetadata(item.titleRaw, filePath, view);
-    }, [item.titleRaw, filePath, view]);
+    var _a;
+    const [, forceUpdate] = react.useState(Date.now());
+    const { view } = react.useContext(ObsidianContext);
+    useBus(`metadata:update:${((_a = item.metadata.file) === null || _a === void 0 ? void 0 : _a.path) || "null"}`, () => forceUpdate(Date.now()), [item.metadata.file]);
+    const metadata = getLinkedPageMetadata(item.metadata.file, view);
     if (isSettingsVisible || !metadata)
         return null;
     return (react.createElement("div", { className: c$2("item-metadata-wrapper") },
@@ -39746,6 +39813,9 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
                             tags: {
                                 $set: processed.tags,
                             },
+                            file: {
+                                $set: processed.file,
+                            }
                         },
                     }));
                 });
@@ -39787,6 +39857,9 @@ function useItemMenu({ setIsEditing, item, laneIndex, itemIndex, boardModifiers,
                                 tags: {
                                     $set: processed.tags,
                                 },
+                                file: {
+                                    $set: processed.file,
+                                }
                             },
                         }));
                     });
@@ -39957,6 +40030,9 @@ function draggableItemFactory({ items, laneIndex, }) {
                                     tags: {
                                         $set: processed.tags,
                                     },
+                                    file: {
+                                        $set: processed.file,
+                                    }
                                 },
                             }));
                         }, onEditDate: (e) => {
@@ -40139,6 +40215,7 @@ function ItemForm({ addItem }) {
                     date: processed.date,
                     time: processed.time,
                     tags: processed.tags,
+                    file: processed.file,
                 },
             };
             addItem(newItem);
@@ -41624,6 +41701,9 @@ class KanbanView extends obsidian.TextFileView {
             return globalSetting;
         return null;
     }
+    onFileMetadataChange(file) {
+        dispatch(`metadata:update:${file.path}`);
+    }
     onMoreOptionsMenu(menu) {
         // Add a menu item to force the board to markdown view
         menu
@@ -41963,6 +42043,12 @@ class KanbanPlugin extends obsidian.Plugin {
                             .onClick(() => this.newKanban(file));
                     });
                 }
+            }));
+            this.registerEvent(this.app.metadataCache.on("changed", (file) => {
+                this.app.workspace.getLeavesOfType(kanbanViewType).forEach((leaf) => {
+                    const view = leaf.view;
+                    view.onFileMetadataChange(file);
+                });
             }));
         });
     }

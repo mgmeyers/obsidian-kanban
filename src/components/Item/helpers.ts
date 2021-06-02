@@ -145,6 +145,9 @@ export function constructMenuDatePickerOnChange({
           },
           tags: {
             $set: processed.tags,
+          },
+          file: {
+            $set: processed.file,
           }
         },
       })
@@ -327,6 +330,9 @@ export function constructMenuTimePickerOnChange({
           tags: {
             $set: processed.tags,
           },
+          file: {
+            $set: processed.file,
+          }
         },
       })
     );

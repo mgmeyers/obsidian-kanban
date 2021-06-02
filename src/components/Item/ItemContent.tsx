@@ -1,12 +1,7 @@
-import {
-  MarkdownRenderer,
-  getLinkpath,
-  moment,
-  CachedMetadata,
-  TFile,
-} from "obsidian";
+import { MarkdownRenderer, getLinkpath, moment, TFile } from "obsidian";
 import React from "react";
 import Mark from "mark.js";
+import useBus from "use-bus";
 
 import { Item } from "../types";
 import { c, getDefaultDateFormat, getDefaultTimeFormat } from "../helpers";
@@ -143,8 +138,6 @@ function DateAndTime({
   );
 }
 
-const linkRegex = /\[\[([^\|\]]+)(?:\||\]\])/;
-
 interface PageData extends DataKey {
   value: string | number | Array<string | number>;
 }
@@ -154,21 +147,17 @@ function getDataViewCache(view: KanbanView, file: TFile) {
     (view.app as any).plugins.enabledPlugins.has("dataview") &&
     (view.app as any).plugins?.plugins?.dataview?.api
   ) {
-    return (view.app as any).plugins.plugins.dataview.api.page(file.path, view.file.path);
+    return (view.app as any).plugins.plugins.dataview.api.page(
+      file.path,
+      view.file.path
+    );
   }
 }
 
 function getLinkedPageMetadata(
-  title: string,
-  filePath: string,
+  file: TFile | null | undefined,
   view: KanbanView
 ) {
-  const match = title.match(linkRegex);
-
-  if (!match) {
-    return null;
-  }
-
   const globalKeys =
     (view.getGlobalSetting("metadata-keys") as DataKey[]) || [];
   const localKeys = (view.getSetting("metadata-keys") as DataKey[]) || [];
@@ -177,9 +166,6 @@ function getLinkedPageMetadata(
   if (!keys.length) {
     return null;
   }
-
-  const path = match[1];
-  const file = view.app.metadataCache.getFirstLinkpathDest(path, filePath);
 
   if (!file) {
     return null;
@@ -195,14 +181,14 @@ function getLinkedPageMetadata(
   const metadata: { [k: string]: PageData } = {};
   const seenTags: { [k: string]: boolean } = {};
   const seenKey: { [k: string]: boolean } = {};
-  
+
   let haveData = false;
 
   keys.forEach((k) => {
     if (seenKey[k.metadataKey]) return;
 
     seenKey[k.metadataKey] = true;
-    
+
     if (k.metadataKey === "tags") {
       let tags = cache.tags || [];
 
@@ -301,11 +287,16 @@ export interface ItemMetadataProps {
 
 export const ItemMetadata = React.memo(
   ({ item, isSettingsVisible }: ItemMetadataProps) => {
-    const { view, filePath } = React.useContext(ObsidianContext);
+    const [, forceUpdate] = React.useState(Date.now());
+    const { view } = React.useContext(ObsidianContext);
 
-    const metadata = React.useMemo(() => {
-      return getLinkedPageMetadata(item.titleRaw, filePath, view);
-    }, [item.titleRaw, filePath, view]);
+    useBus(
+      `metadata:update:${item.metadata.file?.path || "null"}`,
+      () => forceUpdate(Date.now()),
+      [item.metadata.file]
+    );
+
+    const metadata = getLinkedPageMetadata(item.metadata.file, view);
 
     if (isSettingsVisible || !metadata) return null;
 

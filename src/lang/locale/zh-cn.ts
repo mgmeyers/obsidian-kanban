@@ -90,7 +90,7 @@ export default {
   "Hide tags in card titles": "隐藏卡片标题中的标签",
   "When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.":
     "当打开这个，卡片标题中的标签将会被隐藏，来避免生成卡片笔记的时候附带上标签",
-  "Hide card display tags": "隐藏卡片上的标签,
+  "Hide card display tags": "隐藏卡片上的标签",
   "When toggled, tags will not be displayed below the card title.":
     "当打开这个，卡片标题下方的标签将不会展示",
   "Linked Page Metadata": "连接的页面元数据",
