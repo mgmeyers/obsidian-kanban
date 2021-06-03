@@ -90,6 +90,38 @@ export function ItemForm({ addItems }: ItemFormProps) {
     if (transfer.types.includes('text/html') || transfer.types.includes('text/plain')) return 'copy';
   }
 
+  function importLines(transfer: DataTransfer, forcePlaintext: boolean = false): string[] {
+    const draggable = (view.app as any).dragManager.draggable;
+    const html  = transfer.getData("text/html");
+    const plain = transfer.getData("text/plain");
+    const uris  = transfer.getData("text/uri-list");
+
+    switch(draggable?.type) {
+      case "file":
+        return [linkTo(draggable.file)];
+      case "files":
+        return draggable.files.map(linkTo);
+      case "link":
+        let link = draggable.file ? linkTo(draggable.file, parseLinktext(draggable.linktext).subpath) : `[[${draggable.linktext}]]`;
+        let alias = new DOMParser().parseFromString(html, "text/html").documentElement.textContent;  // Get raw text
+        link = link.replace(/]]$/, `|${alias}]]`).replace(/^\[[^\]].+]\(/, `[${alias}](`);
+        return [link];
+      default:
+        const text = forcePlaintext ? (plain||html) : getMarkdown(transfer);
+        // Split lines and strip leading bullets/task indicators
+        const lines: string[] = (text || html || uris || plain || "").split(/\r\n?|\n/).map(fixBulletsAndLInks);
+        return lines.filter(line => line);
+    }
+  }
+  const selectionStart = React.useRef<number>(null);
+  const selectionEnd = React.useRef<number>(null);
+  const inputRef = React.useRef<HTMLTextAreaElement>(null);
+  React.useLayoutEffect(() => {
+    if (selectionStart.current && selectionEnd.current) {
+      inputRef.current.setSelectionRange(selectionStart.current, selectionEnd.current)
+    }
+  }, [itemTitle])
+
   if (isInputVisible) {
     return (
       <div ref={clickOutsideRef}>
@@ -100,9 +132,12 @@ export function ItemForm({ addItems }: ItemFormProps) {
               value={itemTitle}
               className={c("item-input")}
               placeholder={t("Item title...")}
-              onChange={(e) =>
+              onChange={(e) => {
+                selectionStart.current = e.target.selectionStart;
+                selectionEnd.current = e.target.selectionEnd;
+                inputRef.current = e.target;
                 setItemTitle(e.target.value.replace(/[\r\n]+/g, " "))
-              }
+              }}
               onDragOver={e => {
                 const action = dropAction(e.dataTransfer);
                 if (action) {
@@ -113,29 +148,35 @@ export function ItemForm({ addItems }: ItemFormProps) {
               }}
               onDragLeave={() => { if (!itemTitle) setIsInputVisible(false); }}
               onDrop={e => {
-                const draggable = (view.app as any).dragManager.draggable;
-                const html  = e.dataTransfer.getData("text/html");
-                const plain = e.dataTransfer.getData("text/plain");
-                const uris  = e.dataTransfer.getData("text/uri-list");
-
-                if (draggable?.type === "file") {
-                  addItemsFromStrings([linkTo(draggable.file)]);
-                } else if (draggable?.type === "files") {
-                  addItemsFromStrings(draggable.files.map(linkTo));
-                } else if (draggable?.type === "link") {
-                  let link = draggable.file ? linkTo(draggable.file, parseLinktext(draggable.linktext).subpath) : `[[${draggable.linktext}]]`;
-                  let alias = new DOMParser().parseFromString(html, "text/html").documentElement.textContent;  // Get raw text
-                  link = link.replace(/]]$/, `|${alias}]]`).replace(/^\[[^\]].+]\(/, `[${alias}](`);
-                  addItemsFromStrings([link]);
-                } else {
-                  // shift key to force plain text, the same way Obsidian does it
-                  const text = e.shiftKey ? (plain||html) : getMarkdown(e.dataTransfer);
-
-                  // Split lines and strip leading bullets/task indicators
-                  const lines: string[] = (text || html || uris || plain || "").split(/\r\n?|\n/).map(fixBulletsAndLInks);
-                  addItemsFromStrings(lines.filter(line => line));
-                }
+                // shift key to force plain text, the same way Obsidian does it
+                addItemsFromStrings(importLines(e.dataTransfer, e.shiftKey));
                 if (!itemTitle) setIsInputVisible(false);
+              }}
+              onPaste={(e) => {
+                const html = e.clipboardData.getData("text/html");
+                const pasteLines = importLines(e.clipboardData);
+                if (pasteLines.length > 1) {
+                  addItemsFromStrings(pasteLines);
+                  e.preventDefault();
+                  return false;
+                } else if (html) {
+                  // We want to use the markdown instead of the HTML, but you can't intercept paste
+                  // So we have to simulate a paste event the hard way
+                  const input = e.target as HTMLTextAreaElement;
+                  const paste = pasteLines.join("");
+                  selectionStart.current = input.selectionStart;
+                  selectionEnd.current = input.selectionEnd;
+
+                  const replace = itemTitle.substr(0, selectionStart.current) + paste + itemTitle.substr(selectionEnd.current);
+                  selectionStart.current = selectionEnd.current = selectionStart.current + paste.length;
+                  inputRef.current = e.target as HTMLTextAreaElement;
+                  setItemTitle(replace);
+
+                  // And then cancel the default event
+                  e.preventDefault();
+                  return false;
+                }
+                // plain text/other, fall through to standard cut/paste
               }}
               {...autocompleteProps}
             />
