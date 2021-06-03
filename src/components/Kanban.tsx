@@ -114,15 +114,15 @@ function getBoardModifiers({
   };
 
   return {
-    addItemToLane: (laneIndex: number, item: Item) => {
-      view.app.workspace.trigger("kanban:card-added", view.file, item);
+    addItemsToLane: (laneIndex: number, items: Item[]) => {
+      items.forEach(item => view.app.workspace.trigger("kanban:card-added", view.file, item));
 
       setBoardData(
         update(boardData, {
           lanes: {
             [laneIndex]: {
               items: {
-                $push: [item],
+                $push: items,
               },
             },
           },

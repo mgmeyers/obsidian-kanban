@@ -9,10 +9,10 @@ import { processTitle } from "src/parser";
 import { t } from "src/lang/helpers";
 
 interface ItemFormProps {
-  addItem: (item: Item) => void;
+  addItems: (items: Item[]) => void;
 }
 
-export function ItemForm({ addItem }: ItemFormProps) {
+export function ItemForm({ addItems }: ItemFormProps) {
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const [itemTitle, setItemTitle] = React.useState("");
   const { view } = React.useContext(ObsidianContext);
@@ -33,9 +33,16 @@ export function ItemForm({ addItem }: ItemFormProps) {
 
   const createItem = () => {
     const title = itemTitle.trim();
-    const processed = processTitle(title, view);
 
     if (title) {
+      addItemsFromStrings([title]);
+      setItemTitle("");
+    }
+  };
+
+  const addItemsFromStrings = (titles: string[]) => {
+    addItems(titles.map(title => {
+      const processed = processTitle(title, view);
       const newItem: Item = {
         id: generateInstanceId(),
         title: processed.title,
@@ -49,10 +56,8 @@ export function ItemForm({ addItem }: ItemFormProps) {
           file: processed.file,
         },
       };
-
-      addItem(newItem);
-      setItemTitle("");
-    }
+      return newItem;
+    }));
   };
 
   const autocompleteProps = useAutocompleteInputProps({

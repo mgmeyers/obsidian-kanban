@@ -127,17 +127,19 @@ export function draggableLaneFactory({
           shouldMarkItemsComplete={shouldMarkItemsComplete}
         />
         <ItemForm
-          addItem={(item: Item) => {
-            boardModifiers.addItemToLane(
+          addItems={(items: Item[]) => {
+            boardModifiers.addItemsToLane(
               rubric.source.index,
-              update(item, {
-                data: {
-                  isComplete: {
-                    // Mark the item complete if we're moving into a completed lane
-                    $set: !!lane.data.shouldMarkItemsComplete,
+              items.map(item =>
+                update(item, {
+                  data: {
+                    isComplete: {
+                      // Mark the item complete if we're moving into a completed lane
+                      $set: !!lane.data.shouldMarkItemsComplete,
+                    },
                   },
-                },
-              })
+                })
+              )
             );
           }}
         />
