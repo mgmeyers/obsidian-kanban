@@ -5,7 +5,6 @@ import commonjs from "@rollup/plugin-commonjs";
 import css from "rollup-plugin-css-only";
 import copy from "rollup-plugin-copy";
 import replace from "@rollup/plugin-replace";
-import babel from "@rollup/plugin-babel";
 
 dotenv.config();
 
@@ -37,11 +36,6 @@ if (isProd) {
         preventAssignment: true,
         "process.env.NODE_ENV": JSON.stringify(process.env.BUILD),
       }),
-      babel({
-        babelHelpers: "bundled",
-        plugins: ["@babel/plugin-proposal-class-properties"],
-        presets: ["@babel/preset-react", "@babel/preset-typescript"],
-      }),
       commonjs(),
       copy({
         targets: [{ src: "./manifest.json", dest: "./dist" }],
@@ -69,11 +63,6 @@ if (process.env.PLUGIN_DEST || !isProd) {
       replace({
         preventAssignment: true,
         "process.env.NODE_ENV": JSON.stringify(process.env.BUILD),
-      }),
-      babel({
-        babelHelpers: "bundled",
-        plugins: ["@babel/plugin-proposal-class-properties"],
-        presets: ["@babel/preset-react", "@babel/preset-typescript"],
       }),
       commonjs(),
       copy({
