@@ -50,7 +50,6 @@ export class KanbanView extends TextFileView implements HoverParent {
   constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
     super(leaf);
     this.plugin = plugin;
-    this.parseError = ""
     this.clear();
   }
 
@@ -143,6 +142,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   clear() {
+    this.parseError = ""
     this.dataBridge = new DataBridge();
     // When the board has been updated by react
     this.dataBridge.onInternalSet((data) => {
@@ -179,8 +179,9 @@ export class KanbanView extends TextFileView implements HoverParent {
         };
     } catch (e) {
       console.error(e);
-      this.parseError = "Error parsing document: " + e;
+      // Force a new databridge to ensure Kanban re-renders when the error goes away
       this.clear()
+      this.parseError = "Error parsing document: " + e;
     }
 
     // Tell react we have a new board
