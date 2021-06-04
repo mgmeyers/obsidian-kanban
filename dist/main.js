@@ -33104,7 +33104,7 @@ function ItemForm({ addItems }) {
             case "file":
                 return [linkTo(draggable.file)];
             case "files":
-                return draggable.files.map(linkTo);
+                return draggable.files.map((f) => linkTo(f));
             case "link":
                 let link = draggable.file
                     ? linkTo(draggable.file, obsidian.parseLinktext(draggable.linktext).subpath)
@@ -33118,7 +33118,7 @@ function ItemForm({ addItems }) {
             default:
                 const text = forcePlaintext ? plain || html : getMarkdown(transfer);
                 // Split lines and strip leading bullets/task indicators
-                const lines = (text || html || uris || plain || "")
+                const lines = (text || uris || plain || html || "")
                     .split(/\r\n?|\n/)
                     .map(fixBulletsAndLInks);
                 return lines.filter((line) => line);
