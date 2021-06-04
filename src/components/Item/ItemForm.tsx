@@ -154,39 +154,6 @@ export function ItemForm({ addItems }: ItemFormProps) {
     }
   }, [itemTitle]);
 
-  const handlePaste = !!(view.app.vault as any).getConfig("autoConvertHtml")
-    ? (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-        const html = e.clipboardData.getData("text/html");
-        const pasteLines = importLines(e.clipboardData);
-        if (pasteLines.length > 1) {
-          addItemsFromStrings(pasteLines);
-          e.preventDefault();
-          return false;
-        } else if (html) {
-          // We want to use the markdown instead of the HTML, but you can't intercept paste
-          // So we have to simulate a paste event the hard way
-          const input = e.target as HTMLTextAreaElement;
-          const paste = pasteLines.join("");
-          selectionStart.current = input.selectionStart;
-          selectionEnd.current = input.selectionEnd;
-
-          const replace =
-            itemTitle.substr(0, selectionStart.current) +
-            paste +
-            itemTitle.substr(selectionEnd.current);
-          selectionStart.current = selectionEnd.current =
-            selectionStart.current + paste.length;
-          inputRef.current = e.target as HTMLTextAreaElement;
-          setItemTitle(replace);
-
-          // And then cancel the default event
-          e.preventDefault();
-          return false;
-        }
-        // plain text/other, fall through to standard cut/paste
-      }
-    : undefined;
-
   if (isInputVisible) {
     return (
       <div ref={clickOutsideRef}>
@@ -219,7 +186,36 @@ export function ItemForm({ addItems }: ItemFormProps) {
                 addItemsFromStrings(importLines(e.dataTransfer, e.shiftKey));
                 if (!itemTitle) setIsInputVisible(false);
               }}
-              onPaste={handlePaste}
+              onPaste={(e) => {
+                const html = e.clipboardData.getData("text/html");
+                const pasteLines = importLines(e.clipboardData);
+                if (pasteLines.length > 1) {
+                  addItemsFromStrings(pasteLines);
+                  e.preventDefault();
+                  return false;
+                } else if (html) {
+                  // We want to use the markdown instead of the HTML, but you can't intercept paste
+                  // So we have to simulate a paste event the hard way
+                  const input = e.target as HTMLTextAreaElement;
+                  const paste = pasteLines.join("");
+                  selectionStart.current = input.selectionStart;
+                  selectionEnd.current = input.selectionEnd;
+
+                  const replace =
+                    itemTitle.substr(0, selectionStart.current) +
+                    paste +
+                    itemTitle.substr(selectionEnd.current);
+                  selectionStart.current = selectionEnd.current =
+                    selectionStart.current + paste.length;
+                  inputRef.current = e.target as HTMLTextAreaElement;
+                  setItemTitle(replace);
+
+                  // And then cancel the default event
+                  e.preventDefault();
+                  return false;
+                }
+                // plain text/other, fall through to standard cut/paste
+              }}
               {...autocompleteProps}
             />
           </div>
