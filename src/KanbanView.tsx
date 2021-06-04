@@ -33,6 +33,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   plugin: KanbanPlugin;
   dataBridge: DataBridge;
   hoverPopover: HoverPopover | null;
+  parseError: string;
 
   getViewType() {
     return kanbanViewType;
@@ -48,14 +49,9 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
     super(leaf);
-    this.dataBridge = new DataBridge();
     this.plugin = plugin;
-
-    // When the board has been updated by react
-    this.dataBridge.onInternalSet((data) => {
-      this.data = boardToMd(data);
-      this.requestSave();
-    });
+    this.parseError = ""
+    this.clear();
   }
 
   async onClose() {
@@ -147,7 +143,13 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   clear() {
-    this.dataBridge.reset();
+    this.dataBridge = new DataBridge();
+    // When the board has been updated by react
+    this.dataBridge.onInternalSet((data) => {
+      if (data === null || this.parseError) return;  // don't save corrupt data
+      this.data = boardToMd(data);
+      this.requestSave();
+    });
   }
 
   toggleSearch() {
@@ -164,7 +166,10 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   setViewData(data: string, clear: boolean) {
     const trimmedContent = data.trim();
-    const board: Board = trimmedContent
+    let board: Board = null;
+    this.parseError = "";
+    try {
+      board = trimmedContent
       ? mdToBoard(trimmedContent, this)
       : {
           lanes: [],
@@ -172,6 +177,11 @@ export class KanbanView extends TextFileView implements HoverParent {
           settings: { "kanban-plugin": "basic" },
           isSearching: false,
         };
+    } catch (e) {
+      console.error(e);
+      this.parseError = "Error parsing document: " + e;
+      this.clear()
+    }
 
     // Tell react we have a new board
     this.dataBridge.setExternal(board);
@@ -245,12 +255,44 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   getPortal() {
     return ReactDOM.createPortal(
-      <Kanban
-        dataBridge={this.dataBridge}
-        filePath={this.file?.path}
-        view={this}
-      />,
+      <HandleErrors errorMessage={this.parseError}>
+        <Kanban
+          dataBridge={this.dataBridge}
+          filePath={this.file?.path}
+          view={this}
+        />
+      </HandleErrors>,
       this.contentEl
     );
+  }
+}
+
+
+// Catch internal errors or display parsing errors
+
+type ErrorProps = {errorMessage: string};
+
+class HandleErrors extends React.Component<ErrorProps> {
+  state: {errorMessage: string}
+  constructor(props: ErrorProps) {
+    super(props);
+    this.state = { errorMessage: "" };
+  }
+
+  static getDerivedStateFromError(error: Error): typeof HandleErrors.prototype.state {
+    // Update state so the next render will show the fallback UI.
+    return { errorMessage: error.toString() };
+  }
+
+  componentDidCatch(error: Error, errorInfo: {componentStack: string}) {
+    console.log(errorInfo.componentStack, error);
+  }
+
+  render() {
+    const error = this.props.errorMessage || this.state.errorMessage;
+    if (error) {
+      return <div style={{margin: "2em"}}><h1>Something went wrong.</h1><p>{error}</p></div>;
+    }
+    return this.props.children;
   }
 }
