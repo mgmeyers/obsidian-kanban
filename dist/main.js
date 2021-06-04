@@ -33132,36 +33132,6 @@ function ItemForm({ addItems }) {
             inputRef.current.setSelectionRange(selectionStart.current, selectionEnd.current);
         }
     }, [itemTitle]);
-    const handlePaste = !!view.app.vault.getConfig("autoConvertHtml")
-        ? (e) => {
-            const html = e.clipboardData.getData("text/html");
-            const pasteLines = importLines(e.clipboardData);
-            if (pasteLines.length > 1) {
-                addItemsFromStrings(pasteLines);
-                e.preventDefault();
-                return false;
-            }
-            else if (html) {
-                // We want to use the markdown instead of the HTML, but you can't intercept paste
-                // So we have to simulate a paste event the hard way
-                const input = e.target;
-                const paste = pasteLines.join("");
-                selectionStart.current = input.selectionStart;
-                selectionEnd.current = input.selectionEnd;
-                const replace = itemTitle.substr(0, selectionStart.current) +
-                    paste +
-                    itemTitle.substr(selectionEnd.current);
-                selectionStart.current = selectionEnd.current =
-                    selectionStart.current + paste.length;
-                inputRef.current = e.target;
-                setItemTitle(replace);
-                // And then cancel the default event
-                e.preventDefault();
-                return false;
-            }
-            // plain text/other, fall through to standard cut/paste
-        }
-        : undefined;
     if (isInputVisible) {
         return (react.createElement("div", { ref: clickOutsideRef },
             react.createElement("div", { className: c$2("item-input-wrapper") },
@@ -33186,7 +33156,34 @@ function ItemForm({ addItems }) {
                             addItemsFromStrings(importLines(e.dataTransfer, e.shiftKey));
                             if (!itemTitle)
                                 setIsInputVisible(false);
-                        }, onPaste: handlePaste }, autocompleteProps)))),
+                        }, onPaste: (e) => {
+                            const html = e.clipboardData.getData("text/html");
+                            const pasteLines = importLines(e.clipboardData);
+                            if (pasteLines.length > 1) {
+                                addItemsFromStrings(pasteLines);
+                                e.preventDefault();
+                                return false;
+                            }
+                            else if (html) {
+                                // We want to use the markdown instead of the HTML, but you can't intercept paste
+                                // So we have to simulate a paste event the hard way
+                                const input = e.target;
+                                const paste = pasteLines.join("");
+                                selectionStart.current = input.selectionStart;
+                                selectionEnd.current = input.selectionEnd;
+                                const replace = itemTitle.substr(0, selectionStart.current) +
+                                    paste +
+                                    itemTitle.substr(selectionEnd.current);
+                                selectionStart.current = selectionEnd.current =
+                                    selectionStart.current + paste.length;
+                                inputRef.current = e.target;
+                                setItemTitle(replace);
+                                // And then cancel the default event
+                                e.preventDefault();
+                                return false;
+                            }
+                            // plain text/other, fall through to standard cut/paste
+                        } }, autocompleteProps)))),
             react.createElement("div", { className: c$2("item-input-actions") },
                 react.createElement("button", { className: c$2("item-action-add"), onClick: createItem }, t$2("Add item")),
                 react.createElement("button", { className: c$2("item-action-cancel"), onClick: clear }, t$2("Cancel")))));
