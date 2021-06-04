@@ -1,6 +1,5 @@
 import React from "react";
 import update from "immutability-helper";
-import { DropResult } from "react-beautiful-dnd";
 import { Board, Item, Lane } from "./types";
 import { KanbanView } from "src/KanbanView";
 import { App, MarkdownView, TFile } from "obsidian";
@@ -33,103 +32,113 @@ export function reorderList<T>({
   return clone;
 }
 
-export interface BoardDropMutationParams {
-  view: KanbanView;
-  boardData: Board;
-  dropResult: DropResult;
-}
+// Callback to update() a board
+export type BoardMutator = (board: Board) => Board;
 
-export function swapLanes({ boardData, dropResult }: BoardDropMutationParams) {
-  return update(boardData, {
+export function swapLanes(srcIndex: number, dstIndex: number): BoardMutator {
+  return (srcIndex === dstIndex) ? null : (boardData: Board) => update(boardData, {
     lanes: (lanes) =>
       reorderList<Lane>({
         list: lanes,
-        startIndex: dropResult.source.index,
-        endIndex: dropResult.destination.index,
+        startIndex: srcIndex,
+        endIndex: dstIndex,
       }),
   });
 }
 
-export function swapItems({ boardData, dropResult }: BoardDropMutationParams) {
-  const laneIndex = boardData.lanes.findIndex(
-    (lane) => lane.id === dropResult.source.droppableId
-  );
-
-  return update(boardData, {
+export function swapItems(laneIndex: number, srcIndex: number, dstIndex: number): BoardMutator {
+  return (srcIndex === dstIndex) ? null : (boardData: Board) => update(boardData, {
     lanes: {
       [laneIndex]: {
         items: (items) =>
           reorderList<Item>({
             list: items,
-            startIndex: dropResult.source.index,
-            endIndex: dropResult.destination.index,
+            startIndex: srcIndex,
+            endIndex: dstIndex,
           }),
       },
     },
   });
 }
 
-export function moveItem({
-  view,
-  boardData,
-  dropResult,
-}: BoardDropMutationParams) {
-  const { lanes } = boardData;
+export function deleteLane(srcLane: number): BoardMutator {
+  return (boardData: Board) => update(boardData, {
+    lanes: {$splice: [[srcLane, 1]]},
+  })
+}
 
-  const sourceLaneIndex = lanes.findIndex(
-    (lane) => lane.id === dropResult.source.droppableId
-  );
-  const destinationLaneIndex = lanes.findIndex(
-    (lane) => lane.id === dropResult.destination.droppableId
-  );
+export function insertLane(dstLane: number, lane: Lane): BoardMutator {
+  return (boardData: Board) => update(boardData, {
+    lanes: {$splice: [[dstLane, 0, lane]]},
+  });
+}
 
-  const shouldMarkAsComplete =
-    !!lanes[destinationLaneIndex].data.shouldMarkItemsComplete;
-
-  let item = lanes[sourceLaneIndex].items[dropResult.source.index];
-  let isComplete = !!item.data.isComplete;
-
-  view.app.workspace.trigger(
-    "kanban:card-moved",
-    view.file,
-    lanes[sourceLaneIndex],
-    lanes[destinationLaneIndex],
-    item
-  );
-
-  if (shouldMarkAsComplete) {
-    isComplete = true;
-  } else if (
-    !shouldMarkAsComplete &&
-    !!lanes[sourceLaneIndex].data.shouldMarkItemsComplete
-  ) {
-    isComplete = false;
-  }
-
-  if (shouldMarkAsComplete !== item.data.isComplete) {
-    item = update(item, {
-      data: {
-        isComplete: {
-          $set: isComplete,
-        },
-      },
-    });
-  }
-
-  return update(boardData, {
+export function deleteItem(srcLane: number, srcIndex: number): BoardMutator {
+  return (boardData: Board) => update(boardData, {
     lanes: {
-      [sourceLaneIndex]: {
+      [srcLane]: {
+        items: {$splice: [[srcIndex, 1]]},
+      }
+    }
+  })
+}
+
+export function insertItem(dstLane: number, dstIndex: number, item: Item): BoardMutator {
+  return (boardData: Board) => update(boardData, {
+    lanes: {
+      [dstLane]: {
         items: {
-          $splice: [[dropResult.source.index, 1]],
-        },
-      },
-      [destinationLaneIndex]: {
-        items: {
-          $splice: [[dropResult.destination.index, 0, item]],
+          $splice: [[dstIndex, 0, item]],
         },
       },
     },
   });
+}
+
+export function moveItem(srcLane: number, srcIndex: number, dstLane: number, dstIndex: number): BoardMutator {
+  return (srcLane === dstLane && srcIndex === dstIndex) ? null : (boardData: Board) => {
+    const { lanes } = boardData;
+
+    const shouldMarkAsComplete =
+      !!lanes[dstLane].data.shouldMarkItemsComplete;
+
+    let item = lanes[srcLane].items[srcIndex];
+    let isComplete = !!item.data.isComplete;
+
+    if (shouldMarkAsComplete) {
+      isComplete = true;
+    } else if (
+      !shouldMarkAsComplete &&
+      !!lanes[srcLane].data.shouldMarkItemsComplete
+    ) {
+      isComplete = false;
+    }
+
+    if (shouldMarkAsComplete !== item.data.isComplete) {
+      item = update(item, {
+        data: {
+          isComplete: {
+            $set: isComplete,
+          },
+        },
+      });
+    }
+
+    return update(boardData, {
+      lanes: {
+        [srcLane]: {
+          items: {
+            $splice: [[srcIndex, 1]],
+          },
+        },
+        [dstLane]: {
+          items: {
+            $splice: [[dstIndex, 0, item]],
+          },
+        },
+      },
+    });
+  }
 }
 
 export function useIMEInputProps() {

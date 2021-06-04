@@ -9,6 +9,8 @@ import {
   WorkspaceLeaf,
   moment,
   TFile,
+  App,
+  Notice,
 } from "obsidian";
 import { dispatch } from 'use-bus';
 
@@ -48,10 +50,16 @@ export class KanbanView extends TextFileView implements HoverParent {
     super(leaf);
     this.dataBridge = new DataBridge();
     this.plugin = plugin;
+
+    // When the board has been updated by react
+    this.dataBridge.onInternalSet((data) => {
+      this.data = boardToMd(data);
+      this.requestSave();
+    });
   }
 
   async onClose() {
-    ReactDOM.unmountComponentAtNode(this.contentEl);
+    this.plugin.refreshViews();
   }
 
   getSetting(
@@ -165,23 +173,9 @@ export class KanbanView extends TextFileView implements HoverParent {
           isSearching: false,
         };
 
-    if (clear) {
-      this.clear();
-
-      // Tell react we have a new board
-      this.dataBridge.setExternal(board);
-
-      // When the board has been updated by react
-      this.dataBridge.onInternalSet((data) => {
-        this.data = boardToMd(data);
-        this.requestSave();
-      });
-
-      this.constructKanban();
-    } else {
-      // Tell react we have a new board
-      this.dataBridge.setExternal(board);
-    }
+    // Tell react we have a new board
+    this.dataBridge.setExternal(board);
+    this.plugin.refreshViews();
   }
 
   archiveCompletedCards() {
@@ -249,9 +243,8 @@ export class KanbanView extends TextFileView implements HoverParent {
     );
   }
 
-  constructKanban() {
-    ReactDOM.unmountComponentAtNode(this.contentEl);
-    ReactDOM.render(
+  getPortal() {
+    return ReactDOM.createPortal(
       <Kanban
         dataBridge={this.dataBridge}
         filePath={this.file?.path}

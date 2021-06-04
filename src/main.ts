@@ -11,8 +11,10 @@ import {
 import { around } from "monkey-around";
 
 import { kanbanIcon, KanbanView, kanbanViewType } from "./KanbanView";
+import { DragDropApp } from "./DragDropApp";
 import { frontMatterKey } from "./parser";
 import { KanbanSettings, KanbanSettingsTab } from "./Settings";
+import ReactDOM from "react-dom";
 
 // import { KanbanEmbed } from "./KanbanEmbed";
 
@@ -27,6 +29,7 @@ export default class KanbanPlugin extends Plugin {
   kanbanFileModes: { [file: string]: string } = {};
   dbTimers: { [id: string]: number } = {};
   hasSet: { [id: string]: boolean } = {};
+  appEl: HTMLDivElement;
 
   async onload() {
     const self = this;
@@ -297,6 +300,13 @@ export default class KanbanPlugin extends Plugin {
     );
   }
 
+  refreshViews() {
+    ReactDOM.render(
+      DragDropApp(this.app),
+      this.appEl ?? (this.appEl = document.body.createDiv())
+    );
+  }
+
   async setMarkdownView(leaf: WorkspaceLeaf) {
     await leaf.setViewState({
       type: "markdown",
@@ -358,6 +368,11 @@ export default class KanbanPlugin extends Plugin {
 
     // @ts-ignore
     this.app.workspace.unregisterHoverLinkSource(frontMatterKey);
+    if (this.appEl) {
+      this.refreshViews();
+      ReactDOM.unmountComponentAtNode(this.appEl);
+      this.appEl.detach();
+    }
   }
 
   async loadSettings() {
