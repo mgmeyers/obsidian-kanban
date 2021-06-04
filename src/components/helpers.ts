@@ -95,35 +95,30 @@ export function insertItem(dstLane: number, dstIndex: number, item: Item): Board
   });
 }
 
+export function maybeCompleteForMove(item: Item, fromLane: Lane, toLane: Lane): Item {
+  const oldShouldComplete = fromLane.data.shouldMarkItemsComplete;
+  const newShouldComplete = toLane.data.shouldMarkItemsComplete;
+
+  // If neither the old or new lane set it complete, leave it alone
+  if (!oldShouldComplete && !newShouldComplete)     return item;
+
+  // If it already matches the new lane, leave it alone
+  if (newShouldComplete === !!item.data.isComplete) return item;
+
+  // It's different, update it
+  return update(item, {
+    data: {
+      isComplete: {
+        $set: newShouldComplete,
+      },
+    },
+  });
+}
+
 export function moveItem(srcLane: number, srcIndex: number, dstLane: number, dstIndex: number): BoardMutator {
   return (srcLane === dstLane && srcIndex === dstIndex) ? null : (boardData: Board) => {
-    const { lanes } = boardData;
-
-    const shouldMarkAsComplete =
-      !!lanes[dstLane].data.shouldMarkItemsComplete;
-
-    let item = lanes[srcLane].items[srcIndex];
-    let isComplete = !!item.data.isComplete;
-
-    if (shouldMarkAsComplete) {
-      isComplete = true;
-    } else if (
-      !shouldMarkAsComplete &&
-      !!lanes[srcLane].data.shouldMarkItemsComplete
-    ) {
-      isComplete = false;
-    }
-
-    if (shouldMarkAsComplete !== item.data.isComplete) {
-      item = update(item, {
-        data: {
-          isComplete: {
-            $set: isComplete,
-          },
-        },
-      });
-    }
-
+    let item = boardData.lanes[srcLane].items[srcIndex];
+    item = maybeCompleteForMove(item, boardData.lanes[srcLane], boardData.lanes[dstLane])
     return update(boardData, {
       lanes: {
         [srcLane]: {

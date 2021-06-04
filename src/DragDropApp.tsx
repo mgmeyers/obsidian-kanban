@@ -1,7 +1,7 @@
 import { App, Notice } from "obsidian";
 import React from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { BoardMutator, deleteItem, deleteLane, insertItem, insertLane, moveItem, swapItems, swapLanes } from "./components/helpers";
+import * as helpers from "./components/helpers";
 import { Board, Item } from "./components/types";
 import { KanbanView, kanbanViewType } from "./KanbanView";
 
@@ -26,19 +26,20 @@ export function DragDropApp(app: App) {
     const dstLoc = boardContextFor(dropResult, destination.droppableId);
     if (!srcLoc || !dstLoc) return new Notice("Invalid source or destination for drop");
 
-    let srcMutator : BoardMutator;
-    let dstMutator : BoardMutator;
-    let item: Item;
+    let srcMutator : helpers.BoardMutator;
+    let dstMutator : helpers.BoardMutator;
 
     if (srcLoc.file !== dstLoc.file) {
       // Two different files
       if (dropResult.type === "LANE") {
-        srcMutator = deleteLane(source.index);
-        dstMutator = insertLane(destination.index, srcLoc.getData().lanes[source.index]);
+        srcMutator = helpers.deleteLane(source.index);
+        dstMutator = helpers.insertLane(destination.index, srcLoc.getData().lanes[source.index]);
       } else {
-        item = srcLoc.getData().lanes[srcLoc.laneIndex].items[source.index];
-        srcMutator = deleteItem(srcLoc.laneIndex, source.index);
-        dstMutator = insertItem(dstLoc.laneIndex, destination.index, item);
+        const srcLane = srcLoc.getData().lanes[srcLoc.laneIndex];
+        const dstLane = dstLoc.getData().lanes[dstLoc.laneIndex];
+        const item = helpers.maybeCompleteForMove(srcLane.items[source.index], srcLane, dstLane);
+        srcMutator = helpers.deleteItem(srcLoc.laneIndex, source.index);
+        dstMutator = helpers.insertItem(dstLoc.laneIndex, destination.index, item);
       }
     } else {
       if (srcLoc.view !== dstLoc.view) {
@@ -48,15 +49,15 @@ export function DragDropApp(app: App) {
       // Nominal case: same file, same view
       if (dropResult.type === "LANE") {
         // Swap lanes
-        srcMutator = dstMutator = swapLanes(source.index, destination.index);
+        srcMutator = dstMutator = helpers.swapLanes(source.index, destination.index);
       } else if (srcLoc.laneIndex === dstLoc.laneIndex) {
         // Swap items within a lane
-        srcMutator = dstMutator = swapItems(srcLoc.laneIndex, source.index, destination.index);
+        srcMutator = dstMutator = helpers.swapItems(srcLoc.laneIndex, source.index, destination.index);
       } else {
         // Move item from one lane to another
-        srcMutator = dstMutator = moveItem(srcLoc.laneIndex, source.index, dstLoc.laneIndex, destination.index);
+        srcMutator = dstMutator = helpers.moveItem(srcLoc.laneIndex, source.index, dstLoc.laneIndex, destination.index);
         const lanes = srcLoc.getData().lanes;
-        item = lanes[srcLoc.laneIndex].items[source.index];
+        const item = lanes[srcLoc.laneIndex].items[source.index];
         app.workspace.trigger(
           "kanban:card-moved", srcLoc.file, lanes[srcLoc.laneIndex], lanes[dstLoc.laneIndex], item
         );
@@ -86,7 +87,7 @@ export function DragDropApp(app: App) {
   function boardContext(view: KanbanView, laneIndex?: number) {
     return {
       view, laneIndex, file: view.file,
-      mutate(mutator: BoardMutator, preview = false) {
+      mutate(mutator: helpers.BoardMutator, preview = false) {
         const bridge = view.dataBridge;
         const board = mutator(bridge.getData());
         // Save the change unless we're previewing
