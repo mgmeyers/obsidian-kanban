@@ -40,7 +40,7 @@ export interface Board {
 }
 
 export interface BoardModifiers {
-  addItemToLane: (laneIndex: number, item: Item) => void;
+  addItemsToLane: (laneIndex: number, items: Item[]) => void;
   addLane: (lane: Lane) => void;
   archiveItem: (laneIndex: number, itemIndex: number, item: Item) => void;
   archiveLane: (laneIndex: number) => void;
