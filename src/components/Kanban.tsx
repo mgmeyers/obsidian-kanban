@@ -325,11 +325,7 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
 
   const maxArchiveLength = view.getSetting("max-archive-size");
 
-  React.useEffect(() => {
-    dataBridge.onExternalSet((data) => {
-      setBoardData(data);
-    });
-  }, []);
+  React.useEffect(() => dataBridge.onExternalSet(setBoardData));
 
   React.useEffect(() => {
     if (boardData !== null) {

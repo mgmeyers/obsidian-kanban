@@ -11,6 +11,7 @@ export class DataBridge {
   // When data has been set in obsidian land
   onExternalSet(fn: DataHandler) {
     this.onExternalSetHandlers.push(fn);
+    return () => this.onExternalSetHandlers.remove(fn);
   }
 
   // When data has been set in react land
