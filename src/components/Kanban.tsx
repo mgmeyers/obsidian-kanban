@@ -115,7 +115,9 @@ function getBoardModifiers({
 
   return {
     addItemsToLane: (laneIndex: number, items: Item[]) => {
-      items.forEach(item => view.app.workspace.trigger("kanban:card-added", view.file, item));
+      items.forEach((item) =>
+        view.app.workspace.trigger("kanban:card-added", view.file, item)
+      );
 
       setBoardData(
         update(boardData, {

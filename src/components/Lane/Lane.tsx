@@ -101,15 +101,15 @@ export function draggableLaneFactory({
       ...settingStyles,
     };
 
-    const classList = [c("lane")]
+    const classList = [c("lane")];
 
     if (snapshot.isDragging) {
-      classList.push('is-dragging');
+      classList.push("is-dragging");
     }
 
     return (
       <div
-        className={classList.join(' ')}
+        className={classList.join(" ")}
         ref={provided.innerRef}
         {...provided.draggableProps}
         style={style}
@@ -130,7 +130,7 @@ export function draggableLaneFactory({
           addItems={(items: Item[]) => {
             boardModifiers.addItemsToLane(
               rubric.source.index,
-              items.map(item =>
+              items.map((item) =>
                 update(item, {
                   data: {
                     isComplete: {
