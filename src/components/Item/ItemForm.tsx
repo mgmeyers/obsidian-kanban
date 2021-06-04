@@ -120,7 +120,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
       case "file":
         return [linkTo(draggable.file)];
       case "files":
-        return draggable.files.map(linkTo);
+        return draggable.files.map((f: TFile) => linkTo(f));
       case "link":
         let link = draggable.file
           ? linkTo(draggable.file, parseLinktext(draggable.linktext).subpath)
@@ -134,7 +134,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
       default:
         const text = forcePlaintext ? plain || html : getMarkdown(transfer);
         // Split lines and strip leading bullets/task indicators
-        const lines: string[] = (text || html || uris || plain || "")
+        const lines: string[] = (text || uris || plain || html || "")
           .split(/\r\n?|\n/)
           .map(fixBulletsAndLInks);
         return lines.filter((line) => line);
