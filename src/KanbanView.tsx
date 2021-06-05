@@ -12,7 +12,7 @@ import {
   App,
   Notice,
 } from "obsidian";
-import { dispatch } from 'use-bus';
+import { dispatch } from "use-bus";
 
 import { boardToMd, mdToBoard, processTitle } from "./parser";
 import { Kanban } from "./components/Kanban";
@@ -145,11 +145,11 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   clear() {
-    this.parseError = ""
+    this.parseError = "";
     this.dataBridge = new DataBridge();
     // When the board has been updated by react
     this.dataBridge.onInternalSet((data) => {
-      if (data === null || this.parseError) return;  // don't save corrupt data
+      if (data === null || this.parseError) return; // don't save corrupt data
       this.data = boardToMd(data);
       this.requestSave();
     });
@@ -173,17 +173,17 @@ export class KanbanView extends TextFileView implements HoverParent {
     this.parseError = "";
     try {
       board = trimmedContent
-      ? mdToBoard(trimmedContent, this)
-      : {
-          lanes: [],
-          archive: [],
-          settings: { "kanban-plugin": "basic" },
-          isSearching: false,
-        };
+        ? mdToBoard(trimmedContent, this)
+        : {
+            lanes: [],
+            archive: [],
+            settings: { "kanban-plugin": "basic" },
+            isSearching: false,
+          };
     } catch (e) {
       console.error(e);
       // Force a new databridge to ensure Kanban re-renders when the error goes away
-      this.clear()
+      this.clear();
       this.parseError = "Error parsing document: " + e;
     }
 
@@ -258,45 +258,52 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   getPortal() {
-    if (!this.closed) return ReactDOM.createPortal(
-      <HandleErrors errorMessage={this.parseError}>
-        <Kanban
-          dataBridge={this.dataBridge}
-          filePath={this.file?.path}
-          view={this}
-        />
-      </HandleErrors>,
-      this.contentEl,
-      (this.leaf as any).id as string   // ensure React doesn't recreate when list is re-ordered
-    );
+    if (!this.closed)
+      return ReactDOM.createPortal(
+        <HandleErrors errorMessage={this.parseError}>
+          <Kanban
+            dataBridge={this.dataBridge}
+            filePath={this.file?.path}
+            view={this}
+          />
+        </HandleErrors>,
+        this.contentEl,
+        (this.leaf as any).id as string // ensure React doesn't recreate when list is re-ordered
+      );
   }
 }
 
-
 // Catch internal errors or display parsing errors
 
-type ErrorProps = {errorMessage: string};
+type ErrorProps = { errorMessage: string };
 
 class HandleErrors extends React.Component<ErrorProps> {
-  state: {errorMessage: string}
+  state: { errorMessage: string };
   constructor(props: ErrorProps) {
     super(props);
     this.state = { errorMessage: "" };
   }
 
-  static getDerivedStateFromError(error: Error): typeof HandleErrors.prototype.state {
+  static getDerivedStateFromError(
+    error: Error
+  ): typeof HandleErrors.prototype.state {
     // Update state so the next render will show the fallback UI.
     return { errorMessage: error.toString() };
   }
 
-  componentDidCatch(error: Error, errorInfo: {componentStack: string}) {
+  componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
     console.log(errorInfo.componentStack, error);
   }
 
   render() {
     const error = this.props.errorMessage || this.state.errorMessage;
     if (error) {
-      return <div style={{margin: "2em"}}><h1>Something went wrong.</h1><p>{error}</p></div>;
+      return (
+        <div style={{ margin: "2em" }}>
+          <h1>Something went wrong.</h1>
+          <p>{error}</p>
+        </div>
+      );
     }
     return this.props.children;
   }

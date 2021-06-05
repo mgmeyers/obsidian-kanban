@@ -6,6 +6,8 @@ import { App, MarkdownView, TFile } from "obsidian";
 
 export const baseClassName = "kanban-plugin";
 
+export function noop() {}
+
 export function c(className: string) {
   return `${baseClassName}__${className}`;
 }
@@ -36,71 +38,93 @@ export function reorderList<T>({
 export type BoardMutator = (board: Board) => Board;
 
 export function swapLanes(srcIndex: number, dstIndex: number): BoardMutator {
-  return (srcIndex === dstIndex) ? null : (boardData: Board) => update(boardData, {
-    lanes: (lanes) =>
-      reorderList<Lane>({
-        list: lanes,
-        startIndex: srcIndex,
-        endIndex: dstIndex,
-      }),
-  });
+  return srcIndex === dstIndex
+    ? null
+    : (boardData: Board) =>
+        update(boardData, {
+          lanes: (lanes) =>
+            reorderList<Lane>({
+              list: lanes,
+              startIndex: srcIndex,
+              endIndex: dstIndex,
+            }),
+        });
 }
 
-export function swapItems(laneIndex: number, srcIndex: number, dstIndex: number): BoardMutator {
-  return (srcIndex === dstIndex) ? null : (boardData: Board) => update(boardData, {
-    lanes: {
-      [laneIndex]: {
-        items: (items) =>
-          reorderList<Item>({
-            list: items,
-            startIndex: srcIndex,
-            endIndex: dstIndex,
-          }),
-      },
-    },
-  });
+export function swapItems(
+  laneIndex: number,
+  srcIndex: number,
+  dstIndex: number
+): BoardMutator {
+  return srcIndex === dstIndex
+    ? null
+    : (boardData: Board) =>
+        update(boardData, {
+          lanes: {
+            [laneIndex]: {
+              items: (items) =>
+                reorderList<Item>({
+                  list: items,
+                  startIndex: srcIndex,
+                  endIndex: dstIndex,
+                }),
+            },
+          },
+        });
 }
 
 export function deleteLane(srcLane: number): BoardMutator {
-  return (boardData: Board) => update(boardData, {
-    lanes: {$splice: [[srcLane, 1]]},
-  })
+  return (boardData: Board) =>
+    update(boardData, {
+      lanes: { $splice: [[srcLane, 1]] },
+    });
 }
 
 export function insertLane(dstLane: number, lane: Lane): BoardMutator {
-  return (boardData: Board) => update(boardData, {
-    lanes: {$splice: [[dstLane, 0, lane]]},
-  });
+  return (boardData: Board) =>
+    update(boardData, {
+      lanes: { $splice: [[dstLane, 0, lane]] },
+    });
 }
 
 export function deleteItem(srcLane: number, srcIndex: number): BoardMutator {
-  return (boardData: Board) => update(boardData, {
-    lanes: {
-      [srcLane]: {
-        items: {$splice: [[srcIndex, 1]]},
-      }
-    }
-  })
-}
-
-export function insertItem(dstLane: number, dstIndex: number, item: Item): BoardMutator {
-  return (boardData: Board) => update(boardData, {
-    lanes: {
-      [dstLane]: {
-        items: {
-          $splice: [[dstIndex, 0, item]],
+  return (boardData: Board) =>
+    update(boardData, {
+      lanes: {
+        [srcLane]: {
+          items: { $splice: [[srcIndex, 1]] },
         },
       },
-    },
-  });
+    });
 }
 
-export function maybeCompleteForMove(item: Item, fromLane: Lane, toLane: Lane): Item {
+export function insertItem(
+  dstLane: number,
+  dstIndex: number,
+  item: Item
+): BoardMutator {
+  return (boardData: Board) =>
+    update(boardData, {
+      lanes: {
+        [dstLane]: {
+          items: {
+            $splice: [[dstIndex, 0, item]],
+          },
+        },
+      },
+    });
+}
+
+export function maybeCompleteForMove(
+  item: Item,
+  fromLane: Lane,
+  toLane: Lane
+): Item {
   const oldShouldComplete = fromLane.data.shouldMarkItemsComplete;
   const newShouldComplete = toLane.data.shouldMarkItemsComplete;
 
   // If neither the old or new lane set it complete, leave it alone
-  if (!oldShouldComplete && !newShouldComplete)     return item;
+  if (!oldShouldComplete && !newShouldComplete) return item;
 
   // If it already matches the new lane, leave it alone
   if (newShouldComplete === !!item.data.isComplete) return item;
@@ -115,25 +139,36 @@ export function maybeCompleteForMove(item: Item, fromLane: Lane, toLane: Lane): 
   });
 }
 
-export function moveItem(srcLane: number, srcIndex: number, dstLane: number, dstIndex: number): BoardMutator {
-  return (srcLane === dstLane && srcIndex === dstIndex) ? null : (boardData: Board) => {
-    let item = boardData.lanes[srcLane].items[srcIndex];
-    item = maybeCompleteForMove(item, boardData.lanes[srcLane], boardData.lanes[dstLane])
-    return update(boardData, {
-      lanes: {
-        [srcLane]: {
-          items: {
-            $splice: [[srcIndex, 1]],
+export function moveItem(
+  srcLane: number,
+  srcIndex: number,
+  dstLane: number,
+  dstIndex: number
+): BoardMutator {
+  return srcLane === dstLane && srcIndex === dstIndex
+    ? null
+    : (boardData: Board) => {
+        let item = boardData.lanes[srcLane].items[srcIndex];
+        item = maybeCompleteForMove(
+          item,
+          boardData.lanes[srcLane],
+          boardData.lanes[dstLane]
+        );
+        return update(boardData, {
+          lanes: {
+            [srcLane]: {
+              items: {
+                $splice: [[srcIndex, 1]],
+              },
+            },
+            [dstLane]: {
+              items: {
+                $splice: [[dstIndex, 0, item]],
+              },
+            },
           },
-        },
-        [dstLane]: {
-          items: {
-            $splice: [[dstIndex, 0, item]],
-          },
-        },
-      },
-    });
-  }
+        });
+      };
 }
 
 export function useIMEInputProps() {
@@ -160,9 +195,12 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
     : null;
 
   if (templateFile && templateFile instanceof TFile) {
-    const activeView = view.app.workspace.activeLeaf.view
+    const activeView = view.app.workspace.activeLeaf.view;
     // Force the view to source mode, if needed
-    if (activeView instanceof MarkdownView && activeView.getMode() !== "source") {
+    if (
+      activeView instanceof MarkdownView &&
+      activeView.getMode() !== "source"
+    ) {
       await activeView.setState(
         {
           ...activeView.getState(),

@@ -848,6 +848,7 @@ const useBus = (type, callback, deps = []) => {
 };
 
 const baseClassName = "kanban-plugin";
+function noop$3() { }
 function c$2(className) {
     return `${baseClassName}__${className}`;
 }
@@ -860,67 +861,101 @@ function reorderList({ list, startIndex, endIndex, }) {
     clone.splice(endIndex, 0, removed);
     return clone;
 }
-function swapLanes({ boardData, dropResult }) {
-    return update$2(boardData, {
-        lanes: (lanes) => reorderList({
-            list: lanes,
-            startIndex: dropResult.source.index,
-            endIndex: dropResult.destination.index,
-        }),
-    });
+function swapLanes(srcIndex, dstIndex) {
+    return srcIndex === dstIndex
+        ? null
+        : (boardData) => update$2(boardData, {
+            lanes: (lanes) => reorderList({
+                list: lanes,
+                startIndex: srcIndex,
+                endIndex: dstIndex,
+            }),
+        });
 }
-function swapItems({ boardData, dropResult }) {
-    const laneIndex = boardData.lanes.findIndex((lane) => lane.id === dropResult.source.droppableId);
-    return update$2(boardData, {
-        lanes: {
-            [laneIndex]: {
-                items: (items) => reorderList({
-                    list: items,
-                    startIndex: dropResult.source.index,
-                    endIndex: dropResult.destination.index,
-                }),
-            },
-        },
-    });
-}
-function moveItem({ view, boardData, dropResult, }) {
-    const { lanes } = boardData;
-    const sourceLaneIndex = lanes.findIndex((lane) => lane.id === dropResult.source.droppableId);
-    const destinationLaneIndex = lanes.findIndex((lane) => lane.id === dropResult.destination.droppableId);
-    const shouldMarkAsComplete = !!lanes[destinationLaneIndex].data.shouldMarkItemsComplete;
-    let item = lanes[sourceLaneIndex].items[dropResult.source.index];
-    let isComplete = !!item.data.isComplete;
-    view.app.workspace.trigger("kanban:card-moved", view.file, lanes[sourceLaneIndex], lanes[destinationLaneIndex], item);
-    if (shouldMarkAsComplete) {
-        isComplete = true;
-    }
-    else if (!shouldMarkAsComplete &&
-        !!lanes[sourceLaneIndex].data.shouldMarkItemsComplete) {
-        isComplete = false;
-    }
-    if (shouldMarkAsComplete !== item.data.isComplete) {
-        item = update$2(item, {
-            data: {
-                isComplete: {
-                    $set: isComplete,
+function swapItems(laneIndex, srcIndex, dstIndex) {
+    return srcIndex === dstIndex
+        ? null
+        : (boardData) => update$2(boardData, {
+            lanes: {
+                [laneIndex]: {
+                    items: (items) => reorderList({
+                        list: items,
+                        startIndex: srcIndex,
+                        endIndex: dstIndex,
+                    }),
                 },
             },
         });
-    }
-    return update$2(boardData, {
+}
+function deleteLane(srcLane) {
+    return (boardData) => update$2(boardData, {
+        lanes: { $splice: [[srcLane, 1]] },
+    });
+}
+function insertLane(dstLane, lane) {
+    return (boardData) => update$2(boardData, {
+        lanes: { $splice: [[dstLane, 0, lane]] },
+    });
+}
+function deleteItem(srcLane, srcIndex) {
+    return (boardData) => update$2(boardData, {
         lanes: {
-            [sourceLaneIndex]: {
-                items: {
-                    $splice: [[dropResult.source.index, 1]],
-                },
+            [srcLane]: {
+                items: { $splice: [[srcIndex, 1]] },
             },
-            [destinationLaneIndex]: {
+        },
+    });
+}
+function insertItem(dstLane, dstIndex, item) {
+    return (boardData) => update$2(boardData, {
+        lanes: {
+            [dstLane]: {
                 items: {
-                    $splice: [[dropResult.destination.index, 0, item]],
+                    $splice: [[dstIndex, 0, item]],
                 },
             },
         },
     });
+}
+function maybeCompleteForMove(item, fromLane, toLane) {
+    const oldShouldComplete = fromLane.data.shouldMarkItemsComplete;
+    const newShouldComplete = toLane.data.shouldMarkItemsComplete;
+    // If neither the old or new lane set it complete, leave it alone
+    if (!oldShouldComplete && !newShouldComplete)
+        return item;
+    // If it already matches the new lane, leave it alone
+    if (newShouldComplete === !!item.data.isComplete)
+        return item;
+    // It's different, update it
+    return update$2(item, {
+        data: {
+            isComplete: {
+                $set: newShouldComplete,
+            },
+        },
+    });
+}
+function moveItem(srcLane, srcIndex, dstLane, dstIndex) {
+    return srcLane === dstLane && srcIndex === dstIndex
+        ? null
+        : (boardData) => {
+            let item = boardData.lanes[srcLane].items[srcIndex];
+            item = maybeCompleteForMove(item, boardData.lanes[srcLane], boardData.lanes[dstLane]);
+            return update$2(boardData, {
+                lanes: {
+                    [srcLane]: {
+                        items: {
+                            $splice: [[srcIndex, 1]],
+                        },
+                    },
+                    [dstLane]: {
+                        items: {
+                            $splice: [[dstIndex, 0, item]],
+                        },
+                    },
+                },
+            });
+        };
 }
 function useIMEInputProps() {
     const isComposingRef = react.useRef(false);
@@ -944,7 +979,8 @@ async function applyTemplate(view, templatePath) {
     if (templateFile && templateFile instanceof obsidian.TFile) {
         const activeView = view.app.workspace.activeLeaf.view;
         // Force the view to source mode, if needed
-        if (activeView instanceof obsidian.MarkdownView && activeView.getMode() !== "source") {
+        if (activeView instanceof obsidian.MarkdownView &&
+            activeView.getMode() !== "source") {
             await activeView.setState({
                 ...activeView.getState(),
                 mode: "source",
@@ -32739,11 +32775,11 @@ function GhostItem({ item, shouldMarkItemsComplete }) {
     const classModifiers = getClassModifiers(item);
     return (react.createElement("div", { className: `${c$2("item")} ${classModifiers.join(" ")}` },
         react.createElement("div", { className: c$2("item-content-wrapper") },
-            react.createElement(ItemCheckbox, { item: item, shouldMarkItemsComplete: shouldMarkItemsComplete }),
-            react.createElement(ItemContent, { isSettingsVisible: false, item: item }),
-            react.createElement("div", { className: c$2("item-postfix-button-wrapper") },
-                react.createElement("button", { className: c$2("item-postfix-button"), "aria-label": t$2("More options") },
-                    react.createElement(Icon, { name: "vertical-three-dots" }))))));
+            react.createElement("div", { className: c$2("item-title-wrapper") },
+                react.createElement(ItemCheckbox, { item: item, shouldMarkItemsComplete: shouldMarkItemsComplete }),
+                react.createElement(ItemContent, { isSettingsVisible: false, item: item }),
+                react.createElement(ItemMenuButton, { isEditing: false, setIsEditing: noop$3, showMenu: noop$3 })),
+            react.createElement(ItemMetadata, { isSettingsVisible: false, item: item }))));
 }
 function ItemCheckbox({ shouldMarkItemsComplete, laneIndex, itemIndex, item, }) {
     const { view } = react.useContext(ObsidianContext);
@@ -32868,7 +32904,7 @@ function draggableItemFactory({ items, laneIndex, }) {
                                     },
                                     file: {
                                         $set: processed.file,
-                                    }
+                                    },
                                 },
                             }));
                         }, onEditDate: (e) => {
@@ -33363,7 +33399,7 @@ function LaneItems({ isGhost, items, laneId, laneIndex, shouldMarkItemsComplete,
     });
     if (isGhost) {
         return (react.createElement("div", { className: c$2("lane-items") }, items.map((item, i) => {
-            return (react.createElement(GhostItem, { item: item, shouldMarkItemsComplete: shouldMarkItemsComplete }));
+            return (react.createElement(GhostItem, { item: item, key: item.id, shouldMarkItemsComplete: shouldMarkItemsComplete }));
         })));
     }
     return (react.createElement(ConnectedDroppable, { droppableId: laneId, type: "ITEM", renderClone: renderItem }, (provided, snapshot) => (react.createElement("div", Object.assign({ className: `${c$2("lane-items")} ${snapshot.isDraggingOver ? "is-dragging-over" : ""}`, ref: provided.innerRef }, provided.droppableProps),
@@ -33468,34 +33504,6 @@ function LaneForm() {
             t$2("Add a list"))));
 }
 
-function getBoardDragHandler({ view, boardData, setBoardData, }) {
-    return (dropResult) => {
-        const { source, destination } = dropResult;
-        // Bail out early if we're not dropping anywhere
-        if (!destination ||
-            (source.droppableId === destination.droppableId &&
-                source.index === destination.index)) {
-            return;
-        }
-        const mutationParams = {
-            view,
-            boardData,
-            dropResult,
-        };
-        // Swap lanes
-        if (dropResult.type === "LANE") {
-            setBoardData(swapLanes(mutationParams));
-            return;
-        }
-        // Swap items within a lane
-        if (source.droppableId === destination.droppableId) {
-            setBoardData(swapItems(mutationParams));
-            return;
-        }
-        // Move item from one lane to another
-        setBoardData(moveItem(mutationParams));
-    };
-}
 function getBoardModifiers({ view, boardData, setBoardData, }) {
     const shouldAppendArchiveDate = !!view.getSetting("prepend-archive-date");
     const dateFmt = view.getSetting("date-format") || getDefaultDateFormat(view.app);
@@ -33649,11 +33657,7 @@ const Kanban = ({ filePath, view, dataBridge }) => {
     const [searchQuery, setSearchQuery] = react.useState("");
     const searchRef = react.useRef();
     const maxArchiveLength = view.getSetting("max-archive-size");
-    react.useEffect(() => {
-        dataBridge.onExternalSet((data) => {
-            setBoardData(data);
-        });
-    }, []);
+    react.useEffect(() => dataBridge.onExternalSet(setBoardData));
     react.useEffect(() => {
         if (boardData !== null) {
             dataBridge.setInternal(boardData);
@@ -33680,13 +33684,6 @@ const Kanban = ({ filePath, view, dataBridge }) => {
     }, [boardData.archive.length, maxArchiveLength]);
     const boardModifiers = react.useMemo(() => {
         return getBoardModifiers({ view, boardData, setBoardData });
-    }, [view, boardData, setBoardData]);
-    const onDragEnd = react.useMemo(() => {
-        return getBoardDragHandler({
-            view,
-            boardData,
-            setBoardData,
-        });
     }, [view, boardData, setBoardData]);
     if (boardData === null)
         return null;
@@ -33761,8 +33758,7 @@ const Kanban = ({ filePath, view, dataBridge }) => {
                         }, "aria-label": t$2("Cancel") },
                         react.createElement(Icon, { name: "cross" })))),
                 react.createElement("div", { className: baseClassName, onMouseOver: onMouseOver, onClick: onClick },
-                    react.createElement(DragDropContext, { onDragEnd: onDragEnd },
-                        react.createElement(ConnectedDroppable, { droppableId: "board", type: "LANE", direction: "horizontal", ignoreContainerClipping: false, renderClone: renderLaneGhost }, renderLanes)))))));
+                    react.createElement(ConnectedDroppable, { droppableId: view.leaf.id, type: "LANE", direction: "horizontal", ignoreContainerClipping: false, renderClone: renderLaneGhost }, renderLanes))))));
 };
 
 class DataBridge {
@@ -33773,6 +33769,7 @@ class DataBridge {
     // When data has been set in obsidian land
     onExternalSet(fn) {
         this.onExternalSetHandlers.push(fn);
+        return () => this.onExternalSetHandlers.remove(fn);
     }
     // When data has been set in react land
     onInternalSet(fn) {
@@ -34624,8 +34621,9 @@ const kanbanIcon = "blocks";
 class KanbanView extends obsidian.TextFileView {
     constructor(leaf, plugin) {
         super(leaf);
-        this.dataBridge = new DataBridge();
+        this.closed = false;
         this.plugin = plugin;
+        this.clear();
     }
     getViewType() {
         return kanbanViewType;
@@ -34638,7 +34636,9 @@ class KanbanView extends obsidian.TextFileView {
         return ((_a = this.file) === null || _a === void 0 ? void 0 : _a.basename) || "Kanban";
     }
     async onClose() {
-        reactDom.unmountComponentAtNode(this.contentEl);
+        // Remove draggables from render, as the DOM has already detached
+        this.closed = true;
+        this.plugin.refreshViews();
     }
     getSetting(key, suppliedLocalSettings) {
         const localSetting = suppliedLocalSettings
@@ -34704,7 +34704,15 @@ class KanbanView extends obsidian.TextFileView {
         super.onMoreOptionsMenu(menu);
     }
     clear() {
-        this.dataBridge.reset();
+        this.parseError = "";
+        this.dataBridge = new DataBridge();
+        // When the board has been updated by react
+        this.dataBridge.onInternalSet((data) => {
+            if (data === null || this.parseError)
+                return; // don't save corrupt data
+            this.data = boardToMd(data);
+            this.requestSave();
+        });
     }
     toggleSearch() {
         this.dataBridge.setExternal(update$2(this.dataBridge.data, {
@@ -34716,29 +34724,27 @@ class KanbanView extends obsidian.TextFileView {
     }
     setViewData(data, clear) {
         const trimmedContent = data.trim();
-        const board = trimmedContent
-            ? mdToBoard(trimmedContent, this)
-            : {
-                lanes: [],
-                archive: [],
-                settings: { "kanban-plugin": "basic" },
-                isSearching: false,
-            };
-        if (clear) {
+        let board = null;
+        this.parseError = "";
+        try {
+            board = trimmedContent
+                ? mdToBoard(trimmedContent, this)
+                : {
+                    lanes: [],
+                    archive: [],
+                    settings: { "kanban-plugin": "basic" },
+                    isSearching: false,
+                };
+        }
+        catch (e) {
+            console.error(e);
+            // Force a new databridge to ensure Kanban re-renders when the error goes away
             this.clear();
-            // Tell react we have a new board
-            this.dataBridge.setExternal(board);
-            // When the board has been updated by react
-            this.dataBridge.onInternalSet((data) => {
-                this.data = boardToMd(data);
-                this.requestSave();
-            });
-            this.constructKanban();
+            this.parseError = "Error parsing document: " + e;
         }
-        else {
-            // Tell react we have a new board
-            this.dataBridge.setExternal(board);
-        }
+        // Tell react we have a new board
+        this.dataBridge.setExternal(board);
+        this.plugin.refreshViews();
     }
     archiveCompletedCards() {
         const archived = [];
@@ -34784,10 +34790,133 @@ class KanbanView extends obsidian.TextFileView {
             },
         }));
     }
-    constructKanban() {
+    getPortal() {
         var _a;
-        reactDom.unmountComponentAtNode(this.contentEl);
-        reactDom.render(react.createElement(Kanban, { dataBridge: this.dataBridge, filePath: (_a = this.file) === null || _a === void 0 ? void 0 : _a.path, view: this }), this.contentEl);
+        if (!this.closed)
+            return reactDom.createPortal(react.createElement(HandleErrors, { errorMessage: this.parseError },
+                react.createElement(Kanban, { dataBridge: this.dataBridge, filePath: (_a = this.file) === null || _a === void 0 ? void 0 : _a.path, view: this })), this.contentEl, this.leaf.id // ensure React doesn't recreate when list is re-ordered
+            );
+    }
+}
+class HandleErrors extends react.Component {
+    constructor(props) {
+        super(props);
+        this.state = { errorMessage: "" };
+    }
+    static getDerivedStateFromError(error) {
+        // Update state so the next render will show the fallback UI.
+        return { errorMessage: error.toString() };
+    }
+    componentDidCatch(error, errorInfo) {
+        console.log(errorInfo.componentStack, error);
+    }
+    render() {
+        const error = this.props.errorMessage || this.state.errorMessage;
+        if (error) {
+            return (react.createElement("div", { style: { margin: "2em" } },
+                react.createElement("h1", null, "Something went wrong."),
+                react.createElement("p", null, error)));
+        }
+        return this.props.children;
+    }
+}
+
+function DragDropApp(app) {
+    const portals = allViews().map((view) => view.getPortal());
+    if (portals.length) {
+        return (react.createElement(DragDropContext, { onDragEnd: onDragEnd }, portals));
+    }
+    function allViews() {
+        return app.workspace
+            .getLeavesOfType(kanbanViewType)
+            .map((leaf) => leaf.view);
+    }
+    function onDragEnd(dropResult) {
+        // Bail out early if we're not dropping anywhere
+        const { source, destination } = dropResult;
+        if (!destination)
+            return;
+        const srcLoc = boardContextFor(dropResult, source.droppableId);
+        const dstLoc = boardContextFor(dropResult, destination.droppableId);
+        if (!srcLoc || !dstLoc)
+            return new obsidian.Notice("Invalid source or destination for drop");
+        let srcMutator;
+        let dstMutator;
+        if (srcLoc.file !== dstLoc.file) {
+            // Two different files
+            if (dropResult.type === "LANE") {
+                srcMutator = deleteLane(source.index);
+                dstMutator = insertLane(destination.index, srcLoc.getData().lanes[source.index]);
+            }
+            else {
+                const srcLane = srcLoc.getData().lanes[srcLoc.laneIndex];
+                const dstLane = dstLoc.getData().lanes[dstLoc.laneIndex];
+                const item = maybeCompleteForMove(srcLane.items[source.index], srcLane, dstLane);
+                srcMutator = deleteItem(srcLoc.laneIndex, source.index);
+                dstMutator = insertItem(dstLoc.laneIndex, destination.index, item);
+            }
+        }
+        else {
+            if (srcLoc.view !== dstLoc.view) {
+                // drag between two views on the same file, might need to fudge position (due to the copy of src in dst)
+                if (destination.index > source.index)
+                    --destination.index;
+            }
+            // Nominal case: same file, same view
+            if (dropResult.type === "LANE") {
+                // Swap lanes
+                srcMutator = dstMutator = swapLanes(source.index, destination.index);
+            }
+            else if (srcLoc.laneIndex === dstLoc.laneIndex) {
+                // Swap items within a lane
+                srcMutator = dstMutator = swapItems(srcLoc.laneIndex, source.index, destination.index);
+            }
+            else {
+                // Move item from one lane to another
+                srcMutator = dstMutator = moveItem(srcLoc.laneIndex, source.index, dstLoc.laneIndex, destination.index);
+                const lanes = srcLoc.getData().lanes;
+                const item = lanes[srcLoc.laneIndex].items[source.index];
+                app.workspace.trigger("kanban:card-moved", srcLoc.file, lanes[srcLoc.laneIndex], lanes[dstLoc.laneIndex], item);
+            }
+        }
+        // Apply changes at destination view first, so UI changes immediately
+        //   (but only if there's more than one view involved)
+        if (srcLoc.view !== dstLoc.view && dstMutator) {
+            // if it's the same file+change, just update the display; the change will be saved
+            //   when it's applied to the source, below.
+            dstLoc.mutate(dstMutator, srcMutator === dstMutator && srcLoc.file === dstLoc.file);
+        }
+        // Apply changes to source (if any), and always save it
+        if (srcMutator)
+            srcLoc.mutate(srcMutator);
+    }
+    function boardContextFor(dropResult, id) {
+        for (const view of allViews()) {
+            if (dropResult.type === "LANE" && view.leaf.id === id)
+                return boardContext(view);
+            const index = view.dataBridge.data.lanes.findIndex((lane) => lane.id === id);
+            if (index >= 0)
+                return boardContext(view, index);
+        }
+    }
+    function boardContext(view, laneIndex) {
+        return {
+            view,
+            laneIndex,
+            file: view.file,
+            mutate(mutator, preview = false) {
+                const bridge = view.dataBridge;
+                const board = mutator(bridge.getData());
+                // Save the change unless we're previewing
+                if (!preview)
+                    bridge.setInternal(board);
+                // And always Update the display
+                bridge.setExternal(board);
+            },
+            getData() {
+                return view.dataBridge.getData();
+            },
+        };
     }
 }
 
@@ -34911,6 +35040,8 @@ class KanbanPlugin extends obsidian.Plugin {
             callback: () => this.newKanban(),
         });
         this.app.workspace.onLayoutReady(() => {
+            this.refreshViews();
+            this.registerEvent(this.app.workspace.on("layout-change", this.refreshViews, this));
             this.register(around(this.app.commands.commands["editor:open-search"], {
                 checkCallback(next) {
                     return function (isChecking) {
@@ -35009,6 +35140,10 @@ class KanbanPlugin extends obsidian.Plugin {
             });
         }));
     }
+    refreshViews() {
+        var _a;
+        reactDom.render(DragDropApp(this.app), (_a = this.appEl) !== null && _a !== void 0 ? _a : (this.appEl = document.body.createDiv()));
+    }
     async setMarkdownView(leaf) {
         await leaf.setViewState({
             type: "markdown",
@@ -35057,6 +35192,11 @@ class KanbanPlugin extends obsidian.Plugin {
         });
         // @ts-ignore
         this.app.workspace.unregisterHoverLinkSource(frontMatterKey);
+        if (this.appEl) {
+            this.refreshViews();
+            reactDom.unmountComponentAtNode(this.appEl);
+            this.appEl.detach();
+        }
     }
     async loadSettings() {
         this.settings = Object.assign({}, await this.loadData());

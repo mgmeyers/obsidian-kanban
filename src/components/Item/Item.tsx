@@ -7,7 +7,7 @@ import {
 } from "react-beautiful-dnd";
 
 import { Item } from "../types";
-import { c } from "../helpers";
+import { c, noop } from "../helpers";
 import { Icon } from "../Icon/Icon";
 import { KanbanContext, ObsidianContext, SearchContext } from "../context";
 import { ItemContent, ItemMetadata } from "./ItemContent";
@@ -62,19 +62,19 @@ export function GhostItem({ item, shouldMarkItemsComplete }: GhostItemProps) {
   return (
     <div className={`${c("item")} ${classModifiers.join(" ")}`}>
       <div className={c("item-content-wrapper")}>
-        <ItemCheckbox
-          item={item}
-          shouldMarkItemsComplete={shouldMarkItemsComplete}
-        />
-        <ItemContent isSettingsVisible={false} item={item} />
-        <div className={c("item-postfix-button-wrapper")}>
-          <button
-            className={c("item-postfix-button")}
-            aria-label={t("More options")}
-          >
-            <Icon name="vertical-three-dots" />
-          </button>
+        <div className={c("item-title-wrapper")}>
+          <ItemCheckbox
+            item={item}
+            shouldMarkItemsComplete={shouldMarkItemsComplete}
+          />
+          <ItemContent isSettingsVisible={false} item={item} />
+          <ItemMenuButton
+            isEditing={false}
+            setIsEditing={noop}
+            showMenu={noop}
+          />
         </div>
+        <ItemMetadata isSettingsVisible={false} item={item} />
       </div>
     </div>
   );
@@ -314,7 +314,7 @@ export function draggableItemFactory({
                       },
                       file: {
                         $set: processed.file,
-                      }
+                      },
                     },
                   })
                 );

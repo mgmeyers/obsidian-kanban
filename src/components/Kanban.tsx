@@ -448,15 +448,15 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
             onMouseOver={onMouseOver}
             onClick={onClick}
           >
-              <Droppable
-                droppableId={(view.leaf as any).id}
-                type="LANE"
-                direction="horizontal"
-                ignoreContainerClipping={false}
-                renderClone={renderLaneGhost}
-              >
-                {renderLanes}
-              </Droppable>
+            <Droppable
+              droppableId={(view.leaf as any).id}
+              type="LANE"
+              direction="horizontal"
+              ignoreContainerClipping={false}
+              renderClone={renderLaneGhost}
+            >
+              {renderLanes}
+            </Droppable>
           </div>
         </SearchContext.Provider>
       </KanbanContext.Provider>
