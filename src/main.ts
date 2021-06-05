@@ -178,6 +178,7 @@ export default class KanbanPlugin extends Plugin {
     });
 
     this.app.workspace.onLayoutReady(() => {
+      this.refreshViews();
       this.registerEvent(this.app.workspace.on("layout-change", this.refreshViews, this));
       this.register(
         around((this.app as any).commands.commands["editor:open-search"], {
