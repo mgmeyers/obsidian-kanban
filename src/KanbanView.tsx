@@ -266,7 +266,8 @@ export class KanbanView extends TextFileView implements HoverParent {
           view={this}
         />
       </HandleErrors>,
-      this.contentEl
+      this.contentEl,
+      (this.leaf as any).id as string   // ensure React doesn't recreate when list is re-ordered
     );
   }
 }
