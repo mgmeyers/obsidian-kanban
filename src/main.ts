@@ -6,7 +6,6 @@ import {
   ViewState,
   MarkdownView,
   Menu,
-  Notice,
 } from "obsidian";
 import { around } from "monkey-around";
 
