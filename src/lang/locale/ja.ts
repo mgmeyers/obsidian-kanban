@@ -13,6 +13,8 @@ export default {
     "エラー: 現在開いているノートは空であり、カンバンを作成できません",
   "New kanban board": "新規カンバンボード",
   "Untitled Kanban": "無題のカンバン",
+  "Toggle between Kanban and markdown mode":
+    "カンバンとマークダウンモードを切り替える",
 
   // KanbanView.tsx
   "Open as markdown": "マークダウンとして開く",
@@ -64,8 +66,7 @@ export default {
     "このフォーマットはマークダウンで日付が保存される際に使用されます。",
   "For more syntax, refer to": "シンタックスについてはこちらを参照:",
   "format reference": "フォーマットリファレンス",
-  "Your current syntax looks like this":
-    "現在のシンタックスは次のように見えます",
+  "Your current syntax looks like this": "現在のシンタックスは次のように見えます",
   "Time format": "時間フォーマット",
   "Date display format": "日付表示フォーマット",
   "This format will be used when displaying dates in Kanban cards.":
@@ -82,8 +83,7 @@ export default {
   "Link dates to daily notes": "デイリーノートに日付をリンク",
   "When toggled, dates will link to daily notes. Eg. [[2021-04-26]]":
     "有効化すると日付がデイリーノートにリンクされます。 例: [[2021-04-26]]",
-  "Add date and time to archived cards":
-    "アーカイブされたカードに日付と時間を追加",
+  "Add date and time to archived cards": "アーカイブされたカードに日付と時間を追加",
   "When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title":
     "有効化するとカードがアーカイブされた際に現在の日付と時間がカードの最初に追記されるようになります。例: - [ ] 2021-05-14 10:00am カードタイトル",
   "Archive date/time separator": "日付・時間セパレーターをアーカイブ",
@@ -91,6 +91,23 @@ export default {
     "これはアーカイブされた日付・時間をタイトルから分離するのに使用されます。",
   "Archive date/time format": "日付・時間フォーマットをアーカイブ",
   "Kanban Plugin": "カンバンプラグイン",
+  "Hide tags in card titles": "カードタイトル内のタグを隠す",
+  "When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.":
+    "有効化するとカードタイトル内のタグが非表示になります。これは新規ノートを作成した際にカードタイトルにタグが含まれるのを防ぎます。",
+  "Hide card display tags": "カードに表示されるタグを隠す",
+  "When toggled, tags will not be displayed below the card title.":
+    "有効化するとカードタイトルの下のタグが非表示になります。",
+  "Linked Page Metadata": "リンクされたページのメタデータ",
+  "Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.":
+    "カード内において最初にリンクされたノートのメタデータを表示します。下に表示するメタデータのキーを指定してください。オプションとしてラベルの付与が可能であり、ラベルは完全に非表示にすることができます。",
+
+  // MetadataSettings.tsx
+  "Metadata key": "メタデータのキー",
+  "Display label": "ラベルを表示",
+  "Hide label": "ラベルを隠す",
+  "Drag to rearrange": "再配置するためにドラッグ",
+  Delete: "削除",
+  "Add key": "キーを追加",
 
   // components/Item/Item.tsx
   "Archive item": "アイテムをアーカイブ",
@@ -120,6 +137,7 @@ export default {
   "Edit time": "時間を編集",
   "Add time": "時間を追加",
   "Remove time": "時間を削除",
+  "Duplicate card": "カードを複製",
 
   // components/Lane/LaneForm.tsx
   "Enter list title...": "リストタイトルを編集…",
