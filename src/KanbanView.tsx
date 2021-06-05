@@ -34,6 +34,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   dataBridge: DataBridge;
   hoverPopover: HoverPopover | null;
   parseError: string;
+  closed: boolean = false;
 
   getViewType() {
     return kanbanViewType;
@@ -54,6 +55,8 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   async onClose() {
+    // Remove draggables from render, as the DOM has already detached
+    this.closed = true;
     this.plugin.refreshViews();
   }
 
@@ -255,7 +258,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   getPortal() {
-    return ReactDOM.createPortal(
+    if (!this.closed) return ReactDOM.createPortal(
       <HandleErrors errorMessage={this.parseError}>
         <Kanban
           dataBridge={this.dataBridge}
