@@ -13,10 +13,6 @@ import { Board, BoardModifiers, Item, Lane } from "./types";
 import {
   c,
   baseClassName,
-  BoardDropMutationParams,
-  swapLanes,
-  swapItems,
-  moveItem,
   getDefaultDateFormat,
   getDefaultTimeFormat,
 } from "./helpers";
@@ -38,46 +34,6 @@ interface BoardStateProps {
   view: KanbanView;
   boardData: Board;
   setBoardData: React.Dispatch<Board>;
-}
-
-export function getBoardDragHandler({
-  view,
-  boardData,
-  setBoardData,
-}: BoardStateProps) {
-  return (dropResult: DropResult) => {
-    const { source, destination } = dropResult;
-
-    // Bail out early if we're not dropping anywhere
-    if (
-      !destination ||
-      (source.droppableId === destination.droppableId &&
-        source.index === destination.index)
-    ) {
-      return;
-    }
-
-    const mutationParams: BoardDropMutationParams = {
-      view,
-      boardData,
-      dropResult,
-    };
-
-    // Swap lanes
-    if (dropResult.type === "LANE") {
-      setBoardData(swapLanes(mutationParams));
-      return;
-    }
-
-    // Swap items within a lane
-    if (source.droppableId === destination.droppableId) {
-      setBoardData(swapItems(mutationParams));
-      return;
-    }
-
-    // Move item from one lane to another
-    setBoardData(moveItem(mutationParams));
-  };
 }
 
 function getBoardModifiers({
@@ -325,11 +281,7 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
 
   const maxArchiveLength = view.getSetting("max-archive-size");
 
-  React.useEffect(() => {
-    dataBridge.onExternalSet((data) => {
-      setBoardData(data);
-    });
-  }, []);
+  React.useEffect(() => dataBridge.onExternalSet(setBoardData));
 
   React.useEffect(() => {
     if (boardData !== null) {
@@ -364,14 +316,6 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
 
   const boardModifiers = React.useMemo(() => {
     return getBoardModifiers({ view, boardData, setBoardData });
-  }, [view, boardData, setBoardData]);
-
-  const onDragEnd = React.useMemo(() => {
-    return getBoardDragHandler({
-      view,
-      boardData,
-      setBoardData,
-    });
   }, [view, boardData, setBoardData]);
 
   if (boardData === null) return null;
@@ -504,9 +448,8 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
             onMouseOver={onMouseOver}
             onClick={onClick}
           >
-            <DragDropContext onDragEnd={onDragEnd}>
               <Droppable
-                droppableId="board"
+                droppableId={(view.leaf as any).id}
                 type="LANE"
                 direction="horizontal"
                 ignoreContainerClipping={false}
@@ -514,7 +457,6 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
               >
                 {renderLanes}
               </Droppable>
-            </DragDropContext>
           </div>
         </SearchContext.Provider>
       </KanbanContext.Provider>

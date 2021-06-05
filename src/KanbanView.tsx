@@ -9,6 +9,8 @@ import {
   WorkspaceLeaf,
   moment,
   TFile,
+  App,
+  Notice,
 } from "obsidian";
 import { dispatch } from 'use-bus';
 
@@ -31,6 +33,8 @@ export class KanbanView extends TextFileView implements HoverParent {
   plugin: KanbanPlugin;
   dataBridge: DataBridge;
   hoverPopover: HoverPopover | null;
+  parseError: string;
+  closed: boolean = false;
 
   getViewType() {
     return kanbanViewType;
@@ -46,12 +50,14 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
     super(leaf);
-    this.dataBridge = new DataBridge();
     this.plugin = plugin;
+    this.clear();
   }
 
   async onClose() {
-    ReactDOM.unmountComponentAtNode(this.contentEl);
+    // Remove draggables from render, as the DOM has already detached
+    this.closed = true;
+    this.plugin.refreshViews();
   }
 
   getSetting(
@@ -139,7 +145,14 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   clear() {
-    this.dataBridge.reset();
+    this.parseError = ""
+    this.dataBridge = new DataBridge();
+    // When the board has been updated by react
+    this.dataBridge.onInternalSet((data) => {
+      if (data === null || this.parseError) return;  // don't save corrupt data
+      this.data = boardToMd(data);
+      this.requestSave();
+    });
   }
 
   toggleSearch() {
@@ -156,7 +169,10 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   setViewData(data: string, clear: boolean) {
     const trimmedContent = data.trim();
-    const board: Board = trimmedContent
+    let board: Board = null;
+    this.parseError = "";
+    try {
+      board = trimmedContent
       ? mdToBoard(trimmedContent, this)
       : {
           lanes: [],
@@ -164,24 +180,16 @@ export class KanbanView extends TextFileView implements HoverParent {
           settings: { "kanban-plugin": "basic" },
           isSearching: false,
         };
-
-    if (clear) {
-      this.clear();
-
-      // Tell react we have a new board
-      this.dataBridge.setExternal(board);
-
-      // When the board has been updated by react
-      this.dataBridge.onInternalSet((data) => {
-        this.data = boardToMd(data);
-        this.requestSave();
-      });
-
-      this.constructKanban();
-    } else {
-      // Tell react we have a new board
-      this.dataBridge.setExternal(board);
+    } catch (e) {
+      console.error(e);
+      // Force a new databridge to ensure Kanban re-renders when the error goes away
+      this.clear()
+      this.parseError = "Error parsing document: " + e;
     }
+
+    // Tell react we have a new board
+    this.dataBridge.setExternal(board);
+    this.plugin.refreshViews();
   }
 
   archiveCompletedCards() {
@@ -249,15 +257,47 @@ export class KanbanView extends TextFileView implements HoverParent {
     );
   }
 
-  constructKanban() {
-    ReactDOM.unmountComponentAtNode(this.contentEl);
-    ReactDOM.render(
-      <Kanban
-        dataBridge={this.dataBridge}
-        filePath={this.file?.path}
-        view={this}
-      />,
-      this.contentEl
+  getPortal() {
+    if (!this.closed) return ReactDOM.createPortal(
+      <HandleErrors errorMessage={this.parseError}>
+        <Kanban
+          dataBridge={this.dataBridge}
+          filePath={this.file?.path}
+          view={this}
+        />
+      </HandleErrors>,
+      this.contentEl,
+      (this.leaf as any).id as string   // ensure React doesn't recreate when list is re-ordered
     );
+  }
+}
+
+
+// Catch internal errors or display parsing errors
+
+type ErrorProps = {errorMessage: string};
+
+class HandleErrors extends React.Component<ErrorProps> {
+  state: {errorMessage: string}
+  constructor(props: ErrorProps) {
+    super(props);
+    this.state = { errorMessage: "" };
+  }
+
+  static getDerivedStateFromError(error: Error): typeof HandleErrors.prototype.state {
+    // Update state so the next render will show the fallback UI.
+    return { errorMessage: error.toString() };
+  }
+
+  componentDidCatch(error: Error, errorInfo: {componentStack: string}) {
+    console.log(errorInfo.componentStack, error);
+  }
+
+  render() {
+    const error = this.props.errorMessage || this.state.errorMessage;
+    if (error) {
+      return <div style={{margin: "2em"}}><h1>Something went wrong.</h1><p>{error}</p></div>;
+    }
+    return this.props.children;
   }
 }

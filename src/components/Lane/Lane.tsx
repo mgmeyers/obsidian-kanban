@@ -47,7 +47,7 @@ function LaneItems({
         {items.map((item, i) => {
           return (
             <GhostItem
-              item={item}
+              item={item} key={item.id}
               shouldMarkItemsComplete={shouldMarkItemsComplete}
             />
           );
