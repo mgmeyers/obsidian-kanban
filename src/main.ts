@@ -352,11 +352,10 @@ export default class KanbanPlugin extends Plugin {
       );
 
       await this.app.vault.modify(kanban, frontmatter);
-
-      const view = new KanbanView(this.app.workspace.activeLeaf, this);
-
-      await view.setState({ file: kanban.path }, {});
-      await this.app.workspace.activeLeaf.open(view);
+      await this.app.workspace.activeLeaf.setViewState({
+        type: kanbanViewType,
+        state: {file: kanban.path},
+      })
     } catch (e) {
       console.error("Error creating kanban board:", e);
     }
