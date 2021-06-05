@@ -14,16 +14,12 @@ Will output this markdown:
 
 ```markdown
 ---
-
 kanban-plugin: basic
-
 ---
-
 
 ## Another List
 
 - [ ] Card in list one
-
 
 ## List two
 
@@ -31,10 +27,10 @@ kanban-plugin: basic
 - [ ] This is another
 - [ ] Hello, world!
 
-
 ## Done
 
 **Complete**
+
 - [x] Items in this lane are marked as complete
 ```
 
@@ -46,36 +42,20 @@ Or the folder context menu:
 
 <img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/folder-menu.png" width="234" alt="Plugin folder context menu" />
 
-
 ## Screenshots
 
 <img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/02.png" alt="Plugin screenshot 2" />
 
 <img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/03.png" alt="Plugin screenshot 3" />
 
-
-
-
 ## Roadmap
 
-Below is the planned roadmap.
+See the development roadmap here: https://github.com/mgmeyers/obsidian-kanban/projects/1
 
-### Beta
+## Support
 
-- [x] Tags
-- [x] Link / tag autocomplete
-- [x] Markdown formatting support
-- [ ] Dates (support Natural Language Dates plugin)
+If you find this plugin useful, consider sponsoring me on github or buying me a coffee!
 
-### Backlog
+<a class="github-button" href="https://github.com/sponsors/mgmeyers" data-icon="octicon-heart" data-size="large" aria-label="Sponsor @mgmeyers on GitHub">Sponsor</a>
 
-- [ ] Select & drag multiple
-- [ ] Sort lane by...
-- [ ] Board specific settings
-- [ ] Format: expanded (with subtasks)
-- [ ] Item descriptions
-- [ ] Alternate output formats
-- [ ] Make compatible with Style Settings plugin
-- [ ] Be more careful about overriding data
-
-
+<a href="https://www.buymeacoffee.com/mgme"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=mgme&button_colour=5F7FFF&font_colour=ffffff&font_family=Lato&outline_colour=000000&coffee_colour=FFDD00"></a>
