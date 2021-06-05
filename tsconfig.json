@@ -3,6 +3,7 @@
     "baseUrl": ".",
     "inlineSourceMap": true,
     "inlineSources": true,
+    "isolatedModules": true,
     "module": "ESNext",
     "target": "es2018",
     "allowJs": true,
