@@ -1,8 +1,10 @@
 ## Obsidian Kanban Plugin
 
-> Please submit bugs / issues here: https://github.com/mgmeyers/obsidian-kanban/issues
+> Submit bugs / issues: https://github.com/mgmeyers/obsidian-kanban/issues
 
-> Please submit feature requests here: https://github.com/mgmeyers/obsidian-kanban/discussions/categories/ideas-feature-requests
+> Submit feature requests: https://github.com/mgmeyers/obsidian-kanban/discussions/categories/ideas-feature-requests
+
+> See the development roadmap: https://github.com/mgmeyers/obsidian-kanban/projects/1
 
 ---
 
@@ -47,10 +49,6 @@ Or the folder context menu:
 <img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/02.png" alt="Plugin screenshot 2" />
 
 <img src="https://raw.githubusercontent.com/mgmeyers/obsidian-kanban/main/screenshots/03.png" alt="Plugin screenshot 3" />
-
-## Roadmap
-
-See the development roadmap here: https://github.com/mgmeyers/obsidian-kanban/projects/1
 
 ## Support
 
