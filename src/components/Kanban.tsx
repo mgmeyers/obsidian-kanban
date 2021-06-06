@@ -412,37 +412,35 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
         <SearchContext.Provider
           value={{ query: searchQuery.toLocaleLowerCase() }}
         >
-          {boardData.isSearching && (
-            <div className={c("search-wrapper")}>
-              <input
-                ref={searchRef}
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") {
-                    setSearchQuery("");
-                    (e.target as HTMLInputElement).blur();
-                    view.toggleSearch();
-                  }
-                }}
-                type="text"
-                className={c("filter-input")}
-                placeholder={t("Search...")}
-              />
-              <button
-                className={c("search-cancel-button")}
-                onClick={() => {
+          <div className={c("search-wrapper")}>
+            <input
+              ref={searchRef}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
                   setSearchQuery("");
+                  (e.target as HTMLInputElement).blur();
                   view.toggleSearch();
-                }}
-                aria-label={t("Cancel")}
-              >
-                <Icon name="cross" />
-              </button>
-            </div>
-          )}
+                }
+              }}
+              type="text"
+              className={c("filter-input")}
+              placeholder={t("Search...")}
+            />
+            <button
+              className={c("search-cancel-button")}
+              onClick={() => {
+                setSearchQuery("");
+                view.toggleSearch();
+              }}
+              aria-label={t("Cancel")}
+            >
+              <Icon name="cross" />
+            </button>
+          </div>
           <div
             className={baseClassName}
             onMouseOver={onMouseOver}

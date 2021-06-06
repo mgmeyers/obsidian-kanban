@@ -288,6 +288,10 @@ button.kanban-plugin__new-item-button {
   text-overflow: ellipsis;
 }
 
+.kanban-plugin__item.is-search-miss .kanban-plugin__item-metadata-wrapper {
+  display: none;
+}
+
 .kanban-plugin__item-content-wrapper {
   background: var(--background-primary);
 }
@@ -397,6 +401,12 @@ button.kanban-plugin__new-item-button {
   margin: 3px 3px 0 0;
 }
 
+.kanban-plugin__item-tag.is-search-match,
+.kanban-plugin__item-tags .kanban-plugin__item-tag.is-search-match {
+  background-color: var(--text-highlight-bg);
+  color: var(--text-normal);
+}
+
 .kanban-plugin__meta-table {
   width: 100%;
   margin: 0;
@@ -422,6 +432,17 @@ button.kanban-plugin__new-item-button {
   white-space: nowrap;
   padding-right: 5px;
   color: var(--text-muted);
+}
+
+.kanban-plugin__meta-table td.kanban-plugin__meta-key.is-search-match > span {
+  background-color: var(--text-highlight-bg);
+  color: var(--text-normal);
+}
+
+.kanban-plugin__meta-value > .is-search-match,
+.kanban-plugin__meta-value.is-search-match {
+  background-color: var(--text-highlight-bg);
+  color: var(--text-normal);
 }
 
 .kanban-plugin__item-prefix-button-wrapper,

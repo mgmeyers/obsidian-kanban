@@ -9,8 +9,6 @@ import {
   WorkspaceLeaf,
   moment,
   TFile,
-  App,
-  Notice,
 } from "obsidian";
 import { dispatch } from "use-bus";
 

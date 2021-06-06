@@ -136,20 +136,7 @@ export function constructMenuDatePickerOnChange({
         title: { $set: processed.title },
         titleRaw: { $set: titleRaw },
         titleSearch: { $set: processed.titleSearch },
-        metadata: {
-          date: {
-            $set: processed.date,
-          },
-          time: {
-            $set: processed.time,
-          },
-          tags: {
-            $set: processed.tags,
-          },
-          file: {
-            $set: processed.file,
-          }
-        },
+        metadata: { $set: processed.metadata },
       })
     );
   };
@@ -244,9 +231,9 @@ export function constructTimePicker(
             if (index % 4 === 0) {
               item.addClass("is-hour");
             }
-            
+
             item.dataset.value = opt;
-            
+
             if (isSelected) selectedItem = item;
             if (index === Math.floor(options.length / 2)) {
               middleItem = item;
@@ -320,20 +307,7 @@ export function constructMenuTimePickerOnChange({
         title: { $set: processed.title },
         titleRaw: { $set: titleRaw },
         titleSearch: { $set: processed.titleSearch },
-        metadata: {
-          date: {
-            $set: processed.date,
-          },
-          time: {
-            $set: processed.time,
-          },
-          tags: {
-            $set: processed.tags,
-          },
-          file: {
-            $set: processed.file,
-          }
-        },
+        metadata: { $set: processed.metadata },
       })
     );
   };

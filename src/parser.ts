@@ -1,17 +1,16 @@
-import { MarkdownRenderer, moment } from "obsidian";
+import { MarkdownRenderer, moment, TFile } from "obsidian";
 import {
   escapeRegExpStr,
   generateInstanceId,
   getDefaultDateFormat,
   getDefaultTimeFormat,
 } from "./components/helpers";
-import { Board, Item, Lane } from "./components/types";
+import { Board, DataKey, FileMetadata, Item, Lane } from "./components/types";
 import { KanbanSettings } from "./Settings";
 import { defaultDateTrigger, defaultTimeTrigger } from "./settingHelpers";
 import yaml from "js-yaml";
 import { KanbanView } from "./KanbanView";
 import { t } from "./lang/helpers";
-import { DataKey } from "./MetadataSettings";
 
 export const frontMatterKey = "kanban-plugin";
 
@@ -51,10 +50,37 @@ function itemToMd(item: Item) {
   return `- [${item.data.isComplete ? "x" : " "}] ${item.titleRaw}`;
 }
 
-function getSearchTitle(title: string, view: KanbanView) {
+function getSearchTitle(
+  title: string,
+  view: KanbanView,
+  tags?: string[],
+  fileMetadata?: FileMetadata
+) {
   const tempEl = createDiv();
   MarkdownRenderer.renderMarkdown(title, tempEl, view.file.path, view);
-  return tempEl.innerText;
+
+  let searchTitle = tempEl.innerText.trim();
+
+  if (tags?.length) {
+    searchTitle += " " + tags.join(" ");
+  }
+
+  if (fileMetadata) {
+    const keys = Object.keys(fileMetadata).join(" ");
+    const values = Object.values(fileMetadata)
+      .map((v) => {
+        if (Array.isArray(v.value)) {
+          return v.value.join(" ");
+        }
+
+        return v.value.toString();
+      })
+      .join(" ");
+
+    searchTitle += " " + keys + " " + values;
+  }
+
+  return searchTitle;
 }
 
 function extractDates(
@@ -147,8 +173,10 @@ function extractFirstLinkedFile(
   view: KanbanView,
   settings?: KanbanSettings
 ) {
-  const localKeys = view.getSetting("metadata-keys", settings) as DataKey[] || [];
-  const globalKeys = view.getGlobalSetting("metadata-keys") as DataKey[] || [];
+  const localKeys =
+    (view.getSetting("metadata-keys", settings) as DataKey[]) || [];
+  const globalKeys =
+    (view.getGlobalSetting("metadata-keys") as DataKey[]) || [];
 
   if (localKeys.length === 0 && globalKeys?.length === 0) {
     return null;
@@ -173,6 +201,103 @@ function extractFirstLinkedFile(
   return file;
 }
 
+export function getDataViewCache(view: KanbanView, file: TFile) {
+  if (
+    (view.app as any).plugins.enabledPlugins.has("dataview") &&
+    (view.app as any).plugins?.plugins?.dataview?.api
+  ) {
+    return (view.app as any).plugins.plugins.dataview.api.page(
+      file.path,
+      view.file.path
+    );
+  }
+}
+
+export function getLinkedPageMetadata(
+  file: TFile | null | undefined,
+  view: KanbanView,
+  settings?: KanbanSettings
+): FileMetadata | undefined {
+  const globalKeys =
+    (view.getGlobalSetting("metadata-keys") as DataKey[]) || [];
+  const localKeys =
+    (view.getSetting("metadata-keys", settings) as DataKey[]) || [];
+  const keys = [...globalKeys, ...localKeys];
+
+  if (!keys.length) {
+    return;
+  }
+
+  if (!file) {
+    return;
+  }
+
+  const cache = view.app.metadataCache.getFileCache(file);
+  const dataviewCache = getDataViewCache(view, file);
+
+  if (!cache && !dataviewCache) {
+    return;
+  }
+
+  const metadata: FileMetadata = {};
+  const seenTags: { [k: string]: boolean } = {};
+  const seenKey: { [k: string]: boolean } = {};
+
+  let haveData = false;
+
+  keys.forEach((k) => {
+    if (seenKey[k.metadataKey]) return;
+
+    seenKey[k.metadataKey] = true;
+
+    if (k.metadataKey === "tags") {
+      let tags = cache.tags || [];
+
+      if (cache.frontmatter?.tags) {
+        tags = [].concat(
+          tags,
+          cache.frontmatter.tags.map((tag: string) => ({ tag: `#${tag}` }))
+        );
+      }
+
+      if (tags?.length === 0) return;
+
+      metadata.tags = {
+        ...k,
+        value: tags
+          .map((t) => t.tag)
+          .filter((t) => {
+            if (seenTags[t]) {
+              return false;
+            }
+
+            seenTags[t] = true;
+            return true;
+          }),
+      };
+
+      haveData = true;
+      return;
+    }
+
+    if (cache.frontmatter && cache.frontmatter[k.metadataKey]) {
+      metadata[k.metadataKey] = {
+        ...k,
+        value: cache.frontmatter[k.metadataKey],
+      };
+      haveData = true;
+    } else if (dataviewCache && dataviewCache[k.metadataKey]) {
+      metadata[k.metadataKey] = {
+        ...k,
+        value: dataviewCache[k.metadataKey],
+      };
+      haveData = true;
+    }
+  });
+
+  return haveData ? metadata : undefined;
+}
+
 export function processTitle(
   title: string,
   view: KanbanView,
@@ -181,14 +306,23 @@ export function processTitle(
   const date = extractDates(title, view, settings);
   const tags = extractItemTags(date.processedTitle, view, settings);
   const file = extractFirstLinkedFile(tags.processedTitle, view, settings);
+  const fileMetadata = getLinkedPageMetadata(file, view, settings);
 
   return {
     title: tags.processedTitle.trim(),
-    titleSearch: getSearchTitle(tags.processedTitle, view).trim(),
-    date: date.date,
-    time: date.time,
-    tags: tags.tags,
-    file,
+    titleSearch: getSearchTitle(
+      tags.processedTitle,
+      view,
+      tags.tags,
+      fileMetadata
+    ),
+    metadata: {
+      date: date.date,
+      time: date.time,
+      tags: tags.tags,
+      file,
+      fileMetadata,
+    },
   };
 }
 
@@ -223,12 +357,7 @@ function mdToItem(
     data: {
       isComplete,
     },
-    metadata: {
-      date: processed.date,
-      time: processed.time,
-      tags: processed.tags,
-      file: processed.file,
-    },
+    metadata: processed.metadata,
   };
 }
 

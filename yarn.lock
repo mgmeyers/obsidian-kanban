@@ -1078,10 +1078,10 @@ object-assign@^4.1.1:
   resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
   integrity sha1-IQmtx5ZYh8/AXLvUQsrIv7s2CGM=
 
-obsidian-plugin-cli@^0.6.1:
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/obsidian-plugin-cli/-/obsidian-plugin-cli-0.6.1.tgz#4ab551c6f6f16c316af9ed12a51aadf6b83a0198"
-  integrity sha512-PjE4RJeXbYsqrs82vt92jUbrFv6zKmc5yOh7FpXN33GOb/JIGVKNtLFq8vs8tM3VbmfGSKx31Yf4ysfTEvF9qw==
+obsidian-plugin-cli@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/obsidian-plugin-cli/-/obsidian-plugin-cli-0.7.0.tgz#bc774cbcba1e9fa34fe3ea1ce7c1cdbd73fb422e"
+  integrity sha512-HRB/jLrzhri5RGtVT98Z9/aN/VkLcYIo2ZfdMwgxIX089Af+2LgncCaJyZLN9ZGB3QFCI/Y8e7X963BghZ35nA==
   dependencies:
     "@oclif/command" "^1"
     "@oclif/config" "^1"
@@ -1090,15 +1090,15 @@ obsidian-plugin-cli@^0.6.1:
     cosmiconfig "^7.0.0"
     dedent "^0.7.0"
     esbuild "^0.12.6"
-    obsidian-utils "^0.9.0"
+    obsidian-utils "^0.10.0"
     prompts "^2.4.0"
     tslib "^1"
     update-notifier "^5.1.0"
 
-obsidian-utils@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/obsidian-utils/-/obsidian-utils-0.9.0.tgz#f62de7f77f8292de330c0e11e3b426568d2f5c95"
-  integrity sha512-EvIEg8nt/Dv/4SiK4awWLYHRsAYLkyMs3Dhud6CJ4m1db1WVHzkFHKNRo2b6WlRS7IWNxOAkQxKDOtp5/M5ISg==
+obsidian-utils@^0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/obsidian-utils/-/obsidian-utils-0.10.0.tgz#5cd13ec25b4a5a81b3210e390924f68da5f165f2"
+  integrity sha512-Mwhb94a81IwIY7tt5IOQjlSUYgcVjIYRCI0GMbEM9iUhrTOlHYYNek7Z5x+YjgX9CN1KjRKeCcCkA0K+PMKmBg==
   dependencies:
     date-fns "^2.17.0"
     execa "^5.0.0"

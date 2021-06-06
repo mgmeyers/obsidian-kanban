@@ -16,11 +16,27 @@ export interface ItemData {
   isComplete?: boolean;
 }
 
+export interface DataKey {
+  id: string;
+  metadataKey: string;
+  label: string;
+  shouldHideLabel: boolean;
+}
+
+export interface PageData extends DataKey {
+  value: string | number | Array<string | number>;
+}
+
+export interface FileMetadata {
+  [k: string]: PageData;
+}
+
 export interface ItemMetaData {
   date?: moment.Moment;
   time?: moment.Moment;
   tags?: string[];
   file?: TFile | null;
+  fileMetadata?: FileMetadata;
 }
 
 export interface Item {

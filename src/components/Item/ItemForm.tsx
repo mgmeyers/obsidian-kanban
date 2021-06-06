@@ -51,12 +51,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
           titleRaw: title,
           titleSearch: processed.titleSearch,
           data: {},
-          metadata: {
-            date: processed.date,
-            time: processed.time,
-            tags: processed.tags,
-            file: processed.file,
-          },
+          metadata: processed.metadata,
         };
         return newItem;
       })

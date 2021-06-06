@@ -12,13 +12,7 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 import { t } from "./lang/helpers";
-
-export interface DataKey {
-  id: string;
-  metadataKey: string;
-  label: string;
-  shouldHideLabel: boolean;
-}
+import { DataKey } from "./components/types";
 
 interface ItemProps {
   metadataKey: string;

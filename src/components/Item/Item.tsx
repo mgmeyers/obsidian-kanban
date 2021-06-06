@@ -74,7 +74,11 @@ export function GhostItem({ item, shouldMarkItemsComplete }: GhostItemProps) {
             showMenu={noop}
           />
         </div>
-        <ItemMetadata isSettingsVisible={false} item={item} />
+        <ItemMetadata
+          isSettingsVisible={false}
+          item={item}
+          refreshItem={noop}
+        />
       </div>
     </div>
   );
@@ -257,6 +261,22 @@ export function draggableItemFactory({
       boardModifiers,
     });
 
+    const refreshItem = () => {
+      update(board, {
+        lanes: {
+          [laneIndex]: {
+            items: {
+              [itemIndex]: {
+                title: {
+                  $set: item.title,
+                },
+              },
+            },
+          },
+        },
+      });
+    };
+
     return (
       <div
         onContextMenu={(e) => {
@@ -302,20 +322,7 @@ export function draggableItemFactory({
                     title: { $set: processed.title },
                     titleRaw: { $set: titleRaw },
                     titleSearch: { $set: processed.titleSearch },
-                    metadata: {
-                      date: {
-                        $set: processed.date,
-                      },
-                      time: {
-                        $set: processed.time,
-                      },
-                      tags: {
-                        $set: processed.tags,
-                      },
-                      file: {
-                        $set: processed.file,
-                      },
-                    },
+                    metadata: { $set: processed.metadata },
                   })
                 );
               }}
@@ -355,7 +362,12 @@ export function draggableItemFactory({
               showMenu={showMenu}
             />
           </div>
-          <ItemMetadata isSettingsVisible={isEditing} item={item} />
+          <ItemMetadata
+            searchQuery={isMatch ? query : undefined}
+            isSettingsVisible={isEditing}
+            item={item}
+            refreshItem={refreshItem}
+          />
         </div>
       </div>
     );

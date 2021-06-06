@@ -160,20 +160,7 @@ export function useItemMenu({
                 title: { $set: processed.title },
                 titleRaw: { $set: titleRaw },
                 titleSearch: { $set: processed.titleSearch },
-                metadata: {
-                  date: {
-                    $set: processed.date,
-                  },
-                  time: {
-                    $set: processed.time,
-                  },
-                  tags: {
-                    $set: processed.tags,
-                  },
-                  file: {
-                    $set: processed.file,
-                  }
-                },
+                metadata: { $set: processed.metadata },
               })
             );
           });
@@ -220,20 +207,7 @@ export function useItemMenu({
                   title: { $set: processed.title },
                   titleRaw: { $set: titleRaw },
                   titleSearch: { $set: processed.titleSearch },
-                  metadata: {
-                    date: {
-                      $set: processed.date,
-                    },
-                    time: {
-                      $set: processed.time,
-                    },
-                    tags: {
-                      $set: processed.tags,
-                    },
-                    file: {
-                      $set: processed.file,
-                    }
-                  },
+                  metadata: { $set: processed.metadata },
                 })
               );
             });

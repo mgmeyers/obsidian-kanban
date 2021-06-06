@@ -3,13 +3,13 @@ import React from "react";
 import Mark from "mark.js";
 import useBus from "use-bus";
 
-import { Item } from "../types";
+import { Item, PageData } from "../types";
 import { c, getDefaultDateFormat, getDefaultTimeFormat } from "../helpers";
-import { ObsidianContext } from "../context";
+import { KanbanContext, ObsidianContext } from "../context";
 import { useAutocompleteInputProps } from "./autocomplete";
 import { KanbanView } from "src/KanbanView";
 import { t } from "src/lang/helpers";
-import { DataKey } from "src/MetadataSettings";
+import { getLinkedPageMetadata } from "src/parser";
 
 function getRelativeDate(date: moment.Moment, time: moment.Moment) {
   if (time) {
@@ -138,110 +138,49 @@ function DateAndTime({
   );
 }
 
-interface PageData extends DataKey {
-  value: string | number | Array<string | number>;
+interface MetaDataValueProps {
+  data: PageData;
+  searchQuery: string;
 }
 
-function getDataViewCache(view: KanbanView, file: TFile) {
-  if (
-    (view.app as any).plugins.enabledPlugins.has("dataview") &&
-    (view.app as any).plugins?.plugins?.dataview?.api
-  ) {
-    return (view.app as any).plugins.plugins.dataview.api.page(
-      file.path,
-      view.file.path
+function MetaDataValue({ data, searchQuery }: MetaDataValueProps) {
+  if (Array.isArray(data.value)) {
+    return (
+      <span className={c("meta-value")}>
+        {data.value.map((v, i, arr) => {
+          const str = v.toString();
+          const isMatch = str.toLocaleLowerCase().contains(searchQuery);
+
+          return (
+            <>
+              {isMatch ? <span className="is-search-match">{str}</span> : str}
+              {i < arr.length - 1 ? ", " : ""}
+            </>
+          );
+        })}
+      </span>
     );
   }
+
+  const str = data.value.toString();
+  const isMatch = str.toLocaleLowerCase().contains(searchQuery);
+
+  return (
+    <span className={`${c("meta-value")} ${isMatch ? "is-search-match" : ""}`}>
+      {str}
+    </span>
+  );
 }
 
-function getLinkedPageMetadata(
-  file: TFile | null | undefined,
-  view: KanbanView
-) {
-  const globalKeys =
-    (view.getGlobalSetting("metadata-keys") as DataKey[]) || [];
-  const localKeys = (view.getSetting("metadata-keys") as DataKey[]) || [];
-  const keys = [...globalKeys, ...localKeys];
-
-  if (!keys.length) {
-    return null;
-  }
-
-  if (!file) {
-    return null;
-  }
-
-  const cache = view.app.metadataCache.getFileCache(file);
-  const dataviewCache = getDataViewCache(view, file);
-
-  if (!cache && !dataviewCache) {
-    return false;
-  }
-
-  const metadata: { [k: string]: PageData } = {};
-  const seenTags: { [k: string]: boolean } = {};
-  const seenKey: { [k: string]: boolean } = {};
-
-  let haveData = false;
-
-  keys.forEach((k) => {
-    if (seenKey[k.metadataKey]) return;
-
-    seenKey[k.metadataKey] = true;
-
-    if (k.metadataKey === "tags") {
-      let tags = cache.tags || [];
-
-      if (cache.frontmatter?.tags) {
-        tags = [].concat(
-          tags,
-          cache.frontmatter.tags.map((tag: string) => ({ tag: `#${tag}` }))
-        );
-      }
-
-      if (tags?.length === 0) return;
-
-      metadata.tags = {
-        ...k,
-        value: tags
-          .map((t) => t.tag)
-          .filter((t) => {
-            if (seenTags[t]) {
-              return false;
-            }
-
-            seenTags[t] = true;
-            return true;
-          }),
-      };
-
-      haveData = true;
-      return;
-    }
-
-    if (cache.frontmatter && cache.frontmatter[k.metadataKey]) {
-      metadata[k.metadataKey] = {
-        ...k,
-        value: cache.frontmatter[k.metadataKey],
-      };
-      haveData = true;
-    } else if (dataviewCache && dataviewCache[k.metadataKey]) {
-      metadata[k.metadataKey] = {
-        ...k,
-        value: dataviewCache[k.metadataKey],
-      };
-      haveData = true;
-    }
-  });
-
-  return haveData ? metadata : null;
+interface LinkedPageMetadataProps {
+  metadata: { [k: string]: PageData } | null;
+  searchQuery?: string;
 }
 
 function LinkedPageMetadata({
   metadata,
-}: {
-  metadata: { [k: string]: PageData } | null;
-}) {
+  searchQuery,
+}: LinkedPageMetadataProps) {
   if (!metadata) return null;
 
   return (
@@ -252,25 +191,40 @@ function LinkedPageMetadata({
           return (
             <tr key={k} className={c("meta-row")}>
               {!data.shouldHideLabel && (
-                <td className={c("meta-key")}>{data.label || k}</td>
+                <td
+                  className={`${c("meta-key")} ${
+                    (data.label || k).toLocaleLowerCase().contains(searchQuery)
+                      ? "is-search-match"
+                      : ""
+                  }`}
+                >
+                  <span>{data.label || k}</span>
+                </td>
               )}
               <td
                 colSpan={data.shouldHideLabel ? 2 : 1}
-                className={c("meta-value")}
+                className={c("meta-value-wrapper")}
               >
-                {k === "tags"
-                  ? (data.value as string[]).map((tag, i) => {
-                      return (
-                        <a
-                          href={tag}
-                          key={i}
-                          className={`tag ${c("item-tag")}`}
-                        >
-                          {tag}
-                        </a>
-                      );
-                    })
-                  : data.value.toString()}
+                {k === "tags" ? (
+                  (data.value as string[]).map((tag, i) => {
+                    return (
+                      <a
+                        href={tag}
+                        key={i}
+                        className={`tag ${c("item-tag")} ${
+                          tag.toLocaleLowerCase().contains(searchQuery)
+                            ? "is-search-match"
+                            : ""
+                        }`}
+                      >
+                        <span>{tag[0]}</span>
+                        {tag.slice(1)}
+                      </a>
+                    );
+                  })
+                ) : (
+                  <MetaDataValue data={data} searchQuery={searchQuery} />
+                )}
               </td>
             </tr>
           );
@@ -283,30 +237,33 @@ function LinkedPageMetadata({
 export interface ItemMetadataProps {
   item: Item;
   isSettingsVisible: boolean;
+  searchQuery?: string;
+  refreshItem: () => void;
 }
 
-export const ItemMetadata = React.memo(
-  ({ item, isSettingsVisible }: ItemMetadataProps) => {
-    const [, forceUpdate] = React.useState(Date.now());
-    const { view } = React.useContext(ObsidianContext);
+export function ItemMetadata({
+  item,
+  isSettingsVisible,
+  refreshItem,
+  searchQuery,
+}: ItemMetadataProps) {
+  useBus(
+    `metadata:update:${item.metadata.file?.path || "null"}`,
+    () => refreshItem(),
+    [item.metadata.file]
+  );
 
-    useBus(
-      `metadata:update:${item.metadata.file?.path || "null"}`,
-      () => forceUpdate(Date.now()),
-      [item.metadata.file]
-    );
+  if (isSettingsVisible || !item.metadata.fileMetadata) return null;
 
-    const metadata = getLinkedPageMetadata(item.metadata.file, view);
-
-    if (isSettingsVisible || !metadata) return null;
-
-    return (
-      <div className={c("item-metadata-wrapper")}>
-        <LinkedPageMetadata metadata={metadata} />
-      </div>
-    );
-  }
-);
+  return (
+    <div className={c("item-metadata-wrapper")}>
+      <LinkedPageMetadata
+        metadata={item.metadata.fileMetadata}
+        searchQuery={searchQuery}
+      />
+    </div>
+  );
+}
 
 export interface ItemContentProps {
   item: Item;
@@ -344,15 +301,23 @@ export const ItemContent = React.memo(
       const tempEl = createDiv();
       MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
 
-      tempEl.findAll(".internal-embed").forEach(el => {
+      tempEl.findAll(".internal-embed").forEach((el) => {
         const src = el.getAttribute("src");
-        const target = typeof src === "string" && view.app.metadataCache.getFirstLinkpathDest(src, filePath);
+        const target =
+          typeof src === "string" &&
+          view.app.metadataCache.getFirstLinkpathDest(src, filePath);
         if (target instanceof TFile && target.extension !== "md") {
-          el.innerText = '';
-          el.createEl("img", {attr: {src: view.app.vault.getResourcePath(target)}}, img => {
-            if (el.hasAttribute("width")) img.setAttribute("width", el.getAttribute("width"));
-            if (el.hasAttribute("alt"))   img.setAttribute("alt",   el.getAttribute("alt"));
-          })
+          el.innerText = "";
+          el.createEl(
+            "img",
+            { attr: { src: view.app.vault.getResourcePath(target) } },
+            (img) => {
+              if (el.hasAttribute("width"))
+                img.setAttribute("width", el.getAttribute("width"));
+              if (el.hasAttribute("alt"))
+                img.setAttribute("alt", el.getAttribute("alt"));
+            }
+          );
           el.addClasses(["image-embed", "is-loaded"]);
         }
       });
@@ -400,8 +365,17 @@ export const ItemContent = React.memo(
             <div className={c("item-tags")}>
               {item.metadata.tags.map((tag, i) => {
                 return (
-                  <a href={tag} key={i} className={`tag ${c("item-tag")}`}>
-                    {tag}
+                  <a
+                    href={tag}
+                    key={i}
+                    className={`tag ${c("item-tag")} ${
+                      tag.toLocaleLowerCase().contains(searchQuery)
+                        ? "is-search-match"
+                        : ""
+                    }`}
+                  >
+                    <span>{tag[0]}</span>
+                    {tag.slice(1)}
                   </a>
                 );
               })}
