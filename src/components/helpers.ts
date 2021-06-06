@@ -175,10 +175,12 @@ export function useIMEInputProps() {
   const isComposingRef = React.useRef<boolean>(false);
 
   return {
-    onCompositionStart: () => {
+    // Note: these are lowercased because we use preact
+    // See: https://github.com/preactjs/preact/issues/3003
+    oncompositionstart: () => {
       isComposingRef.current = true;
     },
-    onCompositionEnd: () => {
+    oncompositionend: () => {
       isComposingRef.current = false;
     },
     getShouldIMEBlockAction: () => {

@@ -197,6 +197,7 @@ function LinkedPageMetadata({
                       ? "is-search-match"
                       : ""
                   }`}
+                  data-key={k}
                 >
                   <span>{data.label || k}</span>
                 </td>
@@ -204,6 +205,11 @@ function LinkedPageMetadata({
               <td
                 colSpan={data.shouldHideLabel ? 2 : 1}
                 className={c("meta-value-wrapper")}
+                data-value={
+                  Array.isArray(data.value)
+                    ? data.value.join(", ")
+                    : data.value.toString()
+                }
               >
                 {k === "tags" ? (
                   (data.value as string[]).map((tag, i) => {

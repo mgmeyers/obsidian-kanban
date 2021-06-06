@@ -290,7 +290,7 @@ class HandleErrors extends React.Component<ErrorProps> {
   }
 
   componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
-    console.log(errorInfo.componentStack, error);
+    console.error(errorInfo.componentStack, error);
   }
 
   render() {

@@ -436,7 +436,7 @@ export function useAutocompleteInputProps({
   const obsidianContext = React.useContext(ObsidianContext);
   const isAutocompleteVisibleRef = React.useRef<boolean>(false);
   const inputRef = React.useRef<HTMLTextAreaElement>();
-  const { onCompositionStart, onCompositionEnd, getShouldIMEBlockAction } =
+  const { oncompositionstart, oncompositionend, getShouldIMEBlockAction } =
     useIMEInputProps();
 
   React.useEffect(() => {
@@ -457,8 +457,8 @@ export function useAutocompleteInputProps({
 
   return {
     ref: inputRef,
-    onCompositionStart,
-    onCompositionEnd,
+    oncompositionstart,
+    oncompositionend,
     onKeyDownCapture: (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (getShouldIMEBlockAction() || isAutocompleteVisibleRef.current) {
         return;
