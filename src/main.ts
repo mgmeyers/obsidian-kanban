@@ -231,7 +231,7 @@ export default class KanbanPlugin extends Plugin {
           const fileCache = this.app.metadataCache.getFileCache(activeFile);
 
           return (
-            fileCache.frontmatter && !!fileCache.frontmatter[frontMatterKey]
+            fileCache?.frontmatter && !!fileCache.frontmatter[frontMatterKey]
           );
         }
 
