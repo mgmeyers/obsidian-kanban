@@ -14,7 +14,7 @@ export default {
   "New kanban board": "新規カンバンボード",
   "Untitled Kanban": "無題のカンバン",
   "Toggle between Kanban and markdown mode":
-    "カンバンとマークダウンモードを切り替える",
+    "カンバンとマークダウンのモードを切り替える",
 
   // KanbanView.tsx
   "Open as markdown": "マークダウンとして開く",
@@ -101,13 +101,13 @@ export default {
     "有効化するとカードタイトルの下のタグが非表示になります。",
   "Linked Page Metadata": "リンクされたページのメタデータ",
   "Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.":
-    "カード内において最初にリンクされたノートのメタデータを表示します。下に表示するメタデータのキーを指定してください。オプションとしてラベルの付与が可能であり、ラベルは完全に非表示にすることができます。",
+    "カード内でリンクされている最初のノートのメタデータを表示します。下に表示するメタデータのキーを指定してください。オプションとしてラベルの付与が可能であり、ラベルは完全に非表示にすることができます。",
 
   // MetadataSettings.tsx
   "Metadata key": "メタデータのキー",
   "Display label": "ラベルを表示",
   "Hide label": "ラベルを隠す",
-  "Drag to rearrange": "再配置するためにドラッグ",
+  "Drag to rearrange": "ドラッグして並べ替える",
   Delete: "削除",
   "Add key": "キーを追加",
 
