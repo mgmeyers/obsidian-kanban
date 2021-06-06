@@ -64,11 +64,11 @@ export class KanbanView extends TextFileView implements HoverParent {
   ) {
     const localSetting = suppliedLocalSettings
       ? suppliedLocalSettings[key]
-      : this.dataBridge.getData().settings[key];
+      : this.dataBridge.getData()?.settings[key];
 
     if (localSetting !== undefined) return localSetting;
 
-    const globalSetting = this.plugin.settings[key];
+    const globalSetting = this.plugin?.settings[key];
 
     if (globalSetting !== undefined) return globalSetting;
 
@@ -76,7 +76,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   getGlobalSetting(key: keyof KanbanSettings) {
-    const globalSetting = this.plugin.settings[key];
+    const globalSetting = this.plugin?.settings[key];
 
     if (globalSetting !== undefined) return globalSetting;
 
