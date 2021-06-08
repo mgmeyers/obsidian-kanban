@@ -386,11 +386,11 @@ export default class KanbanPlugin extends Plugin {
   }
 
   getTemplatePlugins() {
-    // @ts-ignore
-    const templatesPlugin = this.app.internalPlugins.plugins.templates;
+    const templatesPlugin = (this.app as any).internalPlugins.plugins.templates;
     const templatesEnabled = templatesPlugin.enabled;
-    // @ts-ignore
-    const templaterPlugin = this.app.plugins.plugins["templater-obsidian"];
+    const templaterPlugin = (this.app as any).plugins.plugins["templater-obsidian"];
+    const templaterEnabled = (this.app as any).plugins.enabledPlugins.has("templater-obsidian");
+    const templaterEmptyFileTemplate = (this.app as any).plugins.plugins["templater-obsidian"].settings?.empty_file_template;
 
     const templateFolder = templatesEnabled
       ? templatesPlugin.instance.options.folder
@@ -400,8 +400,10 @@ export default class KanbanPlugin extends Plugin {
 
     return {
       templatesPlugin,
-      templaterPlugin: templaterPlugin?.templater,
       templatesEnabled,
+      templaterPlugin: templaterPlugin?.templater,
+      templaterEnabled,
+      templaterEmptyFileTemplate,
       templateFolder,
     };
   }

@@ -212,13 +212,17 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
       );
     }
 
-    const { templatesEnabled, templaterPlugin, templatesPlugin } =
-      view.plugin.getTemplatePlugins();
+    const {
+      templatesEnabled,
+      templaterEnabled,
+      templatesPlugin,
+      templaterPlugin,
+    } = view.plugin.getTemplatePlugins();
 
     const templateContent = await view.app.vault.read(templateFile);
 
     // If both plugins are enabled, attempt to detect templater first
-    if (templatesEnabled && templaterPlugin) {
+    if (templatesEnabled && templaterEnabled) {
       if (templaterDetectRegex.test(templateContent)) {
         return await templaterPlugin.append_template(templateFile);
       }
@@ -230,7 +234,7 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
       return await templatesPlugin.instance.insertTemplate(templateFile);
     }
 
-    if (templaterPlugin) {
+    if (templaterEnabled) {
       return await templaterPlugin.append_template(templateFile);
     }
 

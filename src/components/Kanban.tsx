@@ -3,11 +3,9 @@ import update from "immutability-helper";
 import React from "react";
 import { DataBridge } from "../DataBridge";
 import {
-  DragDropContext,
   Droppable,
   DroppableProvided,
   Draggable,
-  DropResult,
 } from "react-beautiful-dnd";
 import { Board, BoardModifiers, Item, Lane } from "./types";
 import {

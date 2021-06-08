@@ -23,9 +23,9 @@ import {
 import { t } from "./lang/helpers";
 import {
   cleanupMetadataSettings,
-  DataKey,
   renderMetadataSettings,
 } from "./MetadataSettings";
+import { DataKey } from "./components/types";
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 

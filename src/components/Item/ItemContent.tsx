@@ -1,15 +1,14 @@
-import { MarkdownRenderer, getLinkpath, moment, TFile } from "obsidian";
+import { getLinkpath, moment } from "obsidian";
 import React from "react";
-import Mark from "mark.js";
 import useBus from "use-bus";
 
 import { Item, PageData } from "../types";
 import { c, getDefaultDateFormat, getDefaultTimeFormat } from "../helpers";
-import { KanbanContext, ObsidianContext } from "../context";
+import { ObsidianContext } from "../context";
 import { useAutocompleteInputProps } from "./autocomplete";
 import { KanbanView } from "src/KanbanView";
 import { t } from "src/lang/helpers";
-import { getLinkedPageMetadata } from "src/parser";
+import { MarkdownRenderer } from "../MarkdownRenderer";
 
 function getRelativeDate(date: moment.Moment, time: moment.Moment) {
   if (time) {
@@ -138,23 +137,34 @@ function DateAndTime({
   );
 }
 
-interface MetaDataValueProps {
+interface MetadataValueProps {
   data: PageData;
   searchQuery: string;
 }
 
-function MetaDataValue({ data, searchQuery }: MetaDataValueProps) {
+function MetadataValue({ data, searchQuery }: MetadataValueProps) {
   if (Array.isArray(data.value)) {
     return (
       <span className={c("meta-value")}>
         {data.value.map((v, i, arr) => {
-          const str = v.toString();
+          const str = `${v}`;
+          const linkPath = typeof v === "object" && (v as any).path;
           const isMatch = str.toLocaleLowerCase().contains(searchQuery);
 
           return (
             <>
-              {isMatch ? <span className="is-search-match">{str}</span> : str}
-              {i < arr.length - 1 ? ", " : ""}
+              {linkPath || data.containsMarkdown ? (
+                <MarkdownRenderer
+                  className="inline"
+                  markdownString={linkPath ? `[[${linkPath}]]` : str}
+                  searchQuery={searchQuery}
+                />
+              ) : isMatch ? (
+                <span className="is-search-match">{str}</span>
+              ) : (
+                str
+              )}
+              {i < arr.length - 1 ? <span>{", "}</span> : ""}
             </>
           );
         })}
@@ -162,12 +172,24 @@ function MetaDataValue({ data, searchQuery }: MetaDataValueProps) {
     );
   }
 
-  const str = data.value.toString();
+  const str = `${data.value}`;
   const isMatch = str.toLocaleLowerCase().contains(searchQuery);
+  const linkPath = typeof data.value === "object" && (data.value as any).path;
 
   return (
-    <span className={`${c("meta-value")} ${isMatch ? "is-search-match" : ""}`}>
-      {str}
+    <span
+      className={`${c("meta-value")} ${
+        isMatch && !data.containsMarkdown ? "is-search-match" : ""
+      }`}
+    >
+      {data.containsMarkdown || !!linkPath ? (
+        <MarkdownRenderer
+          markdownString={linkPath ? `[[${linkPath}]]` : str}
+          searchQuery={searchQuery}
+        />
+      ) : (
+        str
+      )}
     </span>
   );
 }
@@ -208,7 +230,7 @@ function LinkedPageMetadata({
                 data-value={
                   Array.isArray(data.value)
                     ? data.value.join(", ")
-                    : data.value.toString()
+                    : `${data.value}`
                 }
               >
                 {k === "tags" ? (
@@ -229,7 +251,7 @@ function LinkedPageMetadata({
                     );
                   })
                 ) : (
-                  <MetaDataValue data={data} searchQuery={searchQuery} />
+                  <MetadataValue data={data} searchQuery={searchQuery} />
                 )}
               </td>
             </tr>
@@ -303,40 +325,6 @@ export const ItemContent = React.memo(
       onEscape: onAction,
     });
 
-    const markdownContent = React.useMemo(() => {
-      const tempEl = createDiv();
-      MarkdownRenderer.renderMarkdown(item.title, tempEl, filePath, view);
-
-      tempEl.findAll(".internal-embed").forEach((el) => {
-        const src = el.getAttribute("src");
-        const target =
-          typeof src === "string" &&
-          view.app.metadataCache.getFirstLinkpathDest(src, filePath);
-        if (target instanceof TFile && target.extension !== "md") {
-          el.innerText = "";
-          el.createEl(
-            "img",
-            { attr: { src: view.app.vault.getResourcePath(target) } },
-            (img) => {
-              if (el.hasAttribute("width"))
-                img.setAttribute("width", el.getAttribute("width"));
-              if (el.hasAttribute("alt"))
-                img.setAttribute("alt", el.getAttribute("alt"));
-            }
-          );
-          el.addClasses(["image-embed", "is-loaded"]);
-        }
-      });
-
-      if (searchQuery) {
-        new Mark(tempEl).mark(searchQuery);
-      }
-
-      return {
-        innerHTML: { __html: tempEl.innerHTML.toString() },
-      };
-    }, [item, filePath, view, searchQuery]);
-
     if (isSettingsVisible) {
       return (
         <div data-replicated-value={item.titleRaw} className={c("grow-wrap")}>
@@ -354,9 +342,10 @@ export const ItemContent = React.memo(
 
     return (
       <div className={c("item-title")}>
-        <div
-          className={`markdown-preview-view ${c("item-markdown")}`}
-          dangerouslySetInnerHTML={markdownContent.innerHTML}
+        <MarkdownRenderer
+          className={c("item-markdown")}
+          markdownString={item.title}
+          searchQuery={searchQuery}
         />
         <div className={c("item-metadata")}>
           <RelativeDate item={item} view={view} />

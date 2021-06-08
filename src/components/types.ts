@@ -21,6 +21,7 @@ export interface DataKey {
   metadataKey: string;
   label: string;
   shouldHideLabel: boolean;
+  containsMarkdown: boolean;
 }
 
 export interface PageData extends DataKey {

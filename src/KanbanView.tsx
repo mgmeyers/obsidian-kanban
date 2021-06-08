@@ -258,13 +258,13 @@ export class KanbanView extends TextFileView implements HoverParent {
   getPortal() {
     if (!this.closed)
       return ReactDOM.createPortal(
-        <HandleErrors errorMessage={this.parseError}>
+        <ErrorHandler errorMessage={this.parseError}>
           <Kanban
             dataBridge={this.dataBridge}
             filePath={this.file?.path}
             view={this}
           />
-        </HandleErrors>,
+        </ErrorHandler>,
         this.contentEl,
         (this.leaf as any).id as string // ensure React doesn't recreate when list is re-ordered
       );
@@ -273,18 +273,19 @@ export class KanbanView extends TextFileView implements HoverParent {
 
 // Catch internal errors or display parsing errors
 
-type ErrorProps = { errorMessage: string };
+interface ErrorHandlerProps {
+  errorMessage: string;
+}
 
-class HandleErrors extends React.Component<ErrorProps> {
-  state: { errorMessage: string };
-  constructor(props: ErrorProps) {
+class ErrorHandler extends React.Component<ErrorHandlerProps> {
+  state: ErrorHandlerProps;
+
+  constructor(props: ErrorHandlerProps) {
     super(props);
     this.state = { errorMessage: "" };
   }
 
-  static getDerivedStateFromError(
-    error: Error
-  ): typeof HandleErrors.prototype.state {
+  static getDerivedStateFromError(error: Error): ErrorHandlerProps {
     // Update state so the next render will show the fallback UI.
     return { errorMessage: error.toString() };
   }
@@ -295,14 +296,16 @@ class HandleErrors extends React.Component<ErrorProps> {
 
   render() {
     const error = this.props.errorMessage || this.state.errorMessage;
+
     if (error) {
       return (
         <div style={{ margin: "2em" }}>
-          <h1>Something went wrong.</h1>
+          <h1>{t("Something went wrong")}</h1>
           <p>{error}</p>
         </div>
       );
     }
+
     return this.props.children;
   }
 }

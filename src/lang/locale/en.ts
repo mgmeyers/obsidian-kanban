@@ -20,6 +20,7 @@ export default {
   "Open as markdown": "Open as markdown",
   "Open board settings": "Open board settings",
   "Archive completed cards": "Archive completed cards",
+  "Something went wrong": "Something went wrong",
 
   // parser.ts
   Complete: "Complete",
@@ -108,6 +109,7 @@ export default {
   "Drag to rearrange": "Drag to rearrange",
   Delete: "Delete",
   "Add key": "Add key",
+  "Field contains markdown": "Field contains markdown",
 
   // components/Item/Item.tsx
   "Archive item": "Archive item",

@@ -251,9 +251,9 @@ export function getLinkedPageMetadata(
     seenKey[k.metadataKey] = true;
 
     if (k.metadataKey === "tags") {
-      let tags = cache.tags || [];
+      let tags = cache?.tags || [];
 
-      if (cache.frontmatter?.tags) {
+      if (cache?.frontmatter?.tags) {
         tags = [].concat(
           tags,
           cache.frontmatter.tags.map((tag: string) => ({ tag: `#${tag}` }))
@@ -280,7 +280,7 @@ export function getLinkedPageMetadata(
       return;
     }
 
-    if (cache.frontmatter && cache.frontmatter[k.metadataKey]) {
+    if (cache?.frontmatter && cache.frontmatter[k.metadataKey]) {
       metadata[k.metadataKey] = {
         ...k,
         value: cache.frontmatter[k.metadataKey],
