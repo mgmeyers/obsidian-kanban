@@ -1134,7 +1134,7 @@ button.kanban-plugin__cancel-action-button {
 }
 
 .kanban-plugin__setting-key-input-wrapper {
-  margin-top: 1rem;
+  margin: 1rem 0;
 }
 
 .kanban-plugin__setting-key-input-wrapper > input {

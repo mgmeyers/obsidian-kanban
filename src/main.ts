@@ -390,7 +390,7 @@ export default class KanbanPlugin extends Plugin {
     const templatesEnabled = templatesPlugin.enabled;
     const templaterPlugin = (this.app as any).plugins.plugins["templater-obsidian"];
     const templaterEnabled = (this.app as any).plugins.enabledPlugins.has("templater-obsidian");
-    const templaterEmptyFileTemplate = (this.app as any).plugins.plugins["templater-obsidian"].settings?.empty_file_template;
+    const templaterEmptyFileTemplate = templaterPlugin && (this.app as any).plugins.plugins["templater-obsidian"].settings?.empty_file_template;
 
     const templateFolder = templatesEnabled
       ? templatesPlugin.instance.options.folder
