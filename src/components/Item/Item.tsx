@@ -53,6 +53,10 @@ function getClassModifiers(item: Item) {
     classModifiers.push("is-complete");
   }
 
+  for (let tag of item.metadata.tags) {
+    classModifiers.push(`has-tag-${tag.replace('#', '')}`);
+  }
+
   return classModifiers;
 }
 
