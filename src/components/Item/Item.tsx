@@ -54,7 +54,7 @@ function getClassModifiers(item: Item) {
   }
 
   for (let tag of item.metadata.tags) {
-    classModifiers.push(`has-tag-${tag.replace('#', '')}`);
+    classModifiers.push(`has-tag-${tag.slice(1)}`);
   }
 
   return classModifiers;

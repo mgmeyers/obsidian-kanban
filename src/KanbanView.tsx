@@ -275,6 +275,7 @@ export class KanbanView extends TextFileView implements HoverParent {
 
 interface ErrorHandlerProps {
   errorMessage: string;
+  stack?: string;
 }
 
 class ErrorHandler extends React.Component<ErrorHandlerProps> {
@@ -287,7 +288,7 @@ class ErrorHandler extends React.Component<ErrorHandlerProps> {
 
   static getDerivedStateFromError(error: Error): ErrorHandlerProps {
     // Update state so the next render will show the fallback UI.
-    return { errorMessage: error.toString() };
+    return { errorMessage: error.toString(), stack: error.stack };
   }
 
   componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
@@ -296,12 +297,14 @@ class ErrorHandler extends React.Component<ErrorHandlerProps> {
 
   render() {
     const error = this.props.errorMessage || this.state.errorMessage;
+    const stack = this.state.stack;
 
     if (error) {
       return (
         <div style={{ margin: "2em" }}>
           <h1>{t("Something went wrong")}</h1>
           <p>{error}</p>
+          {stack && <pre>{stack}</pre>}
         </div>
       );
     }

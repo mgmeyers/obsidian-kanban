@@ -2,17 +2,14 @@ import { moment } from "obsidian";
 import update from "immutability-helper";
 import React from "react";
 import { DataBridge } from "../DataBridge";
-import {
-  Droppable,
-  DroppableProvided,
-  Draggable,
-} from "react-beautiful-dnd";
+import { Droppable, DroppableProvided, Draggable } from "react-beautiful-dnd";
 import { Board, BoardModifiers, Item, Lane } from "./types";
 import {
   c,
   baseClassName,
   getDefaultDateFormat,
   getDefaultTimeFormat,
+  generateInstanceId,
 } from "./helpers";
 import { draggableLaneFactory } from "./Lane/Lane";
 import { LaneForm } from "./Lane/LaneForm";
@@ -252,14 +249,21 @@ function getBoardModifiers({
         itemIndex
       );
 
+      const itemWithNewID = update(
+        boardData.lanes[laneIndex].items[itemIndex],
+        {
+          id: {
+            $set: generateInstanceId(),
+          },
+        }
+      );
+
       setBoardData(
         update(boardData, {
           lanes: {
             [laneIndex]: {
               items: {
-                $splice: [
-                  [itemIndex, 0, boardData.lanes[laneIndex].items[itemIndex]],
-                ],
+                $splice: [[itemIndex, 0, itemWithNewID]],
               },
             },
           },

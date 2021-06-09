@@ -35,6 +35,9 @@ export default class KanbanPlugin extends Plugin {
 
     await this.loadSettings();
 
+    this.registerView(kanbanViewType, (leaf) => new KanbanView(leaf, this));
+    this.registerCommands();
+
     this.settingsTab = new KanbanSettingsTab(
       this.app,
       this,
@@ -54,6 +57,54 @@ export default class KanbanPlugin extends Plugin {
     );
 
     this.addSettingTab(this.settingsTab);
+
+    this.app.workspace.onLayoutReady(() => {
+      this.refreshViews();
+      this.registerEvent(
+        this.app.workspace.on("layout-change", this.refreshViews, this)
+      );
+      this.register(
+        around((this.app as any).commands.commands["editor:open-search"], {
+          checkCallback(next) {
+            return function (isChecking: boolean) {
+              if (isChecking) {
+                return next.call(this, isChecking);
+              }
+              const view = self.app.workspace.getActiveViewOfType(KanbanView);
+
+              if (view) {
+                view.toggleSearch();
+              } else {
+                next.call(this, false);
+              }
+            };
+          },
+        })
+      );
+    });
+
+    this.registerEvent(
+      this.app.workspace.on("file-menu", (menu, file: TFile, source, leaf) => {
+        // Add a menu item to the folder context menu to create a board
+        if (file instanceof TFolder) {
+          menu.addItem((item) => {
+            item
+              .setTitle(t("New kanban board"))
+              .setIcon(kanbanIcon)
+              .onClick(() => this.newKanban(file));
+          });
+        }
+      })
+    );
+
+    this.registerEvent(
+      this.app.metadataCache.on("changed", (file) => {
+        this.app.workspace.getLeavesOfType(kanbanViewType).forEach((leaf) => {
+          const view = leaf.view as KanbanView;
+          view.onFileMetadataChange(file);
+        });
+      })
+    );
 
     // @ts-ignore
     this.app.workspace.registerHoverLinkSource(frontMatterKey, {
@@ -167,38 +218,20 @@ export default class KanbanPlugin extends Plugin {
         },
       })
     );
+  }
 
-    this.registerView(kanbanViewType, (leaf) => new KanbanView(leaf, this));
+  refreshViews() {
+    ReactDOM.render(
+      DragDropApp(this.app),
+      this.appEl ?? (this.appEl = document.body.createDiv())
+    );
+  }
 
+  registerCommands() {
     this.addCommand({
       id: "create-new-kanban-board",
       name: t("Create new board"),
       callback: () => this.newKanban(),
-    });
-
-    this.app.workspace.onLayoutReady(() => {
-      this.refreshViews();
-      this.registerEvent(
-        this.app.workspace.on("layout-change", this.refreshViews, this)
-      );
-      this.register(
-        around((this.app as any).commands.commands["editor:open-search"], {
-          checkCallback(next) {
-            return function (isChecking: boolean) {
-              if (isChecking) {
-                return next.call(this, isChecking);
-              }
-              const view = self.app.workspace.getActiveViewOfType(KanbanView);
-
-              if (view) {
-                view.toggleSearch();
-              } else {
-                next.call(this, false);
-              }
-            };
-          },
-        })
-      );
     });
 
     this.addCommand({
@@ -222,17 +255,16 @@ export default class KanbanPlugin extends Plugin {
       name: t("Toggle between Kanban and markdown mode"),
       checkCallback: (checking) => {
         const activeFile = this.app.workspace.getActiveFile();
+        const fileCache = this.app.metadataCache.getFileCache(activeFile);
+        const fileIsKanban =
+          !!fileCache?.frontmatter && !!fileCache.frontmatter[frontMatterKey];
 
         if (checking) {
           if (!activeFile) {
             return false;
           }
 
-          const fileCache = this.app.metadataCache.getFileCache(activeFile);
-
-          return (
-            fileCache?.frontmatter && !!fileCache.frontmatter[frontMatterKey]
-          );
+          return fileIsKanban;
         }
 
         const activeLeaf = this.app.workspace.activeLeaf;
@@ -241,7 +273,7 @@ export default class KanbanPlugin extends Plugin {
           this.kanbanFileModes[(activeLeaf as any).id || activeFile.path] =
             "markdown";
           this.setMarkdownView(activeLeaf);
-        } else {
+        } else if (fileIsKanban) {
           this.kanbanFileModes[(activeLeaf as any).id || activeFile.path] =
             kanbanViewType;
           this.setKanbanView(activeLeaf);
@@ -278,36 +310,6 @@ export default class KanbanPlugin extends Plugin {
         }
       },
     });
-
-    this.registerEvent(
-      this.app.workspace.on("file-menu", (menu, file: TFile, source, leaf) => {
-        // Add a menu item to the folder context menu to create a board
-        if (file instanceof TFolder) {
-          menu.addItem((item) => {
-            item
-              .setTitle(t("New kanban board"))
-              .setIcon(kanbanIcon)
-              .onClick(() => this.newKanban(file));
-          });
-        }
-      })
-    );
-
-    this.registerEvent(
-      this.app.metadataCache.on("changed", (file) => {
-        this.app.workspace.getLeavesOfType(kanbanViewType).forEach((leaf) => {
-          const view = leaf.view as KanbanView;
-          view.onFileMetadataChange(file);
-        });
-      })
-    );
-  }
-
-  refreshViews() {
-    ReactDOM.render(
-      DragDropApp(this.app),
-      this.appEl ?? (this.appEl = document.body.createDiv())
-    );
   }
 
   async setMarkdownView(leaf: WorkspaceLeaf) {
@@ -354,8 +356,8 @@ export default class KanbanPlugin extends Plugin {
       await this.app.vault.modify(kanban, frontmatter);
       await this.app.workspace.activeLeaf.setViewState({
         type: kanbanViewType,
-        state: {file: kanban.path},
-      })
+        state: { file: kanban.path },
+      });
     } catch (e) {
       console.error("Error creating kanban board:", e);
     }
@@ -388,9 +390,16 @@ export default class KanbanPlugin extends Plugin {
   getTemplatePlugins() {
     const templatesPlugin = (this.app as any).internalPlugins.plugins.templates;
     const templatesEnabled = templatesPlugin.enabled;
-    const templaterPlugin = (this.app as any).plugins.plugins["templater-obsidian"];
-    const templaterEnabled = (this.app as any).plugins.enabledPlugins.has("templater-obsidian");
-    const templaterEmptyFileTemplate = templaterPlugin && (this.app as any).plugins.plugins["templater-obsidian"].settings?.empty_file_template;
+    const templaterPlugin = (this.app as any).plugins.plugins[
+      "templater-obsidian"
+    ];
+    const templaterEnabled = (this.app as any).plugins.enabledPlugins.has(
+      "templater-obsidian"
+    );
+    const templaterEmptyFileTemplate =
+      templaterPlugin &&
+      (this.app as any).plugins.plugins["templater-obsidian"].settings
+        ?.empty_file_template;
 
     const templateFolder = templatesEnabled
       ? templatesPlugin.instance.options.folder
