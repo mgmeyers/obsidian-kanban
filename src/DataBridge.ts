@@ -42,7 +42,7 @@ export class DataBridge<T> {
   // When data has been set in react land
   onInternalSet(fn: DataHandler<T>) {
     this.onInternalSetHandlers.push(fn);
-    return () => this.onExternalSetHandlers.remove(fn);
+    return () => this.onInternalSetHandlers.remove(fn);
   }
 
   // Set data from obsidian land
