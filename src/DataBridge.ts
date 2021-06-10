@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 export type DataHandler<T> = (data: T) => void;
+export type Reducer<T> = ((old: T) => T)
 
 export class DataBridge<T> {
 
@@ -15,9 +16,15 @@ export class DataBridge<T> {
     useEffect(() => this.onExternalSet(setState), [this]);
 
     // And we return a setter that updates the outside and inside
-    const updateState = useMemo(() => (state: T) => {
-      this.setInternal(state);
-      setState(state);
+    const updateState = useCallback((state: T|Reducer<T>) => {
+      if (typeof state === "function") {
+        // Reducer: capture the result of the change
+        setState((oldState: T) => state = (state as Reducer<T>)(oldState));
+      } else {
+        // Value: just pass it on
+        setState(state);
+      }
+      this.setInternal(state as T);
     }, [this, setState])
 
     return [state, updateState];
