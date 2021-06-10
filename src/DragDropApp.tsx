@@ -1,18 +1,28 @@
-import { App, Notice } from "obsidian";
+import { App, Events, Notice } from "obsidian";
 import React from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import { createPortal } from "react-dom";
 import * as helpers from "./components/helpers";
 import { Board } from "./components/types";
+import { DataBridge } from "./DataBridge";
 import { KanbanView, kanbanViewType } from "./KanbanView";
 
-export function DragDropApp(app: App) {
-  const portals = allViews().map((view) => view.getPortal());
-  
-  if (portals.length) {
-    return (
-      <DragDropContext onDragEnd={onDragEnd}>{...portals}</DragDropContext>
-    );
-  }
+export function createApp(app: App, db: DataBridge<Set<KanbanView>>) {
+  return <DragDropApp app={app} db={db} />;
+}
+
+const View = React.memo(({view}: {view: KanbanView}) => {
+  return createPortal(view.getPortal(), view.contentEl)
+});
+
+export function DragDropApp({app, db}: {app: App, db: DataBridge<Set<KanbanView>>}) {
+
+  const [views, _] = db.useState();
+  const portals = [...views].map((view) => <View view={view}/>);
+
+  return (
+    <DragDropContext onDragEnd={onDragEnd}>{...portals}</DragDropContext>
+  );
 
   function allViews(): KanbanView[] {
     return app.workspace
@@ -112,7 +122,7 @@ export function DragDropApp(app: App) {
 
   function boardContextFor(dropResult: DropResult, id: string) {
     for (const view of allViews()) {
-      if (dropResult.type === "LANE" && (view.leaf as any).id === id)
+      if (dropResult.type === "LANE" && view.id === id)
         return boardContext(view);
       const index = view.dataBridge.data.lanes.findIndex(
         (lane) => lane.id === id

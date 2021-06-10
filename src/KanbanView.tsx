@@ -29,10 +29,17 @@ export const kanbanIcon = "blocks";
 
 export class KanbanView extends TextFileView implements HoverParent {
   plugin: KanbanPlugin;
-  dataBridge: DataBridge<Board>;
+
+  dataBridge: DataBridge<Board> = new DataBridge(null);
+  setBoard(board: Board) { this.dataBridge.setExternal(board); }
+  getBoard(): Board { return this.dataBridge.getData(); }
+
+  errorBridge: DataBridge<ErrorHandlerState> = new DataBridge({errorMessage: ""});
+  setError(err?: Error) { this.errorBridge.setExternal(err ? ErrorHandler.getDerivedStateFromError(err) : {errorMessage: ""}); }
+  getError() { return this.errorBridge.getData(); }
+
   hoverPopover: HoverPopover | null;
-  parseError: string;
-  closed: boolean = false;
+  id: string = (this.leaf as any).id;
 
   getViewType() {
     return kanbanViewType;
@@ -49,13 +56,13 @@ export class KanbanView extends TextFileView implements HoverParent {
   constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
     super(leaf);
     this.plugin = plugin;
-    this.clear();
+    // When the board has been updated by react, update Obsidian
+    this.dataBridge.onInternalSet(this.requestUpdate);
   }
 
   async onClose() {
     // Remove draggables from render, as the DOM has already detached
-    this.closed = true;
-    this.plugin.refreshViews();
+    this.plugin.removeView(this);
   }
 
   getSetting(
@@ -96,7 +103,7 @@ export class KanbanView extends TextFileView implements HoverParent {
           .setIcon("document")
           .onClick(() => {
             this.plugin.kanbanFileModes[
-              (this.leaf as any).id || this.file.path
+              this.id || this.file.path
             ] = "markdown";
             this.plugin.setMarkdownView(this.leaf);
           });
@@ -143,15 +150,46 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   clear() {
-    this.parseError = "";
-    this.dataBridge = new DataBridge();
-    // When the board has been updated by react
-    this.dataBridge.onInternalSet((data) => {
-      if (data === null || this.parseError) return; // don't save corrupt data
-      this.data = boardToMd(data);
-      this.requestSave();
-    });
+    /*
+      Obsidian *only* calls this after unloading a file, before loading the next.
+      Specifically, from onUnloadFile, which calls save(true), and then optionally
+      calls clear, if and only if this.file is still non-empty.  That means that
+      in this function, this.file is still the *old* file, so we should not do
+      anything here that might try to use the file (including its path), so we
+      should avoid doing anything that refreshes the display.  (Since that could
+      use the file, and would also flash an empty pane during navigation, depending
+      on how long the next file load takes.)
+
+      Given all that, it makes more sense to clean up our state from onLoadFile, as
+      following a clear there are only two possible states: a successful onLoadFile
+      updates our full state via setViewData(), or else it aborts with an error
+      first.  So as long as setViewData() and the error handler for onLoadFile()
+      fully reset the state (to a valid load state or a valid error state),
+      there's nothing to do in this method.  (We can't omit it, since it's
+      abstract.)
+    */
   }
+
+  async onLoadFile(file: TFile) {
+    try {
+      return super.onLoadFile(file);
+    }
+    catch(e) {
+      // Update to display details of the problem
+      this.setBoard(null);
+      this.setError(e);
+      throw e;
+    }
+  }
+
+  requestUpdate = (data: Board) => {
+    if (data === null || this.getError().errorMessage) return; // don't save corrupt data
+      const newData = boardToMd(data)
+      if (this.data !== newData) {
+        this.data = newData;
+        this.requestSave();
+      }
+  };
 
   toggleSearch() {
     this.dataBridge.setExternal(
@@ -162,32 +200,36 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   getViewData() {
-    return boardToMd(this.dataBridge.getData());
+    // In theory, we could unparse the board here.  In practice, the board can be
+    // in an error state, so we return the last good data here.  (In addition,
+    // unparsing is slow, and getViewData() can be called more often than the
+    // data actually changes.)
+    return this.data;
   }
 
   setViewData(data: string, clear: boolean) {
     const trimmedContent = data.trim();
     let board: Board = null;
-    this.parseError = "";
     try {
-      board = trimmedContent
-        ? mdToBoard(trimmedContent, this)
-        : {
+      board = {
             lanes: [],
             archive: [],
             settings: { "kanban-plugin": "basic" },
             isSearching: false,
           };
+      if (trimmedContent) board = mdToBoard(trimmedContent, this);
+      this.setError()
     } catch (e) {
       console.error(e);
-      // Force a new databridge to ensure Kanban re-renders when the error goes away
-      this.clear();
-      this.parseError = "Error parsing document: " + e;
+      this.setError(e);
+      board = null;
     }
 
     // Tell react we have a new board
-    this.dataBridge.setExternal(board);
-    this.plugin.refreshViews();
+    this.setBoard(board);
+
+    // And make sure we're visible (no-op if we already are)
+    this.plugin.addView(this)
   }
 
   archiveCompletedCards() {
@@ -256,37 +298,46 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   getPortal() {
-    if (!this.closed)
-      return ReactDOM.createPortal(
-        <ErrorHandler errorMessage={this.parseError}>
+      return (
+        <ErrorHandler view={this} key={this.id}>
           <Kanban
             dataBridge={this.dataBridge}
-            filePath={this.file?.path}
             view={this}
           />
-        </ErrorHandler>,
-        this.contentEl,
-        (this.leaf as any).id as string // ensure React doesn't recreate when list is re-ordered
+        </ErrorHandler>
       );
   }
 }
 
 // Catch internal errors or display parsing errors
 
-interface ErrorHandlerProps {
+interface ErrorHandlerState {
   errorMessage: string;
   stack?: string;
 }
 
-class ErrorHandler extends React.Component<ErrorHandlerProps> {
-  state: ErrorHandlerProps;
+class ErrorHandler extends React.Component<{view: KanbanView}> {
+  state: ErrorHandlerState;
+  remove?: () => void;
 
-  constructor(props: ErrorHandlerProps) {
+  constructor(props: {view: KanbanView}) {
     super(props);
     this.state = { errorMessage: "" };
   }
 
-  static getDerivedStateFromError(error: Error): ErrorHandlerProps {
+  stateSetter = (state: ErrorHandlerState) => this.setState(state);
+
+  componentWillMount(){
+    // Send error state outward; save unsubs function for unmount
+    this.remove = this.props.view.errorBridge.onExternalSet(this.stateSetter);
+  }
+
+  componentWillUnmount(){
+    // Unsubscribe from the databridge
+    this.remove?.()
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorHandlerState {
     // Update state so the next render will show the fallback UI.
     return { errorMessage: error.toString(), stack: error.stack };
   }
@@ -296,7 +347,7 @@ class ErrorHandler extends React.Component<ErrorHandlerProps> {
   }
 
   render() {
-    const error = this.props.errorMessage || this.state.errorMessage;
+    const error = this.state.errorMessage;
     const stack = this.state.stack;
 
     if (error) {

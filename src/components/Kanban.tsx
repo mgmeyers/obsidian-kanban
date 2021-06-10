@@ -21,7 +21,6 @@ import { Icon } from "./Icon/Icon";
 
 interface KanbanProps {
   dataBridge: DataBridge<Board>;
-  filePath?: string;
   view: KanbanView;
 }
 
@@ -273,7 +272,10 @@ function getBoardModifiers({
   };
 }
 
-export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
+export const Kanban = ({view, dataBridge }: KanbanProps) => {
+
+  const filePath = view.file?.path;
+
   const [boardData, setBoardData] = dataBridge.useState();
 
   const [searchQuery, setSearchQuery] = React.useState<string>("");
@@ -444,7 +446,7 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
             onClick={onClick}
           >
             <Droppable
-              droppableId={(view.leaf as any).id}
+              droppableId={view.id}
               type="LANE"
               direction="horizontal"
               ignoreContainerClipping={false}

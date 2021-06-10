@@ -10,7 +10,7 @@ import {
 import { around } from "monkey-around";
 
 import { kanbanIcon, KanbanView, kanbanViewType } from "./KanbanView";
-import { DragDropApp } from "./DragDropApp";
+import { createApp } from "./DragDropApp";
 import { frontMatterKey } from "./parser";
 import { KanbanSettings, KanbanSettingsTab } from "./Settings";
 import ReactDOM from "react-dom";
@@ -21,6 +21,8 @@ import "choices.js/public/assets/styles/choices.css";
 import "flatpickr/dist/flatpickr.min.css";
 import "./main.css";
 import { t } from "./lang/helpers";
+import { DataBridge } from "./DataBridge";
+import update from "immutability-helper";
 
 export default class KanbanPlugin extends Plugin {
   settingsTab: KanbanSettingsTab;
@@ -29,6 +31,7 @@ export default class KanbanPlugin extends Plugin {
   dbTimers: { [id: string]: number } = {};
   hasSet: { [id: string]: boolean } = {};
   appEl: HTMLDivElement;
+  views: DataBridge<Set<KanbanView>> = new DataBridge(new Set)
 
   async onload() {
     const self = this;
@@ -58,11 +61,10 @@ export default class KanbanPlugin extends Plugin {
 
     this.addSettingTab(this.settingsTab);
 
+    // Mount an empty component to start; views will be added as we go
+    this.mount();
+
     this.app.workspace.onLayoutReady(() => {
-      this.refreshViews();
-      this.registerEvent(
-        this.app.workspace.on("layout-change", this.refreshViews, this)
-      );
       this.register(
         around((this.app as any).commands.commands["editor:open-search"], {
           checkCallback(next) {
@@ -220,9 +222,23 @@ export default class KanbanPlugin extends Plugin {
     );
   }
 
-  refreshViews() {
+  addView(view: KanbanView) {
+    const views = this.views.getData()
+    if (!views.has(view)) {
+      this.views.setExternal(update(views, {$add: [view]}))
+    }
+  }
+
+  removeView(view: KanbanView) {
+    const views = this.views.getData()
+    if (views.has(view)) {
+      this.views.setExternal(update(views, {$remove: [view]}))
+    }
+  }
+
+  mount() {
     ReactDOM.render(
-      DragDropApp(this.app),
+      createApp(this.app, this.views),
       this.appEl ?? (this.appEl = document.body.createDiv())
     );
   }
@@ -373,7 +389,6 @@ export default class KanbanPlugin extends Plugin {
     // @ts-ignore
     this.app.workspace.unregisterHoverLinkSource(frontMatterKey);
     if (this.appEl) {
-      this.refreshViews();
       ReactDOM.unmountComponentAtNode(this.appEl);
       this.appEl.detach();
     }
