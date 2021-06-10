@@ -29,7 +29,7 @@ export const kanbanIcon = "blocks";
 
 export class KanbanView extends TextFileView implements HoverParent {
   plugin: KanbanPlugin;
-  dataBridge: DataBridge;
+  dataBridge: DataBridge<Board>;
   hoverPopover: HoverPopover | null;
   parseError: string;
   closed: boolean = false;

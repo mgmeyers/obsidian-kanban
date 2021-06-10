@@ -20,7 +20,7 @@ import { t } from "src/lang/helpers";
 import { Icon } from "./Icon/Icon";
 
 interface KanbanProps {
-  dataBridge: DataBridge;
+  dataBridge: DataBridge<Board>;
   filePath?: string;
   view: KanbanView;
 }
@@ -274,22 +274,15 @@ function getBoardModifiers({
 }
 
 export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
-  const [boardData, setBoardData] = React.useState<Board | null>(
-    dataBridge.data
-  );
+  const [boardData, setBoardData] = dataBridge.useState();
 
   const [searchQuery, setSearchQuery] = React.useState<string>("");
   const searchRef = React.useRef<HTMLInputElement>();
 
   const maxArchiveLength = view.getSetting("max-archive-size");
 
-  React.useEffect(() => dataBridge.onExternalSet(setBoardData));
-
-  React.useEffect(() => {
-    if (boardData !== null) {
-      dataBridge.setInternal(boardData);
-    }
-  }, [boardData]);
+  // Don't render anything if there's no board
+  if (!boardData) return <div/>;
 
   React.useEffect(() => {
     if (boardData.isSearching) {
