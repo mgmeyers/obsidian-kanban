@@ -12,7 +12,7 @@ export class DataBridge<T> {
     const [state, setState] = useState(this.getData());
 
     // Which is updated whenever the outside changes
-    useEffect(() => this.onExternalSet(setState));
+    useEffect(() => this.onExternalSet(setState), [this]);
 
     // And we return a setter that updates the outside and inside
     const updateState = useMemo(() => (state: T) => {
@@ -35,6 +35,7 @@ export class DataBridge<T> {
   // When data has been set in react land
   onInternalSet(fn: DataHandler<T>) {
     this.onInternalSetHandlers.push(fn);
+    return () => this.onExternalSetHandlers.remove(fn);
   }
 
   // Set data from obsidian land
