@@ -172,7 +172,7 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   async onLoadFile(file: TFile) {
     try {
-      return super.onLoadFile(file);
+      return await super.onLoadFile(file);
     }
     catch(e) {
       // Update to display details of the problem
