@@ -1,5 +1,5 @@
 import { App, Events, Notice } from "obsidian";
-import React from "react";
+import React, { useCallback } from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { createPortal } from "react-dom";
 import * as helpers from "./components/helpers";
@@ -7,7 +7,7 @@ import { Board } from "./components/types";
 import { DataBridge } from "./DataBridge";
 import { KanbanView, kanbanViewType } from "./KanbanView";
 
-export function createApp(app: App, db: DataBridge<Set<KanbanView>>) {
+export function createApp(app: App, db: DataBridge<Map<string, KanbanView>>) {
   return <DragDropApp app={app} db={db} />;
 }
 
@@ -15,20 +15,14 @@ const View = React.memo(({view}: {view: KanbanView}) => {
   return createPortal(view.getPortal(), view.contentEl)
 });
 
-export function DragDropApp({app, db}: {app: App, db: DataBridge<Set<KanbanView>>}) {
+export function DragDropApp({app, db}: {app: App, db: DataBridge<Map<string, KanbanView>>}) {
 
   const [views, _] = db.useState();
-  const portals = [...views].map((view) => <View view={view}/>);
+  const portals = [...views].map(([_id, view]) => <View view={view}/>);
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>{...portals}</DragDropContext>
+    <DragDropContext onDragEnd={useCallback(onDragEnd, [views])}>{...portals}</DragDropContext>
   );
-
-  function allViews(): KanbanView[] {
-    return app.workspace
-      .getLeavesOfType(kanbanViewType)
-      .map((leaf) => leaf.view as KanbanView);
-  }
 
   function onDragEnd(dropResult: DropResult) {
     // Bail out early if we're not dropping anywhere
@@ -121,14 +115,15 @@ export function DragDropApp({app, db}: {app: App, db: DataBridge<Set<KanbanView>
   }
 
   function boardContextFor(dropResult: DropResult, id: string) {
-    for (const view of allViews()) {
-      if (dropResult.type === "LANE" && view.id === id)
-        return boardContext(view);
-      const index = view.dataBridge.data.lanes.findIndex(
-        (lane) => lane.id === id
-      );
-      if (index >= 0) return boardContext(view, index);
-    }
+      if (dropResult.type === "LANE") {
+        return views.has(id) && boardContext(views.get(id));
+      }
+      for (const [vid, view] of views) {
+        const index = view.dataBridge.data.lanes.findIndex(
+          (lane) => lane.id === id
+        );
+        if (index >= 0) return boardContext(view, index);
+      }
   }
 
   function boardContext(view: KanbanView, laneIndex?: number) {

@@ -31,7 +31,7 @@ export default class KanbanPlugin extends Plugin {
   dbTimers: { [id: string]: number } = {};
   hasSet: { [id: string]: boolean } = {};
   appEl: HTMLDivElement;
-  views: DataBridge<Set<KanbanView>> = new DataBridge(new Set)
+  views: DataBridge<Map<string,KanbanView>> = new DataBridge(new Map);
 
   async onload() {
     const self = this;
@@ -224,15 +224,15 @@ export default class KanbanPlugin extends Plugin {
 
   addView(view: KanbanView) {
     const views = this.views.getData()
-    if (!views.has(view)) {
-      this.views.setExternal(update(views, {$add: [view]}))
+    if (!views.has(view.id)) {
+      this.views.setExternal(update(views, {$add: [[view.id, view]]}))
     }
   }
 
   removeView(view: KanbanView) {
     const views = this.views.getData()
-    if (views.has(view)) {
-      this.views.setExternal(update(views, {$remove: [view]}))
+    if (views.has(view.id)) {
+      this.views.setExternal(update(views, {$remove: [view.id]}))
     }
   }
 
