@@ -137,6 +137,7 @@ export default class KanbanPlugin extends Plugin {
     // });
 
     // Monkey patch WorkspaceLeaf to open Kanbans with KanbanView by default
+    const plugin: any = this;
     this.register(
       around(WorkspaceLeaf.prototype, {
         // Kanbans can be viewed as markdown or kanban, and we keep track of the mode
@@ -156,6 +157,8 @@ export default class KanbanPlugin extends Plugin {
         setViewState(next) {
           return function (state: ViewState, ...rest: any[]) {
             if (
+              // Don't force kanban mode during shutdown
+              plugin._loaded &&
               // If we have a markdown file
               state.type === "markdown" &&
               state.state?.file &&
@@ -380,6 +383,9 @@ export default class KanbanPlugin extends Plugin {
   }
 
   onunload() {
+    // Unmount views from the display first, so we don't get intermediate render thrashing
+    this.views.setExternal(new Map)
+
     const kanbanLeaves = this.app.workspace.getLeavesOfType(kanbanViewType);
 
     kanbanLeaves.forEach((leaf) => {
