@@ -74,8 +74,7 @@ export class KanbanParser {
     tags?: string[],
     fileMetadata?: FileMetadata
   ) {
-    const tempEl = createDiv();
-    MarkdownRenderer.renderMarkdown(title, tempEl, this.view.file.path, this.view);
+    const tempEl = this.view.renderMarkdown(title);
 
     let searchTitle = tempEl.innerText.trim();
 

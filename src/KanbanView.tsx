@@ -9,6 +9,7 @@ import {
   WorkspaceLeaf,
   moment,
   TFile,
+  MarkdownRenderer,
 } from "obsidian";
 import { dispatch } from "use-bus";
 
@@ -307,6 +308,37 @@ export class KanbanView extends TextFileView implements HoverParent {
           />
         </ErrorHandler>
       );
+  }
+
+  renderMarkdown(markdownString: string): HTMLElement {
+    const tempEl = createDiv();
+    MarkdownRenderer.renderMarkdown(
+      markdownString,
+      tempEl,
+      this.file?.path,
+      this
+    );
+    tempEl.findAll(".internal-embed").forEach((el) => {
+      const src = el.getAttribute("src");
+      const target =
+        typeof src === "string" &&
+        this.app.metadataCache.getFirstLinkpathDest(src, this.file?.path);
+      if (target instanceof TFile && target.extension !== "md") {
+        el.innerText = "";
+        el.createEl(
+          "img",
+          { attr: { src: this.app.vault.getResourcePath(target) } },
+          (img) => {
+            if (el.hasAttribute("width"))
+              img.setAttribute("width", el.getAttribute("width"));
+            if (el.hasAttribute("alt"))
+              img.setAttribute("alt", el.getAttribute("alt"));
+          }
+        );
+        el.addClasses(["image-embed", "is-loaded"]);
+      }
+    });
+    return tempEl;
   }
 }
 

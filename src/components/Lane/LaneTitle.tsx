@@ -1,4 +1,4 @@
-import { getLinkpath, MarkdownRenderer } from "obsidian";
+import { getLinkpath } from "obsidian";
 import React from "react";
 import { t } from "src/lang/helpers";
 import { ObsidianContext } from "../context";
@@ -42,9 +42,7 @@ export function LaneTitle({
   }, [isEditing]);
 
   const markdownContent = React.useMemo(() => {
-    const tempEl = createDiv();
-    MarkdownRenderer.renderMarkdown(title, tempEl, filePath, view);
-
+    const tempEl = view.renderMarkdown(title);
     return {
       innerHTML: { __html: tempEl.innerHTML.toString() },
     };
