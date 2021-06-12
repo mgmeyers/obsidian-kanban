@@ -20,7 +20,7 @@ export function DragDropApp({app, db}: {app: App, db: DataBridge<Map<string, Kan
   const [views, _] = db.useState();
   const portals = [...views].map(([_id, view]) => <View view={view}/>);
 
-  return (
+  if (portals.length) return (
     <DragDropContext onDragEnd={useCallback(onDragEnd, [views])}>{...portals}</DragDropContext>
   );
 
