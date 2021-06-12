@@ -15,7 +15,7 @@ import { draggableLaneFactory } from "./Lane/Lane";
 import { LaneForm } from "./Lane/LaneForm";
 import { KanbanContext, ObsidianContext, SearchContext } from "./context";
 import { KanbanView } from "src/KanbanView";
-import { frontMatterKey, processTitle } from "../parser";
+import { frontMatterKey } from "../parser";
 import { t } from "src/lang/helpers";
 import { Icon } from "./Icon/Icon";
 
@@ -54,7 +54,7 @@ function getBoardModifiers({
     newTitle.push(item.titleRaw);
 
     const titleRaw = newTitle.join(" ");
-    const processed = processTitle(titleRaw, view);
+    const processed = view.parser.processTitle(titleRaw);
 
     return update(item, {
       title: { $set: processed.title },

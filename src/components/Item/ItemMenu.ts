@@ -5,7 +5,6 @@ import React from "react";
 import { BoardModifiers, Item } from "../types";
 import { applyTemplate, escapeRegExpStr } from "../helpers";
 import { ObsidianContext } from "../context";
-import { processTitle } from "src/parser";
 import { defaultDateTrigger, defaultTimeTrigger } from "src/settingHelpers";
 import {
   constructDatePicker,
@@ -84,7 +83,7 @@ export function useItemMenu({
               prevTitle,
               `[[${sanitizedTitle}]]`
             );
-            const processed = processTitle(newTitleRaw, view);
+            const processed = view.parser.processTitle(newTitleRaw);
 
             boardModifiers.updateItem(
               laneIndex,
@@ -151,7 +150,7 @@ export function useItemMenu({
             );
 
             const titleRaw = item.titleRaw.replace(dateRegEx, "").trim();
-            const processed = processTitle(titleRaw, view);
+            const processed = view.parser.processTitle(titleRaw);
 
             boardModifiers.updateItem(
               laneIndex,
@@ -198,7 +197,7 @@ export function useItemMenu({
               );
 
               const titleRaw = item.titleRaw.replace(timeRegEx, "").trim();
-              const processed = processTitle(titleRaw, view);
+              const processed = view.parser.processTitle(titleRaw);
 
               boardModifiers.updateItem(
                 laneIndex,

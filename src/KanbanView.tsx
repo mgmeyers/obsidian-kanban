@@ -12,7 +12,7 @@ import {
 } from "obsidian";
 import { dispatch } from "use-bus";
 
-import { boardToMd, mdToBoard, processTitle } from "./parser";
+import { KanbanParser } from "./parser";
 import { Kanban } from "./components/Kanban";
 import { DataBridge } from "./DataBridge";
 import { Board, Item } from "./components/types";
@@ -29,6 +29,7 @@ export const kanbanIcon = "blocks";
 
 export class KanbanView extends TextFileView implements HoverParent {
   plugin: KanbanPlugin;
+  parser: KanbanParser = new KanbanParser(this);
 
   dataBridge: DataBridge<Board> = new DataBridge(null);
   setBoard(board: Board) { this.dataBridge.setExternal(board); }
@@ -184,7 +185,7 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   requestUpdate = (data: Board) => {
     if (data === null || this.getError().errorMessage) return; // don't save corrupt data
-      const newData = boardToMd(data)
+      const newData = this.parser.boardToMd(data)
       if (this.data !== newData) {
         this.data = newData;
         this.requestSave();
@@ -217,7 +218,7 @@ export class KanbanView extends TextFileView implements HoverParent {
             settings: { "kanban-plugin": "basic" },
             isSearching: false,
           };
-      if (trimmedContent) board = mdToBoard(trimmedContent, this);
+      if (trimmedContent) board = this.parser.mdToBoard(trimmedContent);
       this.setError()
     } catch (e) {
       console.error(e);
@@ -254,7 +255,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       newTitle.push(item.titleRaw);
 
       const titleRaw = newTitle.join(" ");
-      const processed = processTitle(titleRaw, this);
+      const processed = this.parser.processTitle(titleRaw);
 
       return update(item, {
         title: { $set: processed.title },

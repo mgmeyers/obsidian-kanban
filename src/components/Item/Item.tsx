@@ -12,7 +12,6 @@ import { Icon } from "../Icon/Icon";
 import { KanbanContext, ObsidianContext, SearchContext } from "../context";
 import { ItemContent, ItemMetadata } from "./ItemContent";
 import { useItemMenu } from "./ItemMenu";
-import { processTitle } from "src/parser";
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
@@ -318,7 +317,7 @@ export function draggableItemFactory({
               searchQuery={isMatch ? query : undefined}
               onChange={(e) => {
                 const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
-                const processed = processTitle(titleRaw, view);
+                const processed = view.parser.processTitle(titleRaw);
                 boardModifiers.updateItem(
                   laneIndex,
                   itemIndex,

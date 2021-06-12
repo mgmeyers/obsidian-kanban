@@ -10,7 +10,6 @@ import {
 } from "../helpers";
 
 import flatpickr from "flatpickr";
-import { processTitle } from "src/parser";
 import { defaultDateTrigger, defaultTimeTrigger } from "src/settingHelpers";
 import { getDefaultLocale } from "./datePickerLocale";
 import { KanbanView } from "src/KanbanView";
@@ -127,7 +126,7 @@ export function constructMenuDatePickerOnChange({
       titleRaw = `${item.titleRaw} ${dateTrigger}${wrappedDate}`;
     }
 
-    const processed = processTitle(titleRaw, view);
+    const processed = view.parser.processTitle(titleRaw);
 
     boardModifiers.updateItem(
       laneIndex,
@@ -298,7 +297,7 @@ export function constructMenuTimePickerOnChange({
       titleRaw = `${item.titleRaw} ${timeTrigger}{${time}}`;
     }
 
-    const processed = processTitle(titleRaw, view);
+    const processed = view.parser.processTitle(titleRaw);
 
     boardModifiers.updateItem(
       laneIndex,

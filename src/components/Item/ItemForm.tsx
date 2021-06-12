@@ -11,7 +11,6 @@ import { Item } from "../types";
 import { c, generateInstanceId } from "../helpers";
 import { useAutocompleteInputProps } from "./autocomplete";
 import { ObsidianContext } from "../context";
-import { processTitle } from "src/parser";
 import { t } from "src/lang/helpers";
 import { KanbanView } from "src/KanbanView";
 
@@ -158,7 +157,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
   const addItemsFromStrings = (titles: string[]) => {
     addItems(
       titles.map((title) => {
-        const processed = processTitle(title, view);
+        const processed = view.parser.processTitle(title);
         const newItem: Item = {
           id: generateInstanceId(),
           title: processed.title,
