@@ -71,13 +71,12 @@ export class KanbanParser {
   }
 
   getSearchTitle(
+    dom: HTMLDivElement,
     title: string,
     tags?: string[],
     fileMetadata?: FileMetadata
   ) {
-    const tempEl = this.view.renderMarkdown(title);
-
-    let searchTitle = tempEl.innerText.trim();
+    let searchTitle = dom.innerText.trim();
 
     if (tags?.length) {
       searchTitle += " " + tags.join(" ");
@@ -289,6 +288,7 @@ export class KanbanParser {
       titleSearch: processed.titleSearch,
       data: {},
       metadata: processed.metadata,
+      dom: processed.dom,
     }
   }
 
@@ -299,6 +299,7 @@ export class KanbanParser {
       titleRaw: { $set: titleRaw },
       titleSearch: { $set: processed.titleSearch },
       metadata: { $set: processed.metadata },
+      dom: { $set: processed.dom },
     });
   }
 
@@ -309,10 +310,12 @@ export class KanbanParser {
     const tags = this.extractItemTags(date.processedTitle);
     const file = this.extractFirstLinkedFile(tags.processedTitle);
     const fileMetadata = this.getLinkedPageMetadata(file);
+    const dom = this.view.renderMarkdown(title);
 
     return {
       title: tags.processedTitle.trim(),
       titleSearch: this.getSearchTitle(
+        dom,
         tags.processedTitle,
         tags.tags,
         fileMetadata
@@ -324,6 +327,7 @@ export class KanbanParser {
         file,
         fileMetadata,
       },
+      dom
     };
   }
 
@@ -357,6 +361,7 @@ export class KanbanParser {
         isComplete,
       },
       metadata: processed.metadata,
+      dom: processed.dom,
     };
   }
 
@@ -490,9 +495,9 @@ export class KanbanParser {
       // Create an item from tasks
       if (isTask || isListItem) {
         if (haveSeenArchiveMarker) {
-          archive.push(this.mdToItem(line, settings, isListItem));
+          archive.push(this.mdToItem(line, isListItem));
         } else {
-          currentLane.items.push(this.mdToItem(line, settings, isListItem));
+          currentLane.items.push(this.mdToItem(line, isListItem));
         }
       }
     });

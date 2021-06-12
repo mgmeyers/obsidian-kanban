@@ -344,7 +344,7 @@ export const ItemContent = React.memo(
       <div className={c("item-title")}>
         <MarkdownRenderer
           className={c("item-markdown")}
-          markdownString={item.title}
+          dom={item.dom}
           searchQuery={searchQuery}
         />
         <div className={c("item-metadata")}>

@@ -4,23 +4,25 @@ import { ObsidianContext } from "./context";
 
 interface MarkdownRendererProps {
   className?: string;
-  markdownString: string;
+  markdownString?: string;
+  dom?: HTMLDivElement;
   searchQuery?: string;
 }
 
 export const MarkdownRenderer = React.memo(
-  ({ className, markdownString, searchQuery }: MarkdownRendererProps) => {
-    const { view, filePath } = React.useContext(ObsidianContext);
+  ({ className, dom, markdownString, searchQuery }: MarkdownRendererProps) => {
+    const { view } = React.useContext(ObsidianContext);
     const markdownContent = React.useMemo(() => {
-      const tempEl = view.renderMarkdown(markdownString);
+      let tempEl: HTMLDivElement = dom || view.renderMarkdown(markdownString);
       if (searchQuery) {
-        new Mark(tempEl).mark(searchQuery);
+        tempEl = tempEl.cloneNode(true) as HTMLDivElement;
+        new Mark(tempEl as HTMLDivElement).mark(searchQuery);
       }
 
       return {
         innerHTML: { __html: tempEl.innerHTML.toString() },
       };
-    }, [markdownString, filePath, view, searchQuery]);
+    }, [dom, markdownString, view, searchQuery]);
 
     return (
       <div
