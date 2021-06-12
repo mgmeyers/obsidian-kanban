@@ -256,13 +256,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       newTitle.push(item.titleRaw);
 
       const titleRaw = newTitle.join(" ");
-      const processed = this.parser.processTitle(titleRaw);
-
-      return update(item, {
-        title: { $set: processed.title },
-        titleRaw: { $set: titleRaw },
-        titleSearch: { $set: processed.titleSearch },
-      });
+      return this.parser.updateItem(item, titleRaw);
     };
 
     const lanes = board.lanes.map((lane) => {

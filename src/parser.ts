@@ -1,4 +1,4 @@
-import { MarkdownRenderer, moment, TFile } from "obsidian";
+import { moment, TFile } from "obsidian";
 import {
   escapeRegExpStr,
   generateInstanceId,
@@ -11,6 +11,7 @@ import { defaultDateTrigger, defaultTimeTrigger } from "./settingHelpers";
 import yaml from "js-yaml";
 import { KanbanView } from "./KanbanView";
 import { t } from "./lang/helpers";
+import update from "immutability-helper";
 
 export const frontMatterKey = "kanban-plugin";
 
@@ -279,9 +280,30 @@ export class KanbanParser {
     return haveData ? metadata : undefined;
   }
 
-  processTitle(
+  newItem(titleRaw: string): Item {
+    const processed = this.processTitle(titleRaw);
+    return  {
+      id: generateInstanceId(),
+      title: processed.title,
+      titleRaw: titleRaw,
+      titleSearch: processed.titleSearch,
+      data: {},
+      metadata: processed.metadata,
+    }
+  }
+
+  updateItem(item: Item, titleRaw: string) {
+    const processed = this.processTitle(titleRaw);
+    return update(item, {
+      title: { $set: processed.title },
+      titleRaw: { $set: titleRaw },
+      titleSearch: { $set: processed.titleSearch },
+      metadata: { $set: processed.metadata },
+    });
+  }
+
+  private processTitle(
     title: string,
-    settings?: KanbanSettings
   ) {
     const date = this.extractDates(title);
     const tags = this.extractItemTags(date.processedTitle);

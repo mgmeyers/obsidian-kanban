@@ -54,13 +54,7 @@ function getBoardModifiers({
     newTitle.push(item.titleRaw);
 
     const titleRaw = newTitle.join(" ");
-    const processed = view.parser.processTitle(titleRaw);
-
-    return update(item, {
-      title: { $set: processed.title },
-      titleRaw: { $set: titleRaw },
-      titleSearch: { $set: processed.titleSearch },
-    });
+    return view.parser.updateItem(item, titleRaw);
   };
 
   return {

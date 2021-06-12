@@ -317,16 +317,10 @@ export function draggableItemFactory({
               searchQuery={isMatch ? query : undefined}
               onChange={(e) => {
                 const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
-                const processed = view.parser.processTitle(titleRaw);
                 boardModifiers.updateItem(
                   laneIndex,
                   itemIndex,
-                  update(item, {
-                    title: { $set: processed.title },
-                    titleRaw: { $set: titleRaw },
-                    titleSearch: { $set: processed.titleSearch },
-                    metadata: { $set: processed.metadata },
-                  })
+                  view.parser.updateItem(item, titleRaw)
                 );
               }}
               onEditDate={(e) => {

@@ -83,16 +83,11 @@ export function useItemMenu({
               prevTitle,
               `[[${sanitizedTitle}]]`
             );
-            const processed = view.parser.processTitle(newTitleRaw);
 
             boardModifiers.updateItem(
               laneIndex,
               itemIndex,
-              update(item, {
-                title: { $set: processed.title },
-                titleRaw: { $set: newTitleRaw },
-                titleSearch: { $set: processed.titleSearch },
-              })
+              view.parser.updateItem(item, newTitleRaw)
             );
           });
       })
@@ -150,17 +145,10 @@ export function useItemMenu({
             );
 
             const titleRaw = item.titleRaw.replace(dateRegEx, "").trim();
-            const processed = view.parser.processTitle(titleRaw);
-
             boardModifiers.updateItem(
               laneIndex,
               itemIndex,
-              update(item, {
-                title: { $set: processed.title },
-                titleRaw: { $set: titleRaw },
-                titleSearch: { $set: processed.titleSearch },
-                metadata: { $set: processed.metadata },
-              })
+              view.parser.updateItem(item, titleRaw)
             );
           });
       });
@@ -197,17 +185,10 @@ export function useItemMenu({
               );
 
               const titleRaw = item.titleRaw.replace(timeRegEx, "").trim();
-              const processed = view.parser.processTitle(titleRaw);
-
               boardModifiers.updateItem(
                 laneIndex,
                 itemIndex,
-                update(item, {
-                  title: { $set: processed.title },
-                  titleRaw: { $set: titleRaw },
-                  titleSearch: { $set: processed.titleSearch },
-                  metadata: { $set: processed.metadata },
-                })
+                view.parser.updateItem(item, titleRaw)
               );
             });
         });

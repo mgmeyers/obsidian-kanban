@@ -156,18 +156,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
 
   const addItemsFromStrings = (titles: string[]) => {
     addItems(
-      titles.map((title) => {
-        const processed = view.parser.processTitle(title);
-        const newItem: Item = {
-          id: generateInstanceId(),
-          title: processed.title,
-          titleRaw: title,
-          titleSearch: processed.titleSearch,
-          data: {},
-          metadata: processed.metadata,
-        };
-        return newItem;
-      })
+      titles.map((title) => view.parser.newItem(title))
     );
   };
 
