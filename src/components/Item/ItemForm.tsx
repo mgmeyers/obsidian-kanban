@@ -1,5 +1,10 @@
 import React from "react";
-import { MarkdownSourceView, parseLinktext, TFile } from "obsidian";
+import {
+  MarkdownSourceView,
+  parseLinktext,
+  TFile,
+  htmlToMarkdown,
+} from "obsidian";
 import useOnclickOutside from "react-cool-onclickoutside";
 
 import { Item } from "../types";
@@ -20,7 +25,12 @@ function linkTo(
   return view.app.fileManager.generateMarkdownLink(file, sourcePath, subpath);
 }
 
-function getMarkdown(view: KanbanView, transfer: DataTransfer) {
+function getMarkdown(view: KanbanView, transfer: DataTransfer, html: string) {
+  // 0.12.5 -- remove handleDataTransfer below when this version is more widely supported
+  if (htmlToMarkdown) {
+    return htmlToMarkdown(html);
+  }
+
   // crude hack to use Obsidian's html-to-markdown converter (replace when Obsidian exposes it in API):
   return (MarkdownSourceView.prototype as any).handleDataTransfer.call(
     { app: view.app },
@@ -84,7 +94,9 @@ function importLines(
         .replace(/^\[[^\]].+]\(/, `[${alias}](`);
       return [link];
     default:
-      const text = forcePlaintext ? plain || html : getMarkdown(view, transfer);
+      const text = forcePlaintext
+        ? plain || html
+        : getMarkdown(view, transfer, html);
       // Split lines and strip leading bullets/task indicators
       const lines: string[] = (text || uris || plain || html || "")
         .split(/\r\n?|\n/)
