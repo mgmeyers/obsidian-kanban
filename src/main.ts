@@ -24,6 +24,16 @@ import { t } from "./lang/helpers";
 import { DataBridge } from "./DataBridge";
 import update from "immutability-helper";
 
+const basicFrontmatter = [
+  "---",
+  "",
+  `${frontMatterKey}: basic`,
+  "",
+  "---",
+  "",
+  "",
+].join("\n");
+
 export default class KanbanPlugin extends Plugin {
   settingsTab: KanbanSettingsTab;
   settings: KanbanSettings = {};
@@ -31,7 +41,7 @@ export default class KanbanPlugin extends Plugin {
   dbTimers: { [id: string]: number } = {};
   hasSet: { [id: string]: boolean } = {};
   appEl: HTMLDivElement;
-  views: DataBridge<Map<string,KanbanView>> = new DataBridge(new Map);
+  views: DataBridge<Map<string, KanbanView>> = new DataBridge(new Map());
 
   async onload() {
     const self = this;
@@ -226,16 +236,16 @@ export default class KanbanPlugin extends Plugin {
   }
 
   addView(view: KanbanView) {
-    const views = this.views.getData()
+    const views = this.views.getData();
     if (!views.has(view.id)) {
-      this.views.setExternal(update(views, {$add: [[view.id, view]]}))
+      this.views.setExternal(update(views, { $add: [[view.id, view]] }));
     }
   }
 
   removeView(view: KanbanView) {
-    const views = this.views.getData()
+    const views = this.views.getData();
     if (views.has(view.id)) {
-      this.views.setExternal(update(views, {$remove: [view.id]}))
+      this.views.setExternal(update(views, { $remove: [view.id] }));
     }
   }
 
@@ -257,15 +267,12 @@ export default class KanbanPlugin extends Plugin {
       id: "archive-completed-cards",
       name: t("Archive completed cards in active board"),
       checkCallback: (checking) => {
-        const activeView = this.app.workspace.activeLeaf.view;
+        const activeView = this.app.workspace.getActiveViewOfType(KanbanView);
 
-        if (checking) {
-          return activeView && activeView instanceof KanbanView;
-        }
+        if (!activeView) return false;
+        if (checking) return true;
 
-        if (activeView instanceof KanbanView) {
-          activeView.archiveCompletedCards();
-        }
+        activeView.archiveCompletedCards();
       },
     });
 
@@ -274,21 +281,20 @@ export default class KanbanPlugin extends Plugin {
       name: t("Toggle between Kanban and markdown mode"),
       checkCallback: (checking) => {
         const activeFile = this.app.workspace.getActiveFile();
+
+        if (!activeFile) return false;
+
         const fileCache = this.app.metadataCache.getFileCache(activeFile);
         const fileIsKanban =
           !!fileCache?.frontmatter && !!fileCache.frontmatter[frontMatterKey];
 
         if (checking) {
-          if (!activeFile) {
-            return false;
-          }
-
           return fileIsKanban;
         }
 
         const activeLeaf = this.app.workspace.activeLeaf;
 
-        if (activeLeaf.view instanceof KanbanView) {
+        if (activeLeaf?.view && activeLeaf.view instanceof KanbanView) {
           this.kanbanFileModes[(activeLeaf as any).id || activeFile.path] =
             "markdown";
           this.setMarkdownView(activeLeaf);
@@ -305,25 +311,15 @@ export default class KanbanPlugin extends Plugin {
       name: t("Convert empty note to Kanban"),
       checkCallback: (checking) => {
         const activeFile = this.app.workspace.getActiveFile();
-
-        if (checking) {
-          return activeFile && activeFile.stat.size === 0;
-        }
-
         const activeLeaf = this.app.workspace.activeLeaf;
 
-        if (activeFile && activeFile.stat.size === 0) {
-          const frontmatter = [
-            "---",
-            "",
-            `${frontMatterKey}: basic`,
-            "",
-            "---",
-            "",
-            "",
-          ].join("\n");
+        if (!activeFile || !activeLeaf) return false;
 
-          this.app.vault.modify(activeFile, frontmatter).then(() => {
+        const isFileEmpty = activeFile.stat.size === 0;
+
+        if (checking) return isFileEmpty;
+        if (isFileEmpty) {
+          this.app.vault.modify(activeFile, basicFrontmatter).then(() => {
             this.setKanbanView(activeLeaf);
           });
         }
@@ -354,17 +350,6 @@ export default class KanbanPlugin extends Plugin {
           this.app.workspace.getActiveFile()?.path || ""
         );
 
-    // Forcing frontmatter for now until more options are available
-    const frontmatter = [
-      "---",
-      "",
-      `${frontMatterKey}: basic`,
-      "",
-      "---",
-      "",
-      "",
-    ].join("\n");
-
     try {
       // @ts-ignore
       const kanban: TFile = await this.app.fileManager.createNewMarkdownFile(
@@ -372,7 +357,7 @@ export default class KanbanPlugin extends Plugin {
         t("Untitled Kanban")
       );
 
-      await this.app.vault.modify(kanban, frontmatter);
+      await this.app.vault.modify(kanban, basicFrontmatter);
       await this.app.workspace.activeLeaf.setViewState({
         type: kanbanViewType,
         state: { file: kanban.path },
@@ -384,7 +369,7 @@ export default class KanbanPlugin extends Plugin {
 
   onunload() {
     // Unmount views from the display first, so we don't get intermediate render thrashing
-    this.views.setExternal(new Map)
+    this.views.setExternal(new Map());
 
     const kanbanLeaves = this.app.workspace.getLeavesOfType(kanbanViewType);
 
