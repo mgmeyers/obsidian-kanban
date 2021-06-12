@@ -5,7 +5,7 @@ import {
   getDefaultDateFormat,
   getDefaultTimeFormat,
 } from "./components/helpers";
-import { Board, DataKey, FileMetadata, Item, Lane } from "./components/types";
+import { Board, FileMetadata, Item, Lane } from "./components/types";
 import { KanbanSettings } from "./Settings";
 import { defaultDateTrigger, defaultTimeTrigger } from "./settingHelpers";
 import yaml from "js-yaml";
@@ -47,8 +47,22 @@ const tagRegex = /(^|\s)(#[^#\s]+)/g;
 const linkRegex = /\[\[([^\|\]]+)(?:\||\]\])/;
 
 
+export type ParserSettings = {
+  dateFormat: KanbanSettings["date-format"];
+  timeFormat: KanbanSettings["time-format"];
+  dateTrigger: KanbanSettings["date-trigger"];
+  timeTrigger: KanbanSettings["time-trigger"];
+  shouldLinkDate: KanbanSettings["link-date-to-daily-note"];
+  shouldHideDate: KanbanSettings["hide-date-in-title"];
+  shouldHideTags: KanbanSettings["hide-tags-in-title"];
+  metaKeys: KanbanSettings["metadata-keys"];
+  dateRegEx: RegExp;
+  timeRegEx: RegExp;
+}
+
 export class KanbanParser {
 
+  settings: ParserSettings
   constructor(public view: KanbanView) {}
 
   itemToMd(item: Item) {
@@ -91,38 +105,19 @@ export class KanbanParser {
     title: string,
     settings?: KanbanSettings
   ) {
-    const dateFormat =
-      this.view.getSetting("date-format", settings) || getDefaultDateFormat(this.view.app);
-    const dateTrigger =
-      this.view.getSetting("date-trigger", settings) || defaultDateTrigger;
-    const timeFormat =
-      this.view.getSetting("time-format", settings) || getDefaultTimeFormat(this.view.app);
-    const timeTrigger =
-      this.view.getSetting("time-trigger", settings) || defaultTimeTrigger;
-    const shouldHideDate = this.view.getSetting("hide-date-in-title", settings);
-    const shouldLinkDate = this.view.getSetting("link-date-to-daily-note", settings);
-
     let date: undefined | moment.Moment = undefined;
     let time: undefined | moment.Moment = undefined;
     let processedTitle = title;
 
-    const contentMatch = shouldLinkDate ? "\\[\\[([^}]+)\\]\\]" : "{([^}]+)}";
-    const dateRegEx = new RegExp(
-      `(?:^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`
-    );
-    const timeRegEx = new RegExp(
-      `(?:^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
-    );
-
-    const dateMatch = dateRegEx.exec(title);
-    const timeMatch = timeRegEx.exec(title);
+    const dateMatch = this.settings.dateRegEx.exec(title);
+    const timeMatch = this.settings.timeRegEx.exec(title);
 
     if (dateMatch) {
-      date = moment(dateMatch[1], dateFormat as string);
+      date = moment(dateMatch[1], this.settings.dateFormat as string);
     }
 
     if (timeMatch) {
-      time = moment(timeMatch[1], timeFormat as string);
+      time = moment(timeMatch[1], this.settings.timeFormat as string);
 
       if (date) {
         date.hour(time.hour());
@@ -132,10 +127,10 @@ export class KanbanParser {
       }
     }
 
-    if (shouldHideDate) {
+    if (this.settings.shouldHideDate) {
       processedTitle = processedTitle
-        .replace(dateRegEx, "")
-        .replace(timeRegEx, "");
+        .replace(this.settings.dateRegEx, "")
+        .replace(this.settings.timeRegEx, "");
     }
 
     return {
@@ -149,7 +144,6 @@ export class KanbanParser {
     title: string,
     settings?: KanbanSettings
   ) {
-    const shouldHideTags = this.view.getSetting("hide-tags-in-title", settings);
     const tags: string[] = [];
 
     let processedTitle = title;
@@ -160,7 +154,7 @@ export class KanbanParser {
       match = tagRegex.exec(title);
     }
 
-    if (shouldHideTags) {
+    if (this.settings.shouldHideTags) {
       processedTitle = processedTitle.replace(tagRegex, "$1");
     }
 
@@ -174,12 +168,7 @@ export class KanbanParser {
     title: string,
     settings?: KanbanSettings
   ) {
-    const localKeys =
-      (this.view.getSetting("metadata-keys", settings) as DataKey[]) || [];
-    const globalKeys =
-      (this.view.getGlobalSetting("metadata-keys") as DataKey[]) || [];
-
-    if (localKeys.length === 0 && globalKeys?.length === 0) {
+    if (!this.settings.metaKeys.length) {
       return null;
     }
 
@@ -218,13 +207,8 @@ export class KanbanParser {
     file: TFile | null | undefined,
     settings?: KanbanSettings
   ): FileMetadata | undefined {
-    const globalKeys =
-      (this.view.getGlobalSetting("metadata-keys") as DataKey[]) || [];
-    const localKeys =
-      (this.view.getSetting("metadata-keys", settings) as DataKey[]) || [];
-    const keys = [...globalKeys, ...localKeys];
 
-    if (!keys.length) {
+    if (!this.settings.metaKeys.length) {
       return;
     }
 
@@ -245,7 +229,7 @@ export class KanbanParser {
 
     let haveData = false;
 
-    keys.forEach((k) => {
+    this.settings.metaKeys.forEach((k) => {
       if (seenKey[k.metadataKey]) return;
 
       seenKey[k.metadataKey] = true;
@@ -423,6 +407,31 @@ export class KanbanParser {
     const lines = boardMd.replace(frontmatterRegEx, "").split(newLineRegex);
     const lanes: Lane[] = [];
     const archive: Item[] = [];
+
+    const globalKeys = this.view.getGlobalSetting("metadata-keys") || [];
+    const localKeys = this.view.getSetting("metadata-keys", settings) || [];
+
+    const dateTrigger = this.view.getSetting("date-trigger", settings) || defaultDateTrigger;
+    const timeTrigger = this.view.getSetting("time-trigger", settings) || defaultTimeTrigger;
+    const shouldLinkDate = this.view.getSetting("link-date-to-daily-note", settings);
+    const contentMatch = shouldLinkDate ? "\\[\\[([^}]+)\\]\\]" : "{([^}]+)}";
+
+    this.settings = {
+      dateFormat:     this.view.getSetting("date-format", settings) || getDefaultDateFormat(this.view.app),
+      timeFormat:     this.view.getSetting("time-format", settings) || getDefaultTimeFormat(this.view.app),
+      dateTrigger,
+      timeTrigger,
+      shouldLinkDate,
+      shouldHideDate: this.view.getSetting("hide-date-in-title", settings),
+      shouldHideTags: this.view.getSetting("hide-tags-in-title", settings),
+      metaKeys:       [...globalKeys, ...localKeys],
+      dateRegEx: new RegExp(
+        `(?:^|\\s)${escapeRegExpStr(dateTrigger)}${contentMatch}`
+      ),
+      timeRegEx: new RegExp(
+        `(?:^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
+      ),
+    }
 
     let haveSeenArchiveMarker = false;
 
