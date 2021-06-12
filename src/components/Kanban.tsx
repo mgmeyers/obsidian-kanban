@@ -20,8 +20,7 @@ import { t } from "src/lang/helpers";
 import { Icon } from "./Icon/Icon";
 
 interface KanbanProps {
-  dataBridge: DataBridge;
-  filePath?: string;
+  dataBridge: DataBridge<Board>;
   view: KanbanView;
 }
 
@@ -273,23 +272,19 @@ function getBoardModifiers({
   };
 }
 
-export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
-  const [boardData, setBoardData] = React.useState<Board | null>(
-    dataBridge.data
-  );
+export const Kanban = ({view, dataBridge }: KanbanProps) => {
+
+  const filePath = view.file?.path;
+
+  const [boardData, setBoardData] = dataBridge.useState();
 
   const [searchQuery, setSearchQuery] = React.useState<string>("");
   const searchRef = React.useRef<HTMLInputElement>();
 
   const maxArchiveLength = view.getSetting("max-archive-size");
 
-  React.useEffect(() => dataBridge.onExternalSet(setBoardData));
-
-  React.useEffect(() => {
-    if (boardData !== null) {
-      dataBridge.setInternal(boardData);
-    }
-  }, [boardData]);
+  // Don't render anything if there's no board
+  if (!boardData) return <div/>;
 
   React.useEffect(() => {
     if (boardData.isSearching) {
@@ -451,7 +446,7 @@ export const Kanban = ({ filePath, view, dataBridge }: KanbanProps) => {
             onClick={onClick}
           >
             <Droppable
-              droppableId={(view.leaf as any).id}
+              droppableId={view.id}
               type="LANE"
               direction="horizontal"
               ignoreContainerClipping={false}
