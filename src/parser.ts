@@ -103,7 +103,6 @@ export class KanbanParser {
 
   extractDates(
     title: string,
-    settings?: KanbanSettings
   ) {
     let date: undefined | moment.Moment = undefined;
     let time: undefined | moment.Moment = undefined;
@@ -166,7 +165,6 @@ export class KanbanParser {
 
   extractFirstLinkedFile(
     title: string,
-    settings?: KanbanSettings
   ) {
     if (!this.settings.metaKeys.length) {
       return null;
@@ -286,10 +284,10 @@ export class KanbanParser {
     title: string,
     settings?: KanbanSettings
   ) {
-    const date = this.extractDates(title, settings);
-    const tags = this.extractItemTags(date.processedTitle, settings);
-    const file = this.extractFirstLinkedFile(tags.processedTitle, settings);
-    const fileMetadata = this.getLinkedPageMetadata(file, settings);
+    const date = this.extractDates(title);
+    const tags = this.extractItemTags(date.processedTitle);
+    const file = this.extractFirstLinkedFile(tags.processedTitle);
+    const fileMetadata = this.getLinkedPageMetadata(file);
 
     return {
       title: tags.processedTitle.trim(),
@@ -310,7 +308,6 @@ export class KanbanParser {
 
   mdToItem(
     itemMd: string,
-    settings: KanbanSettings,
     isListItem?: boolean
   ): Item {
     let titleRaw = "";
@@ -328,7 +325,7 @@ export class KanbanParser {
       isComplete = match[3] !== " ";
     }
 
-    const processed = this.processTitle(titleRaw, settings);
+    const processed = this.processTitle(titleRaw);
 
     return {
       id: generateInstanceId(),
