@@ -119,17 +119,15 @@ export class KanbanView extends TextFileView implements HoverParent {
               this,
               {
                 onSettingsChange: (settings) => {
-                  this.dataBridge.setExternal(
+                  const updatedBoard =
                     update(board, {
                       settings: {
                         $set: settings,
                       },
-                    })
-                  );
-
-                  setTimeout(() => {
-                    this.setViewData(this.data, true);
-                  }, 100);
+                    });
+                  // external updates display, internal updates the file
+                  this.dataBridge.setExternal(updatedBoard);
+                  this.dataBridge.setInternal(updatedBoard);
                 },
               },
               board.settings
