@@ -33,8 +33,7 @@ export function useItemMenu({
 }: UseItemMenuParams) {
   const { view } = React.useContext(ObsidianContext);
 
-  return React.useMemo(() => {
-    const coordinates = { x: 0, y: 0 };
+  const openMenu = (coordinates = { x: 0, y: 0 }) => {
 
     const hasDate = !!item.metadata.date;
     const hasTime = !!item.metadata.time;
@@ -195,10 +194,10 @@ export function useItemMenu({
       }
     }
 
-    return (e: MouseEvent, internalLinkPath?: string) => {
-      coordinates.x = e.clientX;
-      coordinates.y = e.clientY;
+    menu.showAtPosition(coordinates);
+  };
 
+  return (e: MouseEvent, internalLinkPath?: string) => {
       if (internalLinkPath) {
         // @ts-ignore
         view.app.workspace.onLinkContextMenu(
@@ -207,8 +206,7 @@ export function useItemMenu({
           view.file.path
         );
       } else {
-        menu.showAtPosition(coordinates);
+        openMenu({x: e.clientX, y: e.clientY});
       }
-    };
-  }, [view, setIsEditing, boardModifiers, laneIndex, itemIndex, item]);
+  }
 }
