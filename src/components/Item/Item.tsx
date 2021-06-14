@@ -210,7 +210,7 @@ function ItemMenuButton({
       ) : (
         <button
           onClick={
-             showMenu as unknown as React.MouseEventHandler<HTMLButtonElement>
+            showMenu as unknown as React.MouseEventHandler<HTMLButtonElement>
           }
           className={c("item-postfix-button")}
           aria-label={t("More options")}
@@ -241,7 +241,7 @@ export function draggableItemFactory({
     const lane = board.lanes[laneIndex];
 
     const isMatch = query
-      ? item.titleSearch.toLocaleLowerCase().contains(query)
+      ? item.titleSearch.contains(query)
       : false;
 
     const classModifiers: string[] = getClassModifiers(item);

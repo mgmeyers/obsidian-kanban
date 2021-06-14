@@ -15,30 +15,18 @@ import update from "immutability-helper";
 
 export const frontMatterKey = "kanban-plugin";
 
-const frontmatterRegEx = /^---([\w\W]+?)\n---/;
 const newLineRegex = /[\r\n]+/g;
 
 // Begins with one or more # followed by a space
 const laneRegex = /^#+\s+(.+)$/;
 
-/**
- * Match groups:
- *
- * 1. indent
- * 2. bulletChar
- * 3. boxChar
- * 4. content
- */
-const taskRegex = /^([\s\t]*)([-+*])\s+\[([^\]]+)]\s+(.+)$/;
+const itemRegex = new RegExp([
+  /^\s*/,               // leading whitespace
+  /[-+*]\s*/,           // bullet and its whitespace
+  /(?:\[([^\]])\]\s+)/, // task marker and whitespace (group 1)
+  /(.*)$/,              // Text (group 2)
+].map(r => r.source).join(""));
 
-/**
- * Match groups:
- *
- * 1. indent
- * 2. bulletChar
- * 3. content
- */
-const listRegex = /^([\s\t]*)([-+*])\s+?(.+)$/;
 
 const completeString = `**${t("Complete")}**`;
 const completeRegex = new RegExp(`^${escapeRegExpStr(completeString)}$`, "i");
@@ -46,7 +34,6 @@ const archiveString = "***";
 const archiveMarkerRegex = /^\*\*\*$/;
 const tagRegex = /(^|\s)(#[^#\s]+)/g;
 const linkRegex = /\[\[([^\|\]]+)(?:\||\]\])/;
-
 
 export type ParserSettings = {
   dateFormat: KanbanSettings["date-format"];
@@ -97,7 +84,7 @@ export class KanbanParser {
       searchTitle += " " + keys + " " + values;
     }
 
-    return searchTitle;
+    return searchTitle.toLocaleLowerCase();
   }
 
   extractDates(
@@ -310,7 +297,7 @@ export class KanbanParser {
     const tags = this.extractItemTags(date.processedTitle);
     const file = this.extractFirstLinkedFile(tags.processedTitle);
     const fileMetadata = this.getLinkedPageMetadata(file);
-    const dom = this.view.renderMarkdown(title);
+    const dom = this.view.renderMarkdown(tags.processedTitle);
 
     return {
       title: tags.processedTitle.trim(),
@@ -328,40 +315,6 @@ export class KanbanParser {
         fileMetadata,
       },
       dom
-    };
-  }
-
-  mdToItem(
-    itemMd: string,
-    isListItem?: boolean
-  ): Item {
-    let titleRaw = "";
-    let isComplete = false;
-
-    if (isListItem) {
-      const match = itemMd.match(listRegex);
-
-      titleRaw = match[3];
-      isComplete = false;
-    } else {
-      const match = itemMd.match(taskRegex);
-
-      titleRaw = match[4];
-      isComplete = match[3] !== " ";
-    }
-
-    const processed = this.processTitle(titleRaw);
-
-    return {
-      id: generateInstanceId(),
-      title: processed.title,
-      titleSearch: processed.titleSearch,
-      titleRaw,
-      data: {
-        isComplete,
-      },
-      metadata: processed.metadata,
-      dom: processed.dom,
     };
   }
 
@@ -415,54 +368,110 @@ export class KanbanParser {
     );
   }
 
-  mdToSettings(boardMd: string): KanbanSettings {
-    const match = boardMd.match(frontmatterRegEx);
 
-    if (match) {
-      return yaml.load(match[1].trim()) as KanbanSettings;
+  lastFrontMatter: string
+  lastSettings: KanbanSettings
+  lastGlobalSettings: KanbanSettings
+  lastParse: Map<string, Item[]> = new Map;
+
+  // we use a string instead of a file, because a file changing path could change the meaning of links
+  lastParsedPath: string;
+
+  mdToBoard(boardMd: string, filePath: string): Board {
+
+    /*
+    Steps:
+
+    1. Split front matter from board
+    2. If it's the same as the last, reuse the local settings calc
+    3. If the file path, global and local settings are all the same as before, reuse them
+    4. Otherwise, recalc settings and clear the cache
+
+    Issues:
+    * Should we track linked files for modify / rename / delete? (map file => item id, update accordingly)
+    * Should internal link be resolved from DOM instead of regex?
+    */
+
+    const [beforeFrontMatter, frontMatter, body] = boardMd.split(/^---\r?$\n?/m, 3);
+
+    if (beforeFrontMatter.trim()) throw new Error("Invalid Kanban file: problems parsing frontmatter ")
+
+    const settings = (frontMatter === this.lastFrontMatter) ?
+      this.lastSettings :
+      yaml.load(frontMatter) as KanbanSettings
+    ;
+
+    const globalSettings = this.view.plugin.settings || {};
+
+    if (settings !== this.lastSettings || globalSettings !== this.lastGlobalSettings || this.lastParsedPath !== filePath) {
+      this.lastParse.clear(); // Settings changed, must re-parse
+
+      const globalKeys = this.view.getGlobalSetting("metadata-keys") || [];
+      const localKeys = this.view.getSetting("metadata-keys", settings) || [];
+
+      const dateTrigger = this.view.getSetting("date-trigger", settings) || defaultDateTrigger;
+      const timeTrigger = this.view.getSetting("time-trigger", settings) || defaultTimeTrigger;
+      const shouldLinkDate = this.view.getSetting("link-date-to-daily-note", settings);
+      const contentMatch = shouldLinkDate ? "\\[\\[([^}]+)\\]\\]" : "{([^}]+)}";
+
+      this.settings = {
+        dateFormat:     this.view.getSetting("date-format", settings) || getDefaultDateFormat(this.view.app),
+        timeFormat:     this.view.getSetting("time-format", settings) || getDefaultTimeFormat(this.view.app),
+        dateTrigger,
+        timeTrigger,
+        shouldLinkDate,
+        shouldHideDate: this.view.getSetting("hide-date-in-title", settings),
+        shouldHideTags: this.view.getSetting("hide-tags-in-title", settings),
+        metaKeys:       [...globalKeys, ...localKeys],
+        dateRegEx: new RegExp(
+          `(?:^|\\s)${escapeRegExpStr(dateTrigger)}${contentMatch}`
+        ),
+        timeRegEx: new RegExp(
+          `(?:^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
+        ),
+      }
     }
 
-    return { "kanban-plugin": "basic" };
-  }
-
-  mdToBoard(boardMd: string): Board {
-    const settings = this.mdToSettings(boardMd);
-    const lines = boardMd.replace(frontmatterRegEx, "").split(newLineRegex);
+    const lines = body.split(newLineRegex);
     const lanes: Lane[] = [];
     const archive: Item[] = [];
+    const thisParse: Map<string,Item[]> = new Map;
 
-    const globalKeys = this.view.getGlobalSetting("metadata-keys") || [];
-    const localKeys = this.view.getSetting("metadata-keys", settings) || [];
-
-    const dateTrigger = this.view.getSetting("date-trigger", settings) || defaultDateTrigger;
-    const timeTrigger = this.view.getSetting("time-trigger", settings) || defaultTimeTrigger;
-    const shouldLinkDate = this.view.getSetting("link-date-to-daily-note", settings);
-    const contentMatch = shouldLinkDate ? "\\[\\[([^}]+)\\]\\]" : "{([^}]+)}";
-
-    this.settings = {
-      dateFormat:     this.view.getSetting("date-format", settings) || getDefaultDateFormat(this.view.app),
-      timeFormat:     this.view.getSetting("time-format", settings) || getDefaultTimeFormat(this.view.app),
-      dateTrigger,
-      timeTrigger,
-      shouldLinkDate,
-      shouldHideDate: this.view.getSetting("hide-date-in-title", settings),
-      shouldHideTags: this.view.getSetting("hide-tags-in-title", settings),
-      metaKeys:       [...globalKeys, ...localKeys],
-      dateRegEx: new RegExp(
-        `(?:^|\\s)${escapeRegExpStr(dateTrigger)}${contentMatch}`
-      ),
-      timeRegEx: new RegExp(
-        `(?:^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
-      ),
-    }
 
     let haveSeenArchiveMarker = false;
 
     let currentLane: Lane | null = null;
 
-    lines.forEach((line) => {
-      if (archiveMarkerRegex.test(line)) {
-        haveSeenArchiveMarker = true;
+    let item: Item;
+
+    for (const line of lines) {
+      const itemMatch = line.match(itemRegex);
+      if (itemMatch) {
+        item = this.lastParse.get(line)?.shift();
+        if (!item) {
+          const [_full, marker, titleRaw] = itemMatch;
+          const processed = this.processTitle(titleRaw);
+          item = {
+            id: generateInstanceId(),
+            title: processed.title,
+            titleSearch: processed.titleSearch,
+            titleRaw,
+            data: {
+              isComplete: marker !== " ",
+            },
+            metadata: processed.metadata,
+            dom: processed.dom
+          }
+        }
+
+        thisParse.has(line) ? thisParse.get(line).push(item) : thisParse.set(line, [item]);
+
+        if (haveSeenArchiveMarker) {
+          archive.push(item);
+        } else {
+          currentLane.items.push(item);
+        }
+        continue
       }
 
       // New lane
@@ -480,32 +489,31 @@ export class KanbanParser {
           data: {},
         };
 
-        return;
+        continue;
+      }
+
+      if (archiveMarkerRegex.test(line)) {
+        haveSeenArchiveMarker = true;
+        continue
       }
 
       // Check if this is a completed lane
       if (!haveSeenArchiveMarker && completeRegex.test(line)) {
         currentLane.data.shouldMarkItemsComplete = true;
-        return;
+        continue;
       }
-
-      const isTask = taskRegex.test(line);
-      const isListItem = !isTask && listRegex.test(line);
-
-      // Create an item from tasks
-      if (isTask || isListItem) {
-        if (haveSeenArchiveMarker) {
-          archive.push(this.mdToItem(line, isListItem));
-        } else {
-          currentLane.items.push(this.mdToItem(line, isListItem));
-        }
-      }
-    });
+    };
 
     // Push the last lane
     if (currentLane) {
       lanes.push(currentLane);
     }
+
+    this.lastParse = thisParse;
+    this.lastSettings = settings;
+    this.lastGlobalSettings = globalSettings;
+    this.lastFrontMatter = frontMatter;
+    this.lastParsedPath = filePath;
 
     return {
       settings,

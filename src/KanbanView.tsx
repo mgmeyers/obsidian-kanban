@@ -127,9 +127,10 @@ export class KanbanView extends TextFileView implements HoverParent {
                         $set: settings,
                       },
                     });
-                  // external updates display, internal updates the file
-                  this.dataBridge.setExternal(updatedBoard);
-                  this.dataBridge.setInternal(updatedBoard);
+                  // Save to disk, compute text of new board
+                  this.requestUpdate(updatedBoard);
+                  // Take the text and parse it back in with the new settings
+                  this.setViewData(this.data)
                 },
               },
               board.settings
@@ -207,7 +208,7 @@ export class KanbanView extends TextFileView implements HoverParent {
     return this.data;
   }
 
-  setViewData(data: string, clear: boolean) {
+  setViewData(data: string, _clear?: boolean) {
     const trimmedContent = data.trim();
     let board: Board = null;
     try {
@@ -217,7 +218,7 @@ export class KanbanView extends TextFileView implements HoverParent {
             settings: { "kanban-plugin": "basic" },
             isSearching: false,
           };
-      if (trimmedContent) board = this.parser.mdToBoard(trimmedContent);
+      if (trimmedContent) board = this.parser.mdToBoard(trimmedContent, this.file?.path);
       this.setError()
     } catch (e) {
       console.error(e);
