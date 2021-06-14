@@ -101,7 +101,7 @@ function ItemCheckbox({
   item,
 }: ItemCheckboxProps) {
   const { view } = React.useContext(ObsidianContext);
-  const { boardModifiers } = React.useContext(KanbanContext);
+  const boardModifiers = React.useContext(KanbanContext);
   const shouldShowCheckbox = view.getSetting("show-checkboxes");
 
   const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] =

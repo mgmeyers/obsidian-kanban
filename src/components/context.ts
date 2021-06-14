@@ -9,12 +9,7 @@ export interface ObsidianContextProps {
 
 export const ObsidianContext = React.createContext<ObsidianContextProps>(null);
 
-export interface KanbanContextProps {
-  board: Board;
-  boardModifiers: BoardModifiers;
-}
-
-export const KanbanContext = React.createContext<KanbanContextProps>(null);
+export const KanbanContext = React.createContext<BoardModifiers>(null);
 
 export interface SearchContextProps {
   query: string;

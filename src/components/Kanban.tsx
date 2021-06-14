@@ -26,13 +26,11 @@ interface KanbanProps {
 
 interface BoardStateProps {
   view: KanbanView;
-  boardData: Board;
-  setBoardData: React.Dispatch<Board>;
+  setBoardData: React.Dispatch<React.SetStateAction<Board>>;
 }
 
 function getBoardModifiers({
   view,
-  boardData,
   setBoardData,
 }: BoardStateProps): BoardModifiers {
   const shouldAppendArchiveDate = !!view.getSetting("prepend-archive-date");
@@ -63,7 +61,7 @@ function getBoardModifiers({
         view.app.workspace.trigger("kanban:card-added", view.file, item)
       );
 
-      setBoardData(
+      setBoardData((boardData) =>
         update(boardData, {
           lanes: {
             [laneIndex]: {
@@ -79,7 +77,7 @@ function getBoardModifiers({
     addLane: (lane: Lane) => {
       view.app.workspace.trigger("kanban:lane-added", view.file, lane);
 
-      setBoardData(
+      setBoardData((boardData) =>
         update(boardData, {
           lanes: {
             $push: [lane],
@@ -91,7 +89,7 @@ function getBoardModifiers({
     updateLane: (laneIndex: number, lane: Lane) => {
       view.app.workspace.trigger("kanban:lane-updated", view.file, lane);
 
-      setBoardData(
+      setBoardData((boardData) =>
         update(boardData, {
           lanes: {
             [laneIndex]: {
@@ -103,32 +101,32 @@ function getBoardModifiers({
     },
 
     deleteLane: (laneIndex: number) => {
-      view.app.workspace.trigger(
-        "kanban:lane-deleted",
-        view.file,
-        boardData.lanes[laneIndex]
-      );
+      setBoardData((boardData) => {
+        view.app.workspace.trigger(
+          "kanban:lane-deleted",
+          view.file,
+          boardData.lanes[laneIndex]
+        );
 
-      setBoardData(
-        update(boardData, {
+        return update(boardData, {
           lanes: {
             $splice: [[laneIndex, 1]],
           },
-        })
-      );
+        });
+      })
     },
 
     archiveLane: (laneIndex: number) => {
-      view.app.workspace.trigger(
-        "kanban:lane-archived",
-        view.file,
-        boardData.lanes[laneIndex]
-      );
+      setBoardData((boardData) => {
+        view.app.workspace.trigger(
+          "kanban:lane-archived",
+          view.file,
+          boardData.lanes[laneIndex]
+        );
 
       const items = boardData.lanes[laneIndex].items;
 
-      setBoardData(
-        update(boardData, {
+      return update(boardData, {
           lanes: {
             $splice: [[laneIndex, 1]],
           },
@@ -137,20 +135,20 @@ function getBoardModifiers({
               ? items.map(appendArchiveDate)
               : items,
           },
-        })
-      );
+        });
+      });
     },
 
     archiveLaneItems: (laneIndex: number) => {
-      const items = boardData.lanes[laneIndex].items;
-      view.app.workspace.trigger(
-        "kanban:lane-cards-archived",
-        view.file,
-        items
-      );
+      setBoardData((boardData) => {
+        const items = boardData.lanes[laneIndex].items;
+        view.app.workspace.trigger(
+          "kanban:lane-cards-archived",
+          view.file,
+          items
+        );
 
-      setBoardData(
-        update(boardData, {
+      return update(boardData, {
           lanes: {
             [laneIndex]: {
               items: {
@@ -164,18 +162,18 @@ function getBoardModifiers({
               : items,
           },
         })
-      );
+      });
     },
 
     deleteItem: (laneIndex: number, itemIndex: number) => {
-      view.app.workspace.trigger(
-        "kanban:card-deleted",
-        view.file,
-        boardData.lanes[laneIndex].items[itemIndex]
-      );
+      setBoardData((boardData) => {
+        view.app.workspace.trigger(
+          "kanban:card-deleted",
+          view.file,
+          boardData.lanes[laneIndex].items[itemIndex]
+        );
 
-      setBoardData(
-        update(boardData, {
+        return update(boardData, {
           lanes: {
             [laneIndex]: {
               items: {
@@ -184,19 +182,19 @@ function getBoardModifiers({
             },
           },
         })
-      );
+      });
     },
 
     updateItem: (laneIndex: number, itemIndex: number, item: Item) => {
-      view.app.workspace.trigger(
-        "kanban:card-updated",
-        view.file,
-        boardData.lanes[laneIndex],
-        item
-      );
+      setBoardData((boardData) => {
+        view.app.workspace.trigger(
+          "kanban:card-updated",
+          view.file,
+          boardData.lanes[laneIndex],
+          item
+        );
 
-      setBoardData(
-        update(boardData, {
+        return update(boardData, {
           lanes: {
             [laneIndex]: {
               items: {
@@ -207,19 +205,19 @@ function getBoardModifiers({
             },
           },
         })
-      );
+      });
     },
 
     archiveItem: (laneIndex: number, itemIndex: number, item: Item) => {
-      view.app.workspace.trigger(
-        "kanban:card-archived",
-        view.file,
-        boardData.lanes[laneIndex],
-        item
-      );
+      setBoardData((boardData) => {
+        view.app.workspace.trigger(
+          "kanban:card-archived",
+          view.file,
+          boardData.lanes[laneIndex],
+          item
+        );
 
-      setBoardData(
-        update(boardData, {
+        return update(boardData, {
           lanes: {
             [laneIndex]: {
               items: {
@@ -231,28 +229,28 @@ function getBoardModifiers({
             $push: [shouldAppendArchiveDate ? appendArchiveDate(item) : item],
           },
         })
-      );
+      });
     },
 
     duplicateItem: (laneIndex: number, itemIndex: number) => {
-      view.app.workspace.trigger(
-        "kanban:card-duplicated",
-        view.file,
-        boardData.lanes[laneIndex],
-        itemIndex
-      );
+      setBoardData((boardData) => {
+        view.app.workspace.trigger(
+          "kanban:card-duplicated",
+          view.file,
+          boardData.lanes[laneIndex],
+          itemIndex
+        );
 
-      const itemWithNewID = update(
-        boardData.lanes[laneIndex].items[itemIndex],
-        {
-          id: {
-            $set: generateInstanceId(),
-          },
-        }
-      );
+        const itemWithNewID = update(
+          boardData.lanes[laneIndex].items[itemIndex],
+          {
+            id: {
+              $set: generateInstanceId(),
+            },
+          }
+        );
 
-      setBoardData(
-        update(boardData, {
+        return update(boardData, {
           lanes: {
             [laneIndex]: {
               items: {
@@ -261,7 +259,7 @@ function getBoardModifiers({
             },
           },
         })
-      );
+      });
     },
   };
 }
@@ -306,8 +304,8 @@ export const Kanban = ({view, dataBridge }: KanbanProps) => {
   }, [boardData.archive.length, maxArchiveLength]);
 
   const boardModifiers = React.useMemo(() => {
-    return getBoardModifiers({ view, boardData, setBoardData });
-  }, [view, boardData, setBoardData]);
+    return getBoardModifiers({ view, setBoardData });
+  }, [view, setBoardData]);
 
   if (boardData === null) return null;
 
@@ -399,9 +397,9 @@ export const Kanban = ({view, dataBridge }: KanbanProps) => {
 
   return (
     <ObsidianContext.Provider value={ React.useMemo(() => ({view, filePath}), [view, filePath])}>
-      <KanbanContext.Provider value={{ boardModifiers, board: boardData }}>
+      <KanbanContext.Provider value={ boardModifiers }>
         <SearchContext.Provider
-          value={{ query: searchQuery.toLocaleLowerCase() }}
+          value={React.useMemo(() => ({ query: searchQuery.toLocaleLowerCase() }), [searchQuery])}
         >
           {boardData.isSearching && (
             <div className={c("search-wrapper")}>

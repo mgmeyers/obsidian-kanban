@@ -90,7 +90,7 @@ export function draggableLaneFactory({
     snapshot: DraggableStateSnapshot,
     rubric: DraggableRubric
   ) => {
-    const { boardModifiers } = React.useContext(KanbanContext);
+    const boardModifiers = React.useContext(KanbanContext);
     const { view } = React.useContext(ObsidianContext);
     const lane = lanes[rubric.source.index];
     const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
