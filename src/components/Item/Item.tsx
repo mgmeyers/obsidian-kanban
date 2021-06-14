@@ -210,7 +210,7 @@ function ItemMenuButton({
       ) : (
         <button
           onClick={
-            showMenu
+             showMenu as unknown as React.MouseEventHandler<HTMLButtonElement>
           }
           className={c("item-postfix-button")}
           aria-label={t("More options")}
