@@ -209,9 +209,9 @@ function ItemMenuButton({
         </button>
       ) : (
         <button
-          onClick={(e) => {
-            showMenu(e.nativeEvent);
-          }}
+          onClick={
+            showMenu
+          }
           className={c("item-postfix-button")}
           aria-label={t("More options")}
         >
