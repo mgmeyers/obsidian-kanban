@@ -372,7 +372,8 @@ export class KanbanParser {
   lastFrontMatter: string
   lastSettings: KanbanSettings
   lastGlobalSettings: KanbanSettings
-  lastParse: Map<string, Item[]> = new Map;
+  lastItems: Map<string, Item[]> = new Map;
+  lastLanes: Map<string, Lane> = new Map;
 
   // we use a string instead of a file, because a file changing path could change the meaning of links
   lastParsedPath: string;
@@ -404,7 +405,7 @@ export class KanbanParser {
     const globalSettings = this.view.plugin.settings || {};
 
     if (settings !== this.lastSettings || globalSettings !== this.lastGlobalSettings || this.lastParsedPath !== filePath) {
-      this.lastParse.clear(); // Settings changed, must re-parse
+      this.lastItems.clear(); // Settings changed, must re-parse items
 
       const globalKeys = this.view.getGlobalSetting("metadata-keys") || [];
       const localKeys = this.view.getSetting("metadata-keys", settings) || [];
@@ -435,8 +436,9 @@ export class KanbanParser {
     const lines = body.split(newLineRegex);
     const lanes: Lane[] = [];
     const archive: Item[] = [];
-    const thisParse: Map<string,Item[]> = new Map;
-
+    const thisItems: Map<string,Item[]> = new Map;
+    const thisLanes: Map<string,Lane> = new Map;
+    const lastLanes = this.lastLanes;
 
     let haveSeenArchiveMarker = false;
 
@@ -447,7 +449,7 @@ export class KanbanParser {
     for (const line of lines) {
       const itemMatch = line.match(itemRegex);
       if (itemMatch) {
-        item = this.lastParse.get(line)?.shift();
+        item = this.lastItems.get(line)?.shift();
         if (!item) {
           const [_full, marker, titleRaw] = itemMatch;
           const processed = this.processTitle(titleRaw);
@@ -464,7 +466,7 @@ export class KanbanParser {
           }
         }
 
-        thisParse.has(line) ? thisParse.get(line).push(item) : thisParse.set(line, [item]);
+        thisItems.has(line) ? thisItems.get(line).push(item) : thisItems.set(line, [item]);
 
         if (haveSeenArchiveMarker) {
           archive.push(item);
@@ -476,9 +478,7 @@ export class KanbanParser {
 
       // New lane
       if (!haveSeenArchiveMarker && laneRegex.test(line)) {
-        if (currentLane !== null) {
-          lanes.push(currentLane);
-        }
+        if (currentLane !== null) pushLane();
 
         const match = line.match(laneRegex);
 
@@ -505,11 +505,29 @@ export class KanbanParser {
     };
 
     // Push the last lane
-    if (currentLane) {
+    if (currentLane !== null) pushLane();
+
+    function pushLane() {
+      // Don't replace lanes and items more than necessary
+      const laneKey = `${currentLane.data.shouldMarkItemsComplete} ${currentLane.items.map(item => item.id).join(",")}`;
+      const oldLane = lastLanes.get(laneKey);
+      if (oldLane) {
+        if (oldLane.title === currentLane.title) {
+          // Title is the only thing that isn't in the key
+          currentLane = oldLane
+        } else {
+          // At least save the items and other props
+          currentLane.items = oldLane.items;
+          currentLane.data = oldLane.data;
+          currentLane.id = oldLane.id;
+        }
+      }
+      thisLanes.set(laneKey, currentLane);
       lanes.push(currentLane);
     }
 
-    this.lastParse = thisParse;
+    this.lastItems = thisItems;
+    this.lastLanes = thisLanes;
     this.lastSettings = settings;
     this.lastGlobalSettings = globalSettings;
     this.lastFrontMatter = frontMatter;
