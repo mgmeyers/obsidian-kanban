@@ -398,7 +398,7 @@ export const Kanban = ({view, dataBridge }: KanbanProps) => {
   );
 
   return (
-    <ObsidianContext.Provider value={{ filePath, view }}>
+    <ObsidianContext.Provider value={ React.useMemo(() => ({view, filePath}), [view, filePath])}>
       <KanbanContext.Provider value={{ boardModifiers, board: boardData }}>
         <SearchContext.Provider
           value={{ query: searchQuery.toLocaleLowerCase() }}
