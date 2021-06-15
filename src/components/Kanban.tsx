@@ -13,7 +13,7 @@ import {
 } from "./helpers";
 import { draggableLaneFactory } from "./Lane/Lane";
 import { LaneForm } from "./Lane/LaneForm";
-import { KanbanContext, ObsidianContext, SearchContext } from "./context";
+import { ObsidianContext } from "./context";
 import { KanbanView } from "src/KanbanView";
 import { frontMatterKey } from "../parser";
 import { t } from "src/lang/helpers";
@@ -396,11 +396,7 @@ export const Kanban = ({view, dataBridge }: KanbanProps) => {
   );
 
   return (
-    <ObsidianContext.Provider value={ React.useMemo(() => ({view, filePath}), [view, filePath])}>
-      <KanbanContext.Provider value={ boardModifiers }>
-        <SearchContext.Provider
-          value={React.useMemo(() => ({ query: searchQuery.toLocaleLowerCase() }), [searchQuery])}
-        >
+    <ObsidianContext.Provider value={ React.useMemo(() => ({view, boardModifiers, filePath, query: searchQuery.toLocaleLowerCase()}), [view, boardModifiers, searchQuery, filePath])}>
           {boardData.isSearching && (
             <div className={c("search-wrapper")}>
               <input
@@ -447,8 +443,6 @@ export const Kanban = ({view, dataBridge }: KanbanProps) => {
               {renderLanes}
             </Droppable>
           </div>
-        </SearchContext.Provider>
-      </KanbanContext.Provider>
     </ObsidianContext.Provider>
   );
 };

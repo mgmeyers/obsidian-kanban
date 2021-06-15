@@ -2,7 +2,7 @@ import update from "immutability-helper";
 import React from "react";
 import { Lane } from "../types";
 import { c } from "../helpers";
-import { KanbanContext } from "../context";
+import { ObsidianContext } from "../context";
 import { t } from "src/lang/helpers";
 
 export interface LaneSettingsProps {
@@ -11,7 +11,7 @@ export interface LaneSettingsProps {
 }
 
 export function LaneSettings({ lane, laneIndex }: LaneSettingsProps) {
-  const { boardModifiers } = React.useContext(KanbanContext);
+  const { boardModifiers } = React.useContext(ObsidianContext);
 
   return (
     <div className={c("lane-setting-wrapper")}>

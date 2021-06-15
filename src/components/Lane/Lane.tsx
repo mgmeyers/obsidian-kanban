@@ -14,7 +14,7 @@ import { c } from "../helpers";
 import { draggableItemFactory, GhostItem } from "../Item/Item";
 import { ItemForm } from "../Item/ItemForm";
 import { LaneHeader } from "./LaneHeader";
-import { KanbanContext, ObsidianContext, SearchContext } from "../context";
+import { ObsidianContext } from "../context";
 
 export interface DraggableLaneFactoryParams {
   lanes: Lane[];
@@ -90,8 +90,7 @@ export function draggableLaneFactory({
     snapshot: DraggableStateSnapshot,
     rubric: DraggableRubric
   ) => {
-    const boardModifiers = React.useContext(KanbanContext);
-    const { view } = React.useContext(ObsidianContext);
+    const { view, boardModifiers } = React.useContext(ObsidianContext);
     const lane = lanes[rubric.source.index];
     const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
     const laneWidth = view.getSetting("lane-width");

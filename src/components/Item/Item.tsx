@@ -9,7 +9,7 @@ import {
 import { Item } from "../types";
 import { c, noop } from "../helpers";
 import { Icon } from "../Icon/Icon";
-import { KanbanContext, ObsidianContext, SearchContext } from "../context";
+import { ObsidianContext } from "../context";
 import { ItemContent, ItemMetadata } from "./ItemContent";
 import { useItemMenu } from "./ItemMenu";
 import {
@@ -100,8 +100,7 @@ function ItemCheckbox({
   itemIndex,
   item,
 }: ItemCheckboxProps) {
-  const { view } = React.useContext(ObsidianContext);
-  const boardModifiers = React.useContext(KanbanContext);
+  const { view, boardModifiers } = React.useContext(ObsidianContext);
   const shouldShowCheckbox = view.getSetting("show-checkboxes");
 
   const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] =
@@ -231,9 +230,7 @@ export function draggableItemFactory({
     snapshot: DraggableStateSnapshot,
     rubric: DraggableRubric
   ) => {
-    const { boardModifiers, board } = React.useContext(KanbanContext);
-    const { view } = React.useContext(ObsidianContext);
-    const { query } = React.useContext(SearchContext);
+    const { boardModifiers, board, view, query } = React.useContext(ObsidianContext);
     const [isEditing, setIsEditing] = React.useState(false);
 
     const itemIndex = rubric.source.index;
