@@ -94,14 +94,13 @@ function LaneItems({
   );
 }
 
-export function DraggableLane({
-  lane,
-  laneIndex,
-  isGhost,
-  provided,
-  snapshot,
-}: DraggableLaneProps) {
-    const { view, boardModifiers } = React.useContext(ObsidianContext);
+export class DraggableLane extends React.PureComponent<DraggableLaneProps>{
+
+  static contextType = ObsidianContext;
+
+  render() {
+    const {lane, laneIndex, isGhost, provided, snapshot} = this.props;
+    const { view, boardModifiers } = this.context;
     const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
     const laneWidth = view.getSetting("lane-width");
 
@@ -155,4 +154,5 @@ export function DraggableLane({
         />
       </div>
     );
+  }
 }
