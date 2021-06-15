@@ -408,7 +408,7 @@ export class KanbanParser {
 
     const [beforeFrontMatter, frontMatter, body] = boardMd.split(/^---\r?$\n?/m, 3);
 
-    if (beforeFrontMatter.trim()) throw new Error("Invalid Kanban file: problems parsing frontmatter ")
+    if (beforeFrontMatter.trim()) throw new Error(t("Invalid Kanban file: problems parsing frontmatter"));
 
     const settings = (frontMatter === this.lastFrontMatter) ?
       this.lastSettings :
