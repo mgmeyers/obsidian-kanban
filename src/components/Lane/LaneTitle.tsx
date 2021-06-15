@@ -65,7 +65,7 @@ export function LaneTitle({
       ) : (
         <>
           <span
-            className={`markdown-preview-view ${c("lane-title-text")}`}
+            className={`markdown-preview-view ${c("markdown-preview-view")} ${c("lane-title-text")}`}
             onContextMenu={(e) => {
               e.preventDefault();
               e.stopPropagation();

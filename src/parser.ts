@@ -23,7 +23,7 @@ const laneRegex = /^#+\s+(.*)$/;
 
 const itemRegex = new RegExp([
   /^\s*/,                // leading whitespace
-  /[-+*]\s*/,            // bullet and its whitespace
+  /[-+*]\s+?/,           // bullet and its whitespace (at least one space required)
   /(?:\[([^\]])\]\s+)?/, // task marker and whitespace (group 1)
   /(.*)$/,               // Text (group 2)
 ].map(r => r.source).join(""));
@@ -570,6 +570,11 @@ export class KanbanParser {
           data: {},
         };
 
+        continue;
+      }
+
+      // Archive lane title
+      if (haveSeenArchiveMarker && laneRegex.test(line)) {
         continue;
       }
 

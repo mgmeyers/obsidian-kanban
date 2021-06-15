@@ -318,7 +318,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       );
   }
 
-  renderMarkdown(markdownString: string): HTMLElement {
+  renderMarkdown(markdownString: string): HTMLDivElement {
     const tempEl = createDiv();
     MarkdownRenderer.renderMarkdown(
       markdownString,

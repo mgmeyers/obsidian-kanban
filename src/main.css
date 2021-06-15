@@ -312,21 +312,8 @@ button.kanban-plugin__new-item-button {
   overflow: hidden;
 }
 
-
-.is-dragging .markdown-preview-view.kanban-plugin__lane-title-text p,
-.is-dragging .markdown-preview-view.kanban-plugin__item-markdown p,
-.kanban-plugin .markdown-preview-view p {
-  margin: 0;
-  overflow-x: auto;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-}
-
-.kanban-plugin__meta-value .markdown-preview-view,
-.is-dragging .markdown-preview-view.kanban-plugin__lane-title-text,
-.kanban-plugin .markdown-preview-view.kanban-plugin__lane-title-text,
-.is-dragging .markdown-preview-view.kanban-plugin__item-markdown,
-.kanban-plugin .markdown-preview-view.kanban-plugin__item-markdown {
+.kanban-plugin__markdown-preview-view {
+  font-family: var(--default-font);
   font-size: 0.875rem;
   padding: unset;
   width: unset;
@@ -339,20 +326,22 @@ button.kanban-plugin__new-item-button {
   -webkit-user-select: unset;
 }
 
-.kanban-plugin__meta-value .markdown-preview-view,
-.markdown-preview-view.kanban-plugin__lane-title-text {
-  font-family: var(--default-font);
+.kanban-plugin__markdown-preview-view p {
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
-.kanban-plugin__meta-value .markdown-preview-view p,
-.kanban-plugin__meta-value .markdown-preview-view {
+.kanban-plugin__meta-value .kanban-plugin__markdown-preview-view p,
+.kanban-plugin__meta-value .kanban-plugin__markdown-preview-view {
   font-size: inherit;
   color: inherit;
   line-height: inherit;
 }
 
-.kanban-plugin__meta-value .markdown-preview-view.inline p,
-.kanban-plugin__meta-value .markdown-preview-view.inline {
+.kanban-plugin__markdown-preview-view.inline p,
+.kanban-plugin__markdown-preview-view.inline {
   display: inline-block;
 }
 
@@ -464,8 +453,6 @@ button.kanban-plugin__new-item-button {
   background-color: var(--text-highlight-bg);
   color: var(--text-normal);
 }
-
-.kanban-plugin__meta-value .markdown-preview-view
 
 .kanban-plugin__item-prefix-button-wrapper,
 .kanban-plugin__item-postfix-button-wrapper {

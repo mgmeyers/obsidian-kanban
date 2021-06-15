@@ -1,7 +1,8 @@
 import React from "react";
 import Mark from "mark.js";
-import { ObsidianContext } from "./context";
+import { ObsidianContext, ObsidianContextProps } from "./context";
 import { findDOMNode } from "react-dom";
+import { c } from "./helpers";
 
 interface MarkdownRendererProps {
   className?: string;
@@ -18,15 +19,10 @@ interface MarkdownRendererState {
 export class MarkdownRenderer extends React.Component<MarkdownRendererProps, MarkdownRendererState> {
   static contextType = ObsidianContext;
   props: MarkdownRendererProps;
-
-  constructor(props: MarkdownRendererProps) {
-    super(props);
-    // Always maintain state
-    this.state = this.refreshState(props);
-  }
+  context: ObsidianContextProps;
 
   parse(props: MarkdownRendererProps) {
-    return props.dom.cloneNode(true) || this.context.renderMarkdown(this.props.markdownString);
+    return props.dom?.cloneNode(true) as HTMLDivElement || this.context.view?.renderMarkdown(this.props.markdownString);
   }
 
   refreshState(props: MarkdownRendererProps, state: MarkdownRendererState={}) {
@@ -53,7 +49,13 @@ export class MarkdownRenderer extends React.Component<MarkdownRendererProps, Mar
   }
 
   componentDidMount() {
-    findDOMNode(this).appendChild(this.state.parsedEl)
+    // Always maintain state
+    // Note, refreshState requires context, which isn't available in `constructor`
+    this.state = this.refreshState(this.props);
+
+    if (this.state.parsedEl) {
+      findDOMNode(this).appendChild(this.state.parsedEl)
+    }
   }
 
   componentDidUpdate(prevProps: MarkdownRendererProps) {
@@ -72,7 +74,7 @@ export class MarkdownRenderer extends React.Component<MarkdownRendererProps, Mar
   render() {
     return (
       <div
-        className={`markdown-preview-view ${this.props.className || ""}`}
+        className={`markdown-preview-view ${c("markdown-preview-view")} ${this.props.className || ""}`}
       />
     );
   }
