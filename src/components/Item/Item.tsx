@@ -6,7 +6,7 @@ import {
   DraggableRubric,
 } from "react-beautiful-dnd";
 
-import { Item } from "../types";
+import { Item, Lane } from "../types";
 import { c, noop } from "../helpers";
 import { Icon } from "../Icon/Icon";
 import { ObsidianContext } from "../context";
@@ -22,6 +22,7 @@ import { t } from "src/lang/helpers";
 
 export interface DraggableItemFactoryParams {
   items: Item[];
+  lane: Lane;
   laneIndex: number;
 }
 
@@ -80,7 +81,6 @@ export function GhostItem({ item, shouldMarkItemsComplete }: GhostItemProps) {
         <ItemMetadata
           isSettingsVisible={false}
           item={item}
-          refreshItem={noop}
         />
       </div>
     </div>
@@ -223,6 +223,7 @@ function ItemMenuButton({
 
 export function draggableItemFactory({
   items,
+  lane,
   laneIndex,
 }: DraggableItemFactoryParams) {
   return (
@@ -230,12 +231,11 @@ export function draggableItemFactory({
     snapshot: DraggableStateSnapshot,
     rubric: DraggableRubric
   ) => {
-    const { boardModifiers, board, view, query } = React.useContext(ObsidianContext);
+    const { boardModifiers, view, query } = React.useContext(ObsidianContext);
     const [isEditing, setIsEditing] = React.useState(false);
 
     const itemIndex = rubric.source.index;
     const item = items[itemIndex];
-    const lane = board.lanes[laneIndex];
 
     const isMatch = query
       ? item.titleSearch.contains(query)
@@ -260,22 +260,6 @@ export function draggableItemFactory({
       itemIndex,
       boardModifiers,
     });
-
-    const refreshItem = () => {
-      update(board, {
-        lanes: {
-          [laneIndex]: {
-            items: {
-              [itemIndex]: {
-                title: {
-                  $set: item.title,
-                },
-              },
-            },
-          },
-        },
-      });
-    };
 
     return (
       <div
@@ -360,7 +344,6 @@ export function draggableItemFactory({
             searchQuery={isMatch ? query : undefined}
             isSettingsVisible={isEditing}
             item={item}
-            refreshItem={refreshItem}
           />
         </div>
       </div>

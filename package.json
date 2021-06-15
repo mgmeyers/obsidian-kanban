@@ -36,7 +36,6 @@
     "react": "npm:@preact/compat",
     "react-beautiful-dnd": "^13.1.0",
     "react-cool-onclickoutside": "^1.6.1",
-    "react-dom": "npm:@preact/compat",
-    "use-bus": "^2.3.1"
+    "react-dom": "npm:@preact/compat"
   }
 }

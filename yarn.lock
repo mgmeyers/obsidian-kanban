@@ -1608,11 +1608,6 @@ url-parse-lax@^3.0.0:
   dependencies:
     prepend-http "^2.0.0"
 
-use-bus@^2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/use-bus/-/use-bus-2.3.1.tgz#b96aebe753d99eca7cb6bd019a986d0f6eb1ca04"
-  integrity sha512-dAmoAiWmM0/YhrytHSt0zU0dJe1CW1HqsuTfe4w1mJaBOCGWe2SxSjyEXmZISgjbCRSJORtjtApYNDLxiWqGCg==
-
 use-memo-one@^1.1.1:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/use-memo-one/-/use-memo-one-1.1.2.tgz#0c8203a329f76e040047a35a1197defe342fab20"

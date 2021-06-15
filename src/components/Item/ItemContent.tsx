@@ -1,6 +1,5 @@
 import { getLinkpath, moment } from "obsidian";
 import React from "react";
-import useBus from "use-bus";
 
 import { Item, PageData } from "../types";
 import { c, getDefaultDateFormat, getDefaultTimeFormat } from "../helpers";
@@ -266,21 +265,13 @@ export interface ItemMetadataProps {
   item: Item;
   isSettingsVisible: boolean;
   searchQuery?: string;
-  refreshItem: () => void;
 }
 
 export function ItemMetadata({
   item,
   isSettingsVisible,
-  refreshItem,
   searchQuery,
 }: ItemMetadataProps) {
-  useBus(
-    `metadata:update:${item.metadata.file?.path || "null"}`,
-    () => refreshItem(),
-    [item.metadata.file]
-  );
-
   if (isSettingsVisible || !item.metadata.fileMetadata) return null;
 
   return (

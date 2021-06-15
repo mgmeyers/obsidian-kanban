@@ -11,7 +11,6 @@ import {
   TFile,
   MarkdownRenderer,
 } from "obsidian";
-import { dispatch } from "use-bus";
 
 import { KanbanParser } from "./parser";
 import { Kanban } from "./components/Kanban";
@@ -93,7 +92,9 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   onFileMetadataChange(file: TFile) {
-    dispatch(`metadata:update:${file.path}`);
+    // Invalidate the metadata caching and reparse the file if needed,
+    // recreating all items that referenced the changed file
+    if (this.parser.invalidateFile(file)) this.setViewData(this.data);
   }
 
   onMoreOptionsMenu(menu: Menu) {

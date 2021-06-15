@@ -296,7 +296,11 @@ export class KanbanParser {
     const date = this.extractDates(title);
     const tags = this.extractItemTags(date.processedTitle);
     const file = this.extractFirstLinkedFile(tags.processedTitle);
-    const fileMetadata = this.getLinkedPageMetadata(file);
+    let fileMetadata: FileMetadata;
+    if (file) {
+      fileMetadata = this.fileCache.has(file) ? this.fileCache.get(file) : this.getLinkedPageMetadata(file);
+      this.fileCache.set(file, fileMetadata);
+    }
     const dom = this.view.renderMarkdown(tags.processedTitle);
 
     return {
@@ -374,9 +378,17 @@ export class KanbanParser {
   lastGlobalSettings: KanbanSettings
   lastItems: Map<string, Item[]> = new Map;
   lastLanes: Map<string, Lane> = new Map;
+  fileCache: Map<TFile, FileMetadata> = new Map;
 
   // we use a string instead of a file, because a file changing path could change the meaning of links
   lastParsedPath: string;
+
+  invalidateFile(file: TFile) {
+    if (this.fileCache.has(file)) {
+      this.fileCache.delete(file);
+      return true;
+    }
+  }
 
   mdToBoard(boardMd: string, filePath: string): Board {
 
@@ -389,7 +401,6 @@ export class KanbanParser {
     4. Otherwise, recalc settings and clear the cache
 
     Issues:
-    * Should we track linked files for modify / rename / delete? (map file => item id, update accordingly)
     * Should internal link be resolved from DOM instead of regex?
     */
 
@@ -406,6 +417,8 @@ export class KanbanParser {
 
     if (settings !== this.lastSettings || globalSettings !== this.lastGlobalSettings || this.lastParsedPath !== filePath) {
       this.lastItems.clear(); // Settings changed, must re-parse items
+      this.fileCache.clear(); // including metadata, since the keys might be different
+      this.lastLanes.clear();
 
       const globalKeys = this.view.getGlobalSetting("metadata-keys") || [];
       const localKeys = this.view.getSetting("metadata-keys", settings) || [];
@@ -463,6 +476,18 @@ export class KanbanParser {
             },
             metadata: processed.metadata,
             dom: processed.dom
+          }
+        } else {
+          // Using a cached item; verify its metadata and maybe fetch it again
+          const file = item.metadata.file;
+          if (file && item.metadata.fileMetadata !== this.fileCache.get(file)) {
+            let fileMetadata = this.fileCache.has(file) ? this.fileCache.get(file) : this.getLinkedPageMetadata(file);
+            this.fileCache.set(file, fileMetadata);
+            // Make a new item with updated metadata
+            item = update(item, {
+              id: {$set: generateInstanceId()},
+              metadata: { fileMetadata: {$set: fileMetadata}}
+            });
           }
         }
 

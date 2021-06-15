@@ -24,6 +24,7 @@ export interface DraggableLaneFactoryParams {
 interface LaneItemsProps {
   isGhost?: boolean;
   items: Item[];
+  lane: Lane;
   laneId: string;
   laneIndex: number;
   shouldMarkItemsComplete: boolean;
@@ -32,12 +33,14 @@ interface LaneItemsProps {
 function LaneItems({
   isGhost,
   items,
+  lane,
   laneId,
   laneIndex,
   shouldMarkItemsComplete,
 }: LaneItemsProps) {
   const renderItem = draggableItemFactory({
     laneIndex,
+    lane,
     items,
   });
 
@@ -120,6 +123,7 @@ export function draggableLaneFactory({
           lane={lane}
         />
         <LaneItems
+          lane={lane}
           laneId={lane.id}
           items={lane.items}
           laneIndex={rubric.source.index}
