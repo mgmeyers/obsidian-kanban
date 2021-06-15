@@ -21,6 +21,7 @@ export default {
   "Open board settings": "Open board settings",
   "Archive completed cards": "Archive completed cards",
   "Something went wrong": "Something went wrong",
+  "You may wish to open as markdown and inspect or edit the file.": "You may wish to open as markdown and inspect or edit the file.",
 
   // parser.ts
   Complete: "Complete",
