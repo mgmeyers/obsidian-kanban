@@ -27,7 +27,6 @@ export interface DraggableLaneProps {
 interface LaneItemsProps {
   isGhost?: boolean;
   items: Item[];
-  lane: Lane;
   laneId: string;
   laneIndex: number;
   shouldMarkItemsComplete: boolean;
@@ -36,7 +35,6 @@ interface LaneItemsProps {
 function LaneItems({
   isGhost,
   items,
-  lane,
   laneId,
   laneIndex,
   shouldMarkItemsComplete,
@@ -51,10 +49,10 @@ function LaneItems({
       item={items[rubric.source.index]}
       itemIndex={rubric.source.index}
       laneIndex={laneIndex}
-      shouldMarkItemsComplete={lane.data.shouldMarkItemsComplete}
+      shouldMarkItemsComplete={shouldMarkItemsComplete}
       provided={provided} snapshot={snapshot}
     />
-  ), [laneIndex, items, lane.data.shouldMarkItemsComplete]);
+  ), [laneIndex, items, shouldMarkItemsComplete]);
 
   if (isGhost) {
     return (
@@ -132,7 +130,6 @@ export function DraggableLane({
           lane={lane}
         />
         <LaneItems
-          lane={lane}
           laneId={lane.id}
           items={lane.items}
           laneIndex={laneIndex}
