@@ -12,6 +12,7 @@ import yaml from "js-yaml";
 import { KanbanView } from "./KanbanView";
 import { t } from "./lang/helpers";
 import update from "immutability-helper";
+import { diffLines } from "diff";
 
 export const frontMatterKey = "kanban-plugin";
 
@@ -374,6 +375,7 @@ export class KanbanParser {
 
 
   lastFrontMatter: string
+  lastBody: string
   lastSettings: KanbanSettings
   lastGlobalSettings: KanbanSettings
   lastItems: Map<string, Item[]> = new Map;
@@ -419,6 +421,7 @@ export class KanbanParser {
       this.lastItems.clear(); // Settings changed, must re-parse items
       this.fileCache.clear(); // including metadata, since the keys might be different
       this.lastLanes.clear();
+      this.lastBody = null;
 
       const globalKeys = this.view.getGlobalSetting("metadata-keys") || [];
       const localKeys = this.view.getSetting("metadata-keys", settings) || [];
@@ -443,6 +446,47 @@ export class KanbanParser {
         timeRegEx: new RegExp(
           `(?:^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
         ),
+      }
+    }
+
+    // Try to recognize single-line item edits, and try to keep the same ID
+    // (So the item will be refreshed, but not re-created)
+    if (this.lastBody && this.lastBody !== body) {
+      const diff = diffLines(this.lastBody, body, {newlineIsToken: true});
+      if (diff.length === 4) {
+        const [_before, oldLine, newLine, _after] = diff;
+        if (oldLine.removed && oldLine.count===1 && newLine.added && newLine.count === 1) {
+          // We found a one-line change of text only -- see if it was and still is an item
+          const oldItem = this.lastItems.get(oldLine.value)?.shift();
+          const itemMatch = newLine.value.match(itemRegex);
+          if (itemMatch && oldItem) {
+            // Generaate a new item, but with the old ID
+            const [_full, marker, titleRaw] = itemMatch;
+            const processed = this.processTitle(titleRaw);
+            let line = newLine.value, item = {
+              id: oldItem.id,
+              title: processed.title,
+              titleSearch: processed.titleSearch,
+              titleRaw,
+              data: {
+                isComplete: marker !== " ",
+              },
+              metadata: processed.metadata,
+              dom: processed.dom
+            }
+            // Save it in the cache for reuse, and update whatever (cached) lane it's in
+            // (Theoretically we could just issue an update to the baord itself here, and skip
+            // the parsing altogether.  For now, just update the lane cache, as that's still
+            // pretty darn fast.)
+            this.lastItems.has(line) ? this.lastItems.get(line).push(item) : this.lastItems.set(line, [item]);
+            for (const [key, lane] of this.lastLanes.entries()) {
+              const pos = lane.items.indexOf(oldItem);
+              if (pos >= 0) {
+                this.lastLanes.set(key, update(lane, {items: {$splice: [[pos, 1, item]]}}));
+              }
+            }
+          }
+        }
       }
     }
 
@@ -553,6 +597,7 @@ export class KanbanParser {
       lanes.push(currentLane);
     }
 
+    this.lastBody = body;
     this.lastItems = thisItems;
     this.lastLanes = thisLanes;
     this.lastSettings = settings;
