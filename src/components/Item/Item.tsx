@@ -20,10 +20,13 @@ import {
 } from "./helpers";
 import { t } from "src/lang/helpers";
 
-export interface DraggableItemFactoryParams {
-  items: Item[];
-  lane: Lane;
+export interface DraggableItemProps {
+  item: Item;
+  itemIndex: number;
+  shouldMarkItemsComplete: boolean;
   laneIndex: number;
+  provided: DraggableProvided;
+  snapshot: DraggableStateSnapshot;
 }
 
 interface GhostItemProps {
@@ -221,21 +224,16 @@ function ItemMenuButton({
   );
 }
 
-export function draggableItemFactory({
-  items,
-  lane,
+export function DraggableItem({
+  item,
+  itemIndex,
   laneIndex,
-}: DraggableItemFactoryParams) {
-  return (
-    provided: DraggableProvided,
-    snapshot: DraggableStateSnapshot,
-    rubric: DraggableRubric
-  ) => {
+  shouldMarkItemsComplete,
+  provided,
+  snapshot,
+}: DraggableItemProps) {
     const { boardModifiers, view, query } = React.useContext(ObsidianContext);
     const [isEditing, setIsEditing] = React.useState(false);
-
-    const itemIndex = rubric.source.index;
-    const item = items[itemIndex];
 
     const isMatch = query
       ? item.titleSearch.contains(query)
@@ -288,7 +286,7 @@ export function draggableItemFactory({
             <ItemCheckbox
               item={item}
               itemIndex={itemIndex}
-              shouldMarkItemsComplete={lane.data.shouldMarkItemsComplete}
+              shouldMarkItemsComplete={shouldMarkItemsComplete}
               laneIndex={laneIndex}
             />
             <ItemContent
@@ -348,5 +346,4 @@ export function draggableItemFactory({
         </div>
       </div>
     );
-  };
 }

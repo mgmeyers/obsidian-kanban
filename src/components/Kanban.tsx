@@ -2,7 +2,7 @@ import { moment } from "obsidian";
 import update from "immutability-helper";
 import React from "react";
 import { DataBridge } from "../DataBridge";
-import { Droppable, DroppableProvided, Draggable } from "react-beautiful-dnd";
+import { Droppable, DroppableProvided, Draggable, DraggableProvided, DraggableStateSnapshot, DraggableRubric } from "react-beautiful-dnd";
 import { Board, BoardModifiers, Item, Lane } from "./types";
 import {
   c,
@@ -11,7 +11,7 @@ import {
   getDefaultTimeFormat,
   generateInstanceId,
 } from "./helpers";
-import { draggableLaneFactory } from "./Lane/Lane";
+import { DraggableLane } from "./Lane/Lane";
 import { LaneForm } from "./Lane/LaneForm";
 import { ObsidianContext } from "./context";
 import { KanbanView } from "src/KanbanView";
@@ -309,14 +309,30 @@ export const Kanban = ({view, dataBridge }: KanbanProps) => {
 
   if (boardData === null) return null;
 
-  const renderLane = draggableLaneFactory({
-    lanes: boardData.lanes,
-  });
+  // These rendering functions can't usefully be memoized, because they all use boardData,
+  // which will always be "changed" when this component is re-rendered.
 
-  const renderLaneGhost = draggableLaneFactory({
-    lanes: boardData.lanes,
-    isGhost: true,
-  });
+  const renderLane = (
+    provided: DraggableProvided,
+    snapshot: DraggableStateSnapshot,
+    rubric: DraggableRubric
+  ) => (
+    <DraggableLane
+      lane={boardData.lanes[rubric.source.index]} laneIndex={rubric.source.index}
+      provided={provided} snapshot={snapshot}
+    />
+  );
+
+  const renderLaneGhost = (
+    provided: DraggableProvided,
+    snapshot: DraggableStateSnapshot,
+    rubric: DraggableRubric
+  ) => (
+    <DraggableLane
+      lane={boardData.lanes[rubric.source.index]} laneIndex={rubric.source.index} isGhost={true}
+      provided={provided} snapshot={snapshot}
+    />
+  );
 
   const renderLanes = (provided: DroppableProvided) => (
     <div

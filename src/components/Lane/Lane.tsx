@@ -11,14 +11,17 @@ import {
 } from "react-beautiful-dnd";
 import { Item, Lane } from "../types";
 import { c } from "../helpers";
-import { draggableItemFactory, GhostItem } from "../Item/Item";
+import { DraggableItem, GhostItem } from "../Item/Item";
 import { ItemForm } from "../Item/ItemForm";
 import { LaneHeader } from "./LaneHeader";
 import { ObsidianContext } from "../context";
 
-export interface DraggableLaneFactoryParams {
-  lanes: Lane[];
+export interface DraggableLaneProps {
+  lane: Lane;
+  laneIndex: number;
   isGhost?: boolean;
+  provided: DraggableProvided;
+  snapshot: DraggableStateSnapshot;
 }
 
 interface LaneItemsProps {
@@ -38,11 +41,20 @@ function LaneItems({
   laneIndex,
   shouldMarkItemsComplete,
 }: LaneItemsProps) {
-  const renderItem = draggableItemFactory({
-    laneIndex,
-    lane,
-    items,
-  });
+
+  const renderItem = React.useCallback((
+    provided: DraggableProvided,
+    snapshot: DraggableStateSnapshot,
+    rubric: DraggableRubric
+  ) => (
+    <DraggableItem
+      item={items[rubric.source.index]}
+      itemIndex={rubric.source.index}
+      laneIndex={laneIndex}
+      shouldMarkItemsComplete={lane.data.shouldMarkItemsComplete}
+      provided={provided} snapshot={snapshot}
+    />
+  ), [laneIndex, items, lane.data.shouldMarkItemsComplete]);
 
   if (isGhost) {
     return (
@@ -84,17 +96,14 @@ function LaneItems({
   );
 }
 
-export function draggableLaneFactory({
-  lanes,
+export function DraggableLane({
+  lane,
+  laneIndex,
   isGhost,
-}: DraggableLaneFactoryParams) {
-  return (
-    provided: DraggableProvided,
-    snapshot: DraggableStateSnapshot,
-    rubric: DraggableRubric
-  ) => {
+  provided,
+  snapshot,
+}: DraggableLaneProps) {
     const { view, boardModifiers } = React.useContext(ObsidianContext);
-    const lane = lanes[rubric.source.index];
     const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
     const laneWidth = view.getSetting("lane-width");
 
@@ -119,21 +128,21 @@ export function draggableLaneFactory({
       >
         <LaneHeader
           dragHandleProps={provided.dragHandleProps}
-          laneIndex={rubric.source.index}
+          laneIndex={laneIndex}
           lane={lane}
         />
         <LaneItems
           lane={lane}
           laneId={lane.id}
           items={lane.items}
-          laneIndex={rubric.source.index}
+          laneIndex={laneIndex}
           isGhost={isGhost}
           shouldMarkItemsComplete={shouldMarkItemsComplete}
         />
         <ItemForm
           addItems={(items: Item[]) => {
             boardModifiers.addItemsToLane(
-              rubric.source.index,
+              laneIndex,
               items.map((item) =>
                 update(item, {
                   data: {
@@ -149,5 +158,4 @@ export function draggableLaneFactory({
         />
       </div>
     );
-  };
 }
