@@ -224,16 +224,34 @@ function ItemMenuButton({
   );
 }
 
-export function DraggableItem({
-  item,
-  itemIndex,
-  laneIndex,
-  shouldMarkItemsComplete,
-  provided,
-  snapshot,
-}: DraggableItemProps) {
-    const { boardModifiers, view, query } = React.useContext(ObsidianContext);
-    const [isEditing, setIsEditing] = React.useState(false);
+type DraggableItemState = {
+  isEditing: boolean;
+}
+
+export class DraggableItem extends React.PureComponent<DraggableItemProps, DraggableItemState> {
+  static contextType = ObsidianContext;
+
+  state = {isEditing: false}
+
+  setIsEditing = (isEditing: boolean) => {
+    this.setState({isEditing});
+  }
+
+  showMenu = (e: MouseEvent, internalLinkPath?: string) => {
+    useItemMenu({
+      setIsEditing: this.setIsEditing,
+      item: this.props.item,
+      laneIndex: this.props.laneIndex,
+      itemIndex: this.props.itemIndex,
+      boardModifiers: this.context.boardModifiers,
+      view: this.context.view,
+    })(e, internalLinkPath);
+  }
+
+  render() {
+    const {item, itemIndex, laneIndex, shouldMarkItemsComplete, provided, snapshot} = this.props;
+    const { boardModifiers, view, query } = this.context;
+    const { isEditing } = this.state;
 
     const isMatch = query
       ? item.titleSearch.contains(query)
@@ -251,14 +269,6 @@ export function DraggableItem({
       }
     }
 
-    const showMenu = useItemMenu({
-      setIsEditing,
-      item,
-      laneIndex,
-      itemIndex,
-      boardModifiers,
-    });
-
     return (
       <div
         onContextMenu={(e) => {
@@ -271,10 +281,10 @@ export function DraggableItem({
               ? e.target.dataset.href
               : undefined;
 
-          showMenu(e.nativeEvent, internalLinkPath);
+          this.showMenu(e.nativeEvent, internalLinkPath);
         }}
         onDoubleClick={() => {
-          setIsEditing(true);
+          this.setIsEditing(true);
         }}
         className={`${c("item")} ${classModifiers.join(" ")}`}
         ref={provided.innerRef}
@@ -291,7 +301,7 @@ export function DraggableItem({
             />
             <ItemContent
               isSettingsVisible={isEditing}
-              setIsSettingsVisible={setIsEditing}
+              setIsSettingsVisible={this.setIsEditing}
               item={item}
               searchQuery={isMatch ? query : undefined}
               onChange={(e) => {
@@ -334,8 +344,8 @@ export function DraggableItem({
             />
             <ItemMenuButton
               isEditing={isEditing}
-              setIsEditing={setIsEditing}
-              showMenu={showMenu}
+              setIsEditing={this.setIsEditing}
+              showMenu={this.showMenu}
             />
           </div>
           <ItemMetadata
@@ -346,4 +356,5 @@ export function DraggableItem({
         </div>
       </div>
     );
+  }
 }

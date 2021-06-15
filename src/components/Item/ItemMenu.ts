@@ -13,6 +13,7 @@ import {
   constructTimePicker,
 } from "./helpers";
 import { t } from "src/lang/helpers";
+import { KanbanView } from "src/KanbanView";
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
 
@@ -22,6 +23,7 @@ interface UseItemMenuParams {
   laneIndex: number;
   itemIndex: number;
   boardModifiers: BoardModifiers;
+  view: KanbanView;
 }
 
 export function useItemMenu({
@@ -30,8 +32,8 @@ export function useItemMenu({
   laneIndex,
   itemIndex,
   boardModifiers,
+  view
 }: UseItemMenuParams) {
-  const { view } = React.useContext(ObsidianContext);
 
   const openMenu = (coordinates = { x: 0, y: 0 }) => {
 
