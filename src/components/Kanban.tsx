@@ -2,7 +2,7 @@ import { moment } from "obsidian";
 import update from "immutability-helper";
 import React from "react";
 import { DataBridge } from "../DataBridge";
-import { Droppable, DroppableProvided, Draggable } from "react-beautiful-dnd";
+import { Droppable, DroppableProvided, Draggable, DraggableProvided, DraggableStateSnapshot, DraggableRubric } from "react-beautiful-dnd";
 import { Board, BoardModifiers, Item, Lane } from "./types";
 import {
   c,
@@ -11,11 +11,11 @@ import {
   getDefaultTimeFormat,
   generateInstanceId,
 } from "./helpers";
-import { draggableLaneFactory } from "./Lane/Lane";
+import { DraggableLane } from "./Lane/Lane";
 import { LaneForm } from "./Lane/LaneForm";
-import { KanbanContext, ObsidianContext, SearchContext } from "./context";
+import { ObsidianContext } from "./context";
 import { KanbanView } from "src/KanbanView";
-import { frontMatterKey, processTitle } from "../parser";
+import { frontMatterKey } from "../parser";
 import { t } from "src/lang/helpers";
 import { Icon } from "./Icon/Icon";
 
@@ -26,13 +26,11 @@ interface KanbanProps {
 
 interface BoardStateProps {
   view: KanbanView;
-  boardData: Board;
-  setBoardData: React.Dispatch<Board>;
+  setBoardData: React.Dispatch<React.SetStateAction<Board>>;
 }
 
 function getBoardModifiers({
   view,
-  boardData,
   setBoardData,
 }: BoardStateProps): BoardModifiers {
   const shouldAppendArchiveDate = !!view.getSetting("prepend-archive-date");
@@ -54,13 +52,7 @@ function getBoardModifiers({
     newTitle.push(item.titleRaw);
 
     const titleRaw = newTitle.join(" ");
-    const processed = processTitle(titleRaw, view);
-
-    return update(item, {
-      title: { $set: processed.title },
-      titleRaw: { $set: titleRaw },
-      titleSearch: { $set: processed.titleSearch },
-    });
+    return view.parser.updateItem(item, titleRaw);
   };
 
   return {
@@ -69,7 +61,7 @@ function getBoardModifiers({
         view.app.workspace.trigger("kanban:card-added", view.file, item)
       );
 
-      setBoardData(
+      setBoardData((boardData) =>
         update(boardData, {
           lanes: {
             [laneIndex]: {
@@ -85,7 +77,7 @@ function getBoardModifiers({
     addLane: (lane: Lane) => {
       view.app.workspace.trigger("kanban:lane-added", view.file, lane);
 
-      setBoardData(
+      setBoardData((boardData) =>
         update(boardData, {
           lanes: {
             $push: [lane],
@@ -97,7 +89,7 @@ function getBoardModifiers({
     updateLane: (laneIndex: number, lane: Lane) => {
       view.app.workspace.trigger("kanban:lane-updated", view.file, lane);
 
-      setBoardData(
+      setBoardData((boardData) =>
         update(boardData, {
           lanes: {
             [laneIndex]: {
@@ -109,32 +101,32 @@ function getBoardModifiers({
     },
 
     deleteLane: (laneIndex: number) => {
-      view.app.workspace.trigger(
-        "kanban:lane-deleted",
-        view.file,
-        boardData.lanes[laneIndex]
-      );
+      setBoardData((boardData) => {
+        view.app.workspace.trigger(
+          "kanban:lane-deleted",
+          view.file,
+          boardData.lanes[laneIndex]
+        );
 
-      setBoardData(
-        update(boardData, {
+        return update(boardData, {
           lanes: {
             $splice: [[laneIndex, 1]],
           },
-        })
-      );
+        });
+      })
     },
 
     archiveLane: (laneIndex: number) => {
-      view.app.workspace.trigger(
-        "kanban:lane-archived",
-        view.file,
-        boardData.lanes[laneIndex]
-      );
+      setBoardData((boardData) => {
+        view.app.workspace.trigger(
+          "kanban:lane-archived",
+          view.file,
+          boardData.lanes[laneIndex]
+        );
 
       const items = boardData.lanes[laneIndex].items;
 
-      setBoardData(
-        update(boardData, {
+      return update(boardData, {
           lanes: {
             $splice: [[laneIndex, 1]],
           },
@@ -143,20 +135,20 @@ function getBoardModifiers({
               ? items.map(appendArchiveDate)
               : items,
           },
-        })
-      );
+        });
+      });
     },
 
     archiveLaneItems: (laneIndex: number) => {
-      const items = boardData.lanes[laneIndex].items;
-      view.app.workspace.trigger(
-        "kanban:lane-cards-archived",
-        view.file,
-        items
-      );
+      setBoardData((boardData) => {
+        const items = boardData.lanes[laneIndex].items;
+        view.app.workspace.trigger(
+          "kanban:lane-cards-archived",
+          view.file,
+          items
+        );
 
-      setBoardData(
-        update(boardData, {
+      return update(boardData, {
           lanes: {
             [laneIndex]: {
               items: {
@@ -170,18 +162,18 @@ function getBoardModifiers({
               : items,
           },
         })
-      );
+      });
     },
 
     deleteItem: (laneIndex: number, itemIndex: number) => {
-      view.app.workspace.trigger(
-        "kanban:card-deleted",
-        view.file,
-        boardData.lanes[laneIndex].items[itemIndex]
-      );
+      setBoardData((boardData) => {
+        view.app.workspace.trigger(
+          "kanban:card-deleted",
+          view.file,
+          boardData.lanes[laneIndex].items[itemIndex]
+        );
 
-      setBoardData(
-        update(boardData, {
+        return update(boardData, {
           lanes: {
             [laneIndex]: {
               items: {
@@ -190,19 +182,19 @@ function getBoardModifiers({
             },
           },
         })
-      );
+      });
     },
 
     updateItem: (laneIndex: number, itemIndex: number, item: Item) => {
-      view.app.workspace.trigger(
-        "kanban:card-updated",
-        view.file,
-        boardData.lanes[laneIndex],
-        item
-      );
+      setBoardData((boardData) => {
+        view.app.workspace.trigger(
+          "kanban:card-updated",
+          view.file,
+          boardData.lanes[laneIndex],
+          item
+        );
 
-      setBoardData(
-        update(boardData, {
+        return update(boardData, {
           lanes: {
             [laneIndex]: {
               items: {
@@ -213,19 +205,19 @@ function getBoardModifiers({
             },
           },
         })
-      );
+      });
     },
 
     archiveItem: (laneIndex: number, itemIndex: number, item: Item) => {
-      view.app.workspace.trigger(
-        "kanban:card-archived",
-        view.file,
-        boardData.lanes[laneIndex],
-        item
-      );
+      setBoardData((boardData) => {
+        view.app.workspace.trigger(
+          "kanban:card-archived",
+          view.file,
+          boardData.lanes[laneIndex],
+          item
+        );
 
-      setBoardData(
-        update(boardData, {
+        return update(boardData, {
           lanes: {
             [laneIndex]: {
               items: {
@@ -237,28 +229,28 @@ function getBoardModifiers({
             $push: [shouldAppendArchiveDate ? appendArchiveDate(item) : item],
           },
         })
-      );
+      });
     },
 
     duplicateItem: (laneIndex: number, itemIndex: number) => {
-      view.app.workspace.trigger(
-        "kanban:card-duplicated",
-        view.file,
-        boardData.lanes[laneIndex],
-        itemIndex
-      );
+      setBoardData((boardData) => {
+        view.app.workspace.trigger(
+          "kanban:card-duplicated",
+          view.file,
+          boardData.lanes[laneIndex],
+          itemIndex
+        );
 
-      const itemWithNewID = update(
-        boardData.lanes[laneIndex].items[itemIndex],
-        {
-          id: {
-            $set: generateInstanceId(),
-          },
-        }
-      );
+        const itemWithNewID = update(
+          boardData.lanes[laneIndex].items[itemIndex],
+          {
+            id: {
+              $set: generateInstanceId(),
+            },
+          }
+        );
 
-      setBoardData(
-        update(boardData, {
+        return update(boardData, {
           lanes: {
             [laneIndex]: {
               items: {
@@ -267,7 +259,7 @@ function getBoardModifiers({
             },
           },
         })
-      );
+      });
     },
   };
 }
@@ -312,19 +304,35 @@ export const Kanban = ({view, dataBridge }: KanbanProps) => {
   }, [boardData.archive.length, maxArchiveLength]);
 
   const boardModifiers = React.useMemo(() => {
-    return getBoardModifiers({ view, boardData, setBoardData });
-  }, [view, boardData, setBoardData]);
+    return getBoardModifiers({ view, setBoardData });
+  }, [view, setBoardData]);
 
   if (boardData === null) return null;
 
-  const renderLane = draggableLaneFactory({
-    lanes: boardData.lanes,
-  });
+  // These rendering functions can't usefully be memoized, because they all use boardData,
+  // which will always be "changed" when this component is re-rendered.
 
-  const renderLaneGhost = draggableLaneFactory({
-    lanes: boardData.lanes,
-    isGhost: true,
-  });
+  const renderLane = (
+    provided: DraggableProvided,
+    snapshot: DraggableStateSnapshot,
+    rubric: DraggableRubric
+  ) => (
+    <DraggableLane
+      lane={boardData.lanes[rubric.source.index]} laneIndex={rubric.source.index}
+      provided={provided} snapshot={snapshot}
+    />
+  );
+
+  const renderLaneGhost = (
+    provided: DraggableProvided,
+    snapshot: DraggableStateSnapshot,
+    rubric: DraggableRubric
+  ) => (
+    <DraggableLane
+      lane={boardData.lanes[rubric.source.index]} laneIndex={rubric.source.index} isGhost={true}
+      provided={provided} snapshot={snapshot}
+    />
+  );
 
   const renderLanes = (provided: DroppableProvided) => (
     <div
@@ -404,11 +412,7 @@ export const Kanban = ({view, dataBridge }: KanbanProps) => {
   );
 
   return (
-    <ObsidianContext.Provider value={{ filePath, view }}>
-      <KanbanContext.Provider value={{ boardModifiers, board: boardData }}>
-        <SearchContext.Provider
-          value={{ query: searchQuery.toLocaleLowerCase() }}
-        >
+    <ObsidianContext.Provider value={ React.useMemo(() => ({view, boardModifiers, filePath, query: searchQuery.toLocaleLowerCase()}), [view, boardModifiers, searchQuery, filePath])}>
           {boardData.isSearching && (
             <div className={c("search-wrapper")}>
               <input
@@ -455,8 +459,6 @@ export const Kanban = ({view, dataBridge }: KanbanProps) => {
               {renderLanes}
             </Droppable>
           </div>
-        </SearchContext.Provider>
-      </KanbanContext.Provider>
     </ObsidianContext.Provider>
   );
 };

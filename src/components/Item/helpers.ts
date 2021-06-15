@@ -10,7 +10,6 @@ import {
 } from "../helpers";
 
 import flatpickr from "flatpickr";
-import { processTitle } from "src/parser";
 import { defaultDateTrigger, defaultTimeTrigger } from "src/settingHelpers";
 import { getDefaultLocale } from "./datePickerLocale";
 import { KanbanView } from "src/KanbanView";
@@ -127,17 +126,10 @@ export function constructMenuDatePickerOnChange({
       titleRaw = `${item.titleRaw} ${dateTrigger}${wrappedDate}`;
     }
 
-    const processed = processTitle(titleRaw, view);
-
     boardModifiers.updateItem(
       laneIndex,
       itemIndex,
-      update(item, {
-        title: { $set: processed.title },
-        titleRaw: { $set: titleRaw },
-        titleSearch: { $set: processed.titleSearch },
-        metadata: { $set: processed.metadata },
-      })
+      view.parser.updateItem(item, titleRaw)
     );
   };
 }
@@ -298,17 +290,10 @@ export function constructMenuTimePickerOnChange({
       titleRaw = `${item.titleRaw} ${timeTrigger}{${time}}`;
     }
 
-    const processed = processTitle(titleRaw, view);
-
     boardModifiers.updateItem(
       laneIndex,
       itemIndex,
-      update(item, {
-        title: { $set: processed.title },
-        titleRaw: { $set: titleRaw },
-        titleSearch: { $set: processed.titleSearch },
-        metadata: { $set: processed.metadata },
-      })
+      view.parser.updateItem(item, titleRaw)
     );
   };
 }

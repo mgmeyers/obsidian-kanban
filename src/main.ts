@@ -332,7 +332,7 @@ export default class KanbanPlugin extends Plugin {
       type: "markdown",
       state: leaf.view.getState(),
       popstate: true,
-    } as ViewState);
+    } as ViewState, {focus: true});
   }
 
   async setKanbanView(leaf: WorkspaceLeaf) {

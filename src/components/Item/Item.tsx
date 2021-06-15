@@ -6,13 +6,12 @@ import {
   DraggableRubric,
 } from "react-beautiful-dnd";
 
-import { Item } from "../types";
+import { Item, Lane } from "../types";
 import { c, noop } from "../helpers";
 import { Icon } from "../Icon/Icon";
-import { KanbanContext, ObsidianContext, SearchContext } from "../context";
+import { ObsidianContext } from "../context";
 import { ItemContent, ItemMetadata } from "./ItemContent";
 import { useItemMenu } from "./ItemMenu";
-import { processTitle } from "src/parser";
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
@@ -21,9 +20,13 @@ import {
 } from "./helpers";
 import { t } from "src/lang/helpers";
 
-export interface DraggableItemFactoryParams {
-  items: Item[];
+export interface DraggableItemProps {
+  item: Item;
+  itemIndex: number;
+  shouldMarkItemsComplete: boolean;
   laneIndex: number;
+  provided: DraggableProvided;
+  snapshot: DraggableStateSnapshot;
 }
 
 interface GhostItemProps {
@@ -81,7 +84,6 @@ export function GhostItem({ item, shouldMarkItemsComplete }: GhostItemProps) {
         <ItemMetadata
           isSettingsVisible={false}
           item={item}
-          refreshItem={noop}
         />
       </div>
     </div>
@@ -101,8 +103,7 @@ function ItemCheckbox({
   itemIndex,
   item,
 }: ItemCheckboxProps) {
-  const { view } = React.useContext(ObsidianContext);
-  const { boardModifiers } = React.useContext(KanbanContext);
+  const { view, boardModifiers } = React.useContext(ObsidianContext);
   const shouldShowCheckbox = view.getSetting("show-checkboxes");
 
   const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] =
@@ -210,9 +211,9 @@ function ItemMenuButton({
         </button>
       ) : (
         <button
-          onClick={(e) => {
-            showMenu(e.nativeEvent);
-          }}
+          onClick={
+            showMenu as unknown as React.MouseEventHandler<HTMLButtonElement>
+          }
           className={c("item-postfix-button")}
           aria-label={t("More options")}
         >
@@ -223,26 +224,37 @@ function ItemMenuButton({
   );
 }
 
-export function draggableItemFactory({
-  items,
-  laneIndex,
-}: DraggableItemFactoryParams) {
-  return (
-    provided: DraggableProvided,
-    snapshot: DraggableStateSnapshot,
-    rubric: DraggableRubric
-  ) => {
-    const { boardModifiers, board } = React.useContext(KanbanContext);
-    const { view } = React.useContext(ObsidianContext);
-    const { query } = React.useContext(SearchContext);
-    const [isEditing, setIsEditing] = React.useState(false);
+type DraggableItemState = {
+  isEditing: boolean;
+}
 
-    const itemIndex = rubric.source.index;
-    const item = items[itemIndex];
-    const lane = board.lanes[laneIndex];
+export class DraggableItem extends React.PureComponent<DraggableItemProps, DraggableItemState> {
+  static contextType = ObsidianContext;
+
+  state = {isEditing: false}
+
+  setIsEditing = (isEditing: boolean) => {
+    this.setState({isEditing});
+  }
+
+  showMenu = (e: MouseEvent, internalLinkPath?: string) => {
+    useItemMenu({
+      setIsEditing: this.setIsEditing,
+      item: this.props.item,
+      laneIndex: this.props.laneIndex,
+      itemIndex: this.props.itemIndex,
+      boardModifiers: this.context.boardModifiers,
+      view: this.context.view,
+    })(e, internalLinkPath);
+  }
+
+  render() {
+    const {item, itemIndex, laneIndex, shouldMarkItemsComplete, provided, snapshot} = this.props;
+    const { boardModifiers, view, query } = this.context;
+    const { isEditing } = this.state;
 
     const isMatch = query
-      ? item.titleSearch.toLocaleLowerCase().contains(query)
+      ? item.titleSearch.contains(query)
       : false;
 
     const classModifiers: string[] = getClassModifiers(item);
@@ -257,30 +269,6 @@ export function draggableItemFactory({
       }
     }
 
-    const showMenu = useItemMenu({
-      setIsEditing,
-      item,
-      laneIndex,
-      itemIndex,
-      boardModifiers,
-    });
-
-    const refreshItem = () => {
-      update(board, {
-        lanes: {
-          [laneIndex]: {
-            items: {
-              [itemIndex]: {
-                title: {
-                  $set: item.title,
-                },
-              },
-            },
-          },
-        },
-      });
-    };
-
     return (
       <div
         onContextMenu={(e) => {
@@ -293,10 +281,10 @@ export function draggableItemFactory({
               ? e.target.dataset.href
               : undefined;
 
-          showMenu(e.nativeEvent, internalLinkPath);
+          this.showMenu(e.nativeEvent, internalLinkPath);
         }}
         onDoubleClick={() => {
-          setIsEditing(true);
+          this.setIsEditing(true);
         }}
         className={`${c("item")} ${classModifiers.join(" ")}`}
         ref={provided.innerRef}
@@ -308,26 +296,20 @@ export function draggableItemFactory({
             <ItemCheckbox
               item={item}
               itemIndex={itemIndex}
-              shouldMarkItemsComplete={lane.data.shouldMarkItemsComplete}
+              shouldMarkItemsComplete={shouldMarkItemsComplete}
               laneIndex={laneIndex}
             />
             <ItemContent
               isSettingsVisible={isEditing}
-              setIsSettingsVisible={setIsEditing}
+              setIsSettingsVisible={this.setIsEditing}
               item={item}
               searchQuery={isMatch ? query : undefined}
               onChange={(e) => {
                 const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
-                const processed = processTitle(titleRaw, view);
                 boardModifiers.updateItem(
                   laneIndex,
                   itemIndex,
-                  update(item, {
-                    title: { $set: processed.title },
-                    titleRaw: { $set: titleRaw },
-                    titleSearch: { $set: processed.titleSearch },
-                    metadata: { $set: processed.metadata },
-                  })
+                  view.parser.updateItem(item, titleRaw)
                 );
               }}
               onEditDate={(e) => {
@@ -362,18 +344,17 @@ export function draggableItemFactory({
             />
             <ItemMenuButton
               isEditing={isEditing}
-              setIsEditing={setIsEditing}
-              showMenu={showMenu}
+              setIsEditing={this.setIsEditing}
+              showMenu={this.showMenu}
             />
           </div>
           <ItemMetadata
             searchQuery={isMatch ? query : undefined}
             isSettingsVisible={isEditing}
             item={item}
-            refreshItem={refreshItem}
           />
         </div>
       </div>
     );
-  };
+  }
 }

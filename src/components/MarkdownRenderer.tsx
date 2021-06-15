@@ -1,61 +1,79 @@
 import React from "react";
-import { MarkdownRenderer as ObsidianMarkdownRenderer, TFile } from "obsidian";
 import Mark from "mark.js";
 import { ObsidianContext } from "./context";
+import { findDOMNode } from "react-dom";
 
 interface MarkdownRendererProps {
   className?: string;
-  markdownString: string;
+  markdownString?: string;
+  dom?: HTMLDivElement;
   searchQuery?: string;
 }
 
-export const MarkdownRenderer = React.memo(
-  ({ className, markdownString, searchQuery }: MarkdownRendererProps) => {
-    const { view, filePath } = React.useContext(ObsidianContext);
-    const markdownContent = React.useMemo(() => {
-      const tempEl = createDiv();
-      ObsidianMarkdownRenderer.renderMarkdown(
-        markdownString,
-        tempEl,
-        filePath,
-        view
-      );
+interface MarkdownRendererState {
+  parsedEl?: HTMLDivElement
+  marker?: Mark;
+}
 
-      tempEl.findAll(".internal-embed").forEach((el) => {
-        const src = el.getAttribute("src");
-        const target =
-          typeof src === "string" &&
-          view.app.metadataCache.getFirstLinkpathDest(src, filePath);
-        if (target instanceof TFile && target.extension !== "md") {
-          el.innerText = "";
-          el.createEl(
-            "img",
-            { attr: { src: view.app.vault.getResourcePath(target) } },
-            (img) => {
-              if (el.hasAttribute("width"))
-                img.setAttribute("width", el.getAttribute("width"));
-              if (el.hasAttribute("alt"))
-                img.setAttribute("alt", el.getAttribute("alt"));
-            }
-          );
-          el.addClasses(["image-embed", "is-loaded"]);
-        }
-      });
+export class MarkdownRenderer extends React.Component<MarkdownRendererProps, MarkdownRendererState> {
+  static contextType = ObsidianContext;
+  props: MarkdownRendererProps;
 
-      if (searchQuery) {
-        new Mark(tempEl).mark(searchQuery);
-      }
+  constructor(props: MarkdownRendererProps) {
+    super(props);
+    // Always maintain state
+    this.state = this.refreshState(props);
+  }
 
-      return {
-        innerHTML: { __html: tempEl.innerHTML.toString() },
-      };
-    }, [markdownString, filePath, view, searchQuery]);
+  parse(props: MarkdownRendererProps) {
+    return props.dom.cloneNode(true) || this.context.renderMarkdown(this.props.markdownString);
+  }
 
+  refreshState(props: MarkdownRendererProps, state: MarkdownRendererState={}) {
+    let {parsedEl, marker} = state;
+    if (!parsedEl) parsedEl = this.parse(props);
+    if (!marker) {
+      marker = new Mark(parsedEl)
+    } else {
+      marker.unmark();
+    }
+    if (props.searchQuery) marker.mark(props.searchQuery);
+    return (parsedEl !== state.parsedEl || marker !== state.marker ) ? {parsedEl, marker} : state;
+  }
+
+  shouldComponentUpdate(nextProps: MarkdownRendererProps, nextState: MarkdownRendererState) {
+    // Ignore changes to state, as we only set state from componentDidUpdate
+    const res= (
+      nextProps.dom !== this.props.dom ||
+      nextProps.className !== this.props.className ||
+      nextProps.markdownString !== this.props.markdownString ||
+      nextProps.searchQuery !== this.props.searchQuery
+    );
+    return res
+  }
+
+  componentDidMount() {
+    findDOMNode(this).appendChild(this.state.parsedEl)
+  }
+
+  componentDidUpdate(prevProps: MarkdownRendererProps) {
+    let {parsedEl, marker} = this.state
+    if (this.props.dom !== prevProps.dom || this.props.markdownString !== prevProps.markdownString) {
+      const newState = {parsedEl, marker} = this.refreshState(this.props, {});
+      this.setState(newState)
+    } else if (this.props.searchQuery !== prevProps.searchQuery) {
+      marker.unmark();
+      if (this.props.searchQuery) marker.mark(this.props.searchQuery)
+    }
+    const me = findDOMNode(this), newDOM = parsedEl;
+    if (me.firstChild) me.replaceChild(newDOM, me.firstChild); else me.appendChild(newDOM);
+  }
+
+  render() {
     return (
       <div
-        className={`markdown-preview-view ${className || ""}`}
-        dangerouslySetInnerHTML={markdownContent.innerHTML}
+        className={`markdown-preview-view ${this.props.className || ""}`}
       />
     );
   }
-);
+}

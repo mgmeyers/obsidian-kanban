@@ -5,7 +5,6 @@ import React from "react";
 import { BoardModifiers, Item } from "../types";
 import { applyTemplate, escapeRegExpStr } from "../helpers";
 import { ObsidianContext } from "../context";
-import { processTitle } from "src/parser";
 import { defaultDateTrigger, defaultTimeTrigger } from "src/settingHelpers";
 import {
   constructDatePicker,
@@ -14,6 +13,7 @@ import {
   constructTimePicker,
 } from "./helpers";
 import { t } from "src/lang/helpers";
+import { KanbanView } from "src/KanbanView";
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
 
@@ -23,6 +23,7 @@ interface UseItemMenuParams {
   laneIndex: number;
   itemIndex: number;
   boardModifiers: BoardModifiers;
+  view: KanbanView;
 }
 
 export function useItemMenu({
@@ -31,11 +32,10 @@ export function useItemMenu({
   laneIndex,
   itemIndex,
   boardModifiers,
+  view
 }: UseItemMenuParams) {
-  const { view } = React.useContext(ObsidianContext);
 
-  return React.useMemo(() => {
-    const coordinates = { x: 0, y: 0 };
+  const openMenu = (coordinates = { x: 0, y: 0 }) => {
 
     const hasDate = !!item.metadata.date;
     const hasTime = !!item.metadata.time;
@@ -84,16 +84,11 @@ export function useItemMenu({
               prevTitle,
               `[[${sanitizedTitle}]]`
             );
-            const processed = processTitle(newTitleRaw, view);
 
             boardModifiers.updateItem(
               laneIndex,
               itemIndex,
-              update(item, {
-                title: { $set: processed.title },
-                titleRaw: { $set: newTitleRaw },
-                titleSearch: { $set: processed.titleSearch },
-              })
+              view.parser.updateItem(item, newTitleRaw)
             );
           });
       })
@@ -151,17 +146,10 @@ export function useItemMenu({
             );
 
             const titleRaw = item.titleRaw.replace(dateRegEx, "").trim();
-            const processed = processTitle(titleRaw, view);
-
             boardModifiers.updateItem(
               laneIndex,
               itemIndex,
-              update(item, {
-                title: { $set: processed.title },
-                titleRaw: { $set: titleRaw },
-                titleSearch: { $set: processed.titleSearch },
-                metadata: { $set: processed.metadata },
-              })
+              view.parser.updateItem(item, titleRaw)
             );
           });
       });
@@ -198,27 +186,20 @@ export function useItemMenu({
               );
 
               const titleRaw = item.titleRaw.replace(timeRegEx, "").trim();
-              const processed = processTitle(titleRaw, view);
-
               boardModifiers.updateItem(
                 laneIndex,
                 itemIndex,
-                update(item, {
-                  title: { $set: processed.title },
-                  titleRaw: { $set: titleRaw },
-                  titleSearch: { $set: processed.titleSearch },
-                  metadata: { $set: processed.metadata },
-                })
+                view.parser.updateItem(item, titleRaw)
               );
             });
         });
       }
     }
 
-    return (e: MouseEvent, internalLinkPath?: string) => {
-      coordinates.x = e.clientX;
-      coordinates.y = e.clientY;
+    menu.showAtPosition(coordinates);
+  };
 
+  return (e: MouseEvent, internalLinkPath?: string) => {
       if (internalLinkPath) {
         // @ts-ignore
         view.app.workspace.onLinkContextMenu(
@@ -227,8 +208,7 @@ export function useItemMenu({
           view.file.path
         );
       } else {
-        menu.showAtPosition(coordinates);
+        openMenu({x: e.clientX, y: e.clientY});
       }
-    };
-  }, [view, setIsEditing, boardModifiers, laneIndex, itemIndex, item]);
+  }
 }

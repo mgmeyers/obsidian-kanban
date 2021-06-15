@@ -47,6 +47,7 @@ export interface Item {
   titleSearch: string;
   metadata: ItemMetaData;
   data: ItemData;
+  dom: HTMLDivElement;
 }
 
 export interface Board {

@@ -1,5 +1,4 @@
 import update from "immutability-helper";
-import ReactDOM from "react-dom";
 import React from "react";
 import {
   HoverParent,
@@ -9,10 +8,10 @@ import {
   WorkspaceLeaf,
   moment,
   TFile,
+  MarkdownRenderer,
 } from "obsidian";
-import { dispatch } from "use-bus";
 
-import { boardToMd, mdToBoard, processTitle } from "./parser";
+import { KanbanParser } from "./parser";
 import { Kanban } from "./components/Kanban";
 import { DataBridge } from "./DataBridge";
 import { Board, Item } from "./components/types";
@@ -29,6 +28,7 @@ export const kanbanIcon = "blocks";
 
 export class KanbanView extends TextFileView implements HoverParent {
   plugin: KanbanPlugin;
+  parser: KanbanParser = new KanbanParser(this);
 
   dataBridge: DataBridge<Board> = new DataBridge(null);
   setBoard(board: Board) { this.dataBridge.setExternal(board); }
@@ -65,10 +65,10 @@ export class KanbanView extends TextFileView implements HoverParent {
     this.plugin.removeView(this);
   }
 
-  getSetting(
-    key: keyof KanbanSettings,
+  getSetting<K extends keyof KanbanSettings>(
+    key: K,
     suppliedLocalSettings?: KanbanSettings
-  ) {
+  ): KanbanSettings[K] {
     const localSetting = suppliedLocalSettings
       ? suppliedLocalSettings[key]
       : this.dataBridge.getData()?.settings[key];
@@ -82,7 +82,7 @@ export class KanbanView extends TextFileView implements HoverParent {
     return null;
   }
 
-  getGlobalSetting(key: keyof KanbanSettings) {
+  getGlobalSetting<K extends keyof KanbanSettings>(key: K): KanbanSettings[K] {
     const globalSetting = this.plugin?.settings[key];
 
     if (globalSetting !== undefined) return globalSetting;
@@ -91,7 +91,9 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   onFileMetadataChange(file: TFile) {
-    dispatch(`metadata:update:${file.path}`);
+    // Invalidate the metadata caching and reparse the file if needed,
+    // recreating all items that referenced the changed file
+    if (this.parser.invalidateFile(file)) this.setViewData(this.data);
   }
 
   onMoreOptionsMenu(menu: Menu) {
@@ -125,9 +127,10 @@ export class KanbanView extends TextFileView implements HoverParent {
                         $set: settings,
                       },
                     });
-                  // external updates display, internal updates the file
-                  this.dataBridge.setExternal(updatedBoard);
-                  this.dataBridge.setInternal(updatedBoard);
+                  // Save to disk, compute text of new board
+                  this.requestUpdate(updatedBoard);
+                  // Take the text and parse it back in with the new settings
+                  this.setViewData(this.data)
                 },
               },
               board.settings
@@ -168,6 +171,19 @@ export class KanbanView extends TextFileView implements HoverParent {
     */
   }
 
+  onload() {
+    super.onload();
+    this.registerEvent(this.app.workspace.on("quick-preview", this.onQuickPreview, this));
+  }
+
+  onQuickPreview(file: TFile, data: string) {
+    // File was edited in another window (but not yet saved)
+    if (file === this.file && data !== this.data) {
+      this.data = data;
+      this.setViewData(data);
+    }
+  }
+
   async onLoadFile(file: TFile) {
     try {
       return await super.onLoadFile(file);
@@ -182,10 +198,12 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   requestUpdate = (data: Board) => {
     if (data === null || this.getError().errorMessage) return; // don't save corrupt data
-      const newData = boardToMd(data)
+      const newData = this.parser.boardToMd(data)
       if (this.data !== newData) {
         this.data = newData;
         this.requestSave();
+        // Tell other boards and editors we've changed
+        this.app.workspace.trigger("quick-preview", this.file, this.data);
       }
   };
 
@@ -205,7 +223,7 @@ export class KanbanView extends TextFileView implements HoverParent {
     return this.data;
   }
 
-  setViewData(data: string, clear: boolean) {
+  setViewData(data: string, _clear?: boolean) {
     const trimmedContent = data.trim();
     let board: Board = null;
     try {
@@ -215,7 +233,7 @@ export class KanbanView extends TextFileView implements HoverParent {
             settings: { "kanban-plugin": "basic" },
             isSearching: false,
           };
-      if (trimmedContent) board = mdToBoard(trimmedContent, this);
+      if (trimmedContent) board = this.parser.mdToBoard(trimmedContent, this.file?.path);
       this.setError()
     } catch (e) {
       console.error(e);
@@ -252,13 +270,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       newTitle.push(item.titleRaw);
 
       const titleRaw = newTitle.join(" ");
-      const processed = processTitle(titleRaw, this);
-
-      return update(item, {
-        title: { $set: processed.title },
-        titleRaw: { $set: titleRaw },
-        titleSearch: { $set: processed.titleSearch },
-      });
+      return this.parser.updateItem(item, titleRaw);
     };
 
     const lanes = board.lanes.map((lane) => {
@@ -304,6 +316,37 @@ export class KanbanView extends TextFileView implements HoverParent {
           />
         </ErrorHandler>
       );
+  }
+
+  renderMarkdown(markdownString: string): HTMLElement {
+    const tempEl = createDiv();
+    MarkdownRenderer.renderMarkdown(
+      markdownString,
+      tempEl,
+      this.file?.path,
+      this
+    );
+    tempEl.findAll(".internal-embed").forEach((el) => {
+      const src = el.getAttribute("src");
+      const target =
+        typeof src === "string" &&
+        this.app.metadataCache.getFirstLinkpathDest(src, this.file?.path);
+      if (target instanceof TFile && target.extension !== "md") {
+        el.innerText = "";
+        el.createEl(
+          "img",
+          { attr: { src: this.app.vault.getResourcePath(target) } },
+          (img) => {
+            if (el.hasAttribute("width"))
+              img.setAttribute("width", el.getAttribute("width"));
+            if (el.hasAttribute("alt"))
+              img.setAttribute("alt", el.getAttribute("alt"));
+          }
+        );
+        el.addClasses(["image-embed", "is-loaded"]);
+      }
+    });
+    return tempEl;
   }
 }
 

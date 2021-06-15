@@ -25,6 +25,7 @@ export default {
   // parser.ts
   Complete: "Complete",
   Archive: "Archive",
+  "Invalid Kanban file: problems parsing frontmatter": "Invalid Kanban file: problems parsing frontmatter",
 
   // settingHelpers.ts
   "Note: No template plugins are currently enabled.":
