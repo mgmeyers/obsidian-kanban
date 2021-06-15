@@ -1,5 +1,4 @@
 import update from "immutability-helper";
-import ReactDOM from "react-dom";
 import React from "react";
 import {
   HoverParent,
@@ -172,6 +171,19 @@ export class KanbanView extends TextFileView implements HoverParent {
     */
   }
 
+  onload() {
+    super.onload();
+    this.registerEvent(this.app.workspace.on("quick-preview", this.onQuickPreview, this));
+  }
+
+  onQuickPreview(file: TFile, data: string) {
+    // File was edited in another window (but not yet saved)
+    if (file === this.file && data !== this.data) {
+      this.data = data;
+      this.setViewData(data);
+    }
+  }
+
   async onLoadFile(file: TFile) {
     try {
       return await super.onLoadFile(file);
@@ -190,6 +202,8 @@ export class KanbanView extends TextFileView implements HoverParent {
       if (this.data !== newData) {
         this.data = newData;
         this.requestSave();
+        // Tell other boards and editors we've changed
+        this.app.workspace.trigger("quick-preview", this.file, this.data);
       }
   };
 
