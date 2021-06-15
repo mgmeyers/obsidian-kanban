@@ -22,7 +22,7 @@ export class MarkdownRenderer extends React.Component<MarkdownRendererProps, Mar
   context: ObsidianContextProps;
 
   parse(props: MarkdownRendererProps) {
-    return props.dom?.cloneNode(true) as HTMLDivElement || this.context.view?.renderMarkdown(this.props.markdownString);
+    return props.dom?.cloneNode(true) as HTMLDivElement || this.context.view?.renderMarkdown(props.markdownString);
   }
 
   refreshState(props: MarkdownRendererProps, state: MarkdownRendererState={}) {
