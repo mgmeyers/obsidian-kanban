@@ -470,7 +470,7 @@ export class KanbanParser {
               titleSearch: processed.titleSearch,
               titleRaw,
               data: {
-                isComplete: marker !== " ",
+                isComplete: marker && marker !== " ",
               },
               metadata: processed.metadata,
               dom: processed.dom
