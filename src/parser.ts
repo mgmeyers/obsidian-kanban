@@ -19,13 +19,13 @@ export const frontMatterKey = "kanban-plugin";
 const newLineRegex = /[\r\n]+/g;
 
 // Begins with one or more # followed by a space
-const laneRegex = /^#+\s+(.+)$/;
+const laneRegex = /^#+\s+(.*)$/;
 
 const itemRegex = new RegExp([
-  /^\s*/,               // leading whitespace
-  /[-+*]\s*/,           // bullet and its whitespace
-  /(?:\[([^\]])\]\s+)/, // task marker and whitespace (group 1)
-  /(.*)$/,              // Text (group 2)
+  /^\s*/,                // leading whitespace
+  /[-+*]\s*/,            // bullet and its whitespace
+  /(?:\[([^\]])\]\s+)?/, // task marker and whitespace (group 1)
+  /(.*)$/,               // Text (group 2)
 ].map(r => r.source).join(""));
 
 
@@ -406,7 +406,8 @@ export class KanbanParser {
     * Should internal link be resolved from DOM instead of regex?
     */
 
-    const [beforeFrontMatter, frontMatter, body] = boardMd.split(/^---\r?$\n?/m, 3);
+    const [beforeFrontMatter, frontMatter, ...bodyParts] = boardMd.split(/^---$/m);
+    const body = bodyParts.join("---");
 
     if (beforeFrontMatter.trim()) throw new Error(t("Invalid Kanban file: problems parsing frontmatter"));
 
@@ -469,7 +470,7 @@ export class KanbanParser {
               titleSearch: processed.titleSearch,
               titleRaw,
               data: {
-                isComplete: marker !== " ",
+                isComplete: marker && marker !== " ",
               },
               metadata: processed.metadata,
               dom: processed.dom
@@ -542,6 +543,15 @@ export class KanbanParser {
         if (haveSeenArchiveMarker) {
           archive.push(item);
         } else {
+          if (!currentLane) {
+            // Auto-generate an empty column
+            currentLane = {
+              id: generateInstanceId(),
+              items: [],
+              title: t("Untitled"),
+              data: {},
+            }
+          }
           currentLane.items.push(item);
         }
         continue
@@ -573,6 +583,8 @@ export class KanbanParser {
         currentLane.data.shouldMarkItemsComplete = true;
         continue;
       }
+
+      if (line.trim()) throw new Error(t("I don't know how to interpret this line:") + "\n"+ line);
     };
 
     // Push the last lane

@@ -363,7 +363,7 @@ class ErrorHandler extends React.Component<{view: KanbanView}> {
 
   constructor(props: {view: KanbanView}) {
     super(props);
-    this.state = { errorMessage: "" };
+    this.state = this.props.view.errorBridge.getData();
   }
 
   stateSetter = (state: ErrorHandlerState) => this.setState(state);
@@ -396,6 +396,7 @@ class ErrorHandler extends React.Component<{view: KanbanView}> {
         <div style={{ margin: "2em" }}>
           <h1>{t("Something went wrong")}</h1>
           <p>{error}</p>
+          <p>{t("You may wish to open as markdown and inspect or edit the file.")}</p>
           {stack && <pre>{stack}</pre>}
         </div>
       );
