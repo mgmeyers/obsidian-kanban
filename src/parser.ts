@@ -480,14 +480,16 @@ export class KanbanParser {
         } else {
           // Using a cached item; verify its metadata and maybe fetch it again
           const file = item.metadata.file;
-          if (file && item.metadata.fileMetadata !== this.fileCache.get(file)) {
+          if (file) {
             let fileMetadata = this.fileCache.has(file) ? this.fileCache.get(file) : this.getLinkedPageMetadata(file);
             this.fileCache.set(file, fileMetadata);
-            // Make a new item with updated metadata
-            item = update(item, {
-              id: {$set: generateInstanceId()},
-              metadata: { fileMetadata: {$set: fileMetadata}}
-            });
+            if (item.metadata.fileMetadata !== fileMetadata) {
+              // Make a new item with updated metadata
+              item = update(item, {
+                id: {$set: generateInstanceId()},
+                metadata: { fileMetadata: {$set: fileMetadata}}
+              });
+            }
           }
         }
 
