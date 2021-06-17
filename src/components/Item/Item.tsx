@@ -1,15 +1,13 @@
 import React from "react";
-import {
-  DraggableProvided,
-  DraggableStateSnapshot,
-} from "react-beautiful-dnd";
+import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
 
 import { Item } from "../types";
 import { c, noop } from "../helpers";
 import { getItemClassModifiers } from "./helpers";
 import { KanbanContext, SearchContext } from "../context";
-import { ItemContent, ItemMetadata } from "./ItemContent";
+import { ItemContent } from "./ItemContent";
 import { useItemMenu } from "./ItemMenu";
+import { ItemMetadata } from "./MetadataTable";
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,

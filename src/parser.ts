@@ -21,13 +21,16 @@ const newLineRegex = /[\r\n]+/g;
 // Begins with one or more # followed by a space
 const laneRegex = /^#+\s+(.*)$/;
 
-const itemRegex = new RegExp([
-  /^\s*/,                // leading whitespace
-  /[-+*]\s+?/,           // bullet and its whitespace (at least one space required)
-  /(?:\[([^\]])\]\s+)?/, // task marker and whitespace (group 1)
-  /(.*)$/,               // Text (group 2)
-].map(r => r.source).join(""));
-
+const itemRegex = new RegExp(
+  [
+    /^\s*/, // leading whitespace
+    /[-+*]\s+?/, // bullet and its whitespace (at least one space required)
+    /(?:\[([^\]])\]\s+)?/, // task marker and whitespace (group 1)
+    /(.*)$/, // Text (group 2)
+  ]
+    .map((r) => r.source)
+    .join("")
+);
 
 const completeString = `**${t("Complete")}**`;
 const completeRegex = new RegExp(`^${escapeRegExpStr(completeString)}$`, "i");
@@ -47,11 +50,10 @@ export type ParserSettings = {
   metaKeys: KanbanSettings["metadata-keys"];
   dateRegEx: RegExp;
   timeRegEx: RegExp;
-}
+};
 
 export class KanbanParser {
-
-  settings: ParserSettings
+  settings: ParserSettings;
   constructor(public view: KanbanView) {}
 
   itemToMd(item: Item) {
@@ -88,9 +90,7 @@ export class KanbanParser {
     return searchTitle.toLocaleLowerCase();
   }
 
-  extractDates(
-    title: string,
-  ) {
+  extractDates(title: string) {
     let date: undefined | moment.Moment = undefined;
     let time: undefined | moment.Moment = undefined;
     let processedTitle = title;
@@ -126,10 +126,7 @@ export class KanbanParser {
     };
   }
 
-  extractItemTags(
-    title: string,
-    settings?: KanbanSettings
-  ) {
+  extractItemTags(title: string, settings?: KanbanSettings) {
     const tags: string[] = [];
 
     let processedTitle = title;
@@ -150,9 +147,7 @@ export class KanbanParser {
     };
   }
 
-  extractFirstLinkedFile(
-    title: string,
-  ) {
+  extractFirstLinkedFile(title: string) {
     if (!this.settings.metaKeys.length) {
       return null;
     }
@@ -192,7 +187,6 @@ export class KanbanParser {
     file: TFile | null | undefined,
     settings?: KanbanSettings
   ): FileMetadata | undefined {
-
     if (!this.settings.metaKeys.length) {
       return;
     }
@@ -269,7 +263,7 @@ export class KanbanParser {
 
   newItem(titleRaw: string): Item {
     const processed = this.processTitle(titleRaw);
-    return  {
+    return {
       id: generateInstanceId(),
       title: processed.title,
       titleRaw: titleRaw,
@@ -277,7 +271,7 @@ export class KanbanParser {
       data: {},
       metadata: processed.metadata,
       dom: processed.dom,
-    }
+    };
   }
 
   updateItem(item: Item, titleRaw: string) {
@@ -291,15 +285,15 @@ export class KanbanParser {
     });
   }
 
-  private processTitle(
-    title: string,
-  ) {
+  private processTitle(title: string) {
     const date = this.extractDates(title);
     const tags = this.extractItemTags(date.processedTitle);
     const file = this.extractFirstLinkedFile(tags.processedTitle);
     let fileMetadata: FileMetadata;
     if (file) {
-      fileMetadata = this.fileCache.has(file) ? this.fileCache.get(file) : this.getLinkedPageMetadata(file);
+      fileMetadata = this.fileCache.has(file)
+        ? this.fileCache.get(file)
+        : this.getLinkedPageMetadata(file);
       this.fileCache.set(file, fileMetadata);
     }
     const dom = this.view.renderMarkdown(tags.processedTitle);
@@ -319,7 +313,7 @@ export class KanbanParser {
         file,
         fileMetadata,
       },
-      dom
+      dom,
     };
   }
 
@@ -369,18 +363,19 @@ export class KanbanParser {
     }, "");
 
     return (
-      this.settingsToFrontmatter(board.settings) + lanes + this.archiveToMd(board.archive)
+      this.settingsToFrontmatter(board.settings) +
+      lanes +
+      this.archiveToMd(board.archive)
     );
   }
 
-
-  lastFrontMatter: string
-  lastBody: string
-  lastSettings: KanbanSettings
-  lastGlobalSettings: KanbanSettings
-  lastItems: Map<string, Item[]> = new Map;
-  lastLanes: Map<string, Lane> = new Map;
-  fileCache: Map<TFile, FileMetadata> = new Map;
+  lastFrontMatter: string;
+  lastBody: string;
+  lastSettings: KanbanSettings;
+  lastGlobalSettings: KanbanSettings;
+  lastItems: Map<string, Item[]> = new Map();
+  lastLanes: Map<string, Lane> = new Map();
+  fileCache: Map<TFile, FileMetadata> = new Map();
 
   // we use a string instead of a file, because a file changing path could change the meaning of links
   lastParsedPath: string;
@@ -393,7 +388,6 @@ export class KanbanParser {
   }
 
   mdToBoard(boardMd: string, filePath: string): Board {
-
     /*
     Steps:
 
@@ -406,19 +400,24 @@ export class KanbanParser {
     * Should internal link be resolved from DOM instead of regex?
     */
 
-    const [beforeFrontMatter, frontMatter, ...bodyParts] = boardMd.split(/^---$/m);
+    const [beforeFrontMatter, frontMatter, ...bodyParts] =
+      boardMd.split(/^---$/m);
     const body = bodyParts.join("---");
 
-    if (beforeFrontMatter.trim()) throw new Error(t("Invalid Kanban file: problems parsing frontmatter"));
+    if (beforeFrontMatter.trim())
+      throw new Error(t("Invalid Kanban file: problems parsing frontmatter"));
 
-    const settings = (frontMatter === this.lastFrontMatter) ?
-      this.lastSettings :
-      yaml.load(frontMatter) as KanbanSettings
-    ;
-
+    const settings =
+      frontMatter === this.lastFrontMatter
+        ? this.lastSettings
+        : (yaml.load(frontMatter) as KanbanSettings);
     const globalSettings = this.view.plugin.settings || {};
 
-    if (settings !== this.lastSettings || globalSettings !== this.lastGlobalSettings || this.lastParsedPath !== filePath) {
+    if (
+      settings !== this.lastSettings ||
+      globalSettings !== this.lastGlobalSettings ||
+      this.lastParsedPath !== filePath
+    ) {
       this.lastItems.clear(); // Settings changed, must re-parse items
       this.fileCache.clear(); // including metadata, since the keys might be different
       this.lastLanes.clear();
@@ -427,36 +426,50 @@ export class KanbanParser {
       const globalKeys = this.view.getGlobalSetting("metadata-keys") || [];
       const localKeys = this.view.getSetting("metadata-keys", settings) || [];
 
-      const dateTrigger = this.view.getSetting("date-trigger", settings) || defaultDateTrigger;
-      const timeTrigger = this.view.getSetting("time-trigger", settings) || defaultTimeTrigger;
-      const shouldLinkDate = this.view.getSetting("link-date-to-daily-note", settings);
+      const dateTrigger =
+        this.view.getSetting("date-trigger", settings) || defaultDateTrigger;
+      const timeTrigger =
+        this.view.getSetting("time-trigger", settings) || defaultTimeTrigger;
+      const shouldLinkDate = this.view.getSetting(
+        "link-date-to-daily-note",
+        settings
+      );
       const contentMatch = shouldLinkDate ? "\\[\\[([^}]+)\\]\\]" : "{([^}]+)}";
 
       this.settings = {
-        dateFormat:     this.view.getSetting("date-format", settings) || getDefaultDateFormat(this.view.app),
-        timeFormat:     this.view.getSetting("time-format", settings) || getDefaultTimeFormat(this.view.app),
+        dateFormat:
+          this.view.getSetting("date-format", settings) ||
+          getDefaultDateFormat(this.view.app),
+        timeFormat:
+          this.view.getSetting("time-format", settings) ||
+          getDefaultTimeFormat(this.view.app),
         dateTrigger,
         timeTrigger,
         shouldLinkDate,
         shouldHideDate: this.view.getSetting("hide-date-in-title", settings),
         shouldHideTags: this.view.getSetting("hide-tags-in-title", settings),
-        metaKeys:       [...globalKeys, ...localKeys],
+        metaKeys: [...globalKeys, ...localKeys],
         dateRegEx: new RegExp(
           `(?:^|\\s)${escapeRegExpStr(dateTrigger)}${contentMatch}`
         ),
         timeRegEx: new RegExp(
           `(?:^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
         ),
-      }
+      };
     }
 
     // Try to recognize single-line item edits, and try to keep the same ID
     // (So the item will be refreshed, but not re-created)
     if (this.lastBody && this.lastBody !== body) {
-      const diff = diffLines(this.lastBody, body, {newlineIsToken: true});
+      const diff = diffLines(this.lastBody, body, { newlineIsToken: true });
       if (diff.length === 4) {
         const [_before, oldLine, newLine, _after] = diff;
-        if (oldLine.removed && oldLine.count===1 && newLine.added && newLine.count === 1) {
+        if (
+          oldLine.removed &&
+          oldLine.count === 1 &&
+          newLine.added &&
+          newLine.count === 1
+        ) {
           // We found a one-line change of text only -- see if it was and still is an item
           const oldItem = this.lastItems.get(oldLine.value)?.shift();
           const itemMatch = newLine.value.match(itemRegex);
@@ -464,26 +477,32 @@ export class KanbanParser {
             // Generaate a new item, but with the old ID
             const [_full, marker, titleRaw] = itemMatch;
             const processed = this.processTitle(titleRaw);
-            let line = newLine.value, item = {
-              id: oldItem.id,
-              title: processed.title,
-              titleSearch: processed.titleSearch,
-              titleRaw,
-              data: {
-                isComplete: marker && marker !== " ",
-              },
-              metadata: processed.metadata,
-              dom: processed.dom
-            }
+            let line = newLine.value,
+              item = {
+                id: oldItem.id,
+                title: processed.title,
+                titleSearch: processed.titleSearch,
+                titleRaw,
+                data: {
+                  isComplete: marker && marker !== " ",
+                },
+                metadata: processed.metadata,
+                dom: processed.dom,
+              };
             // Save it in the cache for reuse, and update whatever (cached) lane it's in
             // (Theoretically we could just issue an update to the baord itself here, and skip
             // the parsing altogether.  For now, just update the lane cache, as that's still
             // pretty darn fast.)
-            this.lastItems.has(line) ? this.lastItems.get(line).push(item) : this.lastItems.set(line, [item]);
+            this.lastItems.has(line)
+              ? this.lastItems.get(line).push(item)
+              : this.lastItems.set(line, [item]);
             for (const [key, lane] of this.lastLanes.entries()) {
               const pos = lane.items.indexOf(oldItem);
               if (pos >= 0) {
-                this.lastLanes.set(key, update(lane, {items: {$splice: [[pos, 1, item]]}}));
+                this.lastLanes.set(
+                  key,
+                  update(lane, { items: { $splice: [[pos, 1, item]] } })
+                );
               }
             }
           }
@@ -494,8 +513,8 @@ export class KanbanParser {
     const lines = body.split(newLineRegex);
     const lanes: Lane[] = [];
     const archive: Item[] = [];
-    const thisItems: Map<string,Item[]> = new Map;
-    const thisLanes: Map<string,Lane> = new Map;
+    const thisItems: Map<string, Item[]> = new Map();
+    const thisLanes: Map<string, Lane> = new Map();
     const lastLanes = this.lastLanes;
 
     let haveSeenArchiveMarker = false;
@@ -520,25 +539,29 @@ export class KanbanParser {
               isComplete: marker !== " ",
             },
             metadata: processed.metadata,
-            dom: processed.dom
-          }
+            dom: processed.dom,
+          };
         } else {
           // Using a cached item; verify its metadata and maybe fetch it again
           const file = item.metadata.file;
           if (file) {
-            let fileMetadata = this.fileCache.has(file) ? this.fileCache.get(file) : this.getLinkedPageMetadata(file);
+            let fileMetadata = this.fileCache.has(file)
+              ? this.fileCache.get(file)
+              : this.getLinkedPageMetadata(file);
             this.fileCache.set(file, fileMetadata);
             if (item.metadata.fileMetadata !== fileMetadata) {
               // Make a new item with updated metadata
               item = update(item, {
-                id: {$set: generateInstanceId()},
-                metadata: { fileMetadata: {$set: fileMetadata}}
+                id: { $set: generateInstanceId() },
+                metadata: { fileMetadata: { $set: fileMetadata } },
               });
             }
           }
         }
 
-        thisItems.has(line) ? thisItems.get(line).push(item) : thisItems.set(line, [item]);
+        thisItems.has(line)
+          ? thisItems.get(line).push(item)
+          : thisItems.set(line, [item]);
 
         if (haveSeenArchiveMarker) {
           archive.push(item);
@@ -550,11 +573,11 @@ export class KanbanParser {
               items: [],
               title: t("Untitled"),
               data: {},
-            }
+            };
           }
           currentLane.items.push(item);
         }
-        continue
+        continue;
       }
 
       // New lane
@@ -580,7 +603,7 @@ export class KanbanParser {
 
       if (archiveMarkerRegex.test(line)) {
         haveSeenArchiveMarker = true;
-        continue
+        continue;
       }
 
       // Check if this is a completed lane
@@ -589,20 +612,25 @@ export class KanbanParser {
         continue;
       }
 
-      if (line.trim()) throw new Error(t("I don't know how to interpret this line:") + "\n"+ line);
-    };
+      if (line.trim())
+        throw new Error(
+          t("I don't know how to interpret this line:") + "\n" + line
+        );
+    }
 
     // Push the last lane
     if (currentLane !== null) pushLane();
 
     function pushLane() {
       // Don't replace lanes and items more than necessary
-      const laneKey = `${currentLane.data.shouldMarkItemsComplete} ${currentLane.items.map(item => item.id).join(",")}`;
+      const laneKey = `${
+        currentLane.data.shouldMarkItemsComplete
+      } ${currentLane.items.map((item) => item.id).join(",")}`;
       const oldLane = lastLanes.get(laneKey);
       if (oldLane) {
         if (oldLane.title === currentLane.title) {
           // Title is the only thing that isn't in the key
-          currentLane = oldLane
+          currentLane = oldLane;
         } else {
           // At least save the items and other props
           currentLane.items = oldLane.items;

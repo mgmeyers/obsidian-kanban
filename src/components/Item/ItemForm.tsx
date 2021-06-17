@@ -155,9 +155,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
   }, [itemTitle]);
 
   const addItemsFromStrings = (titles: string[]) => {
-    addItems(
-      titles.map((title) => view.parser.newItem(title))
-    );
+    addItems(titles.map((title) => view.parser.newItem(title)));
   };
 
   if (isInputVisible) {

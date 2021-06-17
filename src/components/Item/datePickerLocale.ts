@@ -28,7 +28,7 @@ const localeMap: { [k: string]: CustomLocale } = {
   "zh-tw": l10n.zh_tw,
 };
 
-const locale = localeMap[moment.locale()]
+const locale = localeMap[moment.locale()];
 
 export function getDefaultLocale() {
   return locale || localeMap.en;

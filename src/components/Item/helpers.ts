@@ -1,6 +1,4 @@
 import { moment, setIcon } from "obsidian";
-import update from "immutability-helper";
-
 import { BoardModifiers, Item } from "../types";
 import {
   c,
@@ -13,6 +11,7 @@ import flatpickr from "flatpickr";
 import { defaultDateTrigger, defaultTimeTrigger } from "src/settingHelpers";
 import { getDefaultLocale } from "./datePickerLocale";
 import { KanbanView } from "src/KanbanView";
+import { t } from "src/lang/helpers";
 
 export function constructDatePicker(
   coordinates: { x: number; y: number },

@@ -254,28 +254,22 @@ export function constructAutocomplete({
   ];
 
   if (!excludeDatePicker) {
-    configs.push(
-      getTimePickerConfig(view)
-    )
+    configs.push(getTimePickerConfig(view));
   }
 
   const editor = new TextareaEditor(inputRef.current);
-  const autocomplete = new Textcomplete(
-    editor,
-    configs,
-    {
-      dropdown: {
-        className: `${c("autocomplete")} ${c("ignore-click-outside")}`,
-        rotate: true,
-        item: {
-          className: `${c("autocomplete-item")} ${c("ignore-click-outside")}`,
-          activeClassName: `${c("autocomplete-item-active")} ${c(
-            "ignore-click-outside"
-          )}`,
-        },
+  const autocomplete = new Textcomplete(editor, configs, {
+    dropdown: {
+      className: `${c("autocomplete")} ${c("ignore-click-outside")}`,
+      rotate: true,
+      item: {
+        className: `${c("autocomplete-item")} ${c("ignore-click-outside")}`,
+        activeClassName: `${c("autocomplete-item-active")} ${c(
+          "ignore-click-outside"
+        )}`,
       },
-    }
-  );
+    },
+  });
 
   const destroyDatePicker = () => {
     if (!autocomplete.isShown()) {
