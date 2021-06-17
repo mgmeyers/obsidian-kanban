@@ -1,15 +1,13 @@
-import update from "immutability-helper";
 import React from "react";
 import {
   DraggableProvided,
   DraggableStateSnapshot,
-  DraggableRubric,
 } from "react-beautiful-dnd";
 
-import { Item, Lane } from "../types";
+import { Item } from "../types";
 import { c, noop } from "../helpers";
-import { Icon } from "../Icon/Icon";
-import { ObsidianContext } from "../context";
+import { getItemClassModifiers } from "./helpers";
+import { KanbanContext, SearchContext } from "../context";
 import { ItemContent, ItemMetadata } from "./ItemContent";
 import { useItemMenu } from "./ItemMenu";
 import {
@@ -18,7 +16,76 @@ import {
   constructMenuTimePickerOnChange,
   constructTimePicker,
 } from "./helpers";
-import { t } from "src/lang/helpers";
+import { ItemCheckbox } from "./ItemCheckbox";
+import { ItemMenuButton } from "./ItemMenuButton";
+import { KanbanView } from "src/KanbanView";
+import { BoardModifiers } from "../helpers/boardModifiers";
+
+interface UseItemContentEventsParams {
+  view: KanbanView;
+  boardModifiers: BoardModifiers;
+  laneIndex: number;
+  itemIndex: number;
+  item: Item;
+}
+
+function useItemContentEvents({
+  boardModifiers,
+  laneIndex,
+  itemIndex,
+  item,
+  view,
+}: UseItemContentEventsParams) {
+  return React.useMemo(() => {
+    const onContentChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
+      e
+    ) => {
+      const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
+      boardModifiers.updateItem(
+        laneIndex,
+        itemIndex,
+        view.parser.updateItem(item, titleRaw)
+      );
+    };
+
+    const onEditDate: React.MouseEventHandler = (e) => {
+      constructDatePicker(
+        { x: e.clientX, y: e.clientY },
+        constructMenuDatePickerOnChange({
+          view,
+          boardModifiers,
+          item,
+          hasDate: true,
+          laneIndex,
+          itemIndex,
+        }),
+        item.metadata.date?.toDate()
+      );
+    };
+
+    const onEditTime: React.MouseEventHandler = (e) => {
+      constructTimePicker(
+        view,
+        { x: e.clientX, y: e.clientY },
+        constructMenuTimePickerOnChange({
+          view,
+          boardModifiers,
+          item,
+          hasTime: true,
+          laneIndex,
+          itemIndex,
+        }),
+        item.metadata.time
+      );
+    };
+
+    return {
+      onContentChange,
+      onEditDate,
+      onEditTime,
+    };
+  }, [boardModifiers, laneIndex, itemIndex, item, view]);
+}
 
 export interface DraggableItemProps {
   item: Item;
@@ -34,37 +101,9 @@ interface GhostItemProps {
   item: Item;
 }
 
-function getClassModifiers(item: Item) {
-  const date = item.metadata.date;
-  const classModifiers: string[] = [];
-
-  if (date) {
-    if (date.isSame(new Date(), "day")) {
-      classModifiers.push("is-today");
-    }
-
-    if (date.isAfter(new Date(), "day")) {
-      classModifiers.push("is-future");
-    }
-
-    if (date.isBefore(new Date(), "day")) {
-      classModifiers.push("is-past");
-    }
-  }
-
-  if (item.data.isComplete) {
-    classModifiers.push("is-complete");
-  }
-
-  for (let tag of item.metadata.tags) {
-    classModifiers.push(`has-tag-${tag.slice(1)}`);
-  }
-
-  return classModifiers;
-}
-
 export function GhostItem({ item, shouldMarkItemsComplete }: GhostItemProps) {
-  const classModifiers = getClassModifiers(item);
+  const classModifiers = getItemClassModifiers(item);
+  const { view, boardModifiers } = React.useContext(KanbanContext);
 
   return (
     <div className={`${c("item")} ${classModifiers.join(" ")}`}>
@@ -73,6 +112,8 @@ export function GhostItem({ item, shouldMarkItemsComplete }: GhostItemProps) {
           <ItemCheckbox
             item={item}
             shouldMarkItemsComplete={shouldMarkItemsComplete}
+            boardModifiers={boardModifiers}
+            view={view}
           />
           <ItemContent isSettingsVisible={false} item={item} />
           <ItemMenuButton
@@ -81,280 +122,114 @@ export function GhostItem({ item, shouldMarkItemsComplete }: GhostItemProps) {
             showMenu={noop}
           />
         </div>
+        <ItemMetadata isSettingsVisible={false} item={item} />
+      </div>
+    </div>
+  );
+}
+
+export const DraggableItem = React.memo(function DraggableItem({
+  item,
+  itemIndex,
+  laneIndex,
+  shouldMarkItemsComplete,
+  snapshot,
+  provided,
+}: DraggableItemProps) {
+  const { view, boardModifiers } = React.useContext(KanbanContext);
+  const searchQuery = React.useContext(SearchContext);
+  const [isEditing, setIsEditing] = React.useState(false);
+
+  const isMatch = searchQuery ? item.titleSearch.contains(searchQuery) : false;
+  const classModifiers: string[] = getItemClassModifiers(item);
+
+  if (snapshot.isDragging) classModifiers.push("is-dragging");
+
+  if (searchQuery) {
+    if (isMatch) {
+      classModifiers.push("is-search-hit");
+    } else {
+      classModifiers.push("is-search-miss");
+    }
+  }
+
+  const showItemMenu = useItemMenu({
+    boardModifiers,
+    item,
+    itemIndex,
+    laneIndex,
+    setIsEditing,
+    view,
+  });
+
+  const contentEvents = useItemContentEvents({
+    boardModifiers,
+    item,
+    itemIndex,
+    laneIndex,
+    view,
+  });
+
+  const onContextMenu: React.MouseEventHandler = React.useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const internalLinkPath =
+        e.target instanceof HTMLAnchorElement &&
+        e.target.hasClass("internal-link")
+          ? e.target.dataset.href
+          : undefined;
+
+      showItemMenu(e.nativeEvent, internalLinkPath);
+    },
+    [showItemMenu]
+  );
+
+  const onDoubleClick: React.MouseEventHandler = React.useCallback(() => {
+    setIsEditing(true);
+  }, [setIsEditing]);
+
+  return (
+    <div
+      onContextMenu={onContextMenu}
+      onDoubleClick={onDoubleClick}
+      className={`${c("item")} ${classModifiers.join(" ")}`}
+      ref={provided.innerRef}
+      {...provided.draggableProps}
+      {...provided.dragHandleProps}
+    >
+      <div className={c("item-content-wrapper")}>
+        <div className={c("item-title-wrapper")}>
+          <ItemCheckbox
+            boardModifiers={boardModifiers}
+            item={item}
+            itemIndex={itemIndex}
+            laneIndex={laneIndex}
+            shouldMarkItemsComplete={shouldMarkItemsComplete}
+            view={view}
+          />
+          <ItemContent
+            isSettingsVisible={isEditing}
+            item={item}
+            onChange={contentEvents.onContentChange}
+            onEditDate={contentEvents.onEditDate}
+            onEditTime={contentEvents.onEditTime}
+            searchQuery={isMatch ? searchQuery : undefined}
+            setIsSettingsVisible={setIsEditing}
+          />
+          <ItemMenuButton
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+            showMenu={showItemMenu}
+          />
+        </div>
         <ItemMetadata
-          isSettingsVisible={false}
+          searchQuery={isMatch ? searchQuery : undefined}
+          isSettingsVisible={isEditing}
           item={item}
         />
       </div>
     </div>
   );
-}
-
-interface ItemCheckboxProps {
-  laneIndex?: number;
-  itemIndex?: number;
-  item: Item;
-  shouldMarkItemsComplete: boolean;
-}
-
-function ItemCheckbox({
-  shouldMarkItemsComplete,
-  laneIndex,
-  itemIndex,
-  item,
-}: ItemCheckboxProps) {
-  const { view, boardModifiers } = React.useContext(ObsidianContext);
-  const shouldShowCheckbox = view.getSetting("show-checkboxes");
-
-  const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] =
-    React.useState(false);
-  const [isHoveringCheckbox, setIsHoveringCheckbox] = React.useState(false);
-
-  React.useEffect(() => {
-    if (isHoveringCheckbox) {
-      const handler = (e: KeyboardEvent) => {
-        if (e.metaKey || e.ctrlKey) {
-          setIsCtrlHoveringCheckbox(true);
-        } else {
-          setIsCtrlHoveringCheckbox(false);
-        }
-      };
-
-      window.addEventListener("keydown", handler);
-      window.addEventListener("keyup", handler);
-
-      return () => {
-        window.removeEventListener("keydown", handler);
-        window.removeEventListener("keyup", handler);
-      };
-    }
-  }, [isHoveringCheckbox]);
-
-  if (!(shouldMarkItemsComplete || shouldShowCheckbox)) {
-    return null;
-  }
-
-  return (
-    <div
-      onMouseEnter={(e) => {
-        setIsHoveringCheckbox(true);
-
-        if (e.ctrlKey || e.metaKey) {
-          setIsCtrlHoveringCheckbox(true);
-        }
-      }}
-      onMouseLeave={() => {
-        setIsHoveringCheckbox(false);
-
-        if (isCtrlHoveringCheckbox) {
-          setIsCtrlHoveringCheckbox(false);
-        }
-      }}
-      className={c("item-prefix-button-wrapper")}
-    >
-      {shouldShowCheckbox && !isCtrlHoveringCheckbox && (
-        <input
-          onChange={() => {
-            boardModifiers.updateItem(
-              laneIndex,
-              itemIndex,
-              update(item, {
-                data: {
-                  $toggle: ["isComplete"],
-                },
-              })
-            );
-          }}
-          type="checkbox"
-          className="task-list-item-checkbox"
-          checked={!!item.data.isComplete}
-        />
-      )}
-      {(isCtrlHoveringCheckbox ||
-        (!shouldShowCheckbox && shouldMarkItemsComplete)) && (
-        <button
-          onClick={() => {
-            boardModifiers.archiveItem(laneIndex, itemIndex, item);
-          }}
-          className={c("item-prefix-button")}
-          aria-label={isCtrlHoveringCheckbox ? undefined : "Archive item"}
-        >
-          <Icon name="sheets-in-box" />
-        </button>
-      )}
-    </div>
-  );
-}
-
-interface ItemMenuButtonProps {
-  isEditing: boolean;
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
-  showMenu: (e: MouseEvent, internalLinkPath?: string) => void;
-}
-
-function ItemMenuButton({
-  isEditing,
-  setIsEditing,
-  showMenu,
-}: ItemMenuButtonProps) {
-  return (
-    <div className={c("item-postfix-button-wrapper")}>
-      {isEditing ? (
-        <button
-          onClick={() => {
-            setIsEditing(false);
-          }}
-          className={`${c("item-postfix-button")} is-enabled`}
-          aria-label={t("Cancel")}
-        >
-          <Icon name="cross" />
-        </button>
-      ) : (
-        <button
-          onClick={
-            showMenu as unknown as React.MouseEventHandler<HTMLButtonElement>
-          }
-          className={c("item-postfix-button")}
-          aria-label={t("More options")}
-        >
-          <Icon name="vertical-three-dots" />
-        </button>
-      )}
-    </div>
-  );
-}
-
-type DraggableItemState = {
-  isEditing: boolean;
-}
-
-export class DraggableItem extends React.PureComponent<DraggableItemProps, DraggableItemState> {
-  static contextType = ObsidianContext;
-
-  state = {isEditing: false}
-
-  setIsEditing = (isEditing: boolean) => {
-    this.setState({isEditing});
-  }
-
-  showMenu = (e: MouseEvent, internalLinkPath?: string) => {
-    useItemMenu({
-      setIsEditing: this.setIsEditing,
-      item: this.props.item,
-      laneIndex: this.props.laneIndex,
-      itemIndex: this.props.itemIndex,
-      boardModifiers: this.context.boardModifiers,
-      view: this.context.view,
-    })(e, internalLinkPath);
-  }
-
-  render() {
-    const {item, itemIndex, laneIndex, shouldMarkItemsComplete, provided, snapshot} = this.props;
-    const { boardModifiers, view, query } = this.context;
-    const { isEditing } = this.state;
-
-    const isMatch = query
-      ? item.titleSearch.contains(query)
-      : false;
-
-    const classModifiers: string[] = getClassModifiers(item);
-
-    if (snapshot.isDragging) classModifiers.push("is-dragging");
-
-    if (query) {
-      if (isMatch) {
-        classModifiers.push("is-search-hit");
-      } else {
-        classModifiers.push("is-search-miss");
-      }
-    }
-
-    return (
-      <div
-        onContextMenu={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-
-          const internalLinkPath =
-            e.target instanceof HTMLAnchorElement &&
-            e.target.hasClass("internal-link")
-              ? e.target.dataset.href
-              : undefined;
-
-          this.showMenu(e.nativeEvent, internalLinkPath);
-        }}
-        onDoubleClick={() => {
-          this.setIsEditing(true);
-        }}
-        className={`${c("item")} ${classModifiers.join(" ")}`}
-        ref={provided.innerRef}
-        {...provided.draggableProps}
-        {...provided.dragHandleProps}
-      >
-        <div className={c("item-content-wrapper")}>
-          <div className={c("item-title-wrapper")}>
-            <ItemCheckbox
-              item={item}
-              itemIndex={itemIndex}
-              shouldMarkItemsComplete={shouldMarkItemsComplete}
-              laneIndex={laneIndex}
-            />
-            <ItemContent
-              isSettingsVisible={isEditing}
-              setIsSettingsVisible={this.setIsEditing}
-              item={item}
-              searchQuery={isMatch ? query : undefined}
-              onChange={(e) => {
-                const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
-                boardModifiers.updateItem(
-                  laneIndex,
-                  itemIndex,
-                  view.parser.updateItem(item, titleRaw)
-                );
-              }}
-              onEditDate={(e) => {
-                constructDatePicker(
-                  { x: e.clientX, y: e.clientY },
-                  constructMenuDatePickerOnChange({
-                    view,
-                    boardModifiers,
-                    item,
-                    hasDate: true,
-                    laneIndex,
-                    itemIndex,
-                  }),
-                  item.metadata.date?.toDate()
-                );
-              }}
-              onEditTime={(e) => {
-                constructTimePicker(
-                  view,
-                  { x: e.clientX, y: e.clientY },
-                  constructMenuTimePickerOnChange({
-                    view,
-                    boardModifiers,
-                    item,
-                    hasTime: true,
-                    laneIndex,
-                    itemIndex,
-                  }),
-                  item.metadata.time
-                );
-              }}
-            />
-            <ItemMenuButton
-              isEditing={isEditing}
-              setIsEditing={this.setIsEditing}
-              showMenu={this.showMenu}
-            />
-          </div>
-          <ItemMetadata
-            searchQuery={isMatch ? query : undefined}
-            isSettingsVisible={isEditing}
-            item={item}
-          />
-        </div>
-      </div>
-    );
-  }
-}
+});

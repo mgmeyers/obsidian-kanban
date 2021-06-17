@@ -2,14 +2,11 @@ import React from "react";
 import { KanbanView } from "src/KanbanView";
 import { BoardModifiers } from "./types";
 
-export interface ObsidianContextProps {
+export interface KanbanContextProps {
   filePath?: string;
   view?: KanbanView;
   boardModifiers:  BoardModifiers;
-  query: string;
 }
 
-export const ObsidianContext = React.createContext<ObsidianContextProps>(null);
-
-
-
+export const KanbanContext = React.createContext<KanbanContextProps>(null);
+export const SearchContext = React.createContext<string | null>(null);

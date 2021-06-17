@@ -1,7 +1,7 @@
 import React from "react";
 import { Lane } from "../types";
 import { c } from "../helpers";
-import { ObsidianContext } from "../context";
+import { KanbanContext } from "../context";
 import { Menu } from "obsidian";
 import { t } from "src/lang/helpers";
 
@@ -70,7 +70,7 @@ export interface UseSettingsMenuParams {
 }
 
 export function useSettingsMenu({ setIsEditing }: UseSettingsMenuParams) {
-  const { view } = React.useContext(ObsidianContext);
+  const { view } = React.useContext(KanbanContext);
   const [confirmAction, setConfirmAction] = React.useState<LaneAction>(null);
 
   const settingsMenu = React.useMemo(() => {

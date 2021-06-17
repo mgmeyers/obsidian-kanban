@@ -5,7 +5,7 @@ import { c } from "../helpers";
 import { GripIcon } from "../Icon/GripIcon";
 import { Icon } from "../Icon/Icon";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
-import { ObsidianContext } from "../context";
+import { KanbanContext } from "../context";
 import { LaneTitle } from "./LaneTitle";
 import { LaneSettings } from "./LaneSettings";
 import { useSettingsMenu, ConfirmAction } from "./LaneMenu";
@@ -19,7 +19,7 @@ interface LaneHeaderProps {
 
 export const LaneHeader = React.memo(
   ({ lane, laneIndex, dragHandleProps }: LaneHeaderProps) => {
-    const { boardModifiers } = React.useContext(ObsidianContext);
+    const { boardModifiers } = React.useContext(KanbanContext);
     const [isEditing, setIsEditing] = React.useState(false);
 
     const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({

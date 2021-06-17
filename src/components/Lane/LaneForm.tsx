@@ -1,12 +1,12 @@
 import React from "react";
 import { Lane } from "../types";
 import { c, generateInstanceId, useIMEInputProps } from "../helpers";
-import { ObsidianContext } from "../context";
+import { KanbanContext } from "../context";
 import useOnclickOutside from "react-cool-onclickoutside";
 import { t } from "src/lang/helpers";
 
 export function LaneForm() {
-  const { boardModifiers } = React.useContext(ObsidianContext);
+  const { boardModifiers } = React.useContext(KanbanContext);
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const [shouldMarkAsComplete, setShouldMarkAsComplete] = React.useState(false);
   const [laneTitle, setLaneTitle] = React.useState("");

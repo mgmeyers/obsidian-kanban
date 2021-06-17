@@ -297,3 +297,32 @@ export function constructMenuTimePickerOnChange({
     );
   };
 }
+
+export function getItemClassModifiers(item: Item) {
+  const date = item.metadata.date;
+  const classModifiers: string[] = [];
+
+  if (date) {
+    if (date.isSame(new Date(), "day")) {
+      classModifiers.push("is-today");
+    }
+
+    if (date.isAfter(new Date(), "day")) {
+      classModifiers.push("is-future");
+    }
+
+    if (date.isBefore(new Date(), "day")) {
+      classModifiers.push("is-past");
+    }
+  }
+
+  if (item.data.isComplete) {
+    classModifiers.push("is-complete");
+  }
+
+  for (let tag of item.metadata.tags) {
+    classModifiers.push(`has-tag-${tag.slice(1)}`);
+  }
+
+  return classModifiers;
+}

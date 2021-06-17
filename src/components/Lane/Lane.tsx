@@ -14,7 +14,7 @@ import { c } from "../helpers";
 import { DraggableItem, GhostItem } from "../Item/Item";
 import { ItemForm } from "../Item/ItemForm";
 import { LaneHeader } from "./LaneHeader";
-import { ObsidianContext } from "../context";
+import { KanbanContext } from "../context";
 
 export interface DraggableLaneProps {
   lane: Lane;
@@ -96,7 +96,7 @@ function LaneItems({
 
 export class DraggableLane extends React.PureComponent<DraggableLaneProps>{
 
-  static contextType = ObsidianContext;
+  static contextType = KanbanContext;
 
   render() {
     const {lane, laneIndex, isGhost, provided, snapshot} = this.props;

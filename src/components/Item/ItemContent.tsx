@@ -3,7 +3,7 @@ import React from "react";
 
 import { Item, PageData } from "../types";
 import { c, getDefaultDateFormat, getDefaultTimeFormat } from "../helpers";
-import { ObsidianContext } from "../context";
+import { KanbanContext } from "../context";
 import { useAutocompleteInputProps } from "./autocomplete";
 import { KanbanView } from "src/KanbanView";
 import { t } from "src/lang/helpers";
@@ -305,7 +305,7 @@ export const ItemContent = React.memo(
     onEditDate,
     onEditTime,
   }: ItemContentProps) => {
-    const { view, filePath } = React.useContext(ObsidianContext);
+    const { view, filePath } = React.useContext(KanbanContext);
     const inputRef = React.useRef<HTMLTextAreaElement>();
     const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false);
     const hideTagsDisplay = view.getSetting("hide-tags-display");

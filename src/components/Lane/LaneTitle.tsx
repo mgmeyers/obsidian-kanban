@@ -1,7 +1,7 @@
 import { getLinkpath } from "obsidian";
 import React from "react";
 import { t } from "src/lang/helpers";
-import { ObsidianContext } from "../context";
+import { KanbanContext } from "../context";
 import { c } from "../helpers";
 import { useAutocompleteInputProps } from "../Item/autocomplete";
 
@@ -20,7 +20,7 @@ export function LaneTitle({
   title,
   onChange,
 }: LaneTitleProps) {
-  const { view, filePath } = React.useContext(ObsidianContext);
+  const { view, filePath } = React.useContext(KanbanContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
 
   const onAction = () => isEditing && setIsEditing(false);

@@ -10,7 +10,7 @@ import useOnclickOutside from "react-cool-onclickoutside";
 import { Item } from "../types";
 import { c, generateInstanceId } from "../helpers";
 import { useAutocompleteInputProps } from "./autocomplete";
-import { ObsidianContext } from "../context";
+import { KanbanContext } from "../context";
 import { t } from "src/lang/helpers";
 import { KanbanView } from "src/KanbanView";
 
@@ -111,7 +111,7 @@ interface ItemFormProps {
 export function ItemForm({ addItems }: ItemFormProps) {
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const [itemTitle, setItemTitle] = React.useState("");
-  const { view, filePath } = React.useContext(ObsidianContext);
+  const { view, filePath } = React.useContext(KanbanContext);
 
   const clickOutsideRef = useOnclickOutside(
     () => {
