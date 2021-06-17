@@ -212,9 +212,9 @@ export function useItemMenu({
                 });
             });
           }
-
-          menu.showAtPosition(coordinates);
         }
+
+        menu.showAtPosition(coordinates);
       }
     },
     [setIsEditing, item, laneIndex, itemIndex, boardModifiers, view]
