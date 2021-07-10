@@ -20,10 +20,15 @@ export default {
   "Open as markdown": "マークダウンとして開く",
   "Open board settings": "ボード設定を開く",
   "Archive completed cards": "完了したカードをアーカイブ",
+  "Something went wrong": "エラーが発生しました",
+  "You may wish to open as markdown and inspect or edit the file.": "マークダウンとして開いて調査するかファイルを編集することをおすすめします。",
 
   // parser.ts
   Complete: "完了",
   Archive: "アーカイブ",
+  "Invalid Kanban file: problems parsing frontmatter": "無効なカンバンフィアル: フロントマターのパースに問題があります",
+  "I don't know how to interpret this line:": "この行をどう解釈すればよいか分かりません",
+  Untitled: "無題", // auto-created column
 
   // settingHelpers.ts
   "Note: No template plugins are currently enabled.":
@@ -66,8 +71,7 @@ export default {
     "このフォーマットはマークダウンで日付が保存される際に使用されます。",
   "For more syntax, refer to": "シンタックスについてはこちらを参照:",
   "format reference": "フォーマットリファレンス",
-  "Your current syntax looks like this":
-    "現在のシンタックスは次のように見えます",
+  "Your current syntax looks like this": "現在のシンタックスは次のように見えます",
   "Time format": "時間フォーマット",
   "Date display format": "日付表示フォーマット",
   "This format will be used when displaying dates in Kanban cards.":
@@ -84,8 +88,7 @@ export default {
   "Link dates to daily notes": "デイリーノートに日付をリンク",
   "When toggled, dates will link to daily notes. Eg. [[2021-04-26]]":
     "有効化すると日付がデイリーノートにリンクされます。 例: [[2021-04-26]]",
-  "Add date and time to archived cards":
-    "アーカイブされたカードに日付と時間を追加",
+  "Add date and time to archived cards": "アーカイブされたカードに日付と時間を追加",
   "When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title":
     "有効化するとカードがアーカイブされた際に現在の日付と時間がカードの最初に追記されるようになります。例: - [ ] 2021-05-14 10:00am カードタイトル",
   "Archive date/time separator": "日付・時間セパレーターをアーカイブ",
@@ -110,6 +113,7 @@ export default {
   "Drag to rearrange": "ドラッグして並べ替える",
   Delete: "削除",
   "Add key": "キーを追加",
+  "Field contains markdown": "フィールドにマークダウンを含みます",
 
   // components/Item/Item.tsx
   "Archive item": "アイテムをアーカイブ",
