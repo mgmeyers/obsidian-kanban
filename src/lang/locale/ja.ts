@@ -21,12 +21,12 @@ export default {
   "Open board settings": "ボード設定を開く",
   "Archive completed cards": "完了したカードをアーカイブ",
   "Something went wrong": "エラーが発生しました",
-  "You may wish to open as markdown and inspect or edit the file.": "マークダウンとして開いて調査するかファイルを編集することをおすすめします。",
+  "You may wish to open as markdown and inspect or edit the file.": "マークダウンとしてファイルを開いて調査するか編集することをおすすめします。",
 
   // parser.ts
   Complete: "完了",
   Archive: "アーカイブ",
-  "Invalid Kanban file: problems parsing frontmatter": "無効なカンバンフィアル: フロントマターのパースに問題があります",
+  "Invalid Kanban file: problems parsing frontmatter": "無効なカンバンファイル: フロントマターのパースに問題があります",
   "I don't know how to interpret this line:": "この行をどう解釈すればよいか分かりません",
   Untitled: "無題", // auto-created column
 
