@@ -23,9 +23,9 @@ import {
 import { t } from "./lang/helpers";
 import {
   cleanupMetadataSettings,
-  DataKey,
   renderMetadataSettings,
 } from "./MetadataSettings";
+import { DataKey } from "./components/types";
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
@@ -71,12 +71,11 @@ export class SettingsManager {
   applyDebounceTimer: number = 0;
 
   constructor(
-    app: App,
     plugin: KanbanPlugin,
     config: SettingsManagerConfig,
     settings: KanbanSettings
   ) {
-    this.app = app;
+    this.app = plugin.app;
     this.plugin = plugin;
     this.config = config;
     this.settings = settings;
@@ -985,12 +984,7 @@ export class SettingsModal extends Modal {
     super(view.app);
 
     this.view = view;
-    this.settingsManager = new SettingsManager(
-      view.app,
-      view.plugin,
-      config,
-      settings
-    );
+    this.settingsManager = new SettingsManager(view.plugin, config, settings);
   }
 
   onOpen() {
@@ -1013,16 +1007,10 @@ export class KanbanSettingsTab extends PluginSettingTab {
   plugin: KanbanPlugin;
   settingsManager: SettingsManager;
 
-  constructor(
-    app: App,
-    plugin: KanbanPlugin,
-    config: SettingsManagerConfig,
-    settings: KanbanSettings
-  ) {
-    super(app, plugin);
+  constructor(plugin: KanbanPlugin, config: SettingsManagerConfig) {
+    super(plugin.app, plugin);
     this.plugin = plugin;
-
-    this.settingsManager = new SettingsManager(app, plugin, config, settings);
+    this.settingsManager = new SettingsManager(plugin, config, plugin.settings);
   }
 
   display() {

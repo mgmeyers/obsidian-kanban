@@ -10,7 +10,7 @@ import {
 import { around } from "monkey-around";
 
 import { kanbanIcon, KanbanView, kanbanViewType } from "./KanbanView";
-import { DragDropApp } from "./DragDropApp";
+import { createApp } from "./DragDropApp";
 import { frontMatterKey } from "./parser";
 import { KanbanSettings, KanbanSettingsTab } from "./Settings";
 import ReactDOM from "react-dom";
@@ -21,6 +21,18 @@ import "choices.js/public/assets/styles/choices.css";
 import "flatpickr/dist/flatpickr.min.css";
 import "./main.css";
 import { t } from "./lang/helpers";
+import { DataBridge } from "./DataBridge";
+import update from "immutability-helper";
+
+const basicFrontmatter = [
+  "---",
+  "",
+  `${frontMatterKey}: basic`,
+  "",
+  "---",
+  "",
+  "",
+].join("\n");
 
 export default class KanbanPlugin extends Plugin {
   settingsTab: KanbanSettingsTab;
@@ -29,59 +41,252 @@ export default class KanbanPlugin extends Plugin {
   dbTimers: { [id: string]: number } = {};
   hasSet: { [id: string]: boolean } = {};
   appEl: HTMLDivElement;
+  views: DataBridge<Map<string, KanbanView>> = new DataBridge(new Map());
+  _loaded: boolean = false;
+
+  async loadSettings() {
+    this.settings = Object.assign({}, await this.loadData());
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
+
+  onunload() {
+    // Unmount views from the display first, so we don't get intermediate render thrashing
+    this.views.setExternal(new Map());
+
+    const kanbanLeaves = this.app.workspace.getLeavesOfType(kanbanViewType);
+
+    kanbanLeaves.forEach((leaf) => {
+      this.setMarkdownView(leaf);
+    });
+
+    // @ts-ignore
+    this.app.workspace.unregisterHoverLinkSource(frontMatterKey);
+
+    if (this.appEl) {
+      ReactDOM.unmountComponentAtNode(this.appEl);
+      this.appEl.detach();
+    }
+  }
 
   async onload() {
-    const self = this;
-
     await this.loadSettings();
 
-    this.settingsTab = new KanbanSettingsTab(
-      this.app,
-      this,
-      {
-        onSettingsChange: async (newSettings) => {
-          this.settings = newSettings;
-          await this.saveSettings();
+    this.settingsTab = new KanbanSettingsTab(this, {
+      onSettingsChange: async (newSettings) => {
+        this.settings = newSettings;
+        await this.saveSettings();
 
-          // Force a complete re-render when settings change
-          this.app.workspace.getLeavesOfType(kanbanViewType).forEach((leaf) => {
-            const view = leaf.view as KanbanView;
-            view.setViewData(view.data, true);
-          });
-        },
+        // Force a complete re-render when settings change
+        this.app.workspace.getLeavesOfType(kanbanViewType).forEach((leaf) => {
+          const view = leaf.view as KanbanView;
+          view.setViewData(view.data);
+        });
       },
-      this.settings
-    );
+    });
 
     this.addSettingTab(this.settingsTab);
+
+    this.registerView(kanbanViewType, (leaf) => new KanbanView(leaf, this));
+    this.registerMonkeyPatches();
+    this.registerCommands();
+    this.registerEvents();
+
+    // Mount an empty component to start; views will be added as we go
+    this.mount();
+  }
+
+  addView(view: KanbanView) {
+    const views = this.views.getData();
+    if (!views.has(view.id)) {
+      this.views.setExternal(update(views, { $add: [[view.id, view]] }));
+    }
+  }
+
+  removeView(view: KanbanView) {
+    const views = this.views.getData();
+    if (views.has(view.id)) {
+      this.views.setExternal(update(views, { $remove: [view.id] }));
+    }
+  }
+
+  mount() {
+    ReactDOM.render(
+      createApp(this.app, this.views),
+      this.appEl ?? (this.appEl = document.body.createDiv())
+    );
+  }
+
+  async setMarkdownView(leaf: WorkspaceLeaf) {
+    await leaf.setViewState(
+      {
+        type: "markdown",
+        state: leaf.view.getState(),
+        popstate: true,
+      } as ViewState,
+      { focus: true }
+    );
+  }
+
+  async setKanbanView(leaf: WorkspaceLeaf) {
+    await leaf.setViewState({
+      type: kanbanViewType,
+      state: leaf.view.getState(),
+      popstate: true,
+    } as ViewState);
+  }
+
+  async newKanban(folder?: TFolder) {
+    const targetFolder = folder
+      ? folder
+      : this.app.fileManager.getNewFileParent(
+          this.app.workspace.getActiveFile()?.path || ""
+        );
+
+    try {
+      // @ts-ignore
+      const kanban: TFile = await this.app.fileManager.createNewMarkdownFile(
+        targetFolder,
+        t("Untitled Kanban")
+      );
+
+      await this.app.vault.modify(kanban, basicFrontmatter);
+      await this.app.workspace.activeLeaf.setViewState({
+        type: kanbanViewType,
+        state: { file: kanban.path },
+      });
+    } catch (e) {
+      console.error("Error creating kanban board:", e);
+    }
+  }
+
+  registerEvents() {
+    this.registerEvent(
+      this.app.workspace.on("file-menu", (menu, file: TFile) => {
+        // Add a menu item to the folder context menu to create a board
+        if (file instanceof TFolder) {
+          menu.addItem((item) => {
+            item
+              .setTitle(t("New kanban board"))
+              .setIcon(kanbanIcon)
+              .onClick(() => this.newKanban(file));
+          });
+        }
+      })
+    );
+
+    this.registerEvent(
+      this.app.metadataCache.on("changed", (file) => {
+        this.app.workspace.getLeavesOfType(kanbanViewType).forEach((leaf) => {
+          const view = leaf.view as KanbanView;
+          view.onFileMetadataChange(file);
+        });
+      })
+    );
 
     // @ts-ignore
     this.app.workspace.registerHoverLinkSource(frontMatterKey, {
       display: "Kanban",
       defaultMod: true,
     });
+  }
 
-    // TODO: embedded kanban:
-    // this.registerMarkdownPostProcessor((el, ctx) => {
-    //   if (ctx.frontmatter && ctx.frontmatter[frontMatterKey]) {
-    //     clearTimeout(this.dbTimers[ctx.docId]);
+  registerCommands() {
+    this.addCommand({
+      id: "create-new-kanban-board",
+      name: t("Create new board"),
+      callback: () => this.newKanban(),
+    });
 
-    //     this.dbTimers[ctx.docId] = window.setTimeout(() => {
-    //       delete this.dbTimers[ctx.docId];
+    this.addCommand({
+      id: "archive-completed-cards",
+      name: t("Archive completed cards in active board"),
+      checkCallback: (checking) => {
+        const activeView = this.app.workspace.getActiveViewOfType(KanbanView);
 
-    //       if (!el.parentNode) return;
+        if (!activeView) return false;
+        if (checking) return true;
 
-    //       const container = el.closest(".markdown-embed-content");
+        activeView.archiveCompletedCards();
+      },
+    });
 
-    //       if (container) {
-    //         container.empty();
-    //         ctx.addChild(
-    //           new KanbanEmbed(ctx.sourcePath, container as HTMLElement)
-    //         );
-    //       }
-    //     }, 50);
-    //   }
-    // });
+    this.addCommand({
+      id: "toggle-kanban-view",
+      name: t("Toggle between Kanban and markdown mode"),
+      checkCallback: (checking) => {
+        const activeFile = this.app.workspace.getActiveFile();
+
+        if (!activeFile) return false;
+
+        const fileCache = this.app.metadataCache.getFileCache(activeFile);
+        const fileIsKanban =
+          !!fileCache?.frontmatter && !!fileCache.frontmatter[frontMatterKey];
+
+        if (checking) {
+          return fileIsKanban;
+        }
+
+        const activeLeaf = this.app.workspace.activeLeaf;
+
+        if (activeLeaf?.view && activeLeaf.view instanceof KanbanView) {
+          this.kanbanFileModes[(activeLeaf as any).id || activeFile.path] =
+            "markdown";
+          this.setMarkdownView(activeLeaf);
+        } else if (fileIsKanban) {
+          this.kanbanFileModes[(activeLeaf as any).id || activeFile.path] =
+            kanbanViewType;
+          this.setKanbanView(activeLeaf);
+        }
+      },
+    });
+
+    this.addCommand({
+      id: "convert-to-kanban",
+      name: t("Convert empty note to Kanban"),
+      checkCallback: (checking) => {
+        const activeFile = this.app.workspace.getActiveFile();
+        const activeLeaf = this.app.workspace.activeLeaf;
+
+        if (!activeFile || !activeLeaf) return false;
+
+        const isFileEmpty = activeFile.stat.size === 0;
+
+        if (checking) return isFileEmpty;
+        if (isFileEmpty) {
+          this.app.vault.modify(activeFile, basicFrontmatter).then(() => {
+            this.setKanbanView(activeLeaf);
+          });
+        }
+      },
+    });
+  }
+
+  registerMonkeyPatches() {
+    const self = this;
+
+    this.app.workspace.onLayoutReady(() => {
+      this.register(
+        around((this.app as any).commands.commands["editor:open-search"], {
+          checkCallback(next) {
+            return function (isChecking: boolean) {
+              if (isChecking) {
+                return next.call(this, isChecking);
+              }
+              const view = self.app.workspace.getActiveViewOfType(KanbanView);
+
+              if (view) {
+                view.toggleSearch();
+              } else {
+                next.call(this, false);
+              }
+            };
+          },
+        })
+      );
+    });
 
     // Monkey patch WorkspaceLeaf to open Kanbans with KanbanView by default
     this.register(
@@ -103,6 +308,8 @@ export default class KanbanPlugin extends Plugin {
         setViewState(next) {
           return function (state: ViewState, ...rest: any[]) {
             if (
+              // Don't force kanban mode during shutdown
+              self._loaded &&
               // If we have a markdown file
               state.type === "markdown" &&
               state.state?.file &&
@@ -167,242 +374,5 @@ export default class KanbanPlugin extends Plugin {
         },
       })
     );
-
-    this.registerView(kanbanViewType, (leaf) => new KanbanView(leaf, this));
-
-    this.addCommand({
-      id: "create-new-kanban-board",
-      name: t("Create new board"),
-      callback: () => this.newKanban(),
-    });
-
-    this.app.workspace.onLayoutReady(() => {
-      this.refreshViews();
-      this.registerEvent(
-        this.app.workspace.on("layout-change", this.refreshViews, this)
-      );
-      this.register(
-        around((this.app as any).commands.commands["editor:open-search"], {
-          checkCallback(next) {
-            return function (isChecking: boolean) {
-              if (isChecking) {
-                return next.call(this, isChecking);
-              }
-              const view = self.app.workspace.getActiveViewOfType(KanbanView);
-
-              if (view) {
-                view.toggleSearch();
-              } else {
-                next.call(this, false);
-              }
-            };
-          },
-        })
-      );
-    });
-
-    this.addCommand({
-      id: "archive-completed-cards",
-      name: t("Archive completed cards in active board"),
-      checkCallback: (checking) => {
-        const activeView = this.app.workspace.activeLeaf.view;
-
-        if (checking) {
-          return activeView && activeView instanceof KanbanView;
-        }
-
-        if (activeView instanceof KanbanView) {
-          activeView.archiveCompletedCards();
-        }
-      },
-    });
-
-    this.addCommand({
-      id: "toggle-kanban-view",
-      name: t("Toggle between Kanban and markdown mode"),
-      checkCallback: (checking) => {
-        const activeFile = this.app.workspace.getActiveFile();
-
-        if (checking) {
-          if (!activeFile) {
-            return false;
-          }
-
-          const fileCache = this.app.metadataCache.getFileCache(activeFile);
-
-          return (
-            fileCache.frontmatter && !!fileCache.frontmatter[frontMatterKey]
-          );
-        }
-
-        const activeLeaf = this.app.workspace.activeLeaf;
-
-        if (activeLeaf.view instanceof KanbanView) {
-          this.kanbanFileModes[(activeLeaf as any).id || activeFile.path] =
-            "markdown";
-          this.setMarkdownView(activeLeaf);
-        } else {
-          this.kanbanFileModes[(activeLeaf as any).id || activeFile.path] =
-            kanbanViewType;
-          this.setKanbanView(activeLeaf);
-        }
-      },
-    });
-
-    this.addCommand({
-      id: "convert-to-kanban",
-      name: t("Convert empty note to Kanban"),
-      checkCallback: (checking) => {
-        const activeFile = this.app.workspace.getActiveFile();
-
-        if (checking) {
-          return activeFile && activeFile.stat.size === 0;
-        }
-
-        const activeLeaf = this.app.workspace.activeLeaf;
-
-        if (activeFile && activeFile.stat.size === 0) {
-          const frontmatter = [
-            "---",
-            "",
-            `${frontMatterKey}: basic`,
-            "",
-            "---",
-            "",
-            "",
-          ].join("\n");
-
-          this.app.vault.modify(activeFile, frontmatter).then(() => {
-            this.setKanbanView(activeLeaf);
-          });
-        }
-      },
-    });
-
-    this.registerEvent(
-      this.app.workspace.on("file-menu", (menu, file: TFile, source, leaf) => {
-        // Add a menu item to the folder context menu to create a board
-        if (file instanceof TFolder) {
-          menu.addItem((item) => {
-            item
-              .setTitle(t("New kanban board"))
-              .setIcon(kanbanIcon)
-              .onClick(() => this.newKanban(file));
-          });
-        }
-      })
-    );
-
-    this.registerEvent(
-      this.app.metadataCache.on("changed", (file) => {
-        this.app.workspace.getLeavesOfType(kanbanViewType).forEach((leaf) => {
-          const view = leaf.view as KanbanView;
-          view.onFileMetadataChange(file);
-        });
-      })
-    );
-  }
-
-  refreshViews() {
-    ReactDOM.render(
-      DragDropApp(this.app),
-      this.appEl ?? (this.appEl = document.body.createDiv())
-    );
-  }
-
-  async setMarkdownView(leaf: WorkspaceLeaf) {
-    await leaf.setViewState({
-      type: "markdown",
-      state: leaf.view.getState(),
-      popstate: true,
-    } as ViewState);
-  }
-
-  async setKanbanView(leaf: WorkspaceLeaf) {
-    await leaf.setViewState({
-      type: kanbanViewType,
-      state: leaf.view.getState(),
-      popstate: true,
-    } as ViewState);
-  }
-
-  async newKanban(folder?: TFolder) {
-    const targetFolder = folder
-      ? folder
-      : this.app.fileManager.getNewFileParent(
-          this.app.workspace.getActiveFile()?.path || ""
-        );
-
-    // Forcing frontmatter for now until more options are available
-    const frontmatter = [
-      "---",
-      "",
-      `${frontMatterKey}: basic`,
-      "",
-      "---",
-      "",
-      "",
-    ].join("\n");
-
-    try {
-      // @ts-ignore
-      const kanban: TFile = await this.app.fileManager.createNewMarkdownFile(
-        targetFolder,
-        t("Untitled Kanban")
-      );
-
-      await this.app.vault.modify(kanban, frontmatter);
-      await this.app.workspace.activeLeaf.setViewState({
-        type: kanbanViewType,
-        state: {file: kanban.path},
-      })
-    } catch (e) {
-      console.error("Error creating kanban board:", e);
-    }
-  }
-
-  onunload() {
-    const kanbanLeaves = this.app.workspace.getLeavesOfType(kanbanViewType);
-
-    kanbanLeaves.forEach((leaf) => {
-      this.setMarkdownView(leaf);
-    });
-
-    // @ts-ignore
-    this.app.workspace.unregisterHoverLinkSource(frontMatterKey);
-    if (this.appEl) {
-      this.refreshViews();
-      ReactDOM.unmountComponentAtNode(this.appEl);
-      this.appEl.detach();
-    }
-  }
-
-  async loadSettings() {
-    this.settings = Object.assign({}, await this.loadData());
-  }
-
-  async saveSettings() {
-    await this.saveData(this.settings);
-  }
-
-  getTemplatePlugins() {
-    // @ts-ignore
-    const templatesPlugin = this.app.internalPlugins.plugins.templates;
-    const templatesEnabled = templatesPlugin.enabled;
-    // @ts-ignore
-    const templaterPlugin = this.app.plugins.plugins["templater-obsidian"];
-
-    const templateFolder = templatesEnabled
-      ? templatesPlugin.instance.options.folder
-      : templaterPlugin
-      ? templaterPlugin.settings.template_folder
-      : undefined;
-
-    return {
-      templatesPlugin,
-      templaterPlugin: templaterPlugin?.templater,
-      templatesEnabled,
-      templateFolder,
-    };
   }
 }

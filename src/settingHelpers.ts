@@ -4,6 +4,7 @@ import { App, Setting, TFile, TFolder, Vault } from "obsidian";
 import KanbanPlugin from "./main";
 import { KanbanSettings, SettingsManager } from "./Settings";
 import { t } from "./lang/helpers";
+import { getTemplatePlugins } from "./components/helpers";
 
 export const defaultDateTrigger = "@";
 export const defaultTimeTrigger = "@@";
@@ -50,7 +51,7 @@ export function getTemplateChoices(app: App, folderStr?: string) {
 
 export function getListOptions(app: App, plugin: KanbanPlugin) {
   const { templateFolder, templatesEnabled, templaterPlugin } =
-    plugin.getTemplatePlugins();
+    getTemplatePlugins(app);
 
   const templateFiles = getTemplateChoices(app, templateFolder);
   const vaultFolders = getFolderChoices(app);

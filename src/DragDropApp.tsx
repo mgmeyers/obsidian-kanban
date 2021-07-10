@@ -1,24 +1,36 @@
 import { App, Notice } from "obsidian";
-import React from "react";
+import React, { useCallback } from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import { createPortal } from "react-dom";
 import * as helpers from "./components/helpers";
 import { Board } from "./components/types";
-import { KanbanView, kanbanViewType } from "./KanbanView";
+import { DataBridge } from "./DataBridge";
+import { KanbanView } from "./KanbanView";
 
-export function DragDropApp(app: App) {
-  const portals = allViews().map((view) => view.getPortal());
-  
-  if (portals.length) {
+export function createApp(app: App, db: DataBridge<Map<string, KanbanView>>) {
+  return <DragDropApp app={app} db={db} />;
+}
+
+const View = React.memo(({ view }: { view: KanbanView }) => {
+  return createPortal(view.getPortal(), view.contentEl);
+});
+
+export function DragDropApp({
+  app,
+  db,
+}: {
+  app: App;
+  db: DataBridge<Map<string, KanbanView>>;
+}) {
+  const [views, _] = db.useState();
+  const portals = [...views].map(([_id, view]) => <View view={view} />);
+
+  if (portals.length)
     return (
-      <DragDropContext onDragEnd={onDragEnd}>{...portals}</DragDropContext>
+      <DragDropContext onDragEnd={useCallback(onDragEnd, [views])}>
+        {...portals}
+      </DragDropContext>
     );
-  }
-
-  function allViews(): KanbanView[] {
-    return app.workspace
-      .getLeavesOfType(kanbanViewType)
-      .map((leaf) => leaf.view as KanbanView);
-  }
 
   function onDragEnd(dropResult: DropResult) {
     // Bail out early if we're not dropping anywhere
@@ -111,9 +123,10 @@ export function DragDropApp(app: App) {
   }
 
   function boardContextFor(dropResult: DropResult, id: string) {
-    for (const view of allViews()) {
-      if (dropResult.type === "LANE" && (view.leaf as any).id === id)
-        return boardContext(view);
+    if (dropResult.type === "LANE") {
+      return views.has(id) && boardContext(views.get(id));
+    }
+    for (const [vid, view] of views) {
       const index = view.dataBridge.data.lanes.findIndex(
         (lane) => lane.id === id
       );

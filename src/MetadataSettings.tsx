@@ -18,9 +18,11 @@ interface ItemProps {
   metadataKey: string;
   label: string;
   shouldHideLabel: boolean;
+  containsMarkdown: boolean;
   draggableProvided: DraggableProvided;
   deleteKey: () => void;
   toggleShouldHideLabel: () => void;
+  toggleContainsMarkdown: () => void;
   updateKey: (value: string) => void;
   updateLabel: (value: string) => void;
 }
@@ -30,7 +32,9 @@ function Item({
   metadataKey,
   label,
   shouldHideLabel,
+  containsMarkdown,
   toggleShouldHideLabel,
+  toggleContainsMarkdown,
   deleteKey,
   updateKey,
   updateLabel,
@@ -41,28 +45,51 @@ function Item({
       {...draggableProvided.draggableProps}
       className={c("setting-item")}
     >
-      <div className={c("setting-input-wrapper")}>
-        <input
-          type="text"
-          value={metadataKey}
-          onChange={(e) => updateKey(e.target.value)}
-        />
-        <input
-          type="text"
-          value={label}
-          onChange={(e) => updateLabel(e.target.value)}
-        />
+      <div className={c("setting-controls-wrapper")}>
+        <div className={c("setting-input-wrapper")}>
+          <div>
+            <div className={c("setting-item-label")}>{t("Metadata key")}</div>
+            <input
+              type="text"
+              value={metadataKey}
+              onChange={(e) => updateKey(e.target.value)}
+            />
+          </div>
+          <div>
+            <div className={c("setting-item-label")}>{t("Display label")}</div>
+            <input
+              type="text"
+              value={label}
+              onChange={(e) => updateLabel(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className={c("setting-toggle-wrapper")}>
+          <div>
+            <div
+              className={`checkbox-container ${
+                shouldHideLabel ? "is-enabled" : ""
+              }`}
+              onClick={toggleShouldHideLabel}
+              aria-label={t("Hide label")}
+            />
+            <div className={c("setting-item-label")}>{t("Hide label")}</div>
+          </div>
+          <div>
+            <div
+              className={`checkbox-container ${
+                containsMarkdown ? "is-enabled" : ""
+              }`}
+              onClick={toggleContainsMarkdown}
+              aria-label={t("Field contains markdown")}
+            />
+            <div className={c("setting-item-label")}>
+              {t("Field contains markdown")}
+            </div>
+          </div>
+        </div>
       </div>
       <div className={c("setting-button-wrapper")}>
-        <div>
-          <div
-            className={`checkbox-container ${
-              shouldHideLabel ? "is-enabled" : ""
-            }`}
-            onClick={toggleShouldHideLabel}
-            aria-label={t("Hide label")}
-          />
-        </div>
         <div onClick={deleteKey} aria-label={t("Delete")}>
           <Icon name="cross" />
         </div>
@@ -136,6 +163,16 @@ function useKeyModifiers({
       );
     },
 
+    toggleContainsMarkdown: (i: number) => () => {
+      updateKeys(
+        update(keys, {
+          [i]: {
+            $toggle: ["containsMarkdown"],
+          },
+        })
+      );
+    },
+
     deleteKey: (i: number) => () => {
       updateKeys(
         update(keys, {
@@ -153,6 +190,7 @@ function useKeyModifiers({
               metadataKey: inputValue,
               label: "",
               shouldHideLabel: false,
+              containsMarkdown: false,
             },
           ],
         })
@@ -186,6 +224,7 @@ function MetadataSettings(props: MetadataSettingsProps) {
     updateKey,
     updateLabel,
     toggleShouldHideLabel,
+    toggleContainsMarkdown,
     deleteKey,
     newKey,
     moveKey,
@@ -198,21 +237,6 @@ function MetadataSettings(props: MetadataSettingsProps) {
 
   return (
     <>
-      <div className={`${c("setting-item")} ${c("setting-item-labels")}`}>
-        <div className={c("setting-input-wrapper")}>
-          <span className={c("setting-item-label")}>{t("Metadata key")}</span>
-          <span className={c("setting-item-label")}>{t("Display label")}</span>
-        </div>
-        <div className={c("setting-button-wrapper")}>
-          <div className={c("setting-item-label")}>{t("Hide label")}</div>
-          <div className={c("setting-button-spacer")}>
-            <Icon name="cross" />
-          </div>
-          <div className={c("setting-button-spacer")}>
-            <Icon name="three-horizontal-bars" />
-          </div>
-        </div>
-      </div>
       <DragDropContext onDragEnd={moveKey}>
         <Droppable
           droppableId="keys"
@@ -225,9 +249,11 @@ function MetadataSettings(props: MetadataSettingsProps) {
                 metadataKey={k.metadataKey}
                 label={k.label}
                 shouldHideLabel={k.shouldHideLabel}
+                containsMarkdown={k.containsMarkdown}
                 updateKey={updateKey(i)}
                 updateLabel={updateLabel(i)}
                 toggleShouldHideLabel={toggleShouldHideLabel(i)}
+                toggleContainsMarkdown={toggleContainsMarkdown(i)}
                 deleteKey={deleteKey(i)}
               />
             );
@@ -244,9 +270,11 @@ function MetadataSettings(props: MetadataSettingsProps) {
                         metadataKey={k.metadataKey}
                         label={k.label}
                         shouldHideLabel={k.shouldHideLabel}
+                        containsMarkdown={k.containsMarkdown}
                         updateKey={updateKey(i)}
                         updateLabel={updateLabel(i)}
                         toggleShouldHideLabel={toggleShouldHideLabel(i)}
+                        toggleContainsMarkdown={toggleContainsMarkdown(i)}
                         deleteKey={deleteKey(i)}
                       />
                     )}
@@ -258,7 +286,7 @@ function MetadataSettings(props: MetadataSettingsProps) {
           )}
         </Droppable>
       </DragDropContext>
-      <div className={`setting-item ${c("setting-key-input-wrapper")}`}>
+      <div className={c("setting-key-input-wrapper")}>
         <input
           placeholder={t("Metadata key")}
           type="text"

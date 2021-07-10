@@ -1,7 +1,7 @@
-import { getLinkpath, MarkdownRenderer } from "obsidian";
+import { getLinkpath } from "obsidian";
 import React from "react";
 import { t } from "src/lang/helpers";
-import { ObsidianContext } from "../context";
+import { KanbanContext } from "../context";
 import { c } from "../helpers";
 import { useAutocompleteInputProps } from "../Item/autocomplete";
 
@@ -20,7 +20,7 @@ export function LaneTitle({
   title,
   onChange,
 }: LaneTitleProps) {
-  const { view, filePath } = React.useContext(ObsidianContext);
+  const { view, filePath } = React.useContext(KanbanContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
 
   const onAction = () => isEditing && setIsEditing(false);
@@ -42,9 +42,7 @@ export function LaneTitle({
   }, [isEditing]);
 
   const markdownContent = React.useMemo(() => {
-    const tempEl = createDiv();
-    MarkdownRenderer.renderMarkdown(title, tempEl, filePath, view);
-
+    const tempEl = view.renderMarkdown(title);
     return {
       innerHTML: { __html: tempEl.innerHTML.toString() },
     };
@@ -67,7 +65,7 @@ export function LaneTitle({
       ) : (
         <>
           <span
-            className={`markdown-preview-view ${c("lane-title-text")}`}
+            className={`markdown-preview-view ${c("markdown-preview-view")} ${c("lane-title-text")}`}
             onContextMenu={(e) => {
               e.preventDefault();
               e.stopPropagation();

@@ -1,6 +1,4 @@
 import { moment, setIcon } from "obsidian";
-import update from "immutability-helper";
-
 import { BoardModifiers, Item } from "../types";
 import {
   c,
@@ -10,10 +8,10 @@ import {
 } from "../helpers";
 
 import flatpickr from "flatpickr";
-import { processTitle } from "src/parser";
 import { defaultDateTrigger, defaultTimeTrigger } from "src/settingHelpers";
 import { getDefaultLocale } from "./datePickerLocale";
 import { KanbanView } from "src/KanbanView";
+import { t } from "src/lang/helpers";
 
 export function constructDatePicker(
   coordinates: { x: number; y: number },
@@ -127,17 +125,10 @@ export function constructMenuDatePickerOnChange({
       titleRaw = `${item.titleRaw} ${dateTrigger}${wrappedDate}`;
     }
 
-    const processed = processTitle(titleRaw, view);
-
     boardModifiers.updateItem(
       laneIndex,
       itemIndex,
-      update(item, {
-        title: { $set: processed.title },
-        titleRaw: { $set: titleRaw },
-        titleSearch: { $set: processed.titleSearch },
-        metadata: { $set: processed.metadata },
-      })
+      view.parser.updateItem(item, titleRaw)
     );
   };
 }
@@ -298,17 +289,39 @@ export function constructMenuTimePickerOnChange({
       titleRaw = `${item.titleRaw} ${timeTrigger}{${time}}`;
     }
 
-    const processed = processTitle(titleRaw, view);
-
     boardModifiers.updateItem(
       laneIndex,
       itemIndex,
-      update(item, {
-        title: { $set: processed.title },
-        titleRaw: { $set: titleRaw },
-        titleSearch: { $set: processed.titleSearch },
-        metadata: { $set: processed.metadata },
-      })
+      view.parser.updateItem(item, titleRaw)
     );
   };
+}
+
+export function getItemClassModifiers(item: Item) {
+  const date = item.metadata.date;
+  const classModifiers: string[] = [];
+
+  if (date) {
+    if (date.isSame(new Date(), "day")) {
+      classModifiers.push("is-today");
+    }
+
+    if (date.isAfter(new Date(), "day")) {
+      classModifiers.push("is-future");
+    }
+
+    if (date.isBefore(new Date(), "day")) {
+      classModifiers.push("is-past");
+    }
+  }
+
+  if (item.data.isComplete) {
+    classModifiers.push("is-complete");
+  }
+
+  for (let tag of item.metadata.tags) {
+    classModifiers.push(`has-tag-${tag.slice(1)}`);
+  }
+
+  return classModifiers;
 }

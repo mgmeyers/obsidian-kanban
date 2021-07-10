@@ -1,10 +1,6 @@
 ## Obsidian Kanban Plugin
 
-> Submit bugs / issues: https://github.com/mgmeyers/obsidian-kanban/issues
-
-> Submit feature requests: https://github.com/mgmeyers/obsidian-kanban/discussions/categories/ideas-feature-requests
-
-> See the development roadmap: https://github.com/mgmeyers/obsidian-kanban/projects/1
+[Bugs & Issues](https://github.com/mgmeyers/obsidian-kanban/issues) — [Feature Requests](https://github.com/mgmeyers/obsidian-kanban/discussions/categories/ideas-feature-requests) — [Development Roadmap](https://github.com/mgmeyers/obsidian-kanban/projects/1)
 
 ---
 
@@ -52,7 +48,7 @@ Or the folder context menu:
 
 ## Support
 
-If you find this plugin useful, consider supporting its development by sponsoring me on github or buying me a coffee!
+If you find this plugin useful, consider supporting its development:
 
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/mgmeyers?label=Sponsor&logo=GitHub%20Sponsors&style=for-the-badge)](https://github.com/sponsors/mgmeyers)
 

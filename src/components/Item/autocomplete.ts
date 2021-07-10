@@ -10,7 +10,7 @@ import {
   getDefaultDateFormat,
   useIMEInputProps,
 } from "../helpers";
-import { ObsidianContext, ObsidianContextProps } from "../context";
+import { KanbanContext, KanbanContextProps } from "../context";
 import flatpickr from "flatpickr";
 
 import { KanbanView } from "src/KanbanView";
@@ -219,7 +219,7 @@ function toNextMonth(date: moment.Moment) {
 export interface ConstructAutocompleteParams {
   inputRef: React.MutableRefObject<HTMLTextAreaElement>;
   isAutocompleteVisibleRef: React.MutableRefObject<boolean>;
-  obsidianContext: ObsidianContextProps;
+  obsidianContext: KanbanContextProps;
   excludeDatePicker?: boolean;
 }
 
@@ -254,28 +254,22 @@ export function constructAutocomplete({
   ];
 
   if (!excludeDatePicker) {
-    configs.push(
-      getTimePickerConfig(view)
-    )
+    configs.push(getTimePickerConfig(view));
   }
 
   const editor = new TextareaEditor(inputRef.current);
-  const autocomplete = new Textcomplete(
-    editor,
-    configs,
-    {
-      dropdown: {
-        className: `${c("autocomplete")} ${c("ignore-click-outside")}`,
-        rotate: true,
-        item: {
-          className: `${c("autocomplete-item")} ${c("ignore-click-outside")}`,
-          activeClassName: `${c("autocomplete-item-active")} ${c(
-            "ignore-click-outside"
-          )}`,
-        },
+  const autocomplete = new Textcomplete(editor, configs, {
+    dropdown: {
+      className: `${c("autocomplete")} ${c("ignore-click-outside")}`,
+      rotate: true,
+      item: {
+        className: `${c("autocomplete-item")} ${c("ignore-click-outside")}`,
+        activeClassName: `${c("autocomplete-item-active")} ${c(
+          "ignore-click-outside"
+        )}`,
       },
-    }
-  );
+    },
+  });
 
   const destroyDatePicker = () => {
     if (!autocomplete.isShown()) {
@@ -433,10 +427,10 @@ export function useAutocompleteInputProps({
   onEscape,
   excludeDatePicker,
 }: UseAutocompleteInputPropsParams) {
-  const obsidianContext = React.useContext(ObsidianContext);
+  const obsidianContext = React.useContext(KanbanContext);
   const isAutocompleteVisibleRef = React.useRef<boolean>(false);
   const inputRef = React.useRef<HTMLTextAreaElement>();
-  const { onCompositionStart, onCompositionEnd, getShouldIMEBlockAction } =
+  const { oncompositionstart, oncompositionend, getShouldIMEBlockAction } =
     useIMEInputProps();
 
   React.useEffect(() => {
@@ -457,8 +451,8 @@ export function useAutocompleteInputProps({
 
   return {
     ref: inputRef,
-    onCompositionStart,
-    onCompositionEnd,
+    oncompositionstart,
+    oncompositionend,
     onKeyDownCapture: (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (getShouldIMEBlockAction() || isAutocompleteVisibleRef.current) {
         return;

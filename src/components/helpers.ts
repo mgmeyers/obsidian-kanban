@@ -175,10 +175,12 @@ export function useIMEInputProps() {
   const isComposingRef = React.useRef<boolean>(false);
 
   return {
-    onCompositionStart: () => {
+    // Note: these are lowercased because we use preact
+    // See: https://github.com/preactjs/preact/issues/3003
+    oncompositionstart: () => {
       isComposingRef.current = true;
     },
-    onCompositionEnd: () => {
+    oncompositionend: () => {
       isComposingRef.current = false;
     },
     getShouldIMEBlockAction: () => {
@@ -210,13 +212,17 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
       );
     }
 
-    const { templatesEnabled, templaterPlugin, templatesPlugin } =
-      view.plugin.getTemplatePlugins();
+    const {
+      templatesEnabled,
+      templaterEnabled,
+      templatesPlugin,
+      templaterPlugin,
+    } = getTemplatePlugins(view.app);
 
     const templateContent = await view.app.vault.read(templateFile);
 
     // If both plugins are enabled, attempt to detect templater first
-    if (templatesEnabled && templaterPlugin) {
+    if (templatesEnabled && templaterEnabled) {
       if (templaterDetectRegex.test(templateContent)) {
         return await templaterPlugin.append_template(templateFile);
       }
@@ -228,7 +234,7 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
       return await templatesPlugin.instance.insertTemplate(templateFile);
     }
 
-    if (templaterPlugin) {
+    if (templaterEnabled) {
       return await templaterPlugin.append_template(templateFile);
     }
 
@@ -275,4 +281,32 @@ export function escapeRegExpStr(str: string) {
   return str && reHasRegExChar.test(str)
     ? str.replace(reRegExChar, "\\$&")
     : str || "";
+}
+
+export function getTemplatePlugins(app: App) {
+  const templatesPlugin = (app as any).internalPlugins.plugins.templates;
+  const templatesEnabled = templatesPlugin.enabled;
+  const templaterPlugin = (app as any).plugins.plugins["templater-obsidian"];
+  const templaterEnabled = (app as any).plugins.enabledPlugins.has(
+    "templater-obsidian"
+  );
+  const templaterEmptyFileTemplate =
+    templaterPlugin &&
+    (this.app as any).plugins.plugins["templater-obsidian"].settings
+      ?.empty_file_template;
+
+  const templateFolder = templatesEnabled
+    ? templatesPlugin.instance.options.folder
+    : templaterPlugin
+    ? templaterPlugin.settings.template_folder
+    : undefined;
+
+  return {
+    templatesPlugin,
+    templatesEnabled,
+    templaterPlugin: templaterPlugin?.templater,
+    templaterEnabled,
+    templaterEmptyFileTemplate,
+    templateFolder,
+  };
 }

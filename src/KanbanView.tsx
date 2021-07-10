@@ -1,5 +1,4 @@
 import update from "immutability-helper";
-import ReactDOM from "react-dom";
 import React from "react";
 import {
   HoverParent,
@@ -9,10 +8,10 @@ import {
   WorkspaceLeaf,
   moment,
   TFile,
+  MarkdownRenderer,
 } from "obsidian";
-import { dispatch } from "use-bus";
 
-import { boardToMd, mdToBoard, processTitle } from "./parser";
+import { KanbanParser } from "./parser";
 import { Kanban } from "./components/Kanban";
 import { DataBridge } from "./DataBridge";
 import { Board, Item } from "./components/types";
@@ -29,10 +28,30 @@ export const kanbanIcon = "blocks";
 
 export class KanbanView extends TextFileView implements HoverParent {
   plugin: KanbanPlugin;
-  dataBridge: DataBridge;
+  parser: KanbanParser = new KanbanParser(this);
+
+  dataBridge: DataBridge<Board> = new DataBridge(null);
+  setBoard(board: Board) {
+    this.dataBridge.setExternal(board);
+  }
+  getBoard(): Board {
+    return this.dataBridge.getData();
+  }
+
+  errorBridge: DataBridge<ErrorHandlerState> = new DataBridge({
+    errorMessage: "",
+  });
+  setError(err?: Error) {
+    this.errorBridge.setExternal(
+      err ? ErrorHandler.getDerivedStateFromError(err) : { errorMessage: "" }
+    );
+  }
+  getError() {
+    return this.errorBridge.getData();
+  }
+
   hoverPopover: HoverPopover | null;
-  parseError: string;
-  closed: boolean = false;
+  id: string = (this.leaf as any).id;
 
   getViewType() {
     return kanbanViewType;
@@ -49,34 +68,34 @@ export class KanbanView extends TextFileView implements HoverParent {
   constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
     super(leaf);
     this.plugin = plugin;
-    this.clear();
+    // When the board has been updated by react, update Obsidian
+    this.dataBridge.onInternalSet(this.requestUpdate);
   }
 
   async onClose() {
     // Remove draggables from render, as the DOM has already detached
-    this.closed = true;
-    this.plugin.refreshViews();
+    this.plugin.removeView(this);
   }
 
-  getSetting(
-    key: keyof KanbanSettings,
+  getSetting<K extends keyof KanbanSettings>(
+    key: K,
     suppliedLocalSettings?: KanbanSettings
-  ) {
+  ): KanbanSettings[K] {
     const localSetting = suppliedLocalSettings
       ? suppliedLocalSettings[key]
-      : this.dataBridge.getData().settings[key];
+      : this.dataBridge.getData()?.settings[key];
 
     if (localSetting !== undefined) return localSetting;
 
-    const globalSetting = this.plugin.settings[key];
+    const globalSetting = this.plugin?.settings[key];
 
     if (globalSetting !== undefined) return globalSetting;
 
     return null;
   }
 
-  getGlobalSetting(key: keyof KanbanSettings) {
-    const globalSetting = this.plugin.settings[key];
+  getGlobalSetting<K extends keyof KanbanSettings>(key: K): KanbanSettings[K] {
+    const globalSetting = this.plugin?.settings[key];
 
     if (globalSetting !== undefined) return globalSetting;
 
@@ -84,7 +103,48 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   onFileMetadataChange(file: TFile) {
-    dispatch(`metadata:update:${file.path}`);
+    // Invalidate the metadata caching and reparse the file if needed,
+    // recreating all items that referenced the changed file
+    if (this.parser.invalidateFile(file)) {
+      const board = this.getParsedBoard(this.data);
+      const oldBoard = this.getBoard();
+
+      let lanesChanged = false;
+
+      const newLanes = oldBoard.lanes.map((lane, laneIndex) => {
+        let match = false;
+
+        const newItems = lane.items.map((item, itemIndex) => {
+          if (item.metadata.file === file) {
+            lanesChanged = true;
+            match = true;
+            return board.lanes[laneIndex].items[itemIndex];
+          }
+
+          return item;
+        });
+
+        if (match) {
+          return update(lane, {
+            items: {
+              $set: newItems,
+            },
+          });
+        }
+
+        return lane;
+      });
+
+      if (lanesChanged) {
+        this.setBoard(
+          update(this.getBoard(), {
+            lanes: {
+              $set: newLanes,
+            },
+          })
+        );
+      }
+    }
   }
 
   onMoreOptionsMenu(menu: Menu) {
@@ -95,9 +155,7 @@ export class KanbanView extends TextFileView implements HoverParent {
           .setTitle(t("Open as markdown"))
           .setIcon("document")
           .onClick(() => {
-            this.plugin.kanbanFileModes[
-              (this.leaf as any).id || this.file.path
-            ] = "markdown";
+            this.plugin.kanbanFileModes[this.id || this.file.path] = "markdown";
             this.plugin.setMarkdownView(this.leaf);
           });
       })
@@ -112,17 +170,15 @@ export class KanbanView extends TextFileView implements HoverParent {
               this,
               {
                 onSettingsChange: (settings) => {
-                  this.dataBridge.setExternal(
-                    update(board, {
-                      settings: {
-                        $set: settings,
-                      },
-                    })
-                  );
-
-                  setTimeout(() => {
-                    this.setViewData(this.data, true);
-                  }, 100);
+                  const updatedBoard = update(board, {
+                    settings: {
+                      $set: settings,
+                    },
+                  });
+                  // Save to disk, compute text of new board
+                  this.requestUpdate(updatedBoard);
+                  // Take the text and parse it back in with the new settings
+                  this.setViewData(this.data);
                 },
               },
               board.settings
@@ -143,15 +199,62 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   clear() {
-    this.parseError = "";
-    this.dataBridge = new DataBridge();
-    // When the board has been updated by react
-    this.dataBridge.onInternalSet((data) => {
-      if (data === null || this.parseError) return; // don't save corrupt data
-      this.data = boardToMd(data);
-      this.requestSave();
-    });
+    /*
+      Obsidian *only* calls this after unloading a file, before loading the next.
+      Specifically, from onUnloadFile, which calls save(true), and then optionally
+      calls clear, if and only if this.file is still non-empty.  That means that
+      in this function, this.file is still the *old* file, so we should not do
+      anything here that might try to use the file (including its path), so we
+      should avoid doing anything that refreshes the display.  (Since that could
+      use the file, and would also flash an empty pane during navigation, depending
+      on how long the next file load takes.)
+
+      Given all that, it makes more sense to clean up our state from onLoadFile, as
+      following a clear there are only two possible states: a successful onLoadFile
+      updates our full state via setViewData(), or else it aborts with an error
+      first.  So as long as setViewData() and the error handler for onLoadFile()
+      fully reset the state (to a valid load state or a valid error state),
+      there's nothing to do in this method.  (We can't omit it, since it's
+      abstract.)
+    */
   }
+
+  onload() {
+    super.onload();
+    this.registerEvent(
+      this.app.workspace.on("quick-preview", this.onQuickPreview, this)
+    );
+  }
+
+  onQuickPreview(file: TFile, data: string) {
+    // File was edited in another window (but not yet saved)
+    if (file === this.file && data !== this.data) {
+      this.data = data;
+      this.setViewData(data);
+    }
+  }
+
+  async onLoadFile(file: TFile) {
+    try {
+      return await super.onLoadFile(file);
+    } catch (e) {
+      // Update to display details of the problem
+      this.setBoard(null);
+      this.setError(e);
+      throw e;
+    }
+  }
+
+  requestUpdate = (data: Board) => {
+    if (data === null || this.getError().errorMessage) return; // don't save corrupt data
+    const newData = this.parser.boardToMd(data);
+    if (this.data !== newData) {
+      this.data = newData;
+      this.requestSave();
+      // Tell other boards and editors we've changed
+      this.app.workspace.trigger("quick-preview", this.file, this.data);
+    }
+  };
 
   toggleSearch() {
     this.dataBridge.setExternal(
@@ -162,32 +265,41 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   getViewData() {
-    return boardToMd(this.dataBridge.getData());
+    // In theory, we could unparse the board here.  In practice, the board can be
+    // in an error state, so we return the last good data here.  (In addition,
+    // unparsing is slow, and getViewData() can be called more often than the
+    // data actually changes.)
+    return this.data;
   }
 
-  setViewData(data: string, clear: boolean) {
+  getParsedBoard(data: string) {
     const trimmedContent = data.trim();
     let board: Board = null;
-    this.parseError = "";
     try {
-      board = trimmedContent
-        ? mdToBoard(trimmedContent, this)
-        : {
-            lanes: [],
-            archive: [],
-            settings: { "kanban-plugin": "basic" },
-            isSearching: false,
-          };
+      board = {
+        lanes: [],
+        archive: [],
+        settings: { "kanban-plugin": "basic" },
+        isSearching: false,
+      };
+      if (trimmedContent)
+        board = this.parser.mdToBoard(trimmedContent, this.file?.path);
+      this.setError();
     } catch (e) {
       console.error(e);
-      // Force a new databridge to ensure Kanban re-renders when the error goes away
-      this.clear();
-      this.parseError = "Error parsing document: " + e;
+      this.setError(e);
+      board = null;
     }
 
+    return board;
+  }
+
+  setViewData(data: string) {
     // Tell react we have a new board
-    this.dataBridge.setExternal(board);
-    this.plugin.refreshViews();
+    this.setBoard(this.getParsedBoard(data));
+
+    // And make sure we're visible (no-op if we already are)
+    this.plugin.addView(this);
   }
 
   archiveCompletedCards() {
@@ -212,13 +324,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       newTitle.push(item.titleRaw);
 
       const titleRaw = newTitle.join(" ");
-      const processed = processTitle(titleRaw, this);
-
-      return update(item, {
-        title: { $set: processed.title },
-        titleRaw: { $set: titleRaw },
-        titleSearch: { $set: processed.titleSearch },
-      });
+      return this.parser.updateItem(item, titleRaw);
     };
 
     const lanes = board.lanes.map((lane) => {
@@ -256,53 +362,101 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   getPortal() {
-    if (!this.closed)
-      return ReactDOM.createPortal(
-        <HandleErrors errorMessage={this.parseError}>
-          <Kanban
-            dataBridge={this.dataBridge}
-            filePath={this.file?.path}
-            view={this}
-          />
-        </HandleErrors>,
-        this.contentEl,
-        (this.leaf as any).id as string // ensure React doesn't recreate when list is re-ordered
-      );
+    return (
+      <ErrorHandler view={this} key={this.id}>
+        <Kanban dataBridge={this.dataBridge} view={this} />
+      </ErrorHandler>
+    );
+  }
+
+  renderMarkdown(markdownString: string): HTMLDivElement {
+    const tempEl = createDiv();
+    MarkdownRenderer.renderMarkdown(
+      markdownString,
+      tempEl,
+      this.file?.path,
+      this
+    );
+    tempEl.findAll(".internal-embed").forEach((el) => {
+      const src = el.getAttribute("src");
+      const target =
+        typeof src === "string" &&
+        this.app.metadataCache.getFirstLinkpathDest(src, this.file?.path);
+      if (target instanceof TFile && target.extension !== "md") {
+        el.innerText = "";
+        el.createEl(
+          "img",
+          { attr: { src: this.app.vault.getResourcePath(target) } },
+          (img) => {
+            if (el.hasAttribute("width"))
+              img.setAttribute("width", el.getAttribute("width"));
+            if (el.hasAttribute("alt"))
+              img.setAttribute("alt", el.getAttribute("alt"));
+          }
+        );
+        el.addClasses(["image-embed", "is-loaded"]);
+      }
+    });
+    return tempEl;
   }
 }
 
 // Catch internal errors or display parsing errors
 
-type ErrorProps = { errorMessage: string };
+interface ErrorHandlerState {
+  errorMessage: string;
+  stack?: string;
+}
 
-class HandleErrors extends React.Component<ErrorProps> {
-  state: { errorMessage: string };
-  constructor(props: ErrorProps) {
+class ErrorHandler extends React.Component<{ view: KanbanView }> {
+  state: ErrorHandlerState;
+  remove?: () => void;
+
+  constructor(props: { view: KanbanView }) {
     super(props);
-    this.state = { errorMessage: "" };
+    this.state = this.props.view.errorBridge.getData();
   }
 
-  static getDerivedStateFromError(
-    error: Error
-  ): typeof HandleErrors.prototype.state {
+  stateSetter = (state: ErrorHandlerState) => this.setState(state);
+
+  componentWillMount() {
+    // Send error state outward; save unsubs function for unmount
+    this.remove = this.props.view.errorBridge.onExternalSet(this.stateSetter);
+  }
+
+  componentWillUnmount() {
+    // Unsubscribe from the databridge
+    this.remove?.();
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorHandlerState {
     // Update state so the next render will show the fallback UI.
-    return { errorMessage: error.toString() };
+    return { errorMessage: error.toString(), stack: error.stack };
   }
 
   componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
-    console.log(errorInfo.componentStack, error);
+    console.error(errorInfo.componentStack, error);
   }
 
   render() {
-    const error = this.props.errorMessage || this.state.errorMessage;
+    const error = this.state.errorMessage;
+    const stack = this.state.stack;
+
     if (error) {
       return (
         <div style={{ margin: "2em" }}>
-          <h1>Something went wrong.</h1>
+          <h1>{t("Something went wrong")}</h1>
           <p>{error}</p>
+          <p>
+            {t(
+              "You may wish to open as markdown and inspect or edit the file."
+            )}
+          </p>
+          {stack && <pre>{stack}</pre>}
         </div>
       );
     }
+
     return this.props.children;
   }
 }

@@ -21,6 +21,7 @@ export interface DataKey {
   metadataKey: string;
   label: string;
   shouldHideLabel: boolean;
+  containsMarkdown: boolean;
 }
 
 export interface PageData extends DataKey {
@@ -46,6 +47,7 @@ export interface Item {
   titleSearch: string;
   metadata: ItemMetaData;
   data: ItemData;
+  dom: HTMLDivElement;
 }
 
 export interface Board {
