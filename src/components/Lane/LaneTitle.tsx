@@ -3,6 +3,7 @@ import React from "react";
 import { t } from "src/lang/helpers";
 import { KanbanContext } from "../context";
 import { c } from "../helpers";
+import { renderMarkdown } from "../helpers/renderMarkdown";
 import { useAutocompleteInputProps } from "../Item/autocomplete";
 
 export interface LaneTitleProps {
@@ -41,8 +42,9 @@ export function LaneTitle({
     }
   }, [isEditing]);
 
+  // TODO: use markdown renderer component?
   const markdownContent = React.useMemo(() => {
-    const tempEl = view.renderMarkdown(title);
+    const tempEl = renderMarkdown(view, title);
     return {
       innerHTML: { __html: tempEl.innerHTML.toString() },
     };
@@ -65,7 +67,9 @@ export function LaneTitle({
       ) : (
         <>
           <span
-            className={`markdown-preview-view ${c("markdown-preview-view")} ${c("lane-title-text")}`}
+            className={`markdown-preview-view ${c("markdown-preview-view")} ${c(
+              "lane-title-text"
+            )}`}
             onContextMenu={(e) => {
               e.preventDefault();
               e.stopPropagation();

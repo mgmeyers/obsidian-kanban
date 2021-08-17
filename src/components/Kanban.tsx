@@ -1,24 +1,25 @@
 import update from "immutability-helper";
 import React from "react";
 import { DataBridge } from "../DataBridge";
-import {
-  Droppable,
-  DroppableProvided,
-  Draggable,
-  DraggableProvided,
-  DraggableStateSnapshot,
-  DraggableRubric,
-} from "react-beautiful-dnd";
-import { Board } from "./types";
+import { Board, DataTypes } from "./types";
 import { c, baseClassName } from "./helpers";
-import { DraggableLane } from "./Lane/Lane";
+import { DraggableLane, Lanes } from "./Lane/Lane";
 import { LaneForm } from "./Lane/LaneForm";
 import { KanbanContext, SearchContext } from "./context";
 import { KanbanView } from "src/KanbanView";
-import { frontMatterKey } from "../parser";
+import { frontMatterKey } from "../parsers/common";
 import { t } from "src/lang/helpers";
 import { Icon } from "./Icon/Icon";
 import { getBoardModifiers } from "./helpers/boardModifiers";
+import { DndScope } from "../dnd/components/Scope";
+import { DndScrollState } from "src/dnd/components/ScrollStateContext";
+import { ScrollContainer } from "src/dnd/components/ScrollContainer";
+import { Sortable } from "src/dnd/components/Sortable";
+import { SortPlaceholder } from "src/dnd/components/SortPlaceholder";
+import classcat from "classcat";
+
+const boardScrollTiggers = [DataTypes.Item, DataTypes.Lane];
+const boardAccepts = [DataTypes.Lane];
 
 interface KanbanProps {
   dataBridge: DataBridge<Board>;
@@ -37,10 +38,10 @@ export const Kanban = ({ view, dataBridge }: KanbanProps) => {
   const maxArchiveLength = view.getSetting("max-archive-size");
 
   React.useEffect(() => {
-    if (boardData.isSearching) {
+    if (boardData.data.isSearching) {
       searchRef.current?.focus();
     }
-  }, [boardData.isSearching]);
+  }, [boardData.data.isSearching]);
 
   React.useEffect(() => {
     const trimmed = searchQuery.trim();
@@ -66,69 +67,23 @@ export const Kanban = ({ view, dataBridge }: KanbanProps) => {
 
     if (
       typeof maxArchiveLength === "number" &&
-      boardData.archive.length > maxArchiveLength
+      boardData.data.archive.length > maxArchiveLength
     ) {
       setBoardData(
         update(boardData, {
-          archive: {
-            $set: boardData.archive.slice(maxArchiveLength * -1),
+          data: {
+            archive: {
+              $set: boardData.data.archive.slice(maxArchiveLength * -1),
+            },
           },
         })
       );
     }
-  }, [boardData.archive.length, maxArchiveLength]);
+  }, [boardData.data.archive.length, maxArchiveLength]);
 
   const boardModifiers = React.useMemo(() => {
     return getBoardModifiers({ view, setBoardData });
   }, [view, setBoardData]);
-
-  // These rendering functions can't usefully be memoized, because they all use boardData,
-  // which will always be "changed" when this component is re-rendered.
-
-  const renderLane = (
-    provided: DraggableProvided,
-    snapshot: DraggableStateSnapshot,
-    rubric: DraggableRubric
-  ) => (
-    <DraggableLane
-      lane={boardData.lanes[rubric.source.index]}
-      laneIndex={rubric.source.index}
-      provided={provided}
-      snapshot={snapshot}
-    />
-  );
-
-  const renderLaneGhost = (
-    provided: DraggableProvided,
-    snapshot: DraggableStateSnapshot,
-    rubric: DraggableRubric
-  ) => (
-    <DraggableLane
-      lane={boardData.lanes[rubric.source.index]}
-      laneIndex={rubric.source.index}
-      isGhost={true}
-      provided={provided}
-      snapshot={snapshot}
-    />
-  );
-
-  const renderLanes = (provided: DroppableProvided) => (
-    <div
-      className={c("board")}
-      ref={provided.innerRef}
-      {...provided.droppableProps}
-    >
-      {boardData.lanes.map((lane, i) => {
-        return (
-          <Draggable draggableId={lane.id} key={lane.id} index={i}>
-            {renderLane}
-          </Draggable>
-        );
-      })}
-      {provided.placeholder}
-      <LaneForm />
-    </div>
-  );
 
   const onMouseOver = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -200,61 +155,72 @@ export const Kanban = ({ view, dataBridge }: KanbanProps) => {
   if (boardData === null) return null;
 
   return (
-    <KanbanContext.Provider value={kanbanContext}>
-      <SearchContext.Provider
-        value={
-          debouncedSearchQuery ? debouncedSearchQuery.toLocaleLowerCase() : null
-        }
-      >
-        {boardData.isSearching && (
-          <div className={c("search-wrapper")}>
-            <input
-              ref={searchRef}
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") {
-                  setSearchQuery("");
-                  setDebouncedSearchQuery("");
-                  (e.target as HTMLInputElement).blur();
-                  view.toggleSearch();
-                }
-              }}
-              type="text"
-              className={c("filter-input")}
-              placeholder={t("Search...")}
-            />
-            <button
-              className={c("search-cancel-button")}
-              onClick={() => {
-                setSearchQuery("");
-                setDebouncedSearchQuery("");
-                view.toggleSearch();
-              }}
-              aria-label={t("Cancel")}
-            >
-              <Icon name="cross" />
-            </button>
-          </div>
-        )}
-        <div
-          className={baseClassName}
-          onMouseOver={onMouseOver}
-          onClick={onClick}
-        >
-          <Droppable
-            droppableId={view.id}
-            type="LANE"
-            direction="horizontal"
-            ignoreContainerClipping={false}
-            renderClone={renderLaneGhost}
+    <DndScope id={view.id}>
+      <DndScrollState>
+        <KanbanContext.Provider value={kanbanContext}>
+          <SearchContext.Provider
+            value={
+              debouncedSearchQuery
+                ? debouncedSearchQuery.toLocaleLowerCase()
+                : null
+            }
           >
-            {renderLanes}
-          </Droppable>
-        </div>
-      </SearchContext.Provider>
-    </KanbanContext.Provider>
+            {boardData.data.isSearching && (
+              <div className={c("search-wrapper")}>
+                <input
+                  ref={searchRef}
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setSearchQuery("");
+                      setDebouncedSearchQuery("");
+                      (e.target as HTMLInputElement).blur();
+                      view.toggleSearch();
+                    }
+                  }}
+                  type="text"
+                  className={c("filter-input")}
+                  placeholder={t("Search...")}
+                />
+                <button
+                  className={c("search-cancel-button")}
+                  onClick={() => {
+                    setSearchQuery("");
+                    setDebouncedSearchQuery("");
+                    view.toggleSearch();
+                  }}
+                  aria-label={t("Cancel")}
+                >
+                  <Icon name="cross" />
+                </button>
+              </div>
+            )}
+            <div
+              className={baseClassName}
+              onMouseOver={onMouseOver}
+              onClick={onClick}
+            >
+              <ScrollContainer
+                id="lanes"
+                className={classcat([c("board"), c("horizontal")])}
+                triggerTypes={boardScrollTiggers}
+              >
+                <Sortable axis="horizontal">
+                  <Lanes lanes={boardData.children} />
+                  <SortPlaceholder
+                    className="lane-placeholder"
+                    accepts={boardAccepts}
+                    index={boardData.children.length}
+                  />
+                </Sortable>
+              </ScrollContainer>
+            </div>
+          </SearchContext.Provider>
+        </KanbanContext.Provider>
+      </DndScrollState>
+    </DndScope>
   );
 };

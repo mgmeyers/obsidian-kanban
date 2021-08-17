@@ -8,13 +8,12 @@ import {
   WorkspaceLeaf,
   moment,
   TFile,
-  MarkdownRenderer,
 } from "obsidian";
 
-import { KanbanParser } from "./parser";
+import { KanbanParser } from "./parsers/basic";
 import { Kanban } from "./components/Kanban";
 import { DataBridge } from "./DataBridge";
-import { Board, Item } from "./components/types";
+import { Board, BoardTemplate, Item } from "./components/types";
 import KanbanPlugin from "./main";
 import { KanbanSettings, SettingsModal } from "./Settings";
 import {
@@ -29,29 +28,42 @@ export const kanbanIcon = "blocks";
 export class KanbanView extends TextFileView implements HoverParent {
   plugin: KanbanPlugin;
   parser: KanbanParser = new KanbanParser(this);
-
   dataBridge: DataBridge<Board> = new DataBridge(null);
+  errorBridge: DataBridge<ErrorHandlerState> = new DataBridge({
+    errorMessage: "",
+  });
+  hoverPopover: HoverPopover | null;
+
+  constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
+    super(leaf);
+
+    this.plugin = plugin;
+
+    // When the board has been updated by react, update Obsidian
+    this.dataBridge.onInternalSet(this.requestUpdate);
+  }
+
+  get id(): string {
+    return `${(this.leaf as any).id}:::${this.file.path}`;
+  }
+
   setBoard(board: Board) {
     this.dataBridge.setExternal(board);
   }
+
   getBoard(): Board {
     return this.dataBridge.getData();
   }
 
-  errorBridge: DataBridge<ErrorHandlerState> = new DataBridge({
-    errorMessage: "",
-  });
   setError(err?: Error) {
     this.errorBridge.setExternal(
       err ? ErrorHandler.getDerivedStateFromError(err) : { errorMessage: "" }
     );
   }
+
   getError() {
     return this.errorBridge.getData();
   }
-
-  hoverPopover: HoverPopover | null;
-  id: string = (this.leaf as any).id;
 
   getViewType() {
     return kanbanViewType;
@@ -65,13 +77,6 @@ export class KanbanView extends TextFileView implements HoverParent {
     return this.file?.basename || "Kanban";
   }
 
-  constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
-    super(leaf);
-    this.plugin = plugin;
-    // When the board has been updated by react, update Obsidian
-    this.dataBridge.onInternalSet(this.requestUpdate);
-  }
-
   async onClose() {
     // Remove draggables from render, as the DOM has already detached
     this.plugin.removeView(this);
@@ -83,7 +88,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   ): KanbanSettings[K] {
     const localSetting = suppliedLocalSettings
       ? suppliedLocalSettings[key]
-      : this.dataBridge.getData()?.settings[key];
+      : this.dataBridge.getData()?.data.settings[key];
 
     if (localSetting !== undefined) return localSetting;
 
@@ -111,14 +116,14 @@ export class KanbanView extends TextFileView implements HoverParent {
 
       let lanesChanged = false;
 
-      const newLanes = oldBoard.lanes.map((lane, laneIndex) => {
+      const newLanes = oldBoard.children.map((lane, laneIndex) => {
         let match = false;
 
-        const newItems = lane.items.map((item, itemIndex) => {
-          if (item.metadata.file === file) {
+        const newItems = lane.children.map((item, itemIndex) => {
+          if (item.data.metadata.file === file) {
             lanesChanged = true;
             match = true;
-            return board.lanes[laneIndex].items[itemIndex];
+            return board.children[laneIndex].children[itemIndex];
           }
 
           return item;
@@ -126,7 +131,7 @@ export class KanbanView extends TextFileView implements HoverParent {
 
         if (match) {
           return update(lane, {
-            items: {
+            children: {
               $set: newItems,
             },
           });
@@ -138,85 +143,13 @@ export class KanbanView extends TextFileView implements HoverParent {
       if (lanesChanged) {
         this.setBoard(
           update(this.getBoard(), {
-            lanes: {
+            children: {
               $set: newLanes,
             },
           })
         );
       }
     }
-  }
-
-  onMoreOptionsMenu(menu: Menu) {
-    // Add a menu item to force the board to markdown view
-    menu
-      .addItem((item) => {
-        item
-          .setTitle(t("Open as markdown"))
-          .setIcon("document")
-          .onClick(() => {
-            this.plugin.kanbanFileModes[this.id || this.file.path] = "markdown";
-            this.plugin.setMarkdownView(this.leaf);
-          });
-      })
-      .addItem((item) => {
-        item
-          .setTitle(t("Open board settings"))
-          .setIcon("gear")
-          .onClick(() => {
-            const board = this.dataBridge.getData();
-
-            new SettingsModal(
-              this,
-              {
-                onSettingsChange: (settings) => {
-                  const updatedBoard = update(board, {
-                    settings: {
-                      $set: settings,
-                    },
-                  });
-                  // Save to disk, compute text of new board
-                  this.requestUpdate(updatedBoard);
-                  // Take the text and parse it back in with the new settings
-                  this.setViewData(this.data);
-                },
-              },
-              board.settings
-            ).open();
-          });
-      })
-      .addItem((item) => {
-        item
-          .setTitle(t("Archive completed cards"))
-          .setIcon("sheets-in-box")
-          .onClick(() => {
-            this.archiveCompletedCards();
-          });
-      })
-      .addSeparator();
-
-    super.onMoreOptionsMenu(menu);
-  }
-
-  clear() {
-    /*
-      Obsidian *only* calls this after unloading a file, before loading the next.
-      Specifically, from onUnloadFile, which calls save(true), and then optionally
-      calls clear, if and only if this.file is still non-empty.  That means that
-      in this function, this.file is still the *old* file, so we should not do
-      anything here that might try to use the file (including its path), so we
-      should avoid doing anything that refreshes the display.  (Since that could
-      use the file, and would also flash an empty pane during navigation, depending
-      on how long the next file load takes.)
-
-      Given all that, it makes more sense to clean up our state from onLoadFile, as
-      following a clear there are only two possible states: a successful onLoadFile
-      updates our full state via setViewData(), or else it aborts with an error
-      first.  So as long as setViewData() and the error handler for onLoadFile()
-      fully reset the state (to a valid load state or a valid error state),
-      there's nothing to do in this method.  (We can't omit it, since it's
-      abstract.)
-    */
   }
 
   onload() {
@@ -256,14 +189,6 @@ export class KanbanView extends TextFileView implements HoverParent {
     }
   };
 
-  toggleSearch() {
-    this.dataBridge.setExternal(
-      update(this.dataBridge.data, {
-        $toggle: ["isSearching"],
-      })
-    );
-  }
-
   getViewData() {
     // In theory, we could unparse the board here.  In practice, the board can be
     // in an error state, so we return the last good data here.  (In addition,
@@ -272,18 +197,50 @@ export class KanbanView extends TextFileView implements HoverParent {
     return this.data;
   }
 
+  setViewData(data: string) {
+    // Tell react we have a new board
+    this.setBoard(this.getParsedBoard(data));
+
+    // And make sure we're visible (no-op if we already are)
+    this.plugin.addView(this);
+  }
+
+  getPortal() {
+    return (
+      <ErrorHandler view={this} key={this.id}>
+        <Kanban dataBridge={this.dataBridge} view={this} />
+      </ErrorHandler>
+    );
+  }
+
+  toggleSearch() {
+    this.dataBridge.setExternal(
+      update(this.dataBridge.data, {
+        data: {
+          $toggle: ["isSearching"],
+        },
+      })
+    );
+  }
+
   getParsedBoard(data: string) {
     const trimmedContent = data.trim();
     let board: Board = null;
     try {
       board = {
-        lanes: [],
-        archive: [],
-        settings: { "kanban-plugin": "basic" },
-        isSearching: false,
+        ...BoardTemplate,
+        id: this.file.path,
+        data: {
+          archive: [],
+          settings: { "kanban-plugin": "basic" },
+          isSearching: false,
+        },
       };
-      if (trimmedContent)
+
+      if (trimmedContent) {
         board = this.parser.mdToBoard(trimmedContent, this.file?.path);
+      }
+
       this.setError();
     } catch (e) {
       console.error(e);
@@ -292,14 +249,6 @@ export class KanbanView extends TextFileView implements HoverParent {
     }
 
     return board;
-  }
-
-  setViewData(data: string) {
-    // Tell react we have a new board
-    this.setBoard(this.getParsedBoard(data));
-
-    // And make sure we're visible (no-op if we already are)
-    this.plugin.addView(this);
   }
 
   archiveCompletedCards() {
@@ -321,16 +270,16 @@ export class KanbanView extends TextFileView implements HoverParent {
 
       if (archiveDateSeparator) newTitle.push(archiveDateSeparator);
 
-      newTitle.push(item.titleRaw);
+      newTitle.push(item.data.titleRaw);
 
       const titleRaw = newTitle.join(" ");
       return this.parser.updateItem(item, titleRaw);
     };
 
-    const lanes = board.lanes.map((lane) => {
+    const lanes = board.children.map((lane) => {
       return update(lane, {
-        items: {
-          $set: lane.items.filter((item) => {
+        children: {
+          $set: lane.children.filter((item) => {
             if (item.data.isComplete) {
               archived.push(
                 shouldAppendArchiveDate ? appendArchiveDate(item) : item
@@ -351,53 +300,90 @@ export class KanbanView extends TextFileView implements HoverParent {
 
     this.dataBridge.setExternal(
       update(board, {
-        lanes: {
+        children: {
           $set: lanes,
         },
-        archive: {
-          $push: archived,
+        data: {
+          archive: {
+            $push: archived,
+          },
         },
       })
     );
   }
 
-  getPortal() {
-    return (
-      <ErrorHandler view={this} key={this.id}>
-        <Kanban dataBridge={this.dataBridge} view={this} />
-      </ErrorHandler>
-    );
+  onMoreOptionsMenu(menu: Menu) {
+    // Add a menu item to force the board to markdown view
+    menu
+      .addItem((item) => {
+        item
+          .setTitle(t("Open as markdown"))
+          .setIcon("document")
+          .onClick(() => {
+            this.plugin.kanbanFileModes[this.id || this.file.path] = "markdown";
+            this.plugin.setMarkdownView(this.leaf);
+          });
+      })
+      .addItem((item) => {
+        item
+          .setTitle(t("Open board settings"))
+          .setIcon("gear")
+          .onClick(() => {
+            const board = this.dataBridge.getData();
+
+            new SettingsModal(
+              this,
+              {
+                onSettingsChange: (settings) => {
+                  const updatedBoard = update(board, {
+                    data: {
+                      settings: {
+                        $set: settings,
+                      },
+                    },
+                  });
+                  // Save to disk, compute text of new board
+                  this.requestUpdate(updatedBoard);
+                  // Take the text and parse it back in with the new settings
+                  this.setViewData(this.data);
+                },
+              },
+              board.data.settings
+            ).open();
+          });
+      })
+      .addItem((item) => {
+        item
+          .setTitle(t("Archive completed cards"))
+          .setIcon("sheets-in-box")
+          .onClick(() => {
+            this.archiveCompletedCards();
+          });
+      })
+      .addSeparator();
+
+    super.onMoreOptionsMenu(menu);
   }
 
-  renderMarkdown(markdownString: string): HTMLDivElement {
-    const tempEl = createDiv();
-    MarkdownRenderer.renderMarkdown(
-      markdownString,
-      tempEl,
-      this.file?.path,
-      this
-    );
-    tempEl.findAll(".internal-embed").forEach((el) => {
-      const src = el.getAttribute("src");
-      const target =
-        typeof src === "string" &&
-        this.app.metadataCache.getFirstLinkpathDest(src, this.file?.path);
-      if (target instanceof TFile && target.extension !== "md") {
-        el.innerText = "";
-        el.createEl(
-          "img",
-          { attr: { src: this.app.vault.getResourcePath(target) } },
-          (img) => {
-            if (el.hasAttribute("width"))
-              img.setAttribute("width", el.getAttribute("width"));
-            if (el.hasAttribute("alt"))
-              img.setAttribute("alt", el.getAttribute("alt"));
-          }
-        );
-        el.addClasses(["image-embed", "is-loaded"]);
-      }
-    });
-    return tempEl;
+  clear() {
+    /*
+      Obsidian *only* calls this after unloading a file, before loading the next.
+      Specifically, from onUnloadFile, which calls save(true), and then optionally
+      calls clear, if and only if this.file is still non-empty.  That means that
+      in this function, this.file is still the *old* file, so we should not do
+      anything here that might try to use the file (including its path), so we
+      should avoid doing anything that refreshes the display.  (Since that could
+      use the file, and would also flash an empty pane during navigation, depending
+      on how long the next file load takes.)
+
+      Given all that, it makes more sense to clean up our state from onLoadFile, as
+      following a clear there are only two possible states: a successful onLoadFile
+      updates our full state via setViewData(), or else it aborts with an error
+      first.  So as long as setViewData() and the error handler for onLoadFile()
+      fully reset the state (to a valid load state or a valid error state),
+      there's nothing to do in this method.  (We can't omit it, since it's
+      abstract.)
+    */
   }
 }
 

@@ -11,7 +11,7 @@ import { around } from "monkey-around";
 
 import { kanbanIcon, KanbanView, kanbanViewType } from "./KanbanView";
 import { createApp } from "./DragDropApp";
-import { frontMatterKey } from "./parser";
+import { frontMatterKey } from "./parsers/common";
 import { KanbanSettings, KanbanSettingsTab } from "./Settings";
 import ReactDOM from "react-dom";
 
@@ -37,12 +37,12 @@ const basicFrontmatter = [
 export default class KanbanPlugin extends Plugin {
   settingsTab: KanbanSettingsTab;
   settings: KanbanSettings = {};
-  kanbanFileModes: { [file: string]: string } = {};
-  dbTimers: { [id: string]: number } = {};
-  hasSet: { [id: string]: boolean } = {};
   appEl: HTMLDivElement;
-  views: DataBridge<Map<string, KanbanView>> = new DataBridge(new Map());
+  viewBridge: DataBridge<Map<string, KanbanView>> = new DataBridge(new Map());
   _loaded: boolean = false;
+
+  // leafid => view mode
+  kanbanFileModes: Record<string, string> = {};
 
   async loadSettings() {
     this.settings = Object.assign({}, await this.loadData());
@@ -54,7 +54,7 @@ export default class KanbanPlugin extends Plugin {
 
   onunload() {
     // Unmount views from the display first, so we don't get intermediate render thrashing
-    this.views.setExternal(new Map());
+    this.viewBridge.setExternal(new Map());
 
     const kanbanLeaves = this.app.workspace.getLeavesOfType(kanbanViewType);
 
@@ -99,22 +99,24 @@ export default class KanbanPlugin extends Plugin {
   }
 
   addView(view: KanbanView) {
-    const views = this.views.getData();
+    const views = this.viewBridge.getData();
+
     if (!views.has(view.id)) {
-      this.views.setExternal(update(views, { $add: [[view.id, view]] }));
+      this.viewBridge.setExternal(update(views, { $add: [[view.id, view]] }));
     }
   }
 
   removeView(view: KanbanView) {
-    const views = this.views.getData();
+    const views = this.viewBridge.getData();
+
     if (views.has(view.id)) {
-      this.views.setExternal(update(views, { $remove: [view.id] }));
+      this.viewBridge.setExternal(update(views, { $remove: [view.id] }));
     }
   }
 
   mount() {
     ReactDOM.render(
-      createApp(this.app, this.views),
+      createApp(this.app, this.viewBridge),
       this.appEl ?? (this.appEl = document.body.createDiv())
     );
   }

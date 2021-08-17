@@ -15,12 +15,12 @@ export function ItemMetadata({
   isSettingsVisible,
   searchQuery,
 }: ItemMetadataProps) {
-  if (isSettingsVisible || !item.metadata.fileMetadata) return null;
+  if (isSettingsVisible || !item.data.metadata.fileMetadata) return null;
 
   return (
     <div className={c("item-metadata-wrapper")}>
       <MetadataTable
-        metadata={item.metadata.fileMetadata}
+        metadata={item.data.metadata.fileMetadata}
         searchQuery={searchQuery}
       />
     </div>

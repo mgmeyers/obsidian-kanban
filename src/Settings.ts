@@ -12,7 +12,7 @@ import {
   getDefaultTimeFormat,
 } from "./components/helpers";
 import { KanbanView } from "./KanbanView";
-import { frontMatterKey } from "./parser";
+import { frontMatterKey } from "./parsers/common";
 import KanbanPlugin from "./main";
 import {
   createSearchSelect,

@@ -41,12 +41,12 @@ export function ConfirmAction({
 }: ConfirmActionProps) {
   React.useEffect(() => {
     // Immediately execute action if lane is empty
-    if (action && lane.items.length === 0) {
+    if (action && lane.children.length === 0) {
       onAction();
     }
-  }, [action, lane.items.length]);
+  }, [action, lane.children.length]);
 
-  if (!action || (action && lane.items.length === 0)) return null;
+  if (!action || (action && lane.children.length === 0)) return null;
 
   return (
     <div className={c("action-confirm-wrapper")}>

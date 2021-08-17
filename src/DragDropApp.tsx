@@ -1,155 +1,173 @@
-import { App, Notice } from "obsidian";
-import React, { useCallback } from "react";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import { App } from "obsidian";
+import React from "react";
+
 import { createPortal } from "react-dom";
-import * as helpers from "./components/helpers";
-import { Board } from "./components/types";
+import { Board, Item, Lane } from "./components/types";
 import { DataBridge } from "./DataBridge";
 import { KanbanView } from "./KanbanView";
+import { DragOverlay } from "./dnd/components/DragOverlay";
+import { DndContext } from "./dnd/components/DndContext";
+import { DraggableLane } from "./components/Lane/Lane";
+import { DraggableItem } from "./components/Item/Item";
+import {
+  getEntityFromPath,
+  insertEntity,
+  moveEntity,
+  removeEntity,
+} from "./dnd/util/data";
+import { getBoardModifiers } from "./components/helpers/boardModifiers";
+import { KanbanContext } from "./components/context";
 
-export function createApp(app: App, db: DataBridge<Map<string, KanbanView>>) {
-  return <DragDropApp app={app} db={db} />;
+export function createApp(
+  app: App,
+  dataBridge: DataBridge<Map<string, KanbanView>>
+) {
+  return <DragDropApp app={app} dataBridge={dataBridge} />;
 }
 
 const View = React.memo(({ view }: { view: KanbanView }) => {
   return createPortal(view.getPortal(), view.contentEl);
 });
 
+function mutateView(
+  view: KanbanView,
+  mutator: (board: Board) => Board,
+  isDupe: boolean = false
+) {
+  const bridge = view.dataBridge;
+  const board = mutator(bridge.getData());
+
+  if (!isDupe) bridge.setInternal(board);
+  bridge.setExternal(board);
+}
+
 export function DragDropApp({
   app,
-  db,
+  dataBridge,
 }: {
   app: App;
-  db: DataBridge<Map<string, KanbanView>>;
+  dataBridge: DataBridge<Map<string, KanbanView>>;
 }) {
-  const [views, _] = db.useState();
+  const [views, _] = dataBridge.useState();
   const portals = [...views].map(([_id, view]) => <View view={view} />);
+
+  const handleDrop = React.useCallback(
+    (dragEntity, dropEntity) => {
+      const dragPath = dragEntity.getPath();
+      const dropPath = dropEntity.getPath();
+
+      // Same board
+      if (dragEntity.scopeId === dropEntity.scopeId) {
+        const view = views.get(dragEntity.scopeId);
+
+        app.workspace.trigger(
+          "kanban:card-moved",
+          view.file,
+          dragPath,
+          dropPath,
+          dragEntity.getData()
+        );
+
+        return mutateView(views.get(dragEntity.scopeId), (board) => {
+          return moveEntity(board, dragEntity.getPath(), dropEntity.getPath());
+        });
+      }
+
+      const [, sourceFile] = dragEntity.scopeId.split(":::");
+      const [, destinationFile] = dropEntity.scopeId.split(":::");
+
+      // Different views, same file
+      if (sourceFile === destinationFile) {
+        const sourceView = views.get(dragEntity.scopeId);
+
+        app.workspace.trigger(
+          "kanban:card-moved",
+          sourceView.file,
+          dragPath,
+          dropPath,
+          dragEntity.getData()
+        );
+
+        // Drop to the destination but don't set internal
+        mutateView(
+          views.get(dropEntity.scopeId),
+          (board) => {
+            return moveEntity(
+              board,
+              dragEntity.getPath(),
+              dropEntity.getPath()
+            );
+          },
+          true
+        );
+
+        // Update the source
+        return mutateView(sourceView, (board) => {
+          return moveEntity(board, dragEntity.getPath(), dropEntity.getPath());
+        });
+      }
+
+      // Move from one board to another
+      mutateView(views.get(dragEntity.scopeId), (board) => {
+        const dragPath = dragEntity.getPath();
+        const entity = getEntityFromPath(board, dragPath);
+
+        mutateView(views.get(dropEntity.scopeId), (board) => {
+          return insertEntity(board, dropEntity.getPath(), entity);
+        });
+
+        return removeEntity(board, dragPath);
+      });
+    },
+    [views]
+  );
 
   if (portals.length)
     return (
-      <DragDropContext onDragEnd={useCallback(onDragEnd, [views])}>
+      <DndContext onDrop={handleDrop}>
         {...portals}
-      </DragDropContext>
+        <DragOverlay>
+          {(entity, styles) => {
+            const data = entity.getData();
+            const view = views.get(entity.scopeId);
+            const boardModifiers = getBoardModifiers({
+              view,
+              setBoardData: () => {},
+            });
+            const filePath = view.file.path;
+            const context = { view, boardModifiers, filePath };
+
+            if (data.type === "lane") {
+              return (
+                <KanbanContext.Provider value={context}>
+                  <div style={styles}>
+                    <DraggableLane
+                      lane={data as Lane}
+                      laneIndex={0}
+                      isStatic={true}
+                    />
+                  </div>
+                </KanbanContext.Provider>
+              );
+            }
+
+            if (data.type === "item") {
+              return (
+                <KanbanContext.Provider value={context}>
+                  <div style={styles}>
+                    <DraggableItem
+                      item={data as Item}
+                      itemIndex={0}
+                      isStatic={true}
+                    />
+                  </div>
+                </KanbanContext.Provider>
+              );
+            }
+
+            return <div />;
+          }}
+        </DragOverlay>
+      </DndContext>
     );
-
-  function onDragEnd(dropResult: DropResult) {
-    // Bail out early if we're not dropping anywhere
-    const { source, destination } = dropResult;
-    if (!destination) return;
-
-    const srcLoc = boardContextFor(dropResult, source.droppableId);
-    const dstLoc = boardContextFor(dropResult, destination.droppableId);
-    if (!srcLoc || !dstLoc)
-      return new Notice("Invalid source or destination for drop");
-
-    let srcMutator: helpers.BoardMutator;
-    let dstMutator: helpers.BoardMutator;
-
-    if (srcLoc.file !== dstLoc.file) {
-      // Two different files
-      if (dropResult.type === "LANE") {
-        srcMutator = helpers.deleteLane(source.index);
-        dstMutator = helpers.insertLane(
-          destination.index,
-          srcLoc.getData().lanes[source.index]
-        );
-      } else {
-        const srcLane = srcLoc.getData().lanes[srcLoc.laneIndex];
-        const dstLane = dstLoc.getData().lanes[dstLoc.laneIndex];
-        const item = helpers.maybeCompleteForMove(
-          srcLane.items[source.index],
-          srcLane,
-          dstLane
-        );
-        srcMutator = helpers.deleteItem(srcLoc.laneIndex, source.index);
-        dstMutator = helpers.insertItem(
-          dstLoc.laneIndex,
-          destination.index,
-          item
-        );
-      }
-    } else {
-      if (srcLoc.view !== dstLoc.view) {
-        // drag between two views on the same file, might need to fudge position (due to the copy of src in dst)
-        if (destination.index > source.index) --destination.index;
-      }
-      // Nominal case: same file, same view
-      if (dropResult.type === "LANE") {
-        // Swap lanes
-        srcMutator = dstMutator = helpers.swapLanes(
-          source.index,
-          destination.index
-        );
-      } else if (srcLoc.laneIndex === dstLoc.laneIndex) {
-        // Swap items within a lane
-        srcMutator = dstMutator = helpers.swapItems(
-          srcLoc.laneIndex,
-          source.index,
-          destination.index
-        );
-      } else {
-        // Move item from one lane to another
-        srcMutator = dstMutator = helpers.moveItem(
-          srcLoc.laneIndex,
-          source.index,
-          dstLoc.laneIndex,
-          destination.index
-        );
-        const lanes = srcLoc.getData().lanes;
-        const item = lanes[srcLoc.laneIndex].items[source.index];
-        app.workspace.trigger(
-          "kanban:card-moved",
-          srcLoc.file,
-          lanes[srcLoc.laneIndex],
-          lanes[dstLoc.laneIndex],
-          item
-        );
-      }
-    }
-
-    // Apply changes at destination view first, so UI changes immediately
-    //   (but only if there's more than one view involved)
-    if (srcLoc.view !== dstLoc.view && dstMutator) {
-      // if it's the same file+change, just update the display; the change will be saved
-      //   when it's applied to the source, below.
-      dstLoc.mutate(
-        dstMutator,
-        srcMutator === dstMutator && srcLoc.file === dstLoc.file
-      );
-    }
-
-    // Apply changes to source (if any), and always save it
-    if (srcMutator) srcLoc.mutate(srcMutator);
-  }
-
-  function boardContextFor(dropResult: DropResult, id: string) {
-    if (dropResult.type === "LANE") {
-      return views.has(id) && boardContext(views.get(id));
-    }
-    for (const [vid, view] of views) {
-      const index = view.dataBridge.data.lanes.findIndex(
-        (lane) => lane.id === id
-      );
-      if (index >= 0) return boardContext(view, index);
-    }
-  }
-
-  function boardContext(view: KanbanView, laneIndex?: number) {
-    return {
-      view,
-      laneIndex,
-      file: view.file,
-      mutate(mutator: helpers.BoardMutator, preview = false) {
-        const bridge = view.dataBridge;
-        const board = mutator(bridge.getData());
-        // Save the change unless we're previewing
-        if (!preview) bridge.setInternal(board);
-        // And always Update the display
-        bridge.setExternal(board);
-      },
-      getData(): Board {
-        return view.dataBridge.getData();
-      },
-    };
-  }
 }

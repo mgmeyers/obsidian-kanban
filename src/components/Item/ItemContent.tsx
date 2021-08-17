@@ -41,12 +41,15 @@ export const ItemContent = React.memo(
 
     if (isSettingsVisible) {
       return (
-        <div data-replicated-value={item.titleRaw} className={c("grow-wrap")}>
+        <div
+          data-replicated-value={item.data.titleRaw}
+          className={c("grow-wrap")}
+        >
           <textarea
             rows={1}
             ref={inputRef}
             className={c("item-input")}
-            value={item.titleRaw}
+            value={item.data.titleRaw}
             onChange={onChange}
             {...autocompleteProps}
           />
@@ -58,7 +61,7 @@ export const ItemContent = React.memo(
       <div className={c("item-title")}>
         <MarkdownRenderer
           className={c("item-markdown")}
-          dom={item.dom}
+          dom={item.data.dom}
           searchQuery={searchQuery}
         />
         <div className={c("item-metadata")}>
@@ -70,9 +73,9 @@ export const ItemContent = React.memo(
             onEditDate={onEditDate}
             onEditTime={onEditTime}
           />
-          {!hideTagsDisplay && !!item.metadata.tags?.length && (
+          {!hideTagsDisplay && !!item.data.metadata.tags?.length && (
             <div className={c("item-tags")}>
-              {item.metadata.tags.map((tag, i) => {
+              {item.data.metadata.tags.map((tag, i) => {
                 return (
                   <a
                     href={tag}

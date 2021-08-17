@@ -13,14 +13,14 @@ import {
 import { t } from "src/lang/helpers";
 import { KanbanView } from "src/KanbanView";
 import { BoardModifiers } from "../helpers/boardModifiers";
+import { Path } from "src/dnd/types";
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
 
 interface UseItemMenuParams {
   setIsEditing: React.Dispatch<boolean>;
   item: Item;
-  laneIndex: number;
-  itemIndex: number;
+  path: Path;
   boardModifiers: BoardModifiers;
   view: KanbanView;
 }
@@ -28,8 +28,7 @@ interface UseItemMenuParams {
 export function useItemMenu({
   setIsEditing,
   item,
-  laneIndex,
-  itemIndex,
+  path,
   boardModifiers,
   view,
 }: UseItemMenuParams) {
@@ -44,8 +43,8 @@ export function useItemMenu({
         );
       } else {
         const coordinates = { x: e.clientX, y: e.clientY };
-        const hasDate = !!item.metadata.date;
-        const hasTime = !!item.metadata.time;
+        const hasDate = !!item.data.metadata.date;
+        const hasTime = !!item.data.metadata.time;
 
         const menu = new Menu(view.app).addItem((i) => {
           i.setIcon("pencil")
@@ -58,8 +57,8 @@ export function useItemMenu({
             i.setIcon("create-new")
               .setTitle(t("New note from card"))
               .onClick(async () => {
-                const prevTitle = item.title;
-                const sanitizedTitle = item.title.replace(
+                const prevTitle = item.data.title;
+                const sanitizedTitle = item.data.title.replace(
                   illegalCharsRegEx,
                   " "
                 );
@@ -92,14 +91,13 @@ export function useItemMenu({
                   newNoteTemplatePath as string | undefined
                 );
 
-                const newTitleRaw = item.titleRaw.replace(
+                const newTitleRaw = item.data.titleRaw.replace(
                   prevTitle,
                   `[[${sanitizedTitle}]]`
                 );
 
                 boardModifiers.updateItem(
-                  laneIndex,
-                  itemIndex,
+                  path,
                   view.parser.updateItem(item, newTitleRaw)
                 );
               });
@@ -108,21 +106,17 @@ export function useItemMenu({
           .addItem((i) => {
             i.setIcon("documents")
               .setTitle(t("Duplicate card"))
-              .onClick(() =>
-                boardModifiers.duplicateItem(laneIndex, itemIndex)
-              );
+              .onClick(() => boardModifiers.duplicateEntity(path));
           })
           .addItem((i) => {
             i.setIcon("sheets-in-box")
               .setTitle(t("Archive card"))
-              .onClick(() =>
-                boardModifiers.archiveItem(laneIndex, itemIndex, item)
-              );
+              .onClick(() => boardModifiers.archiveItem(path));
           })
           .addItem((i) => {
             i.setIcon("trash")
               .setTitle(t("Delete card"))
-              .onClick(() => boardModifiers.deleteItem(laneIndex, itemIndex));
+              .onClick(() => boardModifiers.deleteEntity(path));
           })
           .addSeparator()
           .addItem((i) => {
@@ -136,10 +130,9 @@ export function useItemMenu({
                     boardModifiers,
                     item,
                     hasDate,
-                    laneIndex,
-                    itemIndex,
+                    path,
                   }),
-                  item.metadata.date?.toDate()
+                  item.data.metadata.date?.toDate()
                 );
               });
           });
@@ -163,10 +156,11 @@ export function useItemMenu({
                   )}${contentMatch}`
                 );
 
-                const titleRaw = item.titleRaw.replace(dateRegEx, "").trim();
+                const titleRaw = item.data.titleRaw
+                  .replace(dateRegEx, "")
+                  .trim();
                 boardModifiers.updateItem(
-                  laneIndex,
-                  itemIndex,
+                  path,
                   view.parser.updateItem(item, titleRaw)
                 );
               });
@@ -184,10 +178,9 @@ export function useItemMenu({
                     boardModifiers,
                     item,
                     hasTime,
-                    laneIndex,
-                    itemIndex,
+                    path,
                   }),
-                  item.metadata.time
+                  item.data.metadata.time
                 );
               });
           });
@@ -203,10 +196,11 @@ export function useItemMenu({
                     `(^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
                   );
 
-                  const titleRaw = item.titleRaw.replace(timeRegEx, "").trim();
+                  const titleRaw = item.data.titleRaw
+                    .replace(timeRegEx, "")
+                    .trim();
                   boardModifiers.updateItem(
-                    laneIndex,
-                    itemIndex,
+                    path,
                     view.parser.updateItem(item, titleRaw)
                   );
                 });
@@ -217,6 +211,6 @@ export function useItemMenu({
         menu.showAtPosition(coordinates);
       }
     },
-    [setIsEditing, item, laneIndex, itemIndex, boardModifiers, view]
+    [setIsEditing, item, path, boardModifiers, view]
   );
 }

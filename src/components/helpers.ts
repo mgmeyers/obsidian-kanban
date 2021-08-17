@@ -1,6 +1,6 @@
 import React from "react";
 import update from "immutability-helper";
-import { Board, Item, Lane } from "./types";
+import { Item, Lane } from "./types";
 import { KanbanView } from "src/KanbanView";
 import { App, MarkdownView, TFile } from "obsidian";
 
@@ -14,105 +14,6 @@ export function c(className: string) {
 
 export function generateInstanceId(): string {
   return Math.random().toString(36).substr(2, 9);
-}
-
-interface ReorderListParams<T> {
-  list: T[];
-  startIndex: number;
-  endIndex: number;
-}
-
-export function reorderList<T>({
-  list,
-  startIndex,
-  endIndex,
-}: ReorderListParams<T>) {
-  const clone = list.slice();
-  const [removed] = clone.splice(startIndex, 1);
-  clone.splice(endIndex, 0, removed);
-
-  return clone;
-}
-
-// Callback to update() a board
-export type BoardMutator = (board: Board) => Board;
-
-export function swapLanes(srcIndex: number, dstIndex: number): BoardMutator {
-  return srcIndex === dstIndex
-    ? null
-    : (boardData: Board) =>
-        update(boardData, {
-          lanes: (lanes) =>
-            reorderList<Lane>({
-              list: lanes,
-              startIndex: srcIndex,
-              endIndex: dstIndex,
-            }),
-        });
-}
-
-export function swapItems(
-  laneIndex: number,
-  srcIndex: number,
-  dstIndex: number
-): BoardMutator {
-  return srcIndex === dstIndex
-    ? null
-    : (boardData: Board) =>
-        update(boardData, {
-          lanes: {
-            [laneIndex]: {
-              items: (items) =>
-                reorderList<Item>({
-                  list: items,
-                  startIndex: srcIndex,
-                  endIndex: dstIndex,
-                }),
-            },
-          },
-        });
-}
-
-export function deleteLane(srcLane: number): BoardMutator {
-  return (boardData: Board) =>
-    update(boardData, {
-      lanes: { $splice: [[srcLane, 1]] },
-    });
-}
-
-export function insertLane(dstLane: number, lane: Lane): BoardMutator {
-  return (boardData: Board) =>
-    update(boardData, {
-      lanes: { $splice: [[dstLane, 0, lane]] },
-    });
-}
-
-export function deleteItem(srcLane: number, srcIndex: number): BoardMutator {
-  return (boardData: Board) =>
-    update(boardData, {
-      lanes: {
-        [srcLane]: {
-          items: { $splice: [[srcIndex, 1]] },
-        },
-      },
-    });
-}
-
-export function insertItem(
-  dstLane: number,
-  dstIndex: number,
-  item: Item
-): BoardMutator {
-  return (boardData: Board) =>
-    update(boardData, {
-      lanes: {
-        [dstLane]: {
-          items: {
-            $splice: [[dstIndex, 0, item]],
-          },
-        },
-      },
-    });
 }
 
 export function maybeCompleteForMove(
@@ -137,38 +38,6 @@ export function maybeCompleteForMove(
       },
     },
   });
-}
-
-export function moveItem(
-  srcLane: number,
-  srcIndex: number,
-  dstLane: number,
-  dstIndex: number
-): BoardMutator {
-  return srcLane === dstLane && srcIndex === dstIndex
-    ? null
-    : (boardData: Board) => {
-        let item = boardData.lanes[srcLane].items[srcIndex];
-        item = maybeCompleteForMove(
-          item,
-          boardData.lanes[srcLane],
-          boardData.lanes[dstLane]
-        );
-        return update(boardData, {
-          lanes: {
-            [srcLane]: {
-              items: {
-                $splice: [[srcIndex, 1]],
-              },
-            },
-            [dstLane]: {
-              items: {
-                $splice: [[dstIndex, 0, item]],
-              },
-            },
-          },
-        });
-      };
 }
 
 export function useIMEInputProps() {

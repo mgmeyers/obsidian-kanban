@@ -7,28 +7,28 @@ import { KanbanView } from "src/KanbanView";
 import { t } from "src/lang/helpers";
 
 export function getRelativeDate(date: moment.Moment, time: moment.Moment) {
-    if (time) {
-      return time.from(moment());
-    }
-  
-    const today = moment().startOf("day");
-  
-    if (today.isSame(date, "day")) {
-      return t("today");
-    }
-  
-    const diff = date.diff(today, "day");
-  
-    if (diff === -1) {
-      return t("yesterday");
-    }
-  
-    if (diff === 1) {
-      return t("tomorrow");
-    }
-  
-    return date.from(today);
+  if (time) {
+    return time.from(moment());
   }
+
+  const today = moment().startOf("day");
+
+  if (today.isSame(date, "day")) {
+    return t("today");
+  }
+
+  const diff = date.diff(today, "day");
+
+  if (diff === -1) {
+    return t("yesterday");
+  }
+
+  if (diff === 1) {
+    return t("tomorrow");
+  }
+
+  return date.from(today);
+}
 
 interface DateProps {
   item: Item;
@@ -38,11 +38,14 @@ interface DateProps {
 export function RelativeDate({ item, view }: DateProps) {
   const shouldShowRelativeDate = view.getSetting("show-relative-date");
 
-  if (!shouldShowRelativeDate || !item.metadata.date) {
+  if (!shouldShowRelativeDate || !item.data.metadata.date) {
     return null;
   }
 
-  const relativeDate = getRelativeDate(item.metadata.date, item.metadata.time);
+  const relativeDate = getRelativeDate(
+    item.data.metadata.date,
+    item.data.metadata.time
+  );
 
   return (
     <span className={c("item-metadata-date-relative")}>{relativeDate}</span>
@@ -64,7 +67,7 @@ export function DateAndTime({
 }: DateProps & DateAndTimeProps) {
   const hideDateDisplay = view.getSetting("hide-date-display");
 
-  if (hideDateDisplay || !item.metadata.date) return null;
+  if (hideDateDisplay || !item.data.metadata.date) return null;
 
   const dateFormat =
     view.getSetting("date-format") || getDefaultDateFormat(view.app);
@@ -74,15 +77,15 @@ export function DateAndTime({
     view.getSetting("date-display-format") || dateFormat;
   const shouldLinkDate = view.getSetting("link-date-to-daily-note");
 
-  const dateStr = item.metadata.date.format(dateFormat);
+  const dateStr = item.data.metadata.date.format(dateFormat);
 
   if (!dateStr) return null;
 
-  const hasTime = !!item.metadata.time;
-  const dateDisplayStr = item.metadata.date.format(dateDisplayFormat);
+  const hasTime = !!item.data.metadata.time;
+  const dateDisplayStr = item.data.metadata.date.format(dateDisplayFormat);
   const timeDisplayStr = !hasTime
     ? null
-    : item.metadata.time.format(timeFormat);
+    : item.data.metadata.time.format(timeFormat);
 
   const datePath = dateStr ? getLinkpath(dateStr) : null;
   const isResolved = dateStr

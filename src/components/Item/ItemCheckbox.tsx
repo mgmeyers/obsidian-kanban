@@ -6,10 +6,10 @@ import { c } from "../helpers";
 import { Icon } from "../Icon/Icon";
 import { KanbanView } from "src/KanbanView";
 import { BoardModifiers } from "../helpers/boardModifiers";
+import { Path } from "src/dnd/types";
 
 interface ItemCheckboxProps {
-  laneIndex?: number;
-  itemIndex?: number;
+  path: Path;
   item: Item;
   shouldMarkItemsComplete: boolean;
   view: KanbanView;
@@ -19,8 +19,7 @@ interface ItemCheckboxProps {
 export const ItemCheckbox = React.memo(
   ({
     shouldMarkItemsComplete,
-    laneIndex,
-    itemIndex,
+    path,
     item,
     view,
     boardModifiers,
@@ -77,8 +76,7 @@ export const ItemCheckbox = React.memo(
           <input
             onChange={() => {
               boardModifiers.updateItem(
-                laneIndex,
-                itemIndex,
+                path,
                 update(item, {
                   data: {
                     $toggle: ["isComplete"],
@@ -95,7 +93,7 @@ export const ItemCheckbox = React.memo(
           (!shouldShowCheckbox && shouldMarkItemsComplete)) && (
           <button
             onClick={() => {
-              boardModifiers.archiveItem(laneIndex, itemIndex, item);
+              boardModifiers.archiveItem(path);
             }}
             className={c("item-prefix-button")}
             aria-label={isCtrlHoveringCheckbox ? undefined : "Archive item"}

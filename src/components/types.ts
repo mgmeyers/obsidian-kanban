@@ -1,19 +1,10 @@
 import { TFile } from "obsidian";
+import { Nestable } from "src/dnd/types";
 import { KanbanSettings } from "src/Settings";
 
 export interface LaneData {
   shouldMarkItemsComplete?: boolean;
-}
-
-export interface Lane {
-  id: string;
   title: string;
-  data: LaneData;
-  items: Item[];
-}
-
-export interface ItemData {
-  isComplete?: boolean;
 }
 
 export interface DataKey {
@@ -40,32 +31,45 @@ export interface ItemMetaData {
   fileMetadata?: FileMetadata;
 }
 
-export interface Item {
-  id: string;
+export interface ItemData {
+  isComplete?: boolean;
   title: string;
   titleRaw: string;
   titleSearch: string;
   metadata: ItemMetaData;
-  data: ItemData;
   dom: HTMLDivElement;
 }
 
-export interface Board {
+export interface BoardData {
   isSearching: boolean;
   settings: KanbanSettings;
-  lanes: Lane[];
   archive: Item[];
 }
 
-export interface BoardModifiers {
-  addItemsToLane: (laneIndex: number, items: Item[]) => void;
-  addLane: (lane: Lane) => void;
-  archiveItem: (laneIndex: number, itemIndex: number, item: Item) => void;
-  archiveLane: (laneIndex: number) => void;
-  archiveLaneItems: (laneIndex: number) => void;
-  deleteItem: (laneIndex: number, itemIndex: number) => void;
-  deleteLane: (laneIndex: number) => void;
-  updateItem: (laneIndex: number, itemIndex: number, item: Item) => void;
-  updateLane: (laneIndex: number, lane: Lane) => void;
-  duplicateItem: (laneIndex: number, itemIndex: number) => void;
-}
+export type Item = Nestable<ItemData>;
+export type Lane = Nestable<LaneData, Item>;
+export type Board = Nestable<BoardData, Lane>;
+
+export const DataTypes = {
+  Item: "item",
+  Lane: "lane",
+  Board: "board",
+};
+
+export const ItemTemplate = {
+  accepts: [] as string[],
+  type: DataTypes.Item,
+  children: [] as any[],
+};
+
+export const LaneTemplate = {
+  accepts: [DataTypes.Item],
+  type: DataTypes.Lane,
+  children: [] as Item[],
+};
+
+export const BoardTemplate = {
+  accepts: [DataTypes.Lane],
+  type: DataTypes.Board,
+  children: [] as Lane[],
+};

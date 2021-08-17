@@ -8,18 +8,25 @@ import {
   generateInstanceId,
 } from "../helpers";
 import { KanbanView } from "src/KanbanView";
+import { Path } from "src/dnd/types";
+import {
+  appendEntities,
+  getEntityFromPath,
+  insertEntity,
+  removeEntity,
+  updateEntity,
+} from "src/dnd/util/data";
 
 export interface BoardModifiers {
-  addItemsToLane: (laneIndex: number, items: Item[]) => void;
+  addItems: (path: Path, items: Item[]) => void;
   addLane: (lane: Lane) => void;
-  archiveItem: (laneIndex: number, itemIndex: number, item: Item) => void;
-  archiveLane: (laneIndex: number) => void;
-  archiveLaneItems: (laneIndex: number) => void;
-  deleteItem: (laneIndex: number, itemIndex: number) => void;
-  deleteLane: (laneIndex: number) => void;
-  duplicateItem: (laneIndex: number, itemIndex: number) => void;
-  updateItem: (laneIndex: number, itemIndex: number, item: Item) => void;
-  updateLane: (laneIndex: number, lane: Lane) => void;
+  updateLane: (path: Path, lane: Lane) => void;
+  archiveLane: (path: Path) => void;
+  archiveLaneItems: (path: Path) => void;
+  deleteEntity: (path: Path) => void;
+  updateItem: (path: Path, item: Item) => void;
+  archiveItem: (path: Path) => void;
+  duplicateEntity: (path: Path) => void;
 }
 
 interface BoardStateProps {
@@ -47,50 +54,34 @@ export function getBoardModifiers({
 
     if (archiveDateSeparator) newTitle.push(archiveDateSeparator);
 
-    newTitle.push(item.titleRaw);
+    newTitle.push(item.data.titleRaw);
 
     const titleRaw = newTitle.join(" ");
     return view.parser.updateItem(item, titleRaw);
   };
 
   return {
-    addItemsToLane: (laneIndex: number, items: Item[]) => {
+    addItems: (parentPath: Path, items: Item[]) => {
       items.forEach((item) =>
         view.app.workspace.trigger("kanban:card-added", view.file, item)
       );
 
-      setBoardData((boardData) =>
-        update(boardData, {
-          lanes: {
-            [laneIndex]: {
-              items: {
-                $push: items,
-              },
-            },
-          },
-        })
-      );
+      setBoardData((boardData) => appendEntities(boardData, parentPath, items));
     },
 
     addLane: (lane: Lane) => {
       view.app.workspace.trigger("kanban:lane-added", view.file, lane);
 
-      setBoardData((boardData) =>
-        update(boardData, {
-          lanes: {
-            $push: [lane],
-          },
-        })
-      );
+      setBoardData((boardData) => appendEntities(boardData, [], [lane]));
     },
 
-    updateLane: (laneIndex: number, lane: Lane) => {
+    updateLane: (path: Path, lane: Lane) => {
       view.app.workspace.trigger("kanban:lane-updated", view.file, lane);
 
       setBoardData((boardData) =>
-        update(boardData, {
-          lanes: {
-            [laneIndex]: {
+        updateEntity(boardData, path.slice(0, -1), {
+          children: {
+            [path[path.length - 1]]: {
               $set: lane,
             },
           },
@@ -98,165 +89,129 @@ export function getBoardModifiers({
       );
     },
 
-    deleteLane: (laneIndex: number) => {
+    archiveLane: (path: Path) => {
       setBoardData((boardData) => {
-        view.app.workspace.trigger(
-          "kanban:lane-deleted",
-          view.file,
-          boardData.lanes[laneIndex]
-        );
+        const lane = getEntityFromPath(boardData, path);
+        const items = lane.children;
 
-        return update(boardData, {
-          lanes: {
-            $splice: [[laneIndex, 1]],
+        view.app.workspace.trigger("kanban:lane-archived", view.file, lane);
+
+        return update(removeEntity(boardData, path), {
+          data: {
+            archive: {
+              $push: shouldAppendArchiveDate
+                ? items.map(appendArchiveDate)
+                : items,
+            },
           },
         });
       });
     },
 
-    archiveLane: (laneIndex: number) => {
+    archiveLaneItems: (path: Path) => {
       setBoardData((boardData) => {
-        view.app.workspace.trigger(
-          "kanban:lane-archived",
-          view.file,
-          boardData.lanes[laneIndex]
-        );
+        const lane = getEntityFromPath(boardData, path);
+        const items = lane.children;
 
-        const items = boardData.lanes[laneIndex].items;
-
-        return update(boardData, {
-          lanes: {
-            $splice: [[laneIndex, 1]],
-          },
-          archive: {
-            $push: shouldAppendArchiveDate
-              ? items.map(appendArchiveDate)
-              : items,
-          },
-        });
-      });
-    },
-
-    archiveLaneItems: (laneIndex: number) => {
-      setBoardData((boardData) => {
-        const items = boardData.lanes[laneIndex].items;
         view.app.workspace.trigger(
           "kanban:lane-cards-archived",
           view.file,
           items
         );
 
-        return update(boardData, {
-          lanes: {
-            [laneIndex]: {
-              items: {
-                $set: [],
-              },
+        return update(
+          updateEntity(boardData, path, {
+            children: {
+              $set: [],
             },
-          },
-          archive: {
-            $push: shouldAppendArchiveDate
-              ? items.map(appendArchiveDate)
-              : items,
-          },
-        });
-      });
-    },
-
-    deleteItem: (laneIndex: number, itemIndex: number) => {
-      setBoardData((boardData) => {
-        view.app.workspace.trigger(
-          "kanban:card-deleted",
-          view.file,
-          boardData.lanes[laneIndex].items[itemIndex]
-        );
-
-        return update(boardData, {
-          lanes: {
-            [laneIndex]: {
-              items: {
-                $splice: [[itemIndex, 1]],
-              },
-            },
-          },
-        });
-      });
-    },
-
-    updateItem: (laneIndex: number, itemIndex: number, item: Item) => {
-      setBoardData((boardData) => {
-        view.app.workspace.trigger(
-          "kanban:card-updated",
-          view.file,
-          boardData.lanes[laneIndex],
-          item
-        );
-
-        return update(boardData, {
-          lanes: {
-            [laneIndex]: {
-              items: {
-                [itemIndex]: {
-                  $set: item,
-                },
-              },
-            },
-          },
-        });
-      });
-    },
-
-    archiveItem: (laneIndex: number, itemIndex: number, item: Item) => {
-      setBoardData((boardData) => {
-        view.app.workspace.trigger(
-          "kanban:card-archived",
-          view.file,
-          boardData.lanes[laneIndex],
-          item
-        );
-
-        return update(boardData, {
-          lanes: {
-            [laneIndex]: {
-              items: {
-                $splice: [[itemIndex, 1]],
-              },
-            },
-          },
-          archive: {
-            $push: [shouldAppendArchiveDate ? appendArchiveDate(item) : item],
-          },
-        });
-      });
-    },
-
-    duplicateItem: (laneIndex: number, itemIndex: number) => {
-      setBoardData((boardData) => {
-        view.app.workspace.trigger(
-          "kanban:card-duplicated",
-          view.file,
-          boardData.lanes[laneIndex],
-          itemIndex
-        );
-
-        const itemWithNewID = update(
-          boardData.lanes[laneIndex].items[itemIndex],
+          }),
           {
-            id: {
-              $set: generateInstanceId(),
+            data: {
+              archive: {
+                $push: shouldAppendArchiveDate
+                  ? items.map(appendArchiveDate)
+                  : items,
+              },
             },
           }
         );
+      });
+    },
 
-        return update(boardData, {
-          lanes: {
-            [laneIndex]: {
-              items: {
-                $splice: [[itemIndex, 0, itemWithNewID]],
-              },
+    deleteEntity: (path: Path) => {
+      setBoardData((boardData) => {
+        const entity = getEntityFromPath(boardData, path);
+
+        view.app.workspace.trigger(
+          `kanban:${entity.type}-deleted`,
+          view.file,
+          entity
+        );
+
+        return removeEntity(boardData, path);
+      });
+    },
+
+    updateItem: (path: Path, item: Item) => {
+      setBoardData((boardData) => {
+        const oldItem = getEntityFromPath(boardData, path);
+
+        view.app.workspace.trigger(
+          "kanban:card-updated",
+          view.file,
+          oldItem,
+          item
+        );
+
+        return updateEntity(boardData, path.slice(0, -1), {
+          children: {
+            [path[path.length - 1]]: {
+              $set: item,
             },
           },
         });
+      });
+    },
+
+    archiveItem: (path: Path) => {
+      setBoardData((boardData) => {
+        const item = getEntityFromPath(boardData, path);
+
+        view.app.workspace.trigger(
+          "kanban:card-archived",
+          view.file,
+          path,
+          item
+        );
+
+        return update(removeEntity(boardData, path), {
+          data: {
+            archive: {
+              $push: [shouldAppendArchiveDate ? appendArchiveDate(item) : item],
+            },
+          },
+        });
+      });
+    },
+
+    duplicateEntity: (path: Path) => {
+      setBoardData((boardData) => {
+        const entity = getEntityFromPath(boardData, path);
+
+        view.app.workspace.trigger(
+          `kanban:${entity.type}-duplicated`,
+          view.file,
+          path,
+          entity
+        );
+
+        const entityWithNewID = update(entity, {
+          id: {
+            $set: generateInstanceId(),
+          },
+        });
+
+        return insertEntity(boardData, path, entityWithNewID);
       });
     },
   };

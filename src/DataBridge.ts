@@ -4,7 +4,17 @@ export type DataHandler<T> = (data: T) => void;
 export type Reducer<T> = (old: T) => T;
 
 export class DataBridge<T> {
-  constructor(public data?: T) {}
+  onExternalSetHandlers: Array<DataHandler<T>> = [];
+  onInternalSetHandlers: Array<DataHandler<T>> = [];
+  data?: T;
+
+  constructor(data?: T) {
+    this.data = data;
+  }
+
+  getData() {
+    return this.data;
+  }
 
   // A two-way link version of useState
   useState(): [T, DataHandler<T>] {
@@ -32,9 +42,6 @@ export class DataBridge<T> {
     return [state, updateState];
   }
 
-  onExternalSetHandlers: Array<DataHandler<T>> = [];
-  onInternalSetHandlers: Array<DataHandler<T>> = [];
-
   // When data has been set in obsidian land
   onExternalSet(fn: DataHandler<T>) {
     this.onExternalSetHandlers.push(fn);
@@ -57,10 +64,6 @@ export class DataBridge<T> {
   setInternal(data: T) {
     this.data = data;
     this.onInternalSetHandlers.forEach((fn) => fn(data));
-  }
-
-  getData() {
-    return this.data;
   }
 
   reset() {

@@ -2,6 +2,7 @@ import React from "react";
 import Mark from "mark.js";
 import { KanbanContext } from "./context";
 import { c } from "./helpers";
+import { renderMarkdown } from "./helpers/renderMarkdown";
 
 interface MarkdownRendererProps {
   className?: string;
@@ -20,7 +21,7 @@ export const MarkdownRenderer = React.memo(function MarkdownRenderer({
   const contentEl = React.useMemo(() => {
     return (
       (dom?.cloneNode(true) as HTMLDivElement) ||
-      view?.renderMarkdown(markdownString)
+      renderMarkdown(view, markdownString)
     );
   }, [dom, view, markdownString]);
 

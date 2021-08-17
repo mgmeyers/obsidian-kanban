@@ -1,5 +1,5 @@
 import React from "react";
-import { Lane } from "../types";
+import { Lane, LaneTemplate } from "../types";
 import { c, generateInstanceId, useIMEInputProps } from "../helpers";
 import { KanbanContext } from "../context";
 import useOnclickOutside from "react-cool-onclickoutside";
@@ -37,10 +37,11 @@ export function LaneForm() {
 
   const createLane = () => {
     const newLane: Lane = {
+      ...LaneTemplate,
       id: generateInstanceId(),
-      title: laneTitle,
-      items: [],
+      children: [],
       data: {
+        title: laneTitle,
         shouldMarkItemsComplete: shouldMarkAsComplete,
       },
     };

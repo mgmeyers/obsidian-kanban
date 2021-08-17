@@ -8,7 +8,7 @@ import {
 import useOnclickOutside from "react-cool-onclickoutside";
 
 import { Item } from "../types";
-import { c, generateInstanceId } from "../helpers";
+import { c } from "../helpers";
 import { useAutocompleteInputProps } from "./autocomplete";
 import { KanbanContext } from "../context";
 import { t } from "src/lang/helpers";
@@ -37,7 +37,7 @@ function getMarkdown(view: KanbanView, transfer: DataTransfer, html: string) {
   );
 }
 
-function fixBulletsAndLInks(text: string) {
+function fixBulletsAndLinks(text: string) {
   // Internal links from e.g. dataview plugin incorrectly begin with `app://obsidian.md/`, and
   // we also want to remove bullet points and task markers from text and markdown
   return text
@@ -99,7 +99,7 @@ function importLines(
       // Split lines and strip leading bullets/task indicators
       const lines: string[] = (text || uris || plain || html || "")
         .split(/\r\n?|\n/)
-        .map(fixBulletsAndLInks);
+        .map(fixBulletsAndLinks);
       return lines.filter((line) => line);
   }
 }

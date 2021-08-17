@@ -1,5 +1,5 @@
 import { moment, setIcon } from "obsidian";
-import { BoardModifiers, Item } from "../types";
+import { Item } from "../types";
 import {
   c,
   escapeRegExpStr,
@@ -11,7 +11,8 @@ import flatpickr from "flatpickr";
 import { defaultDateTrigger, defaultTimeTrigger } from "src/settingHelpers";
 import { getDefaultLocale } from "./datePickerLocale";
 import { KanbanView } from "src/KanbanView";
-import { t } from "src/lang/helpers";
+import { Path } from "src/dnd/types";
+import { BoardModifiers } from "../helpers/boardModifiers";
 
 export function constructDatePicker(
   coordinates: { x: number; y: number },
@@ -86,8 +87,7 @@ interface ConstructMenuDatePickerOnChangeParams {
   boardModifiers: BoardModifiers;
   item: Item;
   hasDate: boolean;
-  laneIndex: number;
-  itemIndex: number;
+  path: Path;
 }
 
 export function constructMenuDatePickerOnChange({
@@ -95,8 +95,7 @@ export function constructMenuDatePickerOnChange({
   boardModifiers,
   item,
   hasDate,
-  laneIndex,
-  itemIndex,
+  path,
 }: ConstructMenuDatePickerOnChangeParams) {
   const dateFormat =
     view.getSetting("date-format") || getDefaultDateFormat(view.app);
@@ -114,22 +113,18 @@ export function constructMenuDatePickerOnChange({
       ? `[[${formattedDate}]]`
       : `{${formattedDate}}`;
 
-    let titleRaw = item.titleRaw;
+    let titleRaw = item.data.titleRaw;
 
     if (hasDate) {
-      titleRaw = item.titleRaw.replace(
+      titleRaw = item.data.titleRaw.replace(
         dateRegEx,
         `$1${dateTrigger}${wrappedDate}`
       );
     } else {
-      titleRaw = `${item.titleRaw} ${dateTrigger}${wrappedDate}`;
+      titleRaw = `${item.data.titleRaw} ${dateTrigger}${wrappedDate}`;
     }
 
-    boardModifiers.updateItem(
-      laneIndex,
-      itemIndex,
-      view.parser.updateItem(item, titleRaw)
-    );
+    boardModifiers.updateItem(path, view.parser.updateItem(item, titleRaw));
   };
 }
 
@@ -263,8 +258,7 @@ interface ConstructMenuTimePickerOnChangeParams {
   boardModifiers: BoardModifiers;
   item: Item;
   hasTime: boolean;
-  laneIndex: number;
-  itemIndex: number;
+  path: Path;
 }
 
 export function constructMenuTimePickerOnChange({
@@ -272,8 +266,7 @@ export function constructMenuTimePickerOnChange({
   boardModifiers,
   item,
   hasTime,
-  laneIndex,
-  itemIndex,
+  path,
 }: ConstructMenuTimePickerOnChangeParams) {
   const timeTrigger = view.getSetting("time-trigger") || defaultTimeTrigger;
   const timeRegEx = new RegExp(
@@ -281,24 +274,23 @@ export function constructMenuTimePickerOnChange({
   );
 
   return (time: string) => {
-    let titleRaw = item.titleRaw;
+    let titleRaw = item.data.titleRaw;
 
     if (hasTime) {
-      titleRaw = item.titleRaw.replace(timeRegEx, `$1${timeTrigger}{${time}}`);
+      titleRaw = item.data.titleRaw.replace(
+        timeRegEx,
+        `$1${timeTrigger}{${time}}`
+      );
     } else {
-      titleRaw = `${item.titleRaw} ${timeTrigger}{${time}}`;
+      titleRaw = `${item.data.titleRaw} ${timeTrigger}{${time}}`;
     }
 
-    boardModifiers.updateItem(
-      laneIndex,
-      itemIndex,
-      view.parser.updateItem(item, titleRaw)
-    );
+    boardModifiers.updateItem(path, view.parser.updateItem(item, titleRaw));
   };
 }
 
 export function getItemClassModifiers(item: Item) {
-  const date = item.metadata.date;
+  const date = item.data.metadata.date;
   const classModifiers: string[] = [];
 
   if (date) {
@@ -319,7 +311,7 @@ export function getItemClassModifiers(item: Item) {
     classModifiers.push("is-complete");
   }
 
-  for (let tag of item.metadata.tags) {
+  for (let tag of item.data.metadata.tags) {
     classModifiers.push(`has-tag-${tag.slice(1)}`);
   }
 

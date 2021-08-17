@@ -4,23 +4,24 @@ import { Lane } from "../types";
 import { c } from "../helpers";
 import { GripIcon } from "../Icon/GripIcon";
 import { Icon } from "../Icon/Icon";
-import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 import { KanbanContext } from "../context";
 import { LaneTitle } from "./LaneTitle";
 import { LaneSettings } from "./LaneSettings";
 import { useSettingsMenu, ConfirmAction } from "./LaneMenu";
 import { t } from "src/lang/helpers";
+import { useNestedEntityPath } from "src/dnd/components/Droppable";
 
 interface LaneHeaderProps {
   lane: Lane;
   laneIndex: number;
-  dragHandleProps?: DraggableProvidedDragHandleProps;
+  setDragHandleRef: (handle: HTMLDivElement) => void;
 }
 
 export const LaneHeader = React.memo(
-  ({ lane, laneIndex, dragHandleProps }: LaneHeaderProps) => {
+  ({ lane, laneIndex, setDragHandleRef }: LaneHeaderProps) => {
     const { boardModifiers } = React.useContext(KanbanContext);
     const [isEditing, setIsEditing] = React.useState(false);
+    const lanePath = useNestedEntityPath();
 
     const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
       setIsEditing,
@@ -34,7 +35,7 @@ export const LaneHeader = React.memo(
         >
           <div
             className={c("lane-grip")}
-            {...dragHandleProps}
+            ref={setDragHandleRef}
             aria-label={t("Move list")}
           >
             <GripIcon />
@@ -43,12 +44,12 @@ export const LaneHeader = React.memo(
           <LaneTitle
             isEditing={isEditing}
             setIsEditing={setIsEditing}
-            itemCount={lane.items.length}
-            title={lane.title}
+            itemCount={lane.children.length}
+            title={lane.data.title}
             onChange={(e) =>
               boardModifiers.updateLane(
-                laneIndex,
-                update(lane, { title: { $set: e.target.value } })
+                lanePath,
+                update(lane, { data: { title: { $set: e.target.value } } })
               )
             }
           />
@@ -87,13 +88,13 @@ export const LaneHeader = React.memo(
             onAction={() => {
               switch (confirmAction) {
                 case "archive":
-                  boardModifiers.archiveLane(laneIndex);
+                  boardModifiers.archiveLane(lanePath);
                   break;
                 case "archive-items":
-                  boardModifiers.archiveLaneItems(laneIndex);
+                  boardModifiers.archiveLaneItems(lanePath);
                   break;
                 case "delete":
-                  boardModifiers.deleteLane(laneIndex);
+                  boardModifiers.deleteEntity(lanePath);
                   break;
               }
 
