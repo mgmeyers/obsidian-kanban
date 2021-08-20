@@ -230,6 +230,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       board = {
         ...BoardTemplate,
         id: this.file.path,
+        children: [],
         data: {
           archive: [],
           settings: { "kanban-plugin": "basic" },
@@ -320,7 +321,9 @@ export class KanbanView extends TextFileView implements HoverParent {
           .setTitle(t("Open as markdown"))
           .setIcon("document")
           .onClick(() => {
-            this.plugin.kanbanFileModes[this.id || this.file.path] = "markdown";
+            this.plugin.kanbanFileModes[
+              (this.leaf as any).id || this.file.path
+            ] = "markdown";
             this.plugin.setMarkdownView(this.leaf);
           });
       })

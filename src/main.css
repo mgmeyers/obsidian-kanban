@@ -8,10 +8,8 @@
 
 .kanban-plugin {
   background-color: var(--background-secondary-alt);
-  min-height: 100%;
-  min-width: 100%;
-  width: fit-content;
-  height: fit-content;
+  height: 100%;
+  width: 100%;
   position: relative;
 }
 
@@ -68,6 +66,14 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   align-items: flex-start;
   justify-content: flex-start;
   padding: 1rem;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.kanban-plugin__lane-wrapper {
+  flex-shrink: 0;
+  margin-right: 10px;
 }
 
 .kanban-plugin__lane {
@@ -76,9 +82,12 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   background-color: var(--background-secondary);
   width: var(--lane-width);
   border-radius: 6px;
-  margin-right: 10px;
-  flex-shrink: 0;
   border: 1px solid var(--background-modifier-border);
+}
+
+.kanban-plugin__lane-placeholder {
+  height: 100%;
+  flex-shrink: 0;
 }
 
 .kanban-plugin__lane.is-hidden {
@@ -220,10 +229,13 @@ button.kanban-plugin__lane-settings-button
   height: 1em;
 }
 
+.kanban-plugin__lane-items-wrapper {
+  margin: 4px;
+}
+
 .kanban-plugin__lane-items {
   transition: 150ms background-color ease-in-out;
   padding: 4px;
-  margin: 4px;
   border-radius: 6px;
   height: 100%;
 }
@@ -258,10 +270,13 @@ button.kanban-plugin__new-item-button {
   background-color: var(--interactive-accent-hover);
 }
 
+.kanban-plugin__item-wrapper {
+  margin-bottom: 5px;
+}
+
 .kanban-plugin__item {
   font-size: 0.875rem;
   border: 1px solid var(--background-modifier-border);
-  margin-bottom: 5px;
   border-radius: 6px;
   overflow: hidden;
   transition: 300ms opacity cubic-bezier(0.25, 1, 0.5, 1);
@@ -1144,4 +1159,30 @@ button.kanban-plugin__cancel-action-button {
 
 .kanban-plugin__setting-toggle-wrapper .kanban-plugin__setting-item-label {
   margin-bottom: 0;
+}
+
+.kanban-plugin__hitbox {
+  border: 2px dashed tomato;
+}
+
+.kanban-plugin__placeholder {
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.kanban-plugin__scroll-container.kanban-plugin__horizontal {
+  width: 100%;
+  height: 100%;
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+.kanban-plugin__scroll-container.kanban-plugin__vertical {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }

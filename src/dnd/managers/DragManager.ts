@@ -309,19 +309,29 @@ export function useDragHandle(
     }
 
     const onPointerDown = (e: PointerEvent) => {
+      if (e.defaultPrevented) {
+        return;
+      }
+
       e.stopPropagation();
       e.preventDefault();
 
-      let isDragging = true;
-
-      dndManager.dragManager.dragStart(e, droppable);
+      let isDragging = false;
+      let dragStarted = false;
 
       const onMove = rafSchd((e: PointerEvent) => {
-        if (isDragging) dndManager.dragManager.dragMove(e);
+        if (!dragStarted) {
+          dndManager.dragManager.dragStart(e, droppable);
+          isDragging = true;
+          dragStarted = true;
+        } else if (isDragging) {
+          dndManager.dragManager.dragMove(e);
+        }
       });
 
       const onEnd = (e: PointerEvent) => {
         isDragging = false;
+        dragStarted = false;
 
         dndManager.dragManager.dragEnd(e);
 
@@ -337,6 +347,8 @@ export function useDragHandle(
 
     handle.addEventListener("pointerdown", onPointerDown);
 
-    return () => handle.removeEventListener("pointerdown", onPointerDown);
+    return () => {
+      handle.removeEventListener("pointerdown", onPointerDown);
+    };
   }, [droppableElement, handleElement, dndManager]);
 }

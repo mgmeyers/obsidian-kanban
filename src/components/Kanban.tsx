@@ -3,8 +3,7 @@ import React from "react";
 import { DataBridge } from "../DataBridge";
 import { Board, DataTypes } from "./types";
 import { c, baseClassName } from "./helpers";
-import { DraggableLane, Lanes } from "./Lane/Lane";
-import { LaneForm } from "./Lane/LaneForm";
+import { Lanes } from "./Lane/Lane";
 import { KanbanContext, SearchContext } from "./context";
 import { KanbanView } from "src/KanbanView";
 import { frontMatterKey } from "../parsers/common";
@@ -211,7 +210,7 @@ export const Kanban = ({ view, dataBridge }: KanbanProps) => {
                 <Sortable axis="horizontal">
                   <Lanes lanes={boardData.children} />
                   <SortPlaceholder
-                    className="lane-placeholder"
+                    className={c("lane-placeholder")}
                     accepts={boardAccepts}
                     index={boardData.children.length}
                   />

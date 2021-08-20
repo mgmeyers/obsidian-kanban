@@ -41,24 +41,21 @@ export const DraggableLane = React.memo(function DraggableLane(
 
   useDragHandle(measureRef, dragHandleRef);
 
-  const addItems = React.useCallback(
-    (items: Item[]) => {
-      boardModifiers.addItems(
-        [...laneParentPath, laneIndex],
-        items.map((item) =>
-          update(item, {
-            data: {
-              isComplete: {
-                // Mark the item complete if we're moving into a completed lane
-                $set: shouldMarkItemsComplete,
-              },
+  const addItems = (items: Item[]) => {
+    boardModifiers.addItems(
+      [...laneParentPath, laneIndex, lane.children.length - 1],
+      items.map((item) =>
+        update(item, {
+          data: {
+            isComplete: {
+              // Mark the item complete if we're moving into a completed lane
+              $set: shouldMarkItemsComplete,
             },
-          })
-        )
-      );
-    },
-    [boardModifiers, laneParentPath, laneIndex, shouldMarkItemsComplete]
-  );
+          },
+        })
+      )
+    );
+  };
 
   const classList = [c("lane-wrapper")];
 
@@ -104,7 +101,7 @@ export const DraggableLane = React.memo(function DraggableLane(
           lane={lane}
         />
 
-        <div className={c("lane-items")}>
+        <div className={c("lane-items-wrapper")}>
           {props.isStatic ? (
             laneBody
           ) : (
@@ -128,21 +125,13 @@ export const DraggableLane = React.memo(function DraggableLane(
 
 export interface Lanes {
   lanes: Lane[];
-  isStatic?: boolean;
 }
 
-export function Lanes({ lanes, isStatic }: Lanes) {
+export function Lanes({ lanes }: Lanes) {
   return (
     <>
       {lanes.map((lane, i) => {
-        return (
-          <DraggableLane
-            lane={lane}
-            laneIndex={i}
-            key={lane.id}
-            isStatic={isStatic}
-          />
-        );
+        return <DraggableLane lane={lane} laneIndex={i} key={lane.id} />;
       })}
     </>
   );

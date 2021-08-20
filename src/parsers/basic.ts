@@ -8,10 +8,8 @@ import {
 import {
   Board,
   BoardTemplate,
-  DataTypes,
   FileMetadata,
   Item,
-  ItemData,
   ItemTemplate,
   Lane,
   LaneTemplate,
@@ -550,7 +548,6 @@ export class KanbanParser {
 
     let haveSeenArchiveMarker = false;
     let currentLane: Lane | null = null;
-    let item: Item;
 
     const pushLane = () => {
       // Don't replace lanes and items more than necessary
@@ -577,6 +574,7 @@ export class KanbanParser {
 
     for (const line of lines) {
       const itemMatch = line.match(itemRegex);
+      let item: Item;
 
       if (itemMatch) {
         item = this.lastItems.get(line)?.shift();
@@ -611,7 +609,6 @@ export class KanbanParser {
             if (item.data.metadata.fileMetadata !== fileMetadata) {
               // Make a new item with updated metadata
               item = update(item, {
-                id: { $set: generateInstanceId() },
                 data: {
                   metadata: { fileMetadata: { $set: fileMetadata } },
                 },
@@ -631,6 +628,7 @@ export class KanbanParser {
             // Auto-generate an empty column
             currentLane = {
               ...LaneTemplate,
+              children: [],
               id: generateInstanceId(),
               data: {
                 title: t("Untitled"),
@@ -650,6 +648,7 @@ export class KanbanParser {
 
         currentLane = {
           ...LaneTemplate,
+          children: [],
           id: generateInstanceId(),
           data: {
             title: match[1],

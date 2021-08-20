@@ -1,5 +1,5 @@
 import React from "react";
-import { generateInstanceId } from "src/components/helpers";
+import { c, generateInstanceId } from "src/components/helpers";
 import { EntityData } from "../types";
 import { Droppable } from "./Droppable";
 
@@ -9,7 +9,11 @@ interface SortPlaceholderProps {
   className?: string;
 }
 
-export function SortPlaceholder({ index, accepts, className }: SortPlaceholderProps) {
+export function SortPlaceholder({
+  index,
+  accepts,
+  className,
+}: SortPlaceholderProps) {
   const elementRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
 
@@ -23,7 +27,7 @@ export function SortPlaceholder({ index, accepts, className }: SortPlaceholderPr
 
   return (
     <div ref={measureRef} className={className}>
-      <div ref={elementRef} className="placeholder">
+      <div ref={elementRef} className={c("placeholder")}>
         <Droppable
           elementRef={elementRef}
           measureRef={measureRef}

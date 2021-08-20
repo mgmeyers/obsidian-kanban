@@ -142,6 +142,8 @@ export function getBoardModifiers({
       setBoardData((boardData) => {
         const entity = getEntityFromPath(boardData, path);
 
+        console.log('deleteEntity', ...path, entity)
+
         view.app.workspace.trigger(
           `kanban:${entity.type}-deleted`,
           view.file,

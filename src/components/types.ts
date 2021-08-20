@@ -57,19 +57,17 @@ export const DataTypes = {
 };
 
 export const ItemTemplate = {
-  accepts: [] as string[],
+  accepts: [DataTypes.Item],
   type: DataTypes.Item,
   children: [] as any[],
 };
 
 export const LaneTemplate = {
-  accepts: [DataTypes.Item],
+  accepts: [DataTypes.Lane],
   type: DataTypes.Lane,
-  children: [] as Item[],
 };
 
 export const BoardTemplate = {
-  accepts: [DataTypes.Lane],
+  accepts: [] as string[],
   type: DataTypes.Board,
-  children: [] as Lane[],
 };

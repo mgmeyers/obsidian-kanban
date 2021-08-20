@@ -168,6 +168,7 @@ export function DragDropApp({
             return <div />;
           }}
         </DragOverlay>
+        {/* <Debug /> */}
       </DndContext>
     );
 }

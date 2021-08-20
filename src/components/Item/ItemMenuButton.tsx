@@ -15,6 +15,9 @@ export const ItemMenuButton = React.memo(
       <div className={c("item-postfix-button-wrapper")}>
         {isEditing ? (
           <button
+            onPointerDown={(e) => {
+              e.preventDefault();
+            }}
             onClick={() => {
               setIsEditing(false);
             }}
@@ -25,6 +28,7 @@ export const ItemMenuButton = React.memo(
           </button>
         ) : (
           <button
+            onPointerDown={(e) => e.preventDefault()}
             onClick={
               showMenu as unknown as React.MouseEventHandler<HTMLButtonElement>
             }
