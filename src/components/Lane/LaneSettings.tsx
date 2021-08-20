@@ -4,13 +4,14 @@ import { Lane } from "../types";
 import { c } from "../helpers";
 import { KanbanContext } from "../context";
 import { t } from "src/lang/helpers";
+import { Path } from "src/dnd/types";
 
 export interface LaneSettingsProps {
   lane: Lane;
-  laneIndex: number;
+  lanePath: Path;
 }
 
-export function LaneSettings({ lane, laneIndex }: LaneSettingsProps) {
+export function LaneSettings({ lane, lanePath }: LaneSettingsProps) {
   const { boardModifiers } = React.useContext(KanbanContext);
 
   return (
@@ -22,7 +23,7 @@ export function LaneSettings({ lane, laneIndex }: LaneSettingsProps) {
         <div
           onClick={() =>
             boardModifiers.updateLane(
-              laneIndex,
+              lanePath,
               update(lane, {
                 data: { $toggle: ["shouldMarkItemsComplete"] },
               })

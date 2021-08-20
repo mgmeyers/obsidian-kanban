@@ -1,18 +1,11 @@
 import { moment, setIcon } from "obsidian";
 import { Item } from "../types";
-import {
-  c,
-  escapeRegExpStr,
-  getDefaultDateFormat,
-  getDefaultTimeFormat,
-} from "../helpers";
-
+import { c, escapeRegExpStr } from "../helpers";
 import flatpickr from "flatpickr";
-import { defaultDateTrigger, defaultTimeTrigger } from "src/settingHelpers";
 import { getDefaultLocale } from "./datePickerLocale";
-import { KanbanView } from "src/KanbanView";
 import { Path } from "src/dnd/types";
 import { BoardModifiers } from "../helpers/boardModifiers";
+import { StateManager } from "src/StateManager";
 
 export function constructDatePicker(
   coordinates: { x: number; y: number },
@@ -83,7 +76,7 @@ export function constructDatePicker(
 }
 
 interface ConstructMenuDatePickerOnChangeParams {
-  view: KanbanView;
+  stateManager: StateManager;
   boardModifiers: BoardModifiers;
   item: Item;
   hasDate: boolean;
@@ -91,16 +84,15 @@ interface ConstructMenuDatePickerOnChangeParams {
 }
 
 export function constructMenuDatePickerOnChange({
-  view,
+  stateManager,
   boardModifiers,
   item,
   hasDate,
   path,
 }: ConstructMenuDatePickerOnChangeParams) {
-  const dateFormat =
-    view.getSetting("date-format") || getDefaultDateFormat(view.app);
-  const shouldLinkDates = view.getSetting("link-date-to-daily-note");
-  const dateTrigger = view.getSetting("date-trigger") || defaultDateTrigger;
+  const dateFormat = stateManager.getSetting("date-format");
+  const shouldLinkDates = stateManager.getSetting("link-date-to-daily-note");
+  const dateTrigger = stateManager.getSetting("date-trigger");
   const contentMatch = shouldLinkDates ? "\\[\\[([^}]+)\\]\\]" : "{([^}]+)}";
   const dateRegEx = new RegExp(
     `(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`
@@ -124,13 +116,15 @@ export function constructMenuDatePickerOnChange({
       titleRaw = `${item.data.titleRaw} ${dateTrigger}${wrappedDate}`;
     }
 
-    boardModifiers.updateItem(path, view.parser.updateItem(item, titleRaw));
+    boardModifiers.updateItem(
+      path,
+      stateManager.parser.updateItem(item, titleRaw)
+    );
   };
 }
 
-export function buildTimeArray(view: KanbanView) {
-  const format =
-    view.getSetting("time-format") || getDefaultTimeFormat(view.app);
+export function buildTimeArray(stateManager: StateManager) {
+  const format = stateManager.getSetting("time-format");
   const time: string[] = [];
 
   for (let i = 0; i < 24; i++) {
@@ -144,20 +138,19 @@ export function buildTimeArray(view: KanbanView) {
 }
 
 export function constructTimePicker(
-  view: KanbanView,
+  stateManager: StateManager,
   coordinates: { x: number; y: number },
   onSelect: (opt: string) => void,
   time?: moment.Moment
 ) {
   const pickerClassName = c("time-picker");
-  const timeFormat =
-    view.getSetting("time-format") || getDefaultTimeFormat(view.app);
+  const timeFormat = stateManager.getSetting("time-format");
   const selected = time?.format(timeFormat);
 
   document.body.createDiv(
     { cls: `${pickerClassName} ${c("ignore-click-outside")}` },
     (div) => {
-      const options = buildTimeArray(view);
+      const options = buildTimeArray(stateManager);
 
       const clickHandler = (e: MouseEvent) => {
         if (
@@ -254,7 +247,7 @@ export function constructTimePicker(
 }
 
 interface ConstructMenuTimePickerOnChangeParams {
-  view: KanbanView;
+  stateManager: StateManager;
   boardModifiers: BoardModifiers;
   item: Item;
   hasTime: boolean;
@@ -262,13 +255,13 @@ interface ConstructMenuTimePickerOnChangeParams {
 }
 
 export function constructMenuTimePickerOnChange({
-  view,
+  stateManager,
   boardModifiers,
   item,
   hasTime,
   path,
 }: ConstructMenuTimePickerOnChangeParams) {
-  const timeTrigger = view.getSetting("time-trigger") || defaultTimeTrigger;
+  const timeTrigger = stateManager.getSetting("time-trigger");
   const timeRegEx = new RegExp(
     `(^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
   );
@@ -285,7 +278,10 @@ export function constructMenuTimePickerOnChange({
       titleRaw = `${item.data.titleRaw} ${timeTrigger}{${time}}`;
     }
 
-    boardModifiers.updateItem(path, view.parser.updateItem(item, titleRaw));
+    boardModifiers.updateItem(
+      path,
+      stateManager.parser.updateItem(item, titleRaw)
+    );
   };
 }
 

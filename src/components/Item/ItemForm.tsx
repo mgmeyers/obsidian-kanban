@@ -13,18 +13,27 @@ import { useAutocompleteInputProps } from "./autocomplete";
 import { KanbanContext } from "../context";
 import { t } from "src/lang/helpers";
 import { KanbanView } from "src/KanbanView";
+import { StateManager } from "src/StateManager";
 
 function linkTo(
-  view: KanbanView,
+  stateManager: StateManager,
   file: TFile,
   sourcePath: string,
   subpath?: string
 ) {
   // Generate a link relative to this Kanban board, respecting user link type preferences
-  return view.app.fileManager.generateMarkdownLink(file, sourcePath, subpath);
+  return stateManager.app.fileManager.generateMarkdownLink(
+    file,
+    sourcePath,
+    subpath
+  );
 }
 
-function getMarkdown(view: KanbanView, transfer: DataTransfer, html: string) {
+function getMarkdown(
+  stateManager: StateManager,
+  transfer: DataTransfer,
+  html: string
+) {
   // 0.12.5 -- remove handleDataTransfer below when this version is more widely supported
   if (htmlToMarkdown) {
     return htmlToMarkdown(html);
@@ -32,7 +41,7 @@ function getMarkdown(view: KanbanView, transfer: DataTransfer, html: string) {
 
   // crude hack to use Obsidian's html-to-markdown converter (replace when Obsidian exposes it in API):
   return (MarkdownSourceView.prototype as any).handleDataTransfer.call(
-    { app: view.app },
+    { app: stateManager.app },
     transfer
   );
 }
@@ -46,12 +55,12 @@ function fixBulletsAndLinks(text: string) {
     .replace(/^\[(.*)\]\(app:\/\/obsidian.md\/(.*)\)$/, "[$1]($2)");
 }
 
-function dropAction(view: KanbanView, transfer: DataTransfer) {
+function dropAction(stateManager: StateManager, transfer: DataTransfer) {
   // Return a 'copy' or 'link' action according to the content types, or undefined if no recognized type
   if (transfer.types.includes("text/uri-list")) return "link";
   if (
     ["file", "files", "link"].includes(
-      (view.app as any).dragManager.draggable?.type
+      (stateManager.app as any).dragManager.draggable?.type
     )
   )
     return "link";
@@ -63,25 +72,27 @@ function dropAction(view: KanbanView, transfer: DataTransfer) {
 }
 
 function importLines(
-  view: KanbanView,
+  stateManager: StateManager,
   filePath: string,
   transfer: DataTransfer,
   forcePlaintext: boolean = false
 ): string[] {
-  const draggable = (view.app as any).dragManager.draggable;
+  const draggable = (stateManager.app as any).dragManager.draggable;
   const html = transfer.getData("text/html");
   const plain = transfer.getData("text/plain");
   const uris = transfer.getData("text/uri-list");
 
   switch (draggable?.type) {
     case "file":
-      return [linkTo(view, draggable.file, filePath)];
+      return [linkTo(stateManager, draggable.file, filePath)];
     case "files":
-      return draggable.files.map((f: TFile) => linkTo(view, f, filePath));
+      return draggable.files.map((f: TFile) =>
+        linkTo(stateManager, f, filePath)
+      );
     case "link":
       let link = draggable.file
         ? linkTo(
-            view,
+            stateManager,
             draggable.file,
             parseLinktext(draggable.linktext).subpath
           )
@@ -95,7 +106,7 @@ function importLines(
     default:
       const text = forcePlaintext
         ? plain || html
-        : getMarkdown(view, transfer, html);
+        : getMarkdown(stateManager, transfer, html);
       // Split lines and strip leading bullets/task indicators
       const lines: string[] = (text || uris || plain || html || "")
         .split(/\r\n?|\n/)
@@ -111,7 +122,7 @@ interface ItemFormProps {
 export function ItemForm({ addItems }: ItemFormProps) {
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const [itemTitle, setItemTitle] = React.useState("");
-  const { view, filePath } = React.useContext(KanbanContext);
+  const { stateManager, filePath } = React.useContext(KanbanContext);
 
   const clickOutsideRef = useOnclickOutside(
     () => {
@@ -155,7 +166,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
   }, [itemTitle]);
 
   const addItemsFromStrings = (titles: string[]) => {
-    addItems(titles.map((title) => view.parser.newItem(title)));
+    addItems(titles.map((title) => stateManager.parser.newItem(title)));
   };
 
   if (isInputVisible) {
@@ -174,7 +185,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
                 setItemTitle(e.target.value.replace(/[\r\n]+/g, " "));
               }}
               onDragOver={(e) => {
-                const action = dropAction(view, e.dataTransfer);
+                const action = dropAction(stateManager, e.dataTransfer);
 
                 if (action) {
                   e.dataTransfer.dropEffect = action;
@@ -188,13 +199,22 @@ export function ItemForm({ addItems }: ItemFormProps) {
               onDrop={(e) => {
                 // shift key to force plain text, the same way Obsidian does it
                 addItemsFromStrings(
-                  importLines(view, filePath, e.dataTransfer, e.shiftKey)
+                  importLines(
+                    stateManager,
+                    filePath,
+                    e.dataTransfer,
+                    e.shiftKey
+                  )
                 );
                 if (!itemTitle) setIsInputVisible(false);
               }}
               onPaste={(e) => {
                 const html = e.clipboardData.getData("text/html");
-                const pasteLines = importLines(view, filePath, e.clipboardData);
+                const pasteLines = importLines(
+                  stateManager,
+                  filePath,
+                  e.clipboardData
+                );
                 if (pasteLines.length > 1) {
                   addItemsFromStrings(pasteLines);
                   e.preventDefault();
@@ -246,7 +266,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
         className={c("new-item-button")}
         onClick={() => setIsInputVisible(true)}
         onDragOver={(e) => {
-          if (dropAction(view, e.dataTransfer)) {
+          if (dropAction(stateManager, e.dataTransfer)) {
             setIsInputVisible(true);
           }
         }}

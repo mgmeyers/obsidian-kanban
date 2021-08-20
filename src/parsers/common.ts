@@ -14,3 +14,7 @@ export type ParserSettings = {
   dateRegEx: RegExp;
   timeRegEx: RegExp;
 };
+
+export enum ParserFormats {
+  Basic,
+}

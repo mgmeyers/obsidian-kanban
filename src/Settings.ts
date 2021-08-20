@@ -58,6 +58,17 @@ export interface KanbanSettings {
   "metadata-keys"?: DataKey[];
 }
 
+export type SettingRetriever = <K extends keyof KanbanSettings>(
+  key: K,
+  supplied?: KanbanSettings
+) => KanbanSettings[K];
+
+export interface SettingRetrievers {
+  getGlobalSettings: () => KanbanSettings;
+  getGlobalSetting: SettingRetriever;
+  getSetting: SettingRetriever;
+}
+
 export interface SettingsManagerConfig {
   onSettingsChange: (newSettings: KanbanSettings) => void;
 }

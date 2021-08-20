@@ -17,13 +17,13 @@ export const MarkdownRenderer = React.memo(function MarkdownRenderer({
   markdownString,
   searchQuery,
 }: MarkdownRendererProps) {
-  const { view } = React.useContext(KanbanContext);
+  const { stateManager } = React.useContext(KanbanContext);
   const contentEl = React.useMemo(() => {
     return (
       (dom?.cloneNode(true) as HTMLDivElement) ||
-      renderMarkdown(view, markdownString)
+      renderMarkdown(stateManager.getAView(), markdownString)
     );
-  }, [dom, view, markdownString]);
+  }, [dom, stateManager, markdownString]);
 
   const marker = React.useMemo(() => {
     return new Mark(contentEl);

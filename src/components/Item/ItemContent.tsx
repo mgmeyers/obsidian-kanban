@@ -28,10 +28,10 @@ export const ItemContent = React.memo(
     onEditDate,
     onEditTime,
   }: ItemContentProps) => {
-    const { view, filePath } = React.useContext(KanbanContext);
+    const { stateManager, filePath } = React.useContext(KanbanContext);
     const inputRef = React.useRef<HTMLTextAreaElement>();
     const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false);
-    const hideTagsDisplay = view.getSetting("hide-tags-display");
+    const hideTagsDisplay = stateManager.getSetting("hide-tags-display");
 
     const autocompleteProps = useAutocompleteInputProps({
       isInputVisible: isSettingsVisible,
@@ -65,10 +65,10 @@ export const ItemContent = React.memo(
           searchQuery={searchQuery}
         />
         <div className={c("item-metadata")}>
-          <RelativeDate item={item} view={view} />
+          <RelativeDate item={item} stateManager={stateManager} />
           <DateAndTime
             item={item}
-            view={view}
+            stateManager={stateManager}
             filePath={filePath}
             onEditDate={onEditDate}
             onEditTime={onEditTime}

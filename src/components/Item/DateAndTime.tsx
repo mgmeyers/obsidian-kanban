@@ -2,9 +2,9 @@ import { getLinkpath, moment } from "obsidian";
 import React from "react";
 
 import { Item } from "../types";
-import { c, getDefaultDateFormat, getDefaultTimeFormat } from "../helpers";
-import { KanbanView } from "src/KanbanView";
+import { c } from "../helpers";
 import { t } from "src/lang/helpers";
+import { StateManager } from "src/StateManager";
 
 export function getRelativeDate(date: moment.Moment, time: moment.Moment) {
   if (time) {
@@ -32,11 +32,11 @@ export function getRelativeDate(date: moment.Moment, time: moment.Moment) {
 
 interface DateProps {
   item: Item;
-  view: KanbanView;
+  stateManager: StateManager;
 }
 
-export function RelativeDate({ item, view }: DateProps) {
-  const shouldShowRelativeDate = view.getSetting("show-relative-date");
+export function RelativeDate({ item, stateManager }: DateProps) {
+  const shouldShowRelativeDate = stateManager.getSetting("show-relative-date");
 
   if (!shouldShowRelativeDate || !item.data.metadata.date) {
     return null;
@@ -60,22 +60,19 @@ interface DateAndTimeProps {
 
 export function DateAndTime({
   item,
-  view,
+  stateManager,
   filePath,
   onEditDate,
   onEditTime,
 }: DateProps & DateAndTimeProps) {
-  const hideDateDisplay = view.getSetting("hide-date-display");
+  const hideDateDisplay = stateManager.getSetting("hide-date-display");
 
   if (hideDateDisplay || !item.data.metadata.date) return null;
 
-  const dateFormat =
-    view.getSetting("date-format") || getDefaultDateFormat(view.app);
-  const timeFormat =
-    view.getSetting("time-format") || getDefaultTimeFormat(view.app);
-  const dateDisplayFormat =
-    view.getSetting("date-display-format") || dateFormat;
-  const shouldLinkDate = view.getSetting("link-date-to-daily-note");
+  const dateFormat = stateManager.getSetting("date-format");
+  const timeFormat = stateManager.getSetting("time-format");
+  const dateDisplayFormat = stateManager.getSetting("date-display-format");
+  const shouldLinkDate = stateManager.getSetting("link-date-to-daily-note");
 
   const dateStr = item.data.metadata.date.format(dateFormat);
 
@@ -89,7 +86,7 @@ export function DateAndTime({
 
   const datePath = dateStr ? getLinkpath(dateStr) : null;
   const isResolved = dateStr
-    ? view.app.metadataCache.getFirstLinkpathDest(datePath, filePath)
+    ? stateManager.app.metadataCache.getFirstLinkpathDest(datePath, filePath)
     : null;
   const date =
     datePath && shouldLinkDate ? (

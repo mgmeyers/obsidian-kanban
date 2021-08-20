@@ -7,7 +7,6 @@ import {
   getDefaultTimeFormat,
   generateInstanceId,
 } from "../helpers";
-import { KanbanView } from "src/KanbanView";
 import { Path } from "src/dnd/types";
 import {
   appendEntities,
@@ -16,6 +15,7 @@ import {
   removeEntity,
   updateEntity,
 } from "src/dnd/util/data";
+import { StateManager } from "src/StateManager";
 
 export interface BoardModifiers {
   addItems: (path: Path, items: Item[]) => void;
@@ -30,24 +30,19 @@ export interface BoardModifiers {
 }
 
 interface BoardStateProps {
-  view: KanbanView;
+  stateManager: StateManager;
   setBoardData: React.Dispatch<React.SetStateAction<Board>>;
 }
 
 export function getBoardModifiers({
-  view,
+  stateManager,
   setBoardData,
 }: BoardStateProps): BoardModifiers {
-  const shouldAppendArchiveDate = !!view.getSetting("prepend-archive-date");
-  const dateFmt =
-    view.getSetting("date-format") || getDefaultDateFormat(view.app);
-  const timeFmt =
-    view.getSetting("time-format") || getDefaultTimeFormat(view.app);
-  const archiveDateSeparator =
-    (view.getSetting("prepend-archive-separator") as string) || "";
-  const archiveDateFormat =
-    (view.getSetting("prepend-archive-format") as string) ||
-    `${dateFmt} ${timeFmt}`;
+  const shouldAppendArchiveDate = !!stateManager.getSetting(
+    "prepend-archive-date"
+  );
+  const archiveDateSeparator = stateManager.getSetting("prepend-archive-separator");
+  const archiveDateFormat = stateManager.getSetting("prepend-archive-format");
 
   const appendArchiveDate = (item: Item) => {
     const newTitle = [moment().format(archiveDateFormat)];
@@ -57,26 +52,38 @@ export function getBoardModifiers({
     newTitle.push(item.data.titleRaw);
 
     const titleRaw = newTitle.join(" ");
-    return view.parser.updateItem(item, titleRaw);
+    return stateManager.parser.updateItem(item, titleRaw);
   };
 
   return {
     addItems: (parentPath: Path, items: Item[]) => {
       items.forEach((item) =>
-        view.app.workspace.trigger("kanban:card-added", view.file, item)
+        stateManager.app.workspace.trigger(
+          "kanban:card-added",
+          stateManager.file,
+          item
+        )
       );
 
       setBoardData((boardData) => appendEntities(boardData, parentPath, items));
     },
 
     addLane: (lane: Lane) => {
-      view.app.workspace.trigger("kanban:lane-added", view.file, lane);
+      stateManager.app.workspace.trigger(
+        "kanban:lane-added",
+        stateManager.file,
+        lane
+      );
 
       setBoardData((boardData) => appendEntities(boardData, [], [lane]));
     },
 
     updateLane: (path: Path, lane: Lane) => {
-      view.app.workspace.trigger("kanban:lane-updated", view.file, lane);
+      stateManager.app.workspace.trigger(
+        "kanban:lane-updated",
+        stateManager.file,
+        lane
+      );
 
       setBoardData((boardData) =>
         updateEntity(boardData, path.slice(0, -1), {
@@ -94,7 +101,11 @@ export function getBoardModifiers({
         const lane = getEntityFromPath(boardData, path);
         const items = lane.children;
 
-        view.app.workspace.trigger("kanban:lane-archived", view.file, lane);
+        stateManager.app.workspace.trigger(
+          "kanban:lane-archived",
+          stateManager.file,
+          lane
+        );
 
         return update(removeEntity(boardData, path), {
           data: {
@@ -113,9 +124,9 @@ export function getBoardModifiers({
         const lane = getEntityFromPath(boardData, path);
         const items = lane.children;
 
-        view.app.workspace.trigger(
+        stateManager.app.workspace.trigger(
           "kanban:lane-cards-archived",
-          view.file,
+          stateManager.file,
           items
         );
 
@@ -142,11 +153,11 @@ export function getBoardModifiers({
       setBoardData((boardData) => {
         const entity = getEntityFromPath(boardData, path);
 
-        console.log('deleteEntity', ...path, entity)
+        console.log("deleteEntity", ...path, entity);
 
-        view.app.workspace.trigger(
+        stateManager.app.workspace.trigger(
           `kanban:${entity.type}-deleted`,
-          view.file,
+          stateManager.file,
           entity
         );
 
@@ -158,9 +169,9 @@ export function getBoardModifiers({
       setBoardData((boardData) => {
         const oldItem = getEntityFromPath(boardData, path);
 
-        view.app.workspace.trigger(
+        stateManager.app.workspace.trigger(
           "kanban:card-updated",
-          view.file,
+          stateManager.file,
           oldItem,
           item
         );
@@ -179,9 +190,9 @@ export function getBoardModifiers({
       setBoardData((boardData) => {
         const item = getEntityFromPath(boardData, path);
 
-        view.app.workspace.trigger(
+        stateManager.app.workspace.trigger(
           "kanban:card-archived",
-          view.file,
+          stateManager.file,
           path,
           item
         );
@@ -200,9 +211,9 @@ export function getBoardModifiers({
       setBoardData((boardData) => {
         const entity = getEntityFromPath(boardData, path);
 
-        view.app.workspace.trigger(
+        stateManager.app.workspace.trigger(
           `kanban:${entity.type}-duplicated`,
-          view.file,
+          stateManager.file,
           path,
           entity
         );

@@ -1,7 +1,6 @@
 import update from "immutability-helper";
 import React from "react";
-import { DataBridge } from "../DataBridge";
-import { Board, DataTypes } from "./types";
+import { DataTypes } from "./types";
 import { c, baseClassName } from "./helpers";
 import { Lanes } from "./Lane/Lane";
 import { KanbanContext, SearchContext } from "./context";
@@ -16,25 +15,26 @@ import { ScrollContainer } from "src/dnd/components/ScrollContainer";
 import { Sortable } from "src/dnd/components/Sortable";
 import { SortPlaceholder } from "src/dnd/components/SortPlaceholder";
 import classcat from "classcat";
+import { StateManager } from "src/StateManager";
 
 const boardScrollTiggers = [DataTypes.Item, DataTypes.Lane];
 const boardAccepts = [DataTypes.Lane];
 
 interface KanbanProps {
-  dataBridge: DataBridge<Board>;
+  stateManager: StateManager;
   view: KanbanView;
 }
 
-export const Kanban = ({ view, dataBridge }: KanbanProps) => {
-  const [boardData, setBoardData] = dataBridge.useState();
+export const Kanban = ({ view, stateManager }: KanbanProps) => {
+  const [boardData, setBoardData] = stateManager.useState();
 
   const searchRef = React.useRef<HTMLInputElement>();
   const [searchQuery, setSearchQuery] = React.useState<string>("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] =
     React.useState<string>("");
 
-  const filePath = view.file?.path;
-  const maxArchiveLength = view.getSetting("max-archive-size");
+  const filePath = stateManager.file.path;
+  const maxArchiveLength = stateManager.getSetting("max-archive-size");
 
   React.useEffect(() => {
     if (boardData.data.isSearching) {
@@ -81,8 +81,8 @@ export const Kanban = ({ view, dataBridge }: KanbanProps) => {
   }, [boardData.data.archive.length, maxArchiveLength]);
 
   const boardModifiers = React.useMemo(() => {
-    return getBoardModifiers({ view, setBoardData });
-  }, [view, setBoardData]);
+    return getBoardModifiers({ stateManager, setBoardData });
+  }, [stateManager, setBoardData]);
 
   const onMouseOver = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -114,7 +114,7 @@ export const Kanban = ({ view, dataBridge }: KanbanProps) => {
       if (targetEl.hasClass("internal-link")) {
         e.preventDefault();
 
-        view.app.workspace.openLinkText(
+        stateManager.app.workspace.openLinkText(
           targetEl.getAttr("href"),
           filePath,
           e.ctrlKey || e.metaKey
@@ -127,7 +127,7 @@ export const Kanban = ({ view, dataBridge }: KanbanProps) => {
       if (targetEl.hasClass("tag")) {
         e.preventDefault();
 
-        (view.app as any).internalPlugins
+        (stateManager.app as any).internalPlugins
           .getPluginById("global-search")
           .instance.openGlobalSearch(`tag:${targetEl.getAttr("href")}`);
 
@@ -140,18 +140,35 @@ export const Kanban = ({ view, dataBridge }: KanbanProps) => {
         window.open(targetEl.getAttr("href"), "_blank");
       }
     },
-    [view, filePath]
+    [stateManager, filePath]
   );
 
   const kanbanContext = React.useMemo(() => {
     return {
       view,
+      stateManager,
       boardModifiers,
       filePath,
     };
-  }, [view, boardModifiers, filePath]);
+  }, [view, stateManager, boardModifiers, filePath]);
 
   if (boardData === null) return null;
+
+  if (boardData.data.errors.length > 0) {
+    return (
+      <div>
+        <div>Error:</div>
+        {boardData.data.errors.map((e, i) => {
+          return (
+            <div key={i}>
+              <div>{e.description}</div>
+              <pre>{e.stack}</pre>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <DndScope id={view.id}>
@@ -177,7 +194,7 @@ export const Kanban = ({ view, dataBridge }: KanbanProps) => {
                       setSearchQuery("");
                       setDebouncedSearchQuery("");
                       (e.target as HTMLInputElement).blur();
-                      view.toggleSearch();
+                      stateManager.toggleSearch();
                     }
                   }}
                   type="text"
@@ -189,7 +206,7 @@ export const Kanban = ({ view, dataBridge }: KanbanProps) => {
                   onClick={() => {
                     setSearchQuery("");
                     setDebouncedSearchQuery("");
-                    view.toggleSearch();
+                    stateManager.toggleSearch();
                   }}
                   aria-label={t("Cancel")}
                 >

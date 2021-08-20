@@ -70,11 +70,11 @@ export interface UseSettingsMenuParams {
 }
 
 export function useSettingsMenu({ setIsEditing }: UseSettingsMenuParams) {
-  const { view } = React.useContext(KanbanContext);
+  const { stateManager } = React.useContext(KanbanContext);
   const [confirmAction, setConfirmAction] = React.useState<LaneAction>(null);
 
   const settingsMenu = React.useMemo(() => {
-    return new Menu(view.app)
+    return new Menu(stateManager.app)
       .addItem((item) => {
         item
           .setIcon("pencil")
@@ -100,7 +100,7 @@ export function useSettingsMenu({ setIsEditing }: UseSettingsMenuParams) {
           .setTitle(t("Delete list"))
           .onClick(() => setConfirmAction("delete"));
       });
-  }, [view, setConfirmAction]);
+  }, [stateManager, setConfirmAction]);
 
   return {
     settingsMenu,

@@ -1,4 +1,4 @@
-import { moment, TFile } from "obsidian";
+import { App, moment, TFile } from "obsidian";
 import {
   escapeRegExpStr,
   generateInstanceId,
@@ -14,15 +14,13 @@ import {
   Lane,
   LaneTemplate,
 } from "../components/types";
-import { KanbanSettings } from "../Settings";
+import { KanbanSettings, SettingRetrievers } from "../Settings";
 import { defaultDateTrigger, defaultTimeTrigger } from "../settingHelpers";
 import yaml from "js-yaml";
-import { KanbanView } from "../KanbanView";
 import { t } from "../lang/helpers";
 import update from "immutability-helper";
 import { diffLines } from "diff";
 import { ParserSettings } from "./common";
-import { renderMarkdown } from "src/components/helpers/renderMarkdown";
 
 const newLineRegex = /[\r\n]+/g;
 
@@ -141,9 +139,10 @@ function extractDates(title: string, settings: ParserSettings) {
 }
 
 function extractFirstLinkedFile(
-  title: string,
+  app: App,
   settings: ParserSettings,
-  view: KanbanView
+  sourceFile: TFile,
+  title: string
 ) {
   if (!settings.metaKeys.length) {
     return null;
@@ -156,10 +155,7 @@ function extractFirstLinkedFile(
   }
 
   const path = match[1];
-  const file = view.app.metadataCache.getFirstLinkpathDest(
-    path,
-    view.file.path
-  );
+  const file = app.metadataCache.getFirstLinkpathDest(path, sourceFile.path);
 
   if (!file) {
     return null;
@@ -168,33 +164,34 @@ function extractFirstLinkedFile(
   return file;
 }
 
-function getDataViewCache(file: TFile, view: KanbanView) {
+function getDataViewCache(app: App, linkedFile: TFile, sourceFile: TFile) {
   if (
-    (view.app as any).plugins.enabledPlugins.has("dataview") &&
-    (view.app as any).plugins?.plugins?.dataview?.api
+    (app as any).plugins.enabledPlugins.has("dataview") &&
+    (app as any).plugins?.plugins?.dataview?.api
   ) {
-    return (view.app as any).plugins.plugins.dataview.api.page(
-      file.path,
-      view.file.path
+    return (app as any).plugins.plugins.dataview.api.page(
+      linkedFile.path,
+      sourceFile.path
     );
   }
 }
 
 function getLinkedPageMetadata(
-  file: TFile | null | undefined,
+  linkedFile: TFile | null | undefined,
+  sourceFile: TFile,
   settings: ParserSettings,
-  view: KanbanView
+  app: App
 ): FileMetadata | undefined {
   if (!settings.metaKeys.length) {
     return;
   }
 
-  if (!file) {
+  if (!linkedFile) {
     return;
   }
 
-  const cache = view.app.metadataCache.getFileCache(file);
-  const dataviewCache = getDataViewCache(file, view);
+  const cache = app.metadataCache.getFileCache(linkedFile);
+  const dataviewCache = getDataViewCache(app, linkedFile, sourceFile);
 
   if (!cache && !dataviewCache) {
     return;
@@ -300,7 +297,6 @@ function settingsToFrontmatter(settings: KanbanSettings): string {
 }
 
 export class KanbanParser {
-  view: KanbanView;
   settings: ParserSettings;
   lastFrontMatter: string;
   lastBody: string;
@@ -310,11 +306,24 @@ export class KanbanParser {
   lastLanes: Map<string, Lane> = new Map();
   fileCache: Map<TFile, FileMetadata> = new Map();
 
+  app: App;
+  sourceFile: TFile;
+  renderMarkdown: (md: string) => HTMLDivElement;
+  settingRetrievers: SettingRetrievers;
+
   // we use a string instead of a file, because a file changing path could change the meaning of links
   lastParsedPath: string;
 
-  constructor(view: KanbanView) {
-    this.view = view;
+  constructor(
+    app: App,
+    sourceFile: TFile,
+    renderMarkdown: (md: string) => HTMLDivElement,
+    settingRetrievers: SettingRetrievers
+  ) {
+    this.app = app;
+    this.sourceFile = sourceFile;
+    this.renderMarkdown = renderMarkdown;
+    this.settingRetrievers = settingRetrievers;
   }
 
   newItem(titleRaw: string): Item {
@@ -363,9 +372,10 @@ export class KanbanParser {
     const date = extractDates(title, this.settings);
     const tags = extractItemTags(date.processedTitle, this.settings);
     const file = extractFirstLinkedFile(
-      tags.processedTitle,
+      this.app,
       this.settings,
-      this.view
+      this.sourceFile,
+      tags.processedTitle
     );
 
     let fileMetadata: FileMetadata;
@@ -376,12 +386,12 @@ export class KanbanParser {
     if (file) {
       fileMetadata = this.fileCache.has(file)
         ? this.fileCache.get(file)
-        : getLinkedPageMetadata(file, this.settings, this.view);
+        : getLinkedPageMetadata(file, this.sourceFile, this.settings, this.app);
 
       this.fileCache.set(file, fileMetadata);
     }
 
-    const dom = renderMarkdown(this.view, tags.processedTitle);
+    const dom = this.renderMarkdown(tags.processedTitle);
 
     return {
       title: tags.processedTitle.trim(),
@@ -457,37 +467,48 @@ export class KanbanParser {
     }
   }
 
-  parseSettings(settings: KanbanSettings) {
+  parseSettings(suppliedSettings: KanbanSettings) {
     this.lastItems.clear(); // Settings changed, must re-parse items
     this.fileCache.clear(); // including metadata, since the keys might be different
     this.lastLanes.clear();
     this.lastBody = null;
 
-    const globalKeys = this.view.getGlobalSetting("metadata-keys") || [];
-    const localKeys = this.view.getSetting("metadata-keys", settings) || [];
+    const globalKeys =
+      this.settingRetrievers.getGlobalSetting("metadata-keys") || [];
+    const localKeys =
+      this.settingRetrievers.getSetting("metadata-keys", suppliedSettings) ||
+      [];
 
     const dateTrigger =
-      this.view.getSetting("date-trigger", settings) || defaultDateTrigger;
+      this.settingRetrievers.getSetting("date-trigger", suppliedSettings) ||
+      defaultDateTrigger;
     const timeTrigger =
-      this.view.getSetting("time-trigger", settings) || defaultTimeTrigger;
-    const shouldLinkDate = this.view.getSetting(
+      this.settingRetrievers.getSetting("time-trigger", suppliedSettings) ||
+      defaultTimeTrigger;
+    const shouldLinkDate = this.settingRetrievers.getSetting(
       "link-date-to-daily-note",
-      settings
+      suppliedSettings
     );
     const contentMatch = shouldLinkDate ? "\\[\\[([^}]+)\\]\\]" : "{([^}]+)}";
 
     this.settings = {
       dateFormat:
-        this.view.getSetting("date-format", settings) ||
-        getDefaultDateFormat(this.view.app),
+        this.settingRetrievers.getSetting("date-format", suppliedSettings) ||
+        getDefaultDateFormat(this.app),
       timeFormat:
-        this.view.getSetting("time-format", settings) ||
-        getDefaultTimeFormat(this.view.app),
+        this.settingRetrievers.getSetting("time-format", suppliedSettings) ||
+        getDefaultTimeFormat(this.app),
       dateTrigger,
       timeTrigger,
       shouldLinkDate,
-      shouldHideDate: this.view.getSetting("hide-date-in-title", settings),
-      shouldHideTags: this.view.getSetting("hide-tags-in-title", settings),
+      shouldHideDate: this.settingRetrievers.getSetting(
+        "hide-date-in-title",
+        suppliedSettings
+      ),
+      shouldHideTags: this.settingRetrievers.getSetting(
+        "hide-tags-in-title",
+        suppliedSettings
+      ),
       metaKeys: [...globalKeys, ...localKeys],
       dateRegEx: new RegExp(
         `(?:^|\\s)${escapeRegExpStr(dateTrigger)}${contentMatch}`
@@ -523,7 +544,7 @@ export class KanbanParser {
         ? this.lastSettings
         : (yaml.load(frontMatter) as KanbanSettings);
 
-    const globalSettings = this.view.plugin.settings || {};
+    const globalSettings = this.settingRetrievers.getGlobalSettings();
 
     if (
       settings !== this.lastSettings ||
@@ -602,7 +623,12 @@ export class KanbanParser {
           if (file) {
             let fileMetadata = this.fileCache.has(file)
               ? this.fileCache.get(file)
-              : getLinkedPageMetadata(file, this.settings, this.view);
+              : getLinkedPageMetadata(
+                  file,
+                  this.sourceFile,
+                  this.settings,
+                  this.app
+                );
 
             this.fileCache.set(file, fileMetadata);
 
@@ -693,12 +719,13 @@ export class KanbanParser {
 
     return {
       ...BoardTemplate,
-      id: this.view.file.path,
+      id: this.sourceFile.path,
       children: lanes,
       data: {
         settings,
         archive,
         isSearching: false,
+        errors: [],
       },
     };
   }

@@ -4,15 +4,15 @@ import React from "react";
 import { Item } from "../types";
 import { c } from "../helpers";
 import { Icon } from "../Icon/Icon";
-import { KanbanView } from "src/KanbanView";
 import { BoardModifiers } from "../helpers/boardModifiers";
 import { Path } from "src/dnd/types";
+import { StateManager } from "src/StateManager";
 
 interface ItemCheckboxProps {
   path: Path;
   item: Item;
   shouldMarkItemsComplete: boolean;
-  view: KanbanView;
+  stateManager: StateManager;
   boardModifiers: BoardModifiers;
 }
 
@@ -21,10 +21,10 @@ export const ItemCheckbox = React.memo(
     shouldMarkItemsComplete,
     path,
     item,
-    view,
+    stateManager,
     boardModifiers,
   }: ItemCheckboxProps) => {
-    const shouldShowCheckbox = view.getSetting("show-checkboxes");
+    const shouldShowCheckbox = stateManager.getSetting("show-checkboxes");
 
     const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] =
       React.useState(false);

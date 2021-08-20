@@ -4,19 +4,13 @@ import React from "react";
 import { CursorOffset, StrategyProps, Textcomplete } from "@textcomplete/core";
 import { TextareaEditor } from "@textcomplete/textarea";
 import Fuse from "fuse.js";
-import {
-  c,
-  escapeRegExpStr,
-  getDefaultDateFormat,
-  useIMEInputProps,
-} from "../helpers";
+import { c, escapeRegExpStr, useIMEInputProps } from "../helpers";
 import { KanbanContext, KanbanContextProps } from "../context";
 import flatpickr from "flatpickr";
 
-import { KanbanView } from "src/KanbanView";
-import { defaultDateTrigger, defaultTimeTrigger } from "src/settingHelpers";
 import { getDefaultLocale } from "./datePickerLocale";
 import { buildTimeArray } from "./helpers";
+import { StateManager } from "src/StateManager";
 
 const tagRegex = /\B#([^\s]*)?$/;
 const linkRegex = /\B\[\[([^\]]*)?$/;
@@ -34,11 +28,10 @@ export function forceChangeEvent(input: HTMLTextAreaElement, value: string) {
 export function applyDate(
   date: Date,
   inputRef: React.MutableRefObject<HTMLTextAreaElement>,
-  view: KanbanView
+  stateManager: StateManager
 ) {
-  const dateFormat =
-    view.getSetting("date-format") || getDefaultDateFormat(view.app);
-  const shouldLinkDates = view.getSetting("link-date-to-daily-note");
+  const dateFormat = stateManager.getSetting("date-format");
+  const shouldLinkDates = stateManager.getSetting("link-date-to-daily-note");
 
   const formattedDate = moment(date).format(dateFormat);
   const wrappedDate = shouldLinkDates
@@ -54,14 +47,14 @@ interface ConstructDatePickerParams {
   div: HTMLElement;
   inputRef: React.MutableRefObject<HTMLTextAreaElement>;
   cb: (picker: flatpickr.Instance) => void;
-  view: KanbanView;
+  stateManager: StateManager;
 }
 
 function constructDatePicker({
   div,
   inputRef,
   cb,
-  view,
+  stateManager,
 }: ConstructDatePickerParams) {
   div.createEl("input", { type: "text" }, (input) => {
     setTimeout(() =>
@@ -70,7 +63,7 @@ function constructDatePicker({
           locale: getDefaultLocale(),
           inline: true,
           onChange: (dates) => {
-            applyDate(dates[0], inputRef, view);
+            applyDate(dates[0], inputRef, stateManager);
           },
         })
       )
@@ -94,12 +87,14 @@ export function ensureDatePickerIsOnScreen(
   }
 }
 
-function getTimePickerConfig(view: KanbanView): StrategyProps<string> {
-  const timeTrigger = view.getSetting("time-trigger") || defaultTimeTrigger;
+function getTimePickerConfig(
+  stateManager: StateManager
+): StrategyProps<string> {
+  const timeTrigger = stateManager.getSetting("time-trigger");
   const timeTriggerRegex = new RegExp(
     `\\B${escapeRegExpStr(timeTrigger as string)}{?([^}]*)$`
   );
-  const times = buildTimeArray(view);
+  const times = buildTimeArray(stateManager);
 
   return {
     id: "time",
@@ -152,7 +147,7 @@ function getFileSearchConfig(
   files: TFile[],
   fileSearch: Fuse<TFile>,
   filePath: string,
-  view: KanbanView,
+  stateManager: StateManager,
   isEmbed: boolean
 ): StrategyProps<Fuse.FuseResult<TFile>> {
   return {
@@ -160,7 +155,7 @@ function getFileSearchConfig(
     match: isEmbed ? embedRegex : linkRegex,
     index: 1,
     template: (res: Fuse.FuseResult<TFile>) => {
-      return view.app.metadataCache.fileToLinktext(res.item, filePath);
+      return stateManager.app.metadataCache.fileToLinktext(res.item, filePath);
     },
     search: (
       term: string,
@@ -175,7 +170,7 @@ function getFileSearchConfig(
       }
     },
     replace: (result: Fuse.FuseResult<TFile>): string =>
-      `${isEmbed ? "!" : ""}[[${view.app.metadataCache.fileToLinktext(
+      `${isEmbed ? "!" : ""}[[${stateManager.app.metadataCache.fileToLinktext(
         result.item,
         filePath
       )}]] `,
@@ -229,32 +224,34 @@ export function constructAutocomplete({
   obsidianContext,
   excludeDatePicker,
 }: ConstructAutocompleteParams) {
-  const { view, filePath } = obsidianContext;
+  const { stateManager, filePath } = obsidianContext;
 
   let datePickerEl: null | HTMLDivElement = null;
   let datePickerInstance: flatpickr.Instance | null = null;
 
-  const dateTrigger = view.getSetting("date-trigger") || defaultDateTrigger;
+  const dateTrigger = stateManager.getSetting("date-trigger");
   const dateTriggerRegex = new RegExp(
     `(?:^|\\s)${escapeRegExpStr(dateTrigger as string)}$`
   );
 
-  const tags = Object.keys((view.app.metadataCache as any).getTags()).sort();
+  const tags = Object.keys(
+    (stateManager.app.metadataCache as any).getTags()
+  ).sort();
   const tagSearch = new Fuse(tags);
 
-  const files = view.app.vault.getFiles();
+  const files = stateManager.app.vault.getFiles();
   const fileSearch = new Fuse(files, {
     keys: ["name"],
   });
 
   const configs: StrategyProps[] = [
     getTagSearchConfig(tags, tagSearch),
-    getFileSearchConfig(files, fileSearch, filePath, view, false),
-    getFileSearchConfig(files, fileSearch, filePath, view, true),
+    getFileSearchConfig(files, fileSearch, filePath, stateManager, false),
+    getFileSearchConfig(files, fileSearch, filePath, stateManager, true),
   ];
 
   if (!excludeDatePicker) {
-    configs.push(getTimePickerConfig(view));
+    configs.push(getTimePickerConfig(stateManager));
   }
 
   const editor = new TextareaEditor(inputRef.current);
@@ -303,9 +300,9 @@ export function constructAutocomplete({
         const selectedDates = datePickerInstance.selectedDates;
 
         if (selectedDates.length) {
-          applyDate(selectedDates[0], inputRef, view);
+          applyDate(selectedDates[0], inputRef, stateManager);
         } else {
-          applyDate(new Date(), inputRef, view);
+          applyDate(new Date(), inputRef, stateManager);
         }
 
         return destroyDatePicker();
@@ -384,7 +381,7 @@ export function constructAutocomplete({
               constructDatePicker({
                 div,
                 inputRef,
-                view,
+                stateManager,
                 cb: (picker) => {
                   datePickerInstance = picker;
                   isAutocompleteVisibleRef.current = true;

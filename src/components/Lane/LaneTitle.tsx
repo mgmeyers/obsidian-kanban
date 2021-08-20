@@ -21,7 +21,7 @@ export function LaneTitle({
   title,
   onChange,
 }: LaneTitleProps) {
-  const { view, filePath } = React.useContext(KanbanContext);
+  const { stateManager, filePath } = React.useContext(KanbanContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
 
   const onAction = () => isEditing && setIsEditing(false);
@@ -44,11 +44,11 @@ export function LaneTitle({
 
   // TODO: use markdown renderer component?
   const markdownContent = React.useMemo(() => {
-    const tempEl = renderMarkdown(view, title);
+    const tempEl = renderMarkdown(stateManager.getAView(), title);
     return {
       innerHTML: { __html: tempEl.innerHTML.toString() },
     };
-  }, [title, filePath, view]);
+  }, [title, filePath, stateManager]);
 
   return (
     <div className={c("lane-title")}>
@@ -81,11 +81,10 @@ export function LaneTitle({
                   : undefined;
 
               if (internalLinkPath) {
-                // @ts-ignore
-                view.app.workspace.onLinkContextMenu(
+                (stateManager.app.workspace as any).onLinkContextMenu(
                   e,
                   getLinkpath(internalLinkPath),
-                  view.file.path
+                  stateManager.file.path
                 );
               }
             }}

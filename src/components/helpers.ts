@@ -1,8 +1,8 @@
 import React from "react";
 import update from "immutability-helper";
 import { Item, Lane } from "./types";
-import { KanbanView } from "src/KanbanView";
 import { App, MarkdownView, TFile } from "obsidian";
+import { StateManager } from "src/StateManager";
 
 export const baseClassName = "kanban-plugin";
 
@@ -60,13 +60,16 @@ export function useIMEInputProps() {
 
 export const templaterDetectRegex = /<%/;
 
-export async function applyTemplate(view: KanbanView, templatePath?: string) {
+export async function applyTemplate(
+  stateManager: StateManager,
+  templatePath?: string
+) {
   const templateFile = templatePath
-    ? view.app.vault.getAbstractFileByPath(templatePath)
+    ? stateManager.app.vault.getAbstractFileByPath(templatePath)
     : null;
 
   if (templateFile && templateFile instanceof TFile) {
-    const activeView = view.app.workspace.activeLeaf.view;
+    const activeView = stateManager.app.workspace.activeLeaf.view;
     // Force the view to source mode, if needed
     if (
       activeView instanceof MarkdownView &&
@@ -86,9 +89,9 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
       templaterEnabled,
       templatesPlugin,
       templaterPlugin,
-    } = getTemplatePlugins(view.app);
+    } = getTemplatePlugins(stateManager.app);
 
-    const templateContent = await view.app.vault.read(templateFile);
+    const templateContent = await stateManager.app.vault.read(templateFile);
 
     // If both plugins are enabled, attempt to detect templater first
     if (templatesEnabled && templaterEnabled) {
@@ -108,8 +111,8 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
     }
 
     // No template plugins enabled so we can just append the template to the doc
-    await view.app.vault.modify(
-      view.app.workspace.getActiveFile(),
+    await stateManager.app.vault.modify(
+      stateManager.app.workspace.getActiveFile(),
       templateContent
     );
   }

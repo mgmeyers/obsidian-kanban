@@ -14,6 +14,7 @@ import { t } from "src/lang/helpers";
 import { KanbanView } from "src/KanbanView";
 import { BoardModifiers } from "../helpers/boardModifiers";
 import { Path } from "src/dnd/types";
+import { StateManager } from "src/StateManager";
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
 
@@ -22,7 +23,7 @@ interface UseItemMenuParams {
   item: Item;
   path: Path;
   boardModifiers: BoardModifiers;
-  view: KanbanView;
+  stateManager: StateManager;
 }
 
 export function useItemMenu({
@@ -30,23 +31,22 @@ export function useItemMenu({
   item,
   path,
   boardModifiers,
-  view,
+  stateManager,
 }: UseItemMenuParams) {
   return React.useCallback(
     (e: MouseEvent, internalLinkPath?: string) => {
       if (internalLinkPath) {
-        // @ts-ignore
-        view.app.workspace.onLinkContextMenu(
+        (stateManager.app.workspace as any).onLinkContextMenu(
           e,
           getLinkpath(internalLinkPath),
-          view.file.path
+          stateManager.file.path
         );
       } else {
         const coordinates = { x: e.clientX, y: e.clientY };
         const hasDate = !!item.data.metadata.date;
         const hasTime = !!item.data.metadata.time;
 
-        const menu = new Menu(view.app).addItem((i) => {
+        const menu = new Menu(stateManager.app).addItem((i) => {
           i.setIcon("pencil")
             .setTitle(t("Edit card"))
             .onClick(() => setIsEditing(true));
@@ -63,31 +63,34 @@ export function useItemMenu({
                   " "
                 );
 
-                const newNoteFolder = view.getSetting("new-note-folder");
+                const newNoteFolder =
+                  stateManager.getSetting("new-note-folder");
                 const newNoteTemplatePath =
-                  view.getSetting("new-note-template");
+                  stateManager.getSetting("new-note-template");
 
                 const targetFolder = newNoteFolder
-                  ? (view.app.vault.getAbstractFileByPath(
+                  ? (stateManager.app.vault.getAbstractFileByPath(
                       newNoteFolder as string
                     ) as TFolder)
-                  : view.app.fileManager.getNewFileParent(view.file.path);
+                  : stateManager.app.fileManager.getNewFileParent(
+                      stateManager.file.path
+                    );
 
                 const newFile =
                   // @ts-ignore
-                  await view.app.fileManager.createNewMarkdownFile(
+                  await stateManager.app.fileManager.createNewMarkdownFile(
                     targetFolder,
                     sanitizedTitle
                   );
 
-                const newLeaf = view.app.workspace.splitActiveLeaf();
+                const newLeaf = stateManager.app.workspace.splitActiveLeaf();
 
                 await newLeaf.openFile(newFile);
 
-                view.app.workspace.setActiveLeaf(newLeaf, false, true);
+                stateManager.app.workspace.setActiveLeaf(newLeaf, false, true);
 
                 await applyTemplate(
-                  view,
+                  stateManager,
                   newNoteTemplatePath as string | undefined
                 );
 
@@ -98,7 +101,7 @@ export function useItemMenu({
 
                 boardModifiers.updateItem(
                   path,
-                  view.parser.updateItem(item, newTitleRaw)
+                  stateManager.parser.updateItem(item, newTitleRaw)
                 );
               });
           })
@@ -126,7 +129,7 @@ export function useItemMenu({
                 constructDatePicker(
                   coordinates,
                   constructMenuDatePickerOnChange({
-                    view,
+                    stateManager,
                     boardModifiers,
                     item,
                     hasDate,
@@ -142,11 +145,10 @@ export function useItemMenu({
             i.setIcon("cross")
               .setTitle(t("Remove date"))
               .onClick(() => {
-                const shouldLinkDates = view.getSetting(
+                const shouldLinkDates = stateManager.getSetting(
                   "link-date-to-daily-note"
                 );
-                const dateTrigger =
-                  view.getSetting("date-trigger") || defaultDateTrigger;
+                const dateTrigger = stateManager.getSetting("date-trigger");
                 const contentMatch = shouldLinkDates
                   ? "\\[\\[[^}]+\\]\\]"
                   : "{[^}]+}";
@@ -161,7 +163,7 @@ export function useItemMenu({
                   .trim();
                 boardModifiers.updateItem(
                   path,
-                  view.parser.updateItem(item, titleRaw)
+                  stateManager.parser.updateItem(item, titleRaw)
                 );
               });
           });
@@ -171,10 +173,10 @@ export function useItemMenu({
               .setTitle(hasTime ? t("Edit time") : t("Add time"))
               .onClick(() => {
                 constructTimePicker(
-                  view,
+                  stateManager,
                   coordinates,
                   constructMenuTimePickerOnChange({
-                    view,
+                    stateManager,
                     boardModifiers,
                     item,
                     hasTime,
@@ -190,8 +192,7 @@ export function useItemMenu({
               i.setIcon("cross")
                 .setTitle(t("Remove time"))
                 .onClick(() => {
-                  const timeTrigger =
-                    view.getSetting("time-trigger") || defaultTimeTrigger;
+                  const timeTrigger = stateManager.getSetting("time-trigger");
                   const timeRegEx = new RegExp(
                     `(^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
                   );
@@ -201,7 +202,7 @@ export function useItemMenu({
                     .trim();
                   boardModifiers.updateItem(
                     path,
-                    view.parser.updateItem(item, titleRaw)
+                    stateManager.parser.updateItem(item, titleRaw)
                   );
                 });
             });
@@ -211,6 +212,6 @@ export function useItemMenu({
         menu.showAtPosition(coordinates);
       }
     },
-    [setIsEditing, item, path, boardModifiers, view]
+    [setIsEditing, item, path, boardModifiers, stateManager]
   );
 }

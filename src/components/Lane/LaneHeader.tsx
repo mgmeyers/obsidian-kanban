@@ -79,7 +79,7 @@ export const LaneHeader = React.memo(
           </div>
         </div>
 
-        {isEditing && <LaneSettings lane={lane} laneIndex={laneIndex} />}
+        {isEditing && <LaneSettings lane={lane} lanePath={lanePath} />}
 
         {confirmAction && (
           <ConfirmAction

@@ -1,9 +1,7 @@
-import { App } from "obsidian";
 import React from "react";
 
 import { createPortal } from "react-dom";
-import { Board, Item, Lane } from "./components/types";
-import { DataBridge } from "./DataBridge";
+import { Item, Lane } from "./components/types";
 import { KanbanView } from "./KanbanView";
 import { DragOverlay } from "./dnd/components/DragOverlay";
 import { DndContext } from "./dnd/components/DndContext";
@@ -17,103 +15,61 @@ import {
 } from "./dnd/util/data";
 import { getBoardModifiers } from "./components/helpers/boardModifiers";
 import { KanbanContext } from "./components/context";
+import KanbanPlugin from "./main";
 
-export function createApp(
-  app: App,
-  dataBridge: DataBridge<Map<string, KanbanView>>
-) {
-  return <DragDropApp app={app} dataBridge={dataBridge} />;
+export function createApp(plugin: KanbanPlugin) {
+  return <DragDropApp plugin={plugin} />;
 }
 
 const View = React.memo(({ view }: { view: KanbanView }) => {
   return createPortal(view.getPortal(), view.contentEl);
 });
 
-function mutateView(
-  view: KanbanView,
-  mutator: (board: Board) => Board,
-  isDupe: boolean = false
-) {
-  const bridge = view.dataBridge;
-  const board = mutator(bridge.getData());
-
-  if (!isDupe) bridge.setInternal(board);
-  bridge.setExternal(board);
-}
-
-export function DragDropApp({
-  app,
-  dataBridge,
-}: {
-  app: App;
-  dataBridge: DataBridge<Map<string, KanbanView>>;
-}) {
-  const [views, _] = dataBridge.useState();
-  const portals = [...views].map(([_id, view]) => <View view={view} />);
+export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
+  const views = plugin.useViewState();
+  const portals: JSX.Element[] = views.map((view) => (
+    <View key={view.id} view={view} />
+  ));
 
   const handleDrop = React.useCallback(
     (dragEntity, dropEntity) => {
       const dragPath = dragEntity.getPath();
       const dropPath = dropEntity.getPath();
 
-      // Same board
-      if (dragEntity.scopeId === dropEntity.scopeId) {
-        const view = views.get(dragEntity.scopeId);
-
-        app.workspace.trigger(
-          "kanban:card-moved",
-          view.file,
-          dragPath,
-          dropPath,
-          dragEntity.getData()
-        );
-
-        return mutateView(views.get(dragEntity.scopeId), (board) => {
-          return moveEntity(board, dragEntity.getPath(), dropEntity.getPath());
-        });
-      }
-
       const [, sourceFile] = dragEntity.scopeId.split(":::");
       const [, destinationFile] = dropEntity.scopeId.split(":::");
 
-      // Different views, same file
+      // Same board
       if (sourceFile === destinationFile) {
-        const sourceView = views.get(dragEntity.scopeId);
+        const stateManager = plugin.getStateManagerFromViewID(
+          dragEntity.scopeId
+        );
 
-        app.workspace.trigger(
+        plugin.app.workspace.trigger(
           "kanban:card-moved",
-          sourceView.file,
+          stateManager.file,
           dragPath,
           dropPath,
           dragEntity.getData()
         );
 
-        // Drop to the destination but don't set internal
-        mutateView(
-          views.get(dropEntity.scopeId),
-          (board) => {
-            return moveEntity(
-              board,
-              dragEntity.getPath(),
-              dropEntity.getPath()
-            );
-          },
-          true
-        );
-
-        // Update the source
-        return mutateView(sourceView, (board) => {
+        return stateManager.newState((board) => {
           return moveEntity(board, dragEntity.getPath(), dropEntity.getPath());
         });
       }
 
-      // Move from one board to another
-      mutateView(views.get(dragEntity.scopeId), (board) => {
-        const dragPath = dragEntity.getPath();
+      const sourceStateManager = plugin.getStateManagerFromViewID(
+        dragEntity.scopeId
+      );
+      const destinationStateManager = plugin.getStateManagerFromViewID(
+        dropEntity.scopeId
+      );
+
+      sourceStateManager.newState((board) => {
         const entity = getEntityFromPath(board, dragPath);
 
-        mutateView(views.get(dropEntity.scopeId), (board) => {
-          return insertEntity(board, dropEntity.getPath(), entity);
+        destinationStateManager.newState((board) => {
+          return insertEntity(board, dropPath, entity);
         });
 
         return removeEntity(board, dragPath);
@@ -129,13 +85,14 @@ export function DragDropApp({
         <DragOverlay>
           {(entity, styles) => {
             const data = entity.getData();
-            const view = views.get(entity.scopeId);
+            const view = plugin.getKanbanView(entity.scopeId);
+            const stateManager = plugin.stateManagers.get(view.file);
             const boardModifiers = getBoardModifiers({
-              view,
+              stateManager,
               setBoardData: () => {},
             });
             const filePath = view.file.path;
-            const context = { view, boardModifiers, filePath };
+            const context = { view, stateManager, boardModifiers, filePath };
 
             if (data.type === "lane") {
               return (

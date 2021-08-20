@@ -40,10 +40,16 @@ export interface ItemData {
   dom: HTMLDivElement;
 }
 
+export interface ErrorReport {
+  description: string;
+  stack: string;
+}
+
 export interface BoardData {
   isSearching: boolean;
   settings: KanbanSettings;
   archive: Item[];
+  errors: ErrorReport[];
 }
 
 export type Item = Nestable<ItemData>;

@@ -22,9 +22,10 @@ import { useDragHandle } from "src/dnd/managers/DragManager";
 import { Droppable, useNestedEntityPath } from "src/dnd/components/Droppable";
 import { Path } from "src/dnd/types";
 import classcat from "classcat";
+import { StateManager } from "src/StateManager";
 
 interface UseItemContentEventsParams {
-  view: KanbanView;
+  stateManager: StateManager;
   boardModifiers: BoardModifiers;
   path: Path;
   item: Item;
@@ -34,21 +35,24 @@ function useItemContentEvents({
   boardModifiers,
   path,
   item,
-  view,
+  stateManager,
 }: UseItemContentEventsParams) {
   return React.useMemo(() => {
     const onContentChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
       e
     ) => {
       const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
-      boardModifiers.updateItem(path, view.parser.updateItem(item, titleRaw));
+      boardModifiers.updateItem(
+        path,
+        stateManager.parser.updateItem(item, titleRaw)
+      );
     };
 
     const onEditDate: React.MouseEventHandler = (e) => {
       constructDatePicker(
         { x: e.clientX, y: e.clientY },
         constructMenuDatePickerOnChange({
-          view,
+          stateManager,
           boardModifiers,
           item,
           hasDate: true,
@@ -60,10 +64,10 @@ function useItemContentEvents({
 
     const onEditTime: React.MouseEventHandler = (e) => {
       constructTimePicker(
-        view,
+        stateManager,
         { x: e.clientX, y: e.clientY },
         constructMenuTimePickerOnChange({
-          view,
+          stateManager,
           boardModifiers,
           item,
           hasTime: true,
@@ -78,7 +82,7 @@ function useItemContentEvents({
       onEditDate,
       onEditTime,
     };
-  }, [boardModifiers, path, item, view]);
+  }, [boardModifiers, path, item, stateManager]);
 }
 
 export interface DraggableItemProps {
@@ -93,7 +97,7 @@ const ItemInner = React.memo(function ItemInner({
   isStatic,
   shouldMarkItemsComplete,
 }: DraggableItemProps) {
-  const { view, boardModifiers } = React.useContext(KanbanContext);
+  const { stateManager, boardModifiers } = React.useContext(KanbanContext);
   const searchQuery = React.useContext(SearchContext);
   const [isEditing, setIsEditing] = React.useState(false);
 
@@ -118,7 +122,7 @@ const ItemInner = React.memo(function ItemInner({
     boardModifiers,
     item,
     setIsEditing,
-    view,
+    stateManager,
     path,
   });
 
@@ -126,7 +130,7 @@ const ItemInner = React.memo(function ItemInner({
     boardModifiers,
     item,
     path,
-    view,
+    stateManager,
   });
 
   const onContextMenu: React.MouseEventHandler = React.useCallback(
@@ -161,7 +165,7 @@ const ItemInner = React.memo(function ItemInner({
           item={item}
           path={path}
           shouldMarkItemsComplete={shouldMarkItemsComplete}
-          view={view}
+          stateManager={stateManager}
         />
         <ItemContent
           isSettingsVisible={isEditing}

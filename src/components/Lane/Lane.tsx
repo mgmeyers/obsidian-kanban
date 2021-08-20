@@ -27,10 +27,10 @@ export const DraggableLane = React.memo(function DraggableLane(
   props: DraggableLaneProps
 ) {
   const { isStatic, lane, laneIndex } = props;
-  const { view, boardModifiers } = React.useContext(KanbanContext);
+  const { stateManager, boardModifiers } = React.useContext(KanbanContext);
 
   const laneParentPath = useNestedEntityPath();
-  const laneWidth = view.getSetting("lane-width");
+  const laneWidth = stateManager.getSetting("lane-width");
   const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
 
   const laneStyles = laneWidth ? { width: `${laneWidth}px` } : undefined;
