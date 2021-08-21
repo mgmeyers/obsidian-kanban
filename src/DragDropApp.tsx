@@ -40,6 +40,8 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
       const [, sourceFile] = dragEntity.scopeId.split(":::");
       const [, destinationFile] = dropEntity.scopeId.split(":::");
 
+      console.log('handling drop')
+
       // Same board
       if (sourceFile === destinationFile) {
         const stateManager = plugin.getStateManagerFromViewID(
@@ -55,7 +57,7 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
         );
 
         return stateManager.setState((board) => {
-          return moveEntity(board, dragEntity.getPath(), dropEntity.getPath());
+          return moveEntity(board, dragPath, dropPath);
         });
       }
 

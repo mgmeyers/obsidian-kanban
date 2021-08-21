@@ -1,3 +1,4 @@
+import classcat from "classcat";
 import React from "react";
 import { c, generateInstanceId } from "src/components/helpers";
 import { EntityData } from "../types";
@@ -26,8 +27,8 @@ export function SortPlaceholder({
   }, [accepts]);
 
   return (
-    <div ref={measureRef} className={className}>
-      <div ref={elementRef} className={c("placeholder")}>
+    <div ref={measureRef} className={classcat([className, c("placeholder")])}>
+      <div ref={elementRef}>
         <Droppable
           elementRef={elementRef}
           measureRef={measureRef}

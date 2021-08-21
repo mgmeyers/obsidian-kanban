@@ -15,7 +15,6 @@ import {
 } from "./helpers";
 import { ItemCheckbox } from "./ItemCheckbox";
 import { ItemMenuButton } from "./ItemMenuButton";
-import { KanbanView } from "src/KanbanView";
 import { BoardModifiers } from "../helpers/boardModifiers";
 import { useDragHandle } from "src/dnd/managers/DragManager";
 
@@ -93,11 +92,17 @@ export interface DraggableItemProps {
   shouldMarkItemsComplete?: boolean;
 }
 
+export interface ItemInnerProps {
+  item: Item;
+  isStatic?: boolean;
+  shouldMarkItemsComplete?: boolean;
+}
+
 const ItemInner = React.memo(function ItemInner({
   item,
   isStatic,
   shouldMarkItemsComplete,
-}: DraggableItemProps) {
+}: ItemInnerProps) {
   const { stateManager, boardModifiers } = React.useContext(KanbanContext);
   const searchQuery = React.useContext(SearchContext);
   const [isEditing, setIsEditing] = React.useState(false);
@@ -154,7 +159,6 @@ const ItemInner = React.memo(function ItemInner({
     setIsEditing(true);
   }, [setIsEditing]);
 
-  console.log("item content", item.data.title);
   return (
     <div
       onContextMenu={onContextMenu}
@@ -199,22 +203,24 @@ export const DraggableItem = React.memo(function DraggableItem(
   const elementRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
 
+  const { itemIndex, ...innerProps } = props;
+
   useDragHandle(measureRef, measureRef);
 
   return (
     <div ref={measureRef} className={c("item-wrapper")}>
       <div ref={elementRef} className={c("item")}>
         {props.isStatic ? (
-          <ItemInner {...props} />
+          <ItemInner {...innerProps} />
         ) : (
           <Droppable
             elementRef={elementRef}
             measureRef={measureRef}
             id={props.item.id}
-            index={props.itemIndex}
+            index={itemIndex}
             data={props.item}
           >
-            <ItemInner {...props} />
+            <ItemInner {...innerProps} />
           </Droppable>
         )}
       </div>

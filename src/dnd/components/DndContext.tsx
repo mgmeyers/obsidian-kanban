@@ -13,13 +13,16 @@ export function DndContext({ children, onDrop }: DndContextProps) {
   onDropRef.current = onDrop;
 
   const dndManager = React.useMemo(() => {
-    return new DndManager((dragEntity: Entity, dropEntity: Entity) =>
-      onDropRef.current(dragEntity, dropEntity)
-    );
+    console.log("creating DND manager");
+    return new DndManager((dragEntity: Entity, dropEntity: Entity) => {
+      console.log("calling DND manager drop ref");
+      return onDropRef.current(dragEntity, dropEntity);
+    });
   }, []);
 
   React.useEffect(() => {
     return () => {
+      console.log('destroying dndmanager')
       dndManager.destroy();
     };
   }, [dndManager]);

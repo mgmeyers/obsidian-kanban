@@ -87,7 +87,5 @@ export function useNestedEntityPath(selfIndex?: number) {
     currentPath.push(selfIndex);
   }
 
-  const path = React.useMemo(() => currentPath, currentPath);
-
-  return path;
+  return React.useMemo(() => currentPath, currentPath);
 }

@@ -104,7 +104,7 @@ export class StateManager {
 
       setTimeout(() => {
         this.isParseThrottled = false;
-      }, 100);
+      }, 50);
     }
   }
 
@@ -128,7 +128,7 @@ export class StateManager {
 
       setTimeout(() => {
         this.isSaveThrottled = false;
-      }, 100);
+      }, 50);
     }
   }
 
@@ -136,7 +136,7 @@ export class StateManager {
     state: Board | ((board: Board) => Board),
     shouldSave: boolean = true
   ) {
-    console.log('setting state')
+    console.log("setting state");
     if (typeof state === "function") {
       this.state = state(this.state);
     } else {

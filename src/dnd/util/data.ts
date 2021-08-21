@@ -1,6 +1,8 @@
 import { Nestable, Path } from "../types";
 import update, { Spec } from "immutability-helper";
 import { getSiblingDirection, SiblingDirection } from "./path";
+import merge from "deepmerge";
+import { isPlainObject } from "is-plain-object";
 
 export function getEntityFromPath(root: Nestable, path: Path): Nestable {
   const step = !!path.length ? path[0] : null;
@@ -13,15 +15,17 @@ export function getEntityFromPath(root: Nestable, path: Path): Nestable {
 }
 
 export function buildUpdateMutation(path: Path, mutation: Spec<Nestable>) {
+  let pathedMutation: Spec<Nestable> = mutation;
+
   for (let i = path.length - 2; i >= 0; i--) {
-    mutation = {
+    pathedMutation = {
       children: {
-        [path[i]]: mutation,
+        [path[i]]: pathedMutation,
       },
     };
   }
 
-  return mutation;
+  return pathedMutation;
 }
 
 export function buildRemoveMutation(path: Path) {
@@ -76,7 +80,20 @@ export function moveEntity(root: Nestable, source: Path, destination: Path) {
     destinationModifier
   );
 
-  return update(update(root, removeMutation), insertMutation);
+  const mutation = merge<Spec<Nestable>>(removeMutation, insertMutation, {
+    isMergeableObject: (val) => {
+      return isPlainObject(val) || Array.isArray(val);
+    },
+  });
+
+  console.log(source, destination);
+  console.log(mutation);
+
+  const newBoard = update(root, mutation);
+
+  console.log(newBoard);
+
+  return newBoard;
 }
 
 export function removeEntity(root: Nestable, target: Path) {

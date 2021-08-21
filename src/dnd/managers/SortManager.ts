@@ -61,11 +61,16 @@ export class SortManager {
     el: HTMLElement,
     measureEl: HTMLElement
   ) {
-    el.style.setProperty("transition", transitions.none);
+    const isPlaceholder = entity.getData().type === "placeholder";
+
     this.sortables.set(id, [entity, el, measureEl]);
 
-    if (entity.getData().type === "placeholder") {
+    if (isPlaceholder) {
       this.placeholder = [entity, el, measureEl];
+      measureEl.dataset.axis = this.axis;
+      measureEl.style.setProperty("transition", transitions.none);
+    } else {
+      el.style.setProperty("transition", transitions.none);
     }
   }
 
@@ -94,7 +99,7 @@ export class SortManager {
       dragEntityMargin
     );
 
-    this.activatePlaceholder(this.hitboxDimensions);
+    this.activatePlaceholder(this.hitboxDimensions, transitions.none);
 
     this.sortables.forEach(([entity, el, measureEl]) => {
       const siblingDirection = getSiblingDirection(
@@ -105,7 +110,7 @@ export class SortManager {
 
       if (siblingDirection === SiblingDirection.Self) {
         this.hidden.add(entityId);
-        return this.placeholdEl(measureEl);
+        return this.hideDraggingEntity(measureEl);
       }
 
       if (siblingDirection === SiblingDirection.After) {
@@ -118,6 +123,36 @@ export class SortManager {
     });
   };
 
+  resetSelf(maintainHidden?: boolean) {
+    console.log("reset self");
+    if (this.isSorting) {
+      this.setSortState(false);
+      this.deactivatePlaceholder();
+    }
+
+    if (this.shifted.size > 0) {
+      this.shifted.forEach((entityId) => {
+        if (this.sortables.has(entityId)) {
+          const [, el] = this.sortables.get(entityId);
+          this.resetEl(el);
+        }
+      });
+
+      this.shifted.clear();
+    }
+
+    if (!maintainHidden && this.hidden.size > 0) {
+      this.hidden.forEach((entityId) => {
+        if (this.sortables.has(entityId)) {
+          const [, , measure] = this.sortables.get(entityId);
+          this.resetEl(measure);
+        }
+      });
+
+      this.hidden.clear();
+    }
+  }
+
   private dragEndTimeout = 0;
   handleDragEnd = ({
     primaryIntersection,
@@ -126,7 +161,16 @@ export class SortManager {
     dragEntity,
   }: DragEventData) => {
     if (!this.isSorting || !dragPosition || !dragOriginHitbox || !dragEntity) {
-      return;
+      if (
+        !primaryIntersection &&
+        dragEntity &&
+        this.sortables.has(dragEntity.entityId)
+      ) {
+        console.log("perform null drop");
+        return this.resetSelf(false);
+      }
+
+      return this.resetSelf(true);
     }
 
     clearTimeout(this.dragEnterTimeout);
@@ -148,8 +192,10 @@ export class SortManager {
 
       if (
         primaryIntersection &&
+        this.sortables.has(primaryIntersection.entityId) &&
         primaryIntersection.entityId !== dragEntity.entityId
       ) {
+        console.log("calling drop from sortmanager");
         this.dndManager.onDrop(dragEntity, primaryIntersection);
       }
 
@@ -187,6 +233,10 @@ export class SortManager {
       !haveSortable ||
       !dragOriginHitbox
     ) {
+      if (!haveSortable && this.isSorting) {
+        this.resetSelf(true);
+      }
+
       return;
     }
 
@@ -203,7 +253,7 @@ export class SortManager {
         dragOriginHitbox,
         dragEntityMargin
       );
-      this.activatePlaceholder(this.hitboxDimensions);
+      this.activatePlaceholder(this.hitboxDimensions, transitions.placeholder);
       this.sortables.forEach(([entity, el]) => {
         const siblingDirection = getSiblingDirection(
           primaryIntersection.getPath(),
@@ -258,23 +308,31 @@ export class SortManager {
     return { width, height };
   }
 
-  activatePlaceholder({ width, height }: { width: number; height: number }) {
+  activatePlaceholder(
+    dimensions: { width: number; height: number },
+    transition: string
+  ) {
     if (this.placeholder) {
+      const isHorizontal = this.axis === "horizontal";
       const [, , measure] = this.placeholder;
-      measure.style.setProperty("width", `${width}px`);
-      measure.style.setProperty("height", `${height}px`);
+      measure.style.setProperty("transition", transition);
+      measure.style.setProperty(
+        isHorizontal ? "width" : "height",
+        `${isHorizontal ? dimensions.width : dimensions.height}px`
+      );
     }
   }
 
   deactivatePlaceholder() {
     if (this.placeholder) {
       const [, , measure] = this.placeholder;
+      measure.style.setProperty("transition", transitions.none);
       measure.style.removeProperty("width");
       measure.style.removeProperty("height");
     }
   }
 
-  placeholdEl(el: HTMLElement) {
+  hideDraggingEntity(el: HTMLElement) {
     el.style.setProperty("display", "none");
   }
 
