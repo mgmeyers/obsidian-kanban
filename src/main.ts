@@ -19,7 +19,6 @@ import "choices.js/public/assets/styles/choices.css";
 import "flatpickr/dist/flatpickr.min.css";
 import "./main.css";
 import { t } from "./lang/helpers";
-import { DataBridge } from "./DataBridge";
 import { StateManager } from "./StateManager";
 import React from "react";
 

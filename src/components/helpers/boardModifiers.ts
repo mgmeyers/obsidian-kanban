@@ -1,12 +1,7 @@
 import { moment } from "obsidian";
 import update from "immutability-helper";
-import React from "react";
-import { Board, Item, Lane } from "../types";
-import {
-  getDefaultDateFormat,
-  getDefaultTimeFormat,
-  generateInstanceId,
-} from "../helpers";
+import { Item, Lane } from "../types";
+import { generateInstanceId } from "../helpers";
 import { Path } from "src/dnd/types";
 import {
   appendEntities,
@@ -29,19 +24,13 @@ export interface BoardModifiers {
   duplicateEntity: (path: Path) => void;
 }
 
-interface BoardStateProps {
-  stateManager: StateManager;
-  setBoardData: React.Dispatch<React.SetStateAction<Board>>;
-}
-
-export function getBoardModifiers({
-  stateManager,
-  setBoardData,
-}: BoardStateProps): BoardModifiers {
+export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
   const shouldAppendArchiveDate = !!stateManager.getSetting(
     "prepend-archive-date"
   );
-  const archiveDateSeparator = stateManager.getSetting("prepend-archive-separator");
+  const archiveDateSeparator = stateManager.getSetting(
+    "prepend-archive-separator"
+  );
   const archiveDateFormat = stateManager.getSetting("prepend-archive-format");
 
   const appendArchiveDate = (item: Item) => {
@@ -65,7 +54,9 @@ export function getBoardModifiers({
         )
       );
 
-      setBoardData((boardData) => appendEntities(boardData, parentPath, items));
+      stateManager.setState((boardData) =>
+        appendEntities(boardData, parentPath, items)
+      );
     },
 
     addLane: (lane: Lane) => {
@@ -75,7 +66,9 @@ export function getBoardModifiers({
         lane
       );
 
-      setBoardData((boardData) => appendEntities(boardData, [], [lane]));
+      stateManager.setState((boardData) =>
+        appendEntities(boardData, [], [lane])
+      );
     },
 
     updateLane: (path: Path, lane: Lane) => {
@@ -85,8 +78,10 @@ export function getBoardModifiers({
         lane
       );
 
-      setBoardData((boardData) =>
-        updateEntity(boardData, path.slice(0, -1), {
+      console.log("updating lane", path);
+
+      stateManager.setState((boardData) =>
+        updateEntity(boardData, path, {
           children: {
             [path[path.length - 1]]: {
               $set: lane,
@@ -97,7 +92,7 @@ export function getBoardModifiers({
     },
 
     archiveLane: (path: Path) => {
-      setBoardData((boardData) => {
+      stateManager.setState((boardData) => {
         const lane = getEntityFromPath(boardData, path);
         const items = lane.children;
 
@@ -120,7 +115,7 @@ export function getBoardModifiers({
     },
 
     archiveLaneItems: (path: Path) => {
-      setBoardData((boardData) => {
+      stateManager.setState((boardData) => {
         const lane = getEntityFromPath(boardData, path);
         const items = lane.children;
 
@@ -150,7 +145,7 @@ export function getBoardModifiers({
     },
 
     deleteEntity: (path: Path) => {
-      setBoardData((boardData) => {
+      stateManager.setState((boardData) => {
         const entity = getEntityFromPath(boardData, path);
 
         console.log("deleteEntity", ...path, entity);
@@ -166,7 +161,7 @@ export function getBoardModifiers({
     },
 
     updateItem: (path: Path, item: Item) => {
-      setBoardData((boardData) => {
+      stateManager.setState((boardData) => {
         const oldItem = getEntityFromPath(boardData, path);
 
         stateManager.app.workspace.trigger(
@@ -176,7 +171,7 @@ export function getBoardModifiers({
           item
         );
 
-        return updateEntity(boardData, path.slice(0, -1), {
+        return updateEntity(boardData, path, {
           children: {
             [path[path.length - 1]]: {
               $set: item,
@@ -187,7 +182,7 @@ export function getBoardModifiers({
     },
 
     archiveItem: (path: Path) => {
-      setBoardData((boardData) => {
+      stateManager.setState((boardData) => {
         const item = getEntityFromPath(boardData, path);
 
         stateManager.app.workspace.trigger(
@@ -208,7 +203,7 @@ export function getBoardModifiers({
     },
 
     duplicateEntity: (path: Path) => {
-      setBoardData((boardData) => {
+      stateManager.setState((boardData) => {
         const entity = getEntityFromPath(boardData, path);
 
         stateManager.app.workspace.trigger(

@@ -80,7 +80,7 @@ export class SortManager {
     dragEntityMargin,
     dragOriginHitbox,
   }: DragEventData) => {
-    const id = dragEntity?.getData().id;
+    const id = dragEntity?.entityId;
     const haveDragEntity = id ? this.sortables.has(id) : null;
 
     if (!dragEntity || !haveDragEntity || !dragOriginHitbox) {
@@ -101,7 +101,7 @@ export class SortManager {
         dragEntity.getPath(),
         entity.getPath()
       );
-      const entityId = entity.getData().id;
+      const entityId = entity.entityId;
 
       if (siblingDirection === SiblingDirection.Self) {
         this.hidden.add(entityId);
@@ -148,13 +148,13 @@ export class SortManager {
 
       if (
         primaryIntersection &&
-        primaryIntersection.getData().id !== dragEntity.getData().id
+        primaryIntersection.entityId !== dragEntity.entityId
       ) {
         this.dndManager.onDrop(dragEntity, primaryIntersection);
       }
 
       this.sortables.forEach(([entity, el, measure]) => {
-        const entityId = entity.getData().id;
+        const entityId = entity.entityId;
 
         if (this.shifted.has(entityId)) {
           this.shifted.delete(entityId);
@@ -178,7 +178,7 @@ export class SortManager {
     dragOriginHitbox,
     primaryIntersection,
   }: DragEventData) => {
-    const id = primaryIntersection?.getData().id;
+    const id = primaryIntersection?.entityId;
     const haveSortable = id ? this.sortables.has(id) : null;
 
     if (
@@ -190,7 +190,7 @@ export class SortManager {
       return;
     }
 
-    if (dragEntity.getData().id === primaryIntersection.getData().id) {
+    if (dragEntity.entityId === primaryIntersection.entityId) {
       return;
     }
 
@@ -210,7 +210,7 @@ export class SortManager {
           entity.getPath()
         );
 
-        const entityId = entity.getData().id;
+        const entityId = entity.entityId;
 
         if (
           !this.hidden.has(entityId) &&
@@ -240,7 +240,7 @@ export class SortManager {
       this.setSortState(false);
       this.deactivatePlaceholder();
       this.sortables.forEach(([entity, el]) => {
-        const entityId = entity.getData().id;
+        const entityId = entity.entityId;
 
         if (this.shifted.has(entityId)) {
           this.shifted.delete(entityId);

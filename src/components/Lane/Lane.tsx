@@ -29,7 +29,7 @@ export const DraggableLane = React.memo(function DraggableLane(
   const { isStatic, lane, laneIndex } = props;
   const { stateManager, boardModifiers } = React.useContext(KanbanContext);
 
-  const laneParentPath = useNestedEntityPath();
+  const path = useNestedEntityPath(laneIndex);
   const laneWidth = stateManager.getSetting("lane-width");
   const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
 
@@ -43,7 +43,7 @@ export const DraggableLane = React.memo(function DraggableLane(
 
   const addItems = (items: Item[]) => {
     boardModifiers.addItems(
-      [...laneParentPath, laneIndex, lane.children.length - 1],
+      [...path, lane.children.length - 1],
       items.map((item) =>
         update(item, {
           data: {

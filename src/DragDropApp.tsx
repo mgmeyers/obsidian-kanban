@@ -16,6 +16,7 @@ import {
 import { getBoardModifiers } from "./components/helpers/boardModifiers";
 import { KanbanContext } from "./components/context";
 import KanbanPlugin from "./main";
+// import { Debug } from "./dnd/Debug";
 
 export function createApp(plugin: KanbanPlugin) {
   return <DragDropApp plugin={plugin} />;
@@ -53,7 +54,7 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
           dragEntity.getData()
         );
 
-        return stateManager.newState((board) => {
+        return stateManager.setState((board) => {
           return moveEntity(board, dragEntity.getPath(), dropEntity.getPath());
         });
       }
@@ -65,10 +66,10 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
         dropEntity.scopeId
       );
 
-      sourceStateManager.newState((board) => {
+      sourceStateManager.setState((board) => {
         const entity = getEntityFromPath(board, dragPath);
 
-        destinationStateManager.newState((board) => {
+        destinationStateManager.setState((board) => {
           return insertEntity(board, dropPath, entity);
         });
 
@@ -84,15 +85,19 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
         {...portals}
         <DragOverlay>
           {(entity, styles) => {
-            const data = entity.getData();
-            const view = plugin.getKanbanView(entity.scopeId);
-            const stateManager = plugin.stateManagers.get(view.file);
-            const boardModifiers = getBoardModifiers({
-              stateManager,
-              setBoardData: () => {},
-            });
-            const filePath = view.file.path;
-            const context = { view, stateManager, boardModifiers, filePath };
+            // TODO: mock this, instead?
+            const [data, context] = React.useMemo(() => {
+              const view = plugin.getKanbanView(entity.scopeId);
+              const stateManager = plugin.stateManagers.get(view.file);
+              const data = getEntityFromPath(
+                stateManager.state,
+                entity.getPath()
+              );
+              const boardModifiers = getBoardModifiers(stateManager);
+              const filePath = view.file.path;
+
+              return [data, { view, stateManager, boardModifiers, filePath }];
+            }, [entity]);
 
             if (data.type === "lane") {
               return (

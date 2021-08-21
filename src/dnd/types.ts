@@ -50,6 +50,7 @@ export interface Entity {
   getParentScrollShift(): CoordinateShift;
 
   scopeId: string;
+  entityId: string;
   initial: Hitbox;
 }
 

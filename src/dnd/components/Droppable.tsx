@@ -79,9 +79,13 @@ export function Droppable({
   );
 }
 
-export function useNestedEntityPath() {
+export function useNestedEntityPath(selfIndex?: number) {
   const entityManager = React.useContext(EntityManagerContext);
   const currentPath = entityManager?.getPath() || [];
+
+  if (selfIndex !== undefined) {
+    currentPath.push(selfIndex);
+  }
 
   const path = React.useMemo(() => currentPath, currentPath);
 

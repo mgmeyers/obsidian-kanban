@@ -21,7 +21,7 @@ export const LaneHeader = React.memo(
   ({ lane, laneIndex, setDragHandleRef }: LaneHeaderProps) => {
     const { boardModifiers } = React.useContext(KanbanContext);
     const [isEditing, setIsEditing] = React.useState(false);
-    const lanePath = useNestedEntityPath();
+    const lanePath = useNestedEntityPath(laneIndex);
 
     const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
       setIsEditing,

@@ -26,7 +26,7 @@ interface KanbanProps {
 }
 
 export const Kanban = ({ view, stateManager }: KanbanProps) => {
-  const [boardData, setBoardData] = stateManager.useState();
+  const boardData = stateManager.useState();
 
   const searchRef = React.useRef<HTMLInputElement>();
   const [searchQuery, setSearchQuery] = React.useState<string>("");
@@ -68,11 +68,11 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       typeof maxArchiveLength === "number" &&
       boardData.data.archive.length > maxArchiveLength
     ) {
-      setBoardData(
-        update(boardData, {
+      stateManager.setState((board) =>
+        update(board, {
           data: {
             archive: {
-              $set: boardData.data.archive.slice(maxArchiveLength * -1),
+              $set: board.data.archive.slice(maxArchiveLength * -1),
             },
           },
         })
@@ -81,8 +81,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   }, [boardData.data.archive.length, maxArchiveLength]);
 
   const boardModifiers = React.useMemo(() => {
-    return getBoardModifiers({ stateManager, setBoardData });
-  }, [stateManager, setBoardData]);
+    return getBoardModifiers(stateManager);
+  }, [stateManager]);
 
   const onMouseOver = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

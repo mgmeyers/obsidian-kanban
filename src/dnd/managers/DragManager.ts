@@ -132,7 +132,7 @@ export class DragManager {
       return;
     }
 
-    const { type, id } = this.dragEntity.getData();
+    const { type } = this.dragEntity.getData();
 
     const hitboxEntities: Entity[] = [];
     const hitboxHitboxes: Hitbox[] = [];
@@ -168,7 +168,7 @@ export class DragManager {
     if (!isScrolling) {
       this.handleHitboxIntersect(
         dragHitbox,
-        id,
+        this.dragEntity.entityId,
         hitboxHitboxes,
         hitboxEntities
       );
@@ -196,7 +196,7 @@ export class DragManager {
     add.forEach((e) => {
       const [scrollEntity, scrollStrength] = e;
       const scrollEntityData = scrollEntity.getData();
-      const scrollEntityId = scrollEntityData.id;
+      const scrollEntityId = scrollEntity.entityId;
       const scrollEntitySide = scrollEntityData.side;
 
       this.emitter.emit(
@@ -215,7 +215,7 @@ export class DragManager {
     update.forEach((e) => {
       const [scrollEntity, scrollStrength] = e;
       const scrollEntityData = scrollEntity.getData();
-      const scrollEntityId = scrollEntityData.id;
+      const scrollEntityId = scrollEntity.entityId;
       const scrollEntitySide = scrollEntityData.side;
 
       this.emitter.emit(
@@ -234,7 +234,7 @@ export class DragManager {
     remove.forEach((e) => {
       const [scrollEntity, scrollStrength] = e;
       const scrollEntityData = scrollEntity.getData();
-      const scrollEntityId = scrollEntityData.id;
+      const scrollEntityId = scrollEntity.entityId;
       const scrollEntitySide = scrollEntityData.side;
 
       this.emitter.emit(
@@ -272,7 +272,7 @@ export class DragManager {
       this.emitter.emit(
         "dragLeave",
         this.getDragEventData(),
-        this.primaryIntersection.getData().id
+        this.primaryIntersection.entityId
       );
       this.primaryIntersection = undefined;
     }
@@ -287,7 +287,7 @@ export class DragManager {
           ...this.getDragEventData(),
           primaryIntersection,
         },
-        primaryIntersection.getData().id
+        primaryIntersection.entityId
       );
       this.primaryIntersection = primaryIntersection;
     }

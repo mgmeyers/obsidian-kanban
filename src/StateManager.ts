@@ -99,7 +99,7 @@ export class StateManager {
   newBoard(md: string) {
     if (!this.isParseThrottled) {
       this.isParseThrottled = true;
-      this.newState(this.getParsedBoard(md), false);
+      this.setState(this.getParsedBoard(md), false);
       this.lastParsedData = md;
 
       setTimeout(() => {
@@ -132,10 +132,11 @@ export class StateManager {
     }
   }
 
-  newState(
+  setState(
     state: Board | ((board: Board) => Board),
     shouldSave: boolean = true
   ) {
+    console.log('setting state')
     if (typeof state === "function") {
       this.state = state(this.state);
     } else {
@@ -151,7 +152,7 @@ export class StateManager {
     this.stateReceivers.forEach((receiver) => receiver(this.state));
   }
 
-  useState(): [Board, (board: Board) => void] {
+  useState(): Board {
     const [state, setState] = React.useState(this.state);
 
     React.useEffect(() => {
@@ -162,18 +163,7 @@ export class StateManager {
       };
     }, []);
 
-    const set = React.useCallback(
-      (state: Board | ((board: Board) => Board)) => {
-        if (typeof state === "function") {
-          this.newState(state(this.state));
-        } else {
-          this.newState(state);
-        }
-      },
-      [this]
-    );
-
-    return [state, set];
+    return state;
   }
 
   compileSettings(suppliedSettings?: KanbanSettings): KanbanSettings {
@@ -255,6 +245,7 @@ export class StateManager {
   };
 
   getParsedBoard(data: string) {
+    console.log("parsing new board");
     const trimmedContent = data.trim();
 
     let board: Board = {
@@ -289,7 +280,7 @@ export class StateManager {
   }
 
   setError(e: Error) {
-    this.newState(
+    this.setState(
       update(this.state, {
         data: {
           errors: {
@@ -335,7 +326,7 @@ export class StateManager {
       });
 
       if (lanesChanged) {
-        this.newState(
+        this.setState(
           update(oldBoard, {
             children: {
               $set: newLanes,
@@ -351,15 +342,8 @@ export class StateManager {
 
     const archived: Item[] = [];
     const shouldAppendArchiveDate = !!this.getSetting("prepend-archive-date");
-    const dateFmt =
-      this.getSetting("date-format") || getDefaultDateFormat(this.app);
-    const timeFmt =
-      this.getSetting("time-format") || getDefaultTimeFormat(this.app);
-    const archiveDateSeparator =
-      (this.getSetting("prepend-archive-separator") as string) || "";
-    const archiveDateFormat =
-      (this.getSetting("prepend-archive-format") as string) ||
-      `${dateFmt} ${timeFmt}`;
+    const archiveDateSeparator = this.getSetting("prepend-archive-separator");
+    const archiveDateFormat = this.getSetting("prepend-archive-format");
 
     const appendArchiveDate = (item: Item) => {
       const newTitle = [moment().format(archiveDateFormat)];
@@ -394,7 +378,7 @@ export class StateManager {
       archived
     );
 
-    this.newState(
+    this.setState(
       update(board, {
         children: {
           $set: lanes,
@@ -409,7 +393,7 @@ export class StateManager {
   }
 
   toggleSearch() {
-    this.newState(
+    this.setState(
       update(this.state, {
         data: {
           $toggle: ["isSearching"],

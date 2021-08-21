@@ -33,7 +33,7 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   setBoard(board: Board, shouldSave: boolean = true) {
     const stateManager = this.plugin.stateManagers.get(this.file);
-    stateManager.newState(board, shouldSave);
+    stateManager.setState(board, shouldSave);
   }
 
   getBoard(): Board {
@@ -73,6 +73,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   requestSaveToDisk(data: string) {
     if (this.data !== data) {
       this.data = data;
+      console.log('saving to disk', this.id)
       this.requestSave();
     }
   }
@@ -130,7 +131,7 @@ export class KanbanView extends TextFileView implements HoverParent {
                   });
 
                   // Save to disk, compute text of new board
-                  stateManager.newState(updatedBoard);
+                  stateManager.setState(updatedBoard);
                 },
               },
               board.data.settings

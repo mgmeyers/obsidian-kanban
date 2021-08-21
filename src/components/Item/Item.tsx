@@ -42,6 +42,7 @@ function useItemContentEvents({
       e
     ) => {
       const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
+      console.log("updating item", path);
       boardModifiers.updateItem(
         path,
         stateManager.parser.updateItem(item, titleRaw)
@@ -153,6 +154,7 @@ const ItemInner = React.memo(function ItemInner({
     setIsEditing(true);
   }, [setIsEditing]);
 
+  console.log("item content", item.data.title);
   return (
     <div
       onContextMenu={onContextMenu}

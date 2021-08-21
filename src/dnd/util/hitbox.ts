@@ -281,8 +281,8 @@ export function getBestIntersect(
 ) {
   const dragTopLeft = cornersOfRectangle(dragHitbox)[0];
   const distances = hits.map((entity) => {
-    if (entity.getData().id === dragId) {
-      return 10000000;
+    if (entity.entityId === dragId) {
+      return Infinity;
     }
 
     const entityHitbox = entity.getHitbox();
@@ -355,11 +355,11 @@ export function getScrollIntersectionDiff(
   const inNext: Record<string, [Entity, number]> = {};
 
   prev.forEach((intersection) => {
-    inPrev[intersection[0].getData().id] = intersection;
+    inPrev[intersection[0].entityId] = intersection;
   });
 
   next.forEach((intersection) => {
-    const id = intersection[0].getData().id;
+    const id = intersection[0].entityId;
 
     if (!inPrev[id]) {
       add.push(intersection);
@@ -371,7 +371,7 @@ export function getScrollIntersectionDiff(
   });
 
   prev.forEach((intersection) => {
-    if (!inNext[intersection[0].getData().id]) {
+    if (!inNext[intersection[0].entityId]) {
       remove.push(intersection);
     }
   });

@@ -21,13 +21,15 @@ export class EntityManager {
   entityNode: HTMLElement;
   measureNode: HTMLElement;
   getEntityData: () => EntityData;
-  id: string;
   index: number;
   parent: EntityManager | null;
-  scopeId: string;
   scrollParent: ScrollManager | null;
   sortManager: SortManager | null;
   isVisible: boolean = false;
+
+  id: string;
+  entityId: string;
+  scopeId: string;
 
   constructor(
     dndManager: DndManager,
@@ -41,10 +43,12 @@ export class EntityManager {
     sortManager: SortManager | null,
     getEntityData: () => EntityData
   ) {
-    this.dndManager = dndManager;
     this.id = id;
-    this.index = index;
     this.scopeId = scopeId;
+    this.entityId = `${scopeId}-${id}`;
+
+    this.dndManager = dndManager;
+    this.index = index;
     this.children = new Map();
     this.parent = parent;
     this.scrollParent = scrollParent;
@@ -53,42 +57,51 @@ export class EntityManager {
     this.getEntityData = getEntityData;
     this.sortManager = sortManager;
 
-    measureNode.dataset.hitboxid = id;
-    sortManager?.registerSortable(id, this.getEntity(emptyDomRect), entityNode, measureNode);
+    measureNode.dataset.hitboxid = this.entityId;
+    sortManager?.registerSortable(
+      this.entityId,
+      this.getEntity(emptyDomRect),
+      entityNode,
+      measureNode
+    );
 
     if (this.scrollParent) {
-      this.scrollParent.registerObserverHandler(id, measureNode, (entry) => {
-        if (entry.isIntersecting) {
-          const entity = this.getEntity(entry.boundingClientRect);
-          parent?.children.set(id, {
-            entity,
-            manager: this,
-          });
-
-          dndManager.observeResize(measureNode);
-
-          if (!parent || parent.isVisible) {
-            dndManager.registerHitboxEntity(id, entity);
-            this.children.forEach((child, childId) => {
-              dndManager.registerHitboxEntity(childId, child.entity);
+      this.scrollParent.registerObserverHandler(
+        this.entityId,
+        measureNode,
+        (entry) => {
+          if (entry.isIntersecting) {
+            const entity = this.getEntity(entry.boundingClientRect);
+            parent?.children.set(this.entityId, {
+              entity,
+              manager: this,
             });
-            this.setVisibility(true);
+
+            dndManager.observeResize(measureNode);
+
+            if (!parent || parent.isVisible) {
+              dndManager.registerHitboxEntity(this.entityId, entity);
+              this.children.forEach((child, childId) => {
+                dndManager.registerHitboxEntity(childId, child.entity);
+              });
+              this.setVisibility(true);
+            }
+          } else {
+            dndManager.unregisterHitboxEntity(this.entityId);
+            this.children.forEach((_, childId) => {
+              dndManager.unregisterHitboxEntity(childId);
+            });
+            parent?.children.delete(this.entityId);
+            dndManager.unobserveResize(measureNode);
+            this.setVisibility(false);
           }
-        } else {
-          dndManager.unregisterHitboxEntity(id);
-          this.children.forEach((_, childId) => {
-            dndManager.unregisterHitboxEntity(childId);
-          });
-          parent?.children.delete(id);
-          dndManager.unobserveResize(measureNode);
-          this.setVisibility(false);
         }
-      });
+      );
     } else {
       const entity = this.getEntity(measureNode.getBoundingClientRect());
       dndManager.observeResize(measureNode);
-      dndManager.registerHitboxEntity(id, entity);
-      parent?.children.set(id, {
+      dndManager.registerHitboxEntity(this.entityId, entity);
+      parent?.children.set(this.entityId, {
         entity,
         manager: this,
       });
@@ -105,10 +118,13 @@ export class EntityManager {
 
   destroy() {
     this.dndManager.unobserveResize(this.measureNode);
-    this.sortManager?.unregisterSortable(this.id);
-    this.scrollParent?.unregisterObserverHandler(this.id, this.measureNode);
-    this.dndManager.unregisterHitboxEntity(this.id);
-    this.parent?.children.delete(this.id);
+    this.sortManager?.unregisterSortable(this.entityId);
+    this.scrollParent?.unregisterObserverHandler(
+      this.entityId,
+      this.measureNode
+    );
+    this.dndManager.unregisterHitboxEntity(this.entityId);
+    this.parent?.children.delete(this.entityId);
   }
 
   getPath(): Path {
@@ -119,6 +135,7 @@ export class EntityManager {
     const manager = this;
     return {
       scopeId: this.scopeId,
+      entityId: this.entityId,
       initial: calculateHitbox(
         rect,
         manager.scrollParent?.scrollState || initialScrollState,

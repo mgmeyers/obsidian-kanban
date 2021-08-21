@@ -314,6 +314,7 @@ export class ScrollManager {
 
     return {
       scopeId: this.scopeId,
+      entityId: manager.getId(side),
       initial: calculateScrollHitbox(
         this.scrollEl.getBoundingClientRect(),
         this.parent?.scrollState || initialScrollState,
