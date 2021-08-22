@@ -16,6 +16,7 @@ import {
 import { getBoardModifiers } from "./components/helpers/boardModifiers";
 import { KanbanContext } from "./components/context";
 import KanbanPlugin from "./main";
+import { c } from "./components/helpers";
 // import { Debug } from "./dnd/Debug";
 
 export function createApp(plugin: KanbanPlugin) {
@@ -116,7 +117,7 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
             if (data.type === "item") {
               return (
                 <KanbanContext.Provider value={context}>
-                  <div style={styles}>
+                  <div className={c("drag-container")} style={styles}>
                     <DraggableItem
                       item={data as Item}
                       itemIndex={0}

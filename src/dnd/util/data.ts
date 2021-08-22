@@ -111,6 +111,14 @@ export function appendEntities(
   return update(root, buildAppendMutation(destination, entities));
 }
 
+export function prependEntities(
+  root: Nestable,
+  destination: Path,
+  entities: Nestable[]
+) {
+  return update(root, buildPrependMutation(destination, entities));
+}
+
 export function updateEntity(
   root: Nestable,
   path: Path,

@@ -8,12 +8,14 @@ interface SortPlaceholderProps {
   index: number;
   accepts: string[];
   className?: string;
+  isStatic?: boolean;
 }
 
 export function SortPlaceholder({
   index,
   accepts,
   className,
+  isStatic,
 }: SortPlaceholderProps) {
   const elementRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
@@ -29,13 +31,15 @@ export function SortPlaceholder({
   return (
     <div ref={measureRef} className={classcat([className, c("placeholder")])}>
       <div ref={elementRef}>
-        <Droppable
-          elementRef={elementRef}
-          measureRef={measureRef}
-          id={data.id}
-          index={index}
-          data={data}
-        />
+        {!isStatic && (
+          <Droppable
+            elementRef={elementRef}
+            measureRef={measureRef}
+            id={data.id}
+            index={index}
+            data={data}
+          />
+        )}
       </div>
     </div>
   );

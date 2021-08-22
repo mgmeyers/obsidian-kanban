@@ -7,13 +7,15 @@ import {
   appendEntities,
   getEntityFromPath,
   insertEntity,
+  prependEntities,
   removeEntity,
   updateEntity,
 } from "src/dnd/util/data";
 import { StateManager } from "src/StateManager";
 
 export interface BoardModifiers {
-  addItems: (path: Path, items: Item[]) => void;
+  appendItems: (path: Path, items: Item[]) => void;
+  prependItems: (path: Path, items: Item[]) => void;
   addLane: (lane: Lane) => void;
   updateLane: (path: Path, lane: Lane) => void;
   archiveLane: (path: Path) => void;
@@ -45,7 +47,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
   };
 
   return {
-    addItems: (parentPath: Path, items: Item[]) => {
+    appendItems: (parentPath: Path, items: Item[]) => {
       items.forEach((item) =>
         stateManager.app.workspace.trigger(
           "kanban:card-added",
@@ -56,6 +58,20 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
 
       stateManager.setState((boardData) =>
         appendEntities(boardData, parentPath, items)
+      );
+    },
+
+    prependItems: (parentPath: Path, items: Item[]) => {
+      items.forEach((item) =>
+        stateManager.app.workspace.trigger(
+          "kanban:card-added",
+          stateManager.file,
+          item
+        )
+      );
+
+      stateManager.setState((boardData) =>
+        prependEntities(boardData, parentPath, items)
       );
     },
 

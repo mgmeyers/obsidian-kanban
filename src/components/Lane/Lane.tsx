@@ -42,7 +42,7 @@ export const DraggableLane = React.memo(function DraggableLane(
   useDragHandle(measureRef, dragHandleRef);
 
   const addItems = (items: Item[]) => {
-    boardModifiers.addItems(
+    boardModifiers.prependItems(
       [...path, lane.children.length - 1],
       items.map((item) =>
         update(item, {
@@ -64,9 +64,11 @@ export const DraggableLane = React.memo(function DraggableLane(
         isStatic={isStatic}
         shouldMarkItemsComplete={shouldMarkItemsComplete}
       />
-      {!isStatic && (
-        <SortPlaceholder accepts={laneAccepts} index={lane.children.length} />
-      )}
+      <SortPlaceholder
+        accepts={laneAccepts}
+        index={lane.children.length}
+        isStatic={isStatic}
+      />
     </>
   );
 
@@ -107,21 +109,19 @@ export const DraggableLane = React.memo(function DraggableLane(
           lane={lane}
         />
 
-        <div className={c("lane-items-wrapper")}>
-          {props.isStatic ? (
-            laneBody
-          ) : (
-            <Droppable
-              elementRef={elementRef}
-              measureRef={measureRef}
-              id={props.lane.id}
-              index={props.laneIndex}
-              data={props.lane}
-            >
-              {laneBody}
-            </Droppable>
-          )}
-        </div>
+        {props.isStatic ? (
+          laneBody
+        ) : (
+          <Droppable
+            elementRef={elementRef}
+            measureRef={measureRef}
+            id={props.lane.id}
+            index={props.laneIndex}
+            data={props.lane}
+          >
+            {laneBody}
+          </Droppable>
+        )}
 
         <ItemForm addItems={addItems} />
       </div>
