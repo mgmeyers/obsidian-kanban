@@ -32,7 +32,6 @@ export function Sortable({ axis, children, onSortChange }: SortableProps) {
   }, []);
 
   if (!sortManager) {
-    console.log("not rendering sortable");
     return null;
   }
 

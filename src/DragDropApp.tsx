@@ -130,7 +130,6 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
             return <div />;
           }}
         </DragOverlay>
-        <div></div>
         {/* <Debug /> */}
       </DndContext>
     );

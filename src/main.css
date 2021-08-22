@@ -78,10 +78,6 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   max-height: 100%;
 }
 
-/* .kanban-plugin__lane-wrapper.is-dragging {
-  margin-right: 0;
-} */
-
 .kanban-plugin__lane {
   width: 100%;
   height: 100%;
@@ -243,12 +239,16 @@ button.kanban-plugin__lane-settings-button
 
 .kanban-plugin__lane-items {
   transition: 150ms background-color ease-in-out;
-  padding: 4px;
+  padding: 0 4px;
   border-radius: 6px;
 }
 
 .kanban-plugin__lane-wrapper.is-sorting .kanban-plugin__lane-items {
   background-color: rgba(var(--interactive-accent-rgb), 0.15);
+}
+
+.kanban-plugin__lane-items > div {
+  margin-top: 4px;
 }
 
 .kanban-plugin__item-button-wrapper {
@@ -277,10 +277,6 @@ button.kanban-plugin__new-item-button {
   background-color: var(--interactive-accent-hover);
 }
 
-.kanban-plugin__item-wrapper {
-  margin-bottom: 5px;
-}
-
 .kanban-plugin__item {
   font-size: 0.875rem;
   border: 1px solid var(--background-modifier-border);
@@ -289,7 +285,7 @@ button.kanban-plugin__new-item-button {
   transition: 300ms opacity cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.kanban-plugin__item.is-dragging {
+.kanban-plugin__item-wrapper.is-dragging > .kanban-plugin__item {
   border-color: var(--interactive-accent);
   box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.2),
     0 0 0 2px rgba(var(--interactive-accent-rgb), 0.8);

@@ -113,8 +113,6 @@ const ItemInner = React.memo(function ItemInner({
     : false;
   const classModifiers: string[] = getItemClassModifiers(item);
 
-  if (isStatic) classModifiers.push("is-dragging");
-
   if (searchQuery) {
     if (isMatch) {
       classModifiers.push("is-search-hit");
@@ -207,7 +205,13 @@ export const DraggableItem = React.memo(function DraggableItem(
   useDragHandle(measureRef, measureRef);
 
   return (
-    <div ref={measureRef} className={c("item-wrapper")}>
+    <div
+      ref={measureRef}
+      className={classcat([
+        c("item-wrapper"),
+        { "is-dragging": props.isStatic },
+      ])}
+    >
       <div ref={elementRef} className={c("item")}>
         {props.isStatic ? (
           <ItemInner {...innerProps} />
