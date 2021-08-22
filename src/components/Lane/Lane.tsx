@@ -13,7 +13,6 @@ import classcat from "classcat";
 import { SortPlaceholder } from "src/dnd/components/SortPlaceholder";
 import { Sortable } from "src/dnd/components/Sortable";
 import { ScrollContainer } from "src/dnd/components/ScrollContainer";
-import { useRefSetter } from "src/dnd/util/useRefSetter";
 
 const laneAccepts = [DataTypes.Item];
 
@@ -37,7 +36,8 @@ export const DraggableLane = React.memo(function DraggableLane(
 
   const elementRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
-  const [dragHandleRef, setDragHandleRef] = useRefSetter<HTMLDivElement>(null);
+  const dragHandleRef = React.useRef<HTMLDivElement>(null);
+  const [isSorting, setIsSorting] = React.useState(false);
 
   useDragHandle(measureRef, dragHandleRef);
 
@@ -56,12 +56,6 @@ export const DraggableLane = React.memo(function DraggableLane(
       )
     );
   };
-
-  const classList = [c("lane-wrapper")];
-
-  if (isStatic) {
-    classList.push("is-dragging");
-  }
 
   const laneContent = (
     <>
@@ -87,16 +81,28 @@ export const DraggableLane = React.memo(function DraggableLane(
       {isStatic ? (
         laneContent
       ) : (
-        <Sortable axis="vertical">{laneContent}</Sortable>
+        <Sortable onSortChange={setIsSorting} axis="vertical">
+          {laneContent}
+        </Sortable>
       )}
     </ScrollContainer>
   );
 
   return (
-    <div ref={measureRef} className={classcat(classList)} style={laneStyles}>
+    <div
+      ref={measureRef}
+      className={classcat([
+        c("lane-wrapper"),
+        {
+          "is-dragging": isStatic,
+          "is-sorting": isSorting,
+        },
+      ])}
+      style={laneStyles}
+    >
       <div ref={elementRef} className={c("lane")}>
         <LaneHeader
-          setDragHandleRef={setDragHandleRef}
+          dragHandleRef={dragHandleRef}
           laneIndex={laneIndex}
           lane={lane}
         />
@@ -127,7 +133,7 @@ export interface Lanes {
   lanes: Lane[];
 }
 
-export function Lanes({ lanes }: Lanes) {
+export const Lanes = React.memo(function Lanes({ lanes }: Lanes) {
   return (
     <>
       {lanes.map((lane, i) => {
@@ -135,4 +141,4 @@ export function Lanes({ lanes }: Lanes) {
       })}
     </>
   );
-}
+});

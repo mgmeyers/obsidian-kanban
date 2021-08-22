@@ -3,6 +3,8 @@ import { Axis, Entity, Hitbox } from "../types";
 import { DndManager } from "./DndManager";
 import { DragEventData } from "./DragManager";
 import { getSiblingDirection, SiblingDirection } from "../util/path";
+import { generateInstanceId } from "src/components/helpers";
+import { getHitboxDimensions } from "../util/hitbox";
 
 type EntityAndElement = [Entity, HTMLElement, HTMLElement];
 
@@ -26,10 +28,16 @@ export class SortManager {
   isSorting: boolean;
   axis: Axis;
   placeholder: EntityAndElement | null;
+  instanceId: string;
 
   sortListeners: Array<(isSorting: boolean) => void>;
 
-  constructor(dndManager: DndManager, axis: Axis) {
+  constructor(
+    dndManager: DndManager,
+    axis: Axis,
+    onSortChange?: (isSorting: boolean) => void
+  ) {
+    this.instanceId = generateInstanceId();
     this.dndManager = dndManager;
     this.sortables = new Map();
     this.shifted = new Set();
@@ -37,7 +45,7 @@ export class SortManager {
     this.isSorting = false;
     this.axis = axis;
     this.placeholder = null;
-    this.sortListeners = [];
+    this.sortListeners = onSortChange ? [onSortChange] : [];
 
     dndManager.dragManager.emitter.on("dragStart", this.handleDragStart);
     dndManager.dragManager.emitter.on("dragEnd", this.handleDragEnd);
@@ -94,7 +102,7 @@ export class SortManager {
 
     this.setSortState(true);
 
-    this.hitboxDimensions = this.getHitboxDimensions(
+    this.hitboxDimensions = getHitboxDimensions(
       dragOriginHitbox,
       dragEntityMargin
     );
@@ -124,7 +132,6 @@ export class SortManager {
   };
 
   resetSelf(maintainHidden?: boolean) {
-    console.log("reset self");
     if (this.isSorting) {
       this.setSortState(false);
       this.deactivatePlaceholder();
@@ -166,7 +173,7 @@ export class SortManager {
         dragEntity &&
         this.sortables.has(dragEntity.entityId)
       ) {
-        console.log("perform null drop");
+        console.log("TODO: perform null drop");
         return this.resetSelf(false);
       }
 
@@ -187,15 +194,11 @@ export class SortManager {
     });
 
     this.dragEndTimeout = window.setTimeout(() => {
-      this.setSortState(false);
-      this.deactivatePlaceholder();
-
       if (
         primaryIntersection &&
         this.sortables.has(primaryIntersection.entityId) &&
         primaryIntersection.entityId !== dragEntity.entityId
       ) {
-        console.log("calling drop from sortmanager");
         this.dndManager.onDrop(dragEntity, primaryIntersection);
       }
 
@@ -212,7 +215,10 @@ export class SortManager {
           this.resetEl(measure, transitions.none);
         }
       });
-    }, dropDuration - 1);
+
+      this.setSortState(false);
+      this.deactivatePlaceholder();
+    }, dropDuration);
 
     this.hitboxDimensions = emptyDimensions;
   };
@@ -249,7 +255,7 @@ export class SortManager {
 
     this.dragEnterTimeout = window.setTimeout(() => {
       this.setSortState(true);
-      this.hitboxDimensions = this.getHitboxDimensions(
+      this.hitboxDimensions = getHitboxDimensions(
         dragOriginHitbox,
         dragEntityMargin
       );
@@ -301,12 +307,6 @@ export class SortManager {
 
     this.hitboxDimensions = emptyDimensions;
   };
-
-  getHitboxDimensions(hitbox: Hitbox, margin: Hitbox = [0, 0, 0, 0]) {
-    const height = hitbox[3] + margin[3] - hitbox[1] - margin[1];
-    const width = hitbox[2] + margin[2] - hitbox[0] - margin[0];
-    return { width, height };
-  }
 
   activatePlaceholder(
     dimensions: { width: number; height: number },

@@ -78,8 +78,6 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
         lane
       );
 
-      console.log("updating lane", path);
-
       stateManager.setState((boardData) =>
         updateEntity(boardData, path, {
           children: {
@@ -147,8 +145,6 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     deleteEntity: (path: Path) => {
       stateManager.setState((boardData) => {
         const entity = getEntityFromPath(boardData, path);
-
-        console.log("deleteEntity", ...path, entity);
 
         stateManager.app.workspace.trigger(
           `kanban:${entity.type}-deleted`,

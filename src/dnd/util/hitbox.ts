@@ -382,3 +382,9 @@ export function getScrollIntersectionDiff(
     remove,
   };
 }
+
+export function getHitboxDimensions(hitbox: Hitbox, margin: Hitbox = [0, 0, 0, 0]) {
+  const height = hitbox[3] + margin[3] - hitbox[1] - margin[1];
+  const width = hitbox[2] + margin[2] - hitbox[0] - margin[0];
+  return { width, height };
+}

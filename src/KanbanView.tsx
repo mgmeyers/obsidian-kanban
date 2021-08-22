@@ -73,7 +73,6 @@ export class KanbanView extends TextFileView implements HoverParent {
   requestSaveToDisk(data: string) {
     if (this.data !== data) {
       this.data = data;
-      console.log('saving to disk', this.id)
       this.requestSave();
     }
   }

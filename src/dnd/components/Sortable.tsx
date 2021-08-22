@@ -5,27 +5,34 @@ import { DndManagerContext, SortManagerContext } from "./context";
 
 interface SortableProps extends WithChildren {
   axis: Axis;
+  onSortChange?: (isSorting: boolean) => void;
 }
 
-export function Sortable({ axis, children }: SortableProps) {
+export function Sortable({ axis, children, onSortChange }: SortableProps) {
   const dndManager = React.useContext(DndManagerContext);
-  const [sortManager, setSortManager] = React.useState<SortManager>();
+  const managerRef = React.useRef<SortManager>();
+  const sortManager = React.useMemo(() => {
+    if (dndManager) {
+      if (managerRef.current) {
+        managerRef.current.destroy();
+      }
+
+      const manager = new SortManager(dndManager, axis, onSortChange);
+
+      managerRef.current = manager;
+
+      return manager;
+    }
+
+    return null;
+  }, [dndManager, axis, onSortChange]);
 
   React.useEffect(() => {
-    if (dndManager) {
-      const manager = new SortManager(dndManager, axis);
-
-      setSortManager(manager);
-
-      return () => {
-        setTimeout(() => {
-          manager.destroy();
-        });
-      };
-    }
-  }, [dndManager, axis]);
+    return () => managerRef.current?.destroy();
+  }, []);
 
   if (!sortManager) {
+    console.log("not rendering sortable");
     return null;
   }
 

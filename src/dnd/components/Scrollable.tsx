@@ -20,29 +20,34 @@ export function Scrollable({
   const dndManager = React.useContext(DndManagerContext);
   const scopeId = React.useContext(ScopeIdContext);
   const parentScrollManager = React.useContext(ScrollManagerContext);
-  const [scrollManager, setScrollManager] = React.useState<ScrollManager>();
 
-  // ok
+  const managerRef = React.useRef<ScrollManager>();
 
-  React.useEffect(() => {
-    if (dndManager && scrollRef.current) {
+  const scrollManager = React.useMemo(() => {
+    if (dndManager) {
+      if (managerRef.current) {
+        managerRef.current.destroy();
+      }
+
       const manager = new ScrollManager(
         dndManager,
         scopeId,
-        scrollRef.current,
         triggerTypes || ([] as string[]),
-        parentScrollManager
+        parentScrollManager,
+        () => scrollRef.current
       );
 
-      setScrollManager(manager);
+      managerRef.current = manager;
 
-      return () => {
-        setTimeout(() => {
-          manager.destroy();
-        })
-      }
+      return manager;
     }
+
+    return null;
   }, [dndManager, scopeId, scrollRef, triggerTypes, parentScrollManager]);
+
+  React.useEffect(() => {
+    return () => managerRef.current?.destroy();
+  }, []);
 
   if (!scrollManager) {
     return null;

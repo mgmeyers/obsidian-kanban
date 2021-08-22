@@ -17,7 +17,7 @@ interface DraggableProps extends WithChildren {
   data: EntityData;
 }
 
-export function Droppable({
+export const Droppable = React.memo(function Droppable({
   id,
   index,
   elementRef,
@@ -31,34 +31,38 @@ export function Droppable({
   const parentEntityManager = React.useContext(EntityManagerContext);
   const parentScrollManager = React.useContext(ScrollManagerContext);
   const dataRef = React.useRef(data);
+  const managerRef = React.useRef<EntityManager>();
 
   dataRef.current = data;
 
-  const [entityManager, setEntityManager] = React.useState<EntityManager>();
+  const entityManager = React.useMemo(() => {
+    if (dndManager) {
+      if (managerRef.current) {
+        managerRef.current.destroy();
+      }
 
-  React.useEffect(() => {
-    if (dndManager && elementRef.current && measureRef.current) {
       const manager = new EntityManager(
         dndManager,
-        elementRef.current,
-        measureRef.current,
         scopeId,
         id,
         index,
         parentEntityManager,
         parentScrollManager,
         sortManager,
+        () => elementRef.current,
+        () => measureRef.current,
         () => dataRef.current
       );
 
-      setEntityManager(manager);
-      return () => manager.destroy();
+      managerRef.current = manager;
+
+      return manager;
     }
+
+    return null;
   }, [
     id,
     index,
-    elementRef,
-    measureRef,
 
     //
     dndManager,
@@ -67,6 +71,10 @@ export function Droppable({
     parentScrollManager,
     sortManager,
   ]);
+
+  React.useEffect(() => {
+    return () => managerRef.current?.destroy();
+  }, []);
 
   if (!entityManager) {
     return null;
@@ -77,7 +85,7 @@ export function Droppable({
       {children}
     </EntityManagerContext.Provider>
   );
-}
+});
 
 export function useNestedEntityPath(selfIndex?: number) {
   const entityManager = React.useContext(EntityManagerContext);

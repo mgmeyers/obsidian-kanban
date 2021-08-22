@@ -9,6 +9,7 @@ import {
 import { ScrollManager } from "./ScrollManager";
 import { SortManager } from "./SortManager";
 import { DndManager } from "./DndManager";
+import { generateInstanceId } from "src/components/helpers";
 
 interface Child {
   manager: EntityManager;
@@ -28,22 +29,24 @@ export class EntityManager {
   isVisible: boolean = false;
 
   id: string;
+  instanceId: string;
   entityId: string;
   scopeId: string;
 
   constructor(
     dndManager: DndManager,
-    entityNode: HTMLElement,
-    measureNode: HTMLElement,
     scopeId: string,
     id: string,
     index: number,
     parent: EntityManager | null,
     scrollParent: ScrollManager | null,
     sortManager: SortManager | null,
+    getEntityNode: () => HTMLElement,
+    getMeasureNode: () => HTMLElement,
     getEntityData: () => EntityData
   ) {
     this.id = id;
+    this.instanceId = generateInstanceId();
     this.scopeId = scopeId;
     this.entityId = `${scopeId}-${id}`;
 
@@ -52,13 +55,31 @@ export class EntityManager {
     this.children = new Map();
     this.parent = parent;
     this.scrollParent = scrollParent;
-    this.entityNode = entityNode;
-    this.measureNode = measureNode;
     this.getEntityData = getEntityData;
     this.sortManager = sortManager;
 
+    this.pollForNodes(getEntityNode, getMeasureNode);
+  }
+
+  pollForNodes(
+    getEntityNode: () => HTMLElement | null,
+    getMeasureNode: () => HTMLElement | null
+  ) {
+    if (!getEntityNode() || !getMeasureNode()) {
+      requestAnimationFrame(() =>
+        this.pollForNodes(getEntityNode, getMeasureNode)
+      );
+    } else {
+      this.initNodes(getEntityNode(), getMeasureNode());
+    }
+  }
+
+  initNodes(entityNode: HTMLElement, measureNode: HTMLElement) {
+    this.entityNode = entityNode;
+    this.measureNode = measureNode;
+
     measureNode.dataset.hitboxid = this.entityId;
-    sortManager?.registerSortable(
+    this.sortManager?.registerSortable(
       this.entityId,
       this.getEntity(emptyDomRect),
       entityNode,
@@ -72,36 +93,36 @@ export class EntityManager {
         (entry) => {
           if (entry.isIntersecting) {
             const entity = this.getEntity(entry.boundingClientRect);
-            parent?.children.set(this.entityId, {
+            this.parent?.children.set(this.entityId, {
               entity,
               manager: this,
             });
 
-            dndManager.observeResize(measureNode);
+            this.dndManager.observeResize(measureNode);
 
-            if (!parent || parent.isVisible) {
-              dndManager.registerHitboxEntity(this.entityId, entity);
+            if (!this.parent || this.parent.isVisible) {
+              this.dndManager.registerHitboxEntity(this.entityId, entity);
               this.children.forEach((child, childId) => {
-                dndManager.registerHitboxEntity(childId, child.entity);
+                this.dndManager.registerHitboxEntity(childId, child.entity);
               });
               this.setVisibility(true);
             }
           } else {
-            dndManager.unregisterHitboxEntity(this.entityId);
+            this.dndManager.unregisterHitboxEntity(this.entityId);
             this.children.forEach((_, childId) => {
-              dndManager.unregisterHitboxEntity(childId);
+              this.dndManager.unregisterHitboxEntity(childId);
             });
-            parent?.children.delete(this.entityId);
-            dndManager.unobserveResize(measureNode);
+            this.parent?.children.delete(this.entityId);
+            this.dndManager.unobserveResize(measureNode);
             this.setVisibility(false);
           }
         }
       );
     } else {
       const entity = this.getEntity(measureNode.getBoundingClientRect());
-      dndManager.observeResize(measureNode);
-      dndManager.registerHitboxEntity(this.entityId, entity);
-      parent?.children.set(this.entityId, {
+      this.dndManager.observeResize(measureNode);
+      this.dndManager.registerHitboxEntity(this.entityId, entity);
+      this.parent?.children.set(this.entityId, {
         entity,
         manager: this,
       });

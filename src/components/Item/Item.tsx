@@ -41,7 +41,6 @@ function useItemContentEvents({
       e
     ) => {
       const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
-      console.log("updating item", path);
       boardModifiers.updateItem(
         path,
         stateManager.parser.updateItem(item, titleRaw)
@@ -234,7 +233,7 @@ interface ItemsProps {
   shouldMarkItemsComplete: boolean;
 }
 
-export function Items({
+export const Items = React.memo(function Items({
   isStatic,
   items,
   shouldMarkItemsComplete,
@@ -254,4 +253,4 @@ export function Items({
       })}
     </>
   );
-}
+});

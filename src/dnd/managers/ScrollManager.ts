@@ -27,7 +27,7 @@ const sides: Side[] = ["top", "right", "bottom", "left"];
 
 export class ScrollManager {
   dndManager: DndManager;
-  id: string;
+  instanceId: string;
   scopeId: string;
   triggerTypes: string[];
   scrollState: ScrollState;
@@ -48,20 +48,32 @@ export class ScrollManager {
   constructor(
     dndManager: DndManager,
     scopeId: string,
-    scrollEl: HTMLElement,
     triggerTypes: string[],
-    parent: ScrollManager | null
+    parent: ScrollManager | null,
+    getScrollEl: () => HTMLElement | null
   ) {
     this.dndManager = dndManager;
-    this.id = generateInstanceId();
+    this.instanceId = generateInstanceId();
     this.scopeId = scopeId;
-    this.scrollEl = scrollEl;
     this.triggerTypes = triggerTypes;
     this.scrollState = initialScrollState;
     this.parent = parent;
     this.activeScroll = new Map();
 
-    this.scrollEl.dataset.hitboxid = this.id;
+    this.pollForNodes(getScrollEl);
+  }
+
+  pollForNodes(getScrollEl: () => HTMLElement | null) {
+    if (!getScrollEl()) {
+      requestAnimationFrame(() => this.pollForNodes(getScrollEl));
+    } else {
+      this.initNodes(getScrollEl());
+    }
+  }
+
+  initNodes(scrollEl: HTMLElement) {
+    this.scrollEl = scrollEl;
+    this.scrollEl.dataset.hitboxid = this.instanceId;
 
     this.top = this.createScrollEntity("top");
     this.right = this.createScrollEntity("right");
@@ -102,7 +114,7 @@ export class ScrollManager {
     this.dndManager.observeResize(this.scrollEl);
 
     if (this.parent) {
-      this.parent.registerObserverHandler(this.id, this.scrollEl, (entry) => {
+      this.parent.registerObserverHandler(this.instanceId, this.scrollEl, (entry) => {
         if (entry.isIntersecting) {
           this.handleEntityRegistration();
         } else {
@@ -119,7 +131,7 @@ export class ScrollManager {
     this.observer.disconnect();
     this.unbindScrollHandlers();
     this.scrollEl.removeEventListener("scroll", this.onScroll);
-    this.parent?.unregisterObserverHandler(this.id, this.scrollEl);
+    this.parent?.unregisterObserverHandler(this.instanceId, this.scrollEl);
     this.dndManager.unobserveResize(this.scrollEl);
   }
 
@@ -281,7 +293,7 @@ export class ScrollManager {
   }
 
   getId(side: Side) {
-    return `${this.id}-${side}`;
+    return `${this.instanceId}-${side}`;
   }
 
   getPath(side?: Side): Path {

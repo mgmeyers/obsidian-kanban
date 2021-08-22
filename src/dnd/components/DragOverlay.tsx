@@ -13,20 +13,28 @@ function getDragOverlayStyles(
   position: Coordinates,
   origin: Coordinates,
   originHitbox: Hitbox,
+  margin: Hitbox,
   transition?: string,
   transform?: string
 ): React.CSSProperties {
+  const adjustedHitbox = [
+    originHitbox[0] - margin[0],
+    originHitbox[1] - margin[1],
+    originHitbox[2] + margin[2],
+    originHitbox[3] + margin[3],
+  ];
+
   return {
     position: "absolute",
     top: 0,
     left: 0,
     transform:
       transform ||
-      `translate3d(${position.x - origin.x + originHitbox[0]}px, ${
-        position.y - origin.y + originHitbox[1]
+      `translate3d(${position.x - origin.x + adjustedHitbox[0]}px, ${
+        position.y - origin.y + adjustedHitbox[1]
       }px, 0px)`,
-    width: `${originHitbox[2] - originHitbox[0]}px`,
-    height: `${originHitbox[3] - originHitbox[1]}px`,
+    width: `${adjustedHitbox[2] - adjustedHitbox[0]}px`,
+    height: `${adjustedHitbox[3] - adjustedHitbox[1]}px`,
     transition,
   };
 }
@@ -46,6 +54,7 @@ export function DragOverlay({ children }: DragOverlayProps) {
       dragEntity,
       dragOrigin,
       dragPosition,
+      dragEntityMargin,
     }: DragEventData) => {
       if (!dragEntity || !dragPosition || !dragOrigin) {
         return;
@@ -53,16 +62,30 @@ export function DragOverlay({ children }: DragOverlayProps) {
       dragOriginHitbox = dragEntity.getHitbox();
       setDragEntity(dragEntity);
       setStyles(
-        getDragOverlayStyles(dragPosition, dragOrigin, dragOriginHitbox)
+        getDragOverlayStyles(
+          dragPosition,
+          dragOrigin,
+          dragOriginHitbox,
+          dragEntityMargin
+        )
       );
     };
 
-    const dragMove = ({ dragOrigin, dragPosition }: DragEventData) => {
+    const dragMove = ({
+      dragOrigin,
+      dragPosition,
+      dragEntityMargin,
+    }: DragEventData) => {
       if (!dragPosition || !dragOrigin) {
         return;
       }
       setStyles(
-        getDragOverlayStyles(dragPosition, dragOrigin, dragOriginHitbox)
+        getDragOverlayStyles(
+          dragPosition,
+          dragOrigin,
+          dragOriginHitbox,
+          dragEntityMargin
+        )
       );
     };
 
@@ -70,6 +93,7 @@ export function DragOverlay({ children }: DragOverlayProps) {
       dragOrigin,
       primaryIntersection,
       dragPosition,
+      dragEntityMargin,
     }: DragEventData) => {
       if (primaryIntersection && dragPosition && dragOrigin) {
         const dropHitbox = primaryIntersection.getHitbox();
@@ -90,6 +114,7 @@ export function DragOverlay({ children }: DragOverlayProps) {
             dragPosition,
             dragOrigin,
             dragOriginHitbox,
+            dragEntityMargin,
             transition,
             transform
           )

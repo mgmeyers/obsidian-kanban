@@ -136,7 +136,6 @@ export class StateManager {
     state: Board | ((board: Board) => Board),
     shouldSave: boolean = true
   ) {
-    console.log("setting state");
     if (typeof state === "function") {
       this.state = state(this.state);
     } else {
@@ -245,7 +244,6 @@ export class StateManager {
   };
 
   getParsedBoard(data: string) {
-    console.log("parsing new board");
     const trimmedContent = data.trim();
 
     let board: Board = {

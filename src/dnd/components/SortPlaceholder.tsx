@@ -24,7 +24,7 @@ export function SortPlaceholder({
       type: "placeholder",
       accepts,
     };
-  }, [accepts]);
+  }, accepts);
 
   return (
     <div ref={measureRef} className={classcat([className, c("placeholder")])}>

@@ -14,11 +14,11 @@ import { useNestedEntityPath } from "src/dnd/components/Droppable";
 interface LaneHeaderProps {
   lane: Lane;
   laneIndex: number;
-  setDragHandleRef: (handle: HTMLDivElement) => void;
+  dragHandleRef: React.MutableRefObject<HTMLDivElement>;
 }
 
 export const LaneHeader = React.memo(
-  ({ lane, laneIndex, setDragHandleRef }: LaneHeaderProps) => {
+  ({ lane, laneIndex, dragHandleRef }: LaneHeaderProps) => {
     const { boardModifiers } = React.useContext(KanbanContext);
     const [isEditing, setIsEditing] = React.useState(false);
     const lanePath = useNestedEntityPath(laneIndex);
@@ -35,7 +35,7 @@ export const LaneHeader = React.memo(
         >
           <div
             className={c("lane-grip")}
-            ref={setDragHandleRef}
+            ref={dragHandleRef}
             aria-label={t("Move list")}
           >
             <GripIcon />

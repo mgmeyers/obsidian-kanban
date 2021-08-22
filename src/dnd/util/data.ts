@@ -86,12 +86,7 @@ export function moveEntity(root: Nestable, source: Path, destination: Path) {
     },
   });
 
-  console.log(source, destination);
-  console.log(mutation);
-
   const newBoard = update(root, mutation);
-
-  console.log(newBoard);
 
   return newBoard;
 }

@@ -3,6 +3,7 @@ import Mark from "mark.js";
 import { KanbanContext } from "./context";
 import { c } from "./helpers";
 import { renderMarkdown } from "./helpers/renderMarkdown";
+import classcat from "classcat";
 
 interface MarkdownRendererProps {
   className?: string;
@@ -46,9 +47,11 @@ export const MarkdownRenderer = React.memo(function MarkdownRenderer({
           node.replaceChild(contentEl, node.firstChild);
         }
       }}
-      className={`markdown-preview-view ${c("markdown-preview-view")} ${
-        className || ""
-      }`}
+      className={classcat([
+        "markdown-preview-view",
+        c("markdown-preview-view"),
+        className,
+      ])}
     />
   );
 });
