@@ -15,12 +15,24 @@ export function DndScrollState({ children }: WithChildren) {
   );
 }
 
-export function useStoredScrollState(
-  id: string,
-  index: number | undefined,
-  scrollRef: React.RefObject<HTMLElement>
-) {
+export function useStoredScrollState(id: string, index: number | undefined) {
+  const scrollRef = React.useRef<HTMLDivElement>(null);
   const scrollStates = React.useContext(ScrollStateContext);
+  
+  const setRef = (el: HTMLDivElement) => {
+    scrollRef.current = el;
+
+    if (scrollRef.current) {
+      requestAnimationFrame(() => {
+        const state = scrollStates.get(id);
+
+        if (state && (state.x !== 0 || state.y !== 0)) {
+          scrollRef.current.scrollLeft = state.x;
+          scrollRef.current.scrollTop = state.y;
+        }
+      });
+    }
+  };
 
   React.useEffect(() => {
     const el = scrollRef.current;
@@ -36,17 +48,12 @@ export function useStoredScrollState(
       });
     });
 
-    const state = scrollStates.get(id);
-
-    if (state && (state.x !== 0 || state.y !== 0)) {
-      el.scrollLeft = state.x;
-      el.scrollTop = state.y;
-    }
-
     el.addEventListener("scroll", onScroll);
 
     return () => {
       el.removeEventListener("scroll", onScroll);
     };
-  }, [scrollStates, id, index, scrollRef]);
+  }, [scrollStates, id, index]);
+
+  return { setRef, scrollRef };
 }

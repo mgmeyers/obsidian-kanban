@@ -172,34 +172,37 @@ export function rectIntersection(entities: Entity[], target: Hitbox) {
 
 export function getScrollIntersection(
   entities: Entity[],
-  target: Hitbox
-): Array<[Entity, number]> {
-  return entities.map((e) => {
-    const side = e.getData().side as Side;
-    const hitbox = e.getHitbox();
+  target: Hitbox,
+  dragId: string
+): [Entity, number] {
+  const primary = getBestIntersect(entities, target, dragId);
 
-    let targetIndex = 0;
-    let hitboxIndex = 0;
+  if (!primary) return null;
 
-    if (side === "left") {
-      targetIndex = 0;
-      hitboxIndex = 2;
-    } else if (side === "right") {
-      targetIndex = 2;
-      hitboxIndex = 0;
-    } else if (side === "top") {
-      targetIndex = 1;
-      hitboxIndex = 3;
-    } else if (side === "bottom") {
-      targetIndex = 3;
-      hitboxIndex = 1;
-    }
+  const side = primary.getData().side as Side;
+  const hitbox = primary.getHitbox();
 
-    const distance = Math.abs(target[targetIndex] - hitbox[hitboxIndex]);
-    const max = Math.abs(hitbox[targetIndex] - hitbox[hitboxIndex]);
+  let targetIndex = 0;
+  let hitboxIndex = 0;
 
-    return [e, max - distance];
-  });
+  if (side === "left") {
+    targetIndex = 0;
+    hitboxIndex = 2;
+  } else if (side === "right") {
+    targetIndex = 2;
+    hitboxIndex = 0;
+  } else if (side === "top") {
+    targetIndex = 1;
+    hitboxIndex = 3;
+  } else if (side === "bottom") {
+    targetIndex = 3;
+    hitboxIndex = 1;
+  }
+
+  const distance = Math.abs(target[targetIndex] - hitbox[hitboxIndex]);
+  const max = Math.abs(hitbox[targetIndex] - hitbox[hitboxIndex]);
+
+  return [primary, max - distance];
 }
 
 /**
@@ -278,7 +281,7 @@ export function getBestIntersect(
   hits: Entity[],
   dragHitbox: Hitbox,
   dragId: string
-) {
+): Entity | null {
   const dragTopLeft = cornersOfRectangle(dragHitbox)[0];
   const distances = hits.map((entity) => {
     if (entity.entityId === dragId) {
@@ -318,8 +321,8 @@ export function getElementScrollOffsets(element: HTMLElement): ScrollState {
   return {
     x,
     y,
-    maxX,
-    maxY,
+    maxX: Math.max(maxX, 0),
+    maxY: Math.max(maxY, 0),
   };
 }
 
@@ -383,7 +386,10 @@ export function getScrollIntersectionDiff(
   };
 }
 
-export function getHitboxDimensions(hitbox: Hitbox, margin: Hitbox = [0, 0, 0, 0]) {
+export function getHitboxDimensions(
+  hitbox: Hitbox,
+  margin: Hitbox = [0, 0, 0, 0]
+) {
   const minX = hitbox[0] - margin[0];
   const minY = hitbox[1] - margin[1];
   const maxX = hitbox[2] + margin[2];

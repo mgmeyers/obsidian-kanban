@@ -52,48 +52,49 @@ export function LaneForm() {
 
   if (isInputVisible) {
     return (
-      <div ref={clickOutsideRef} className={c("lane")}>
-        <div className={c("lane-input-wrapper")}>
-          <div data-replicated-value={laneTitle} className={c("grow-wrap")}>
-            <textarea
-              rows={1}
-              value={laneTitle}
-              ref={inputRef}
-              className={c("lane-input")}
-              placeholder={t("Enter list title...")}
-              onChange={(e) => setLaneTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (getShouldIMEBlockAction()) return;
-
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  createLane();
-                } else if (e.key === "Escape") {
-                  clear();
-                }
-              }}
-              {...inputProps}
+      <div ref={clickOutsideRef} className={c("lane-wrapper")}>
+        <div className={c("lane")}>
+          <div className={c("lane-input-wrapper")}>
+            <div data-replicated-value={laneTitle} className={c("grow-wrap")}>
+              <textarea
+                rows={1}
+                value={laneTitle}
+                ref={inputRef}
+                className={c("lane-input")}
+                placeholder={t("Enter list title...")}
+                onChange={(e) => setLaneTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (getShouldIMEBlockAction()) return;
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    createLane();
+                  } else if (e.key === "Escape") {
+                    clear();
+                  }
+                }}
+                {...inputProps}
+              />
+            </div>
+          </div>
+          <div className={c("checkbox-wrapper")}>
+            <div className={c("checkbox-label")}>
+              {t("Mark items in this list as complete")}
+            </div>
+            <div
+              onClick={() => setShouldMarkAsComplete(!shouldMarkAsComplete)}
+              className={`checkbox-container ${
+                shouldMarkAsComplete ? "is-enabled" : ""
+              }`}
             />
           </div>
-        </div>
-        <div className={c("checkbox-wrapper")}>
-          <div className={c("checkbox-label")}>
-            {t("Mark items in this list as complete")}
+          <div className={c("lane-input-actions")}>
+            <button className={c("lane-action-add")} onClick={createLane}>
+              {t("Add list")}
+            </button>
+            <button className={c("lane-action-cancel")} onClick={clear}>
+              {t("Cancel")}
+            </button>
           </div>
-          <div
-            onClick={() => setShouldMarkAsComplete(!shouldMarkAsComplete)}
-            className={`checkbox-container ${
-              shouldMarkAsComplete ? "is-enabled" : ""
-            }`}
-          />
-        </div>
-        <div className={c("lane-input-actions")}>
-          <button className={c("lane-action-add")} onClick={createLane}>
-            {t("Add list")}
-          </button>
-          <button className={c("lane-action-cancel")} onClick={clear}>
-            {t("Cancel")}
-          </button>
         </div>
       </div>
     );

@@ -23,6 +23,8 @@ export type IntersectionObserverHandler = (
 
 export const scrollContainerEntityType = "scroll-container";
 
+const scrollStrengthModifier = 8;
+
 const sides: Side[] = ["top", "right", "bottom", "left"];
 
 export class ScrollManager {
@@ -74,6 +76,7 @@ export class ScrollManager {
   initNodes(scrollEl: HTMLElement) {
     this.scrollEl = scrollEl;
     this.scrollEl.dataset.hitboxid = this.instanceId;
+    this.scrollEl.dataset.scrollid = this.instanceId;
 
     this.top = this.createScrollEntity("top");
     this.right = this.createScrollEntity("right");
@@ -107,6 +110,8 @@ export class ScrollManager {
       capture: false,
     });
 
+    this.dndManager.emitter.on("scrollResize", this.onScroll);
+
     setTimeout(() => {
       this.onScroll();
     });
@@ -114,13 +119,17 @@ export class ScrollManager {
     this.dndManager.observeResize(this.scrollEl);
 
     if (this.parent) {
-      this.parent.registerObserverHandler(this.instanceId, this.scrollEl, (entry) => {
-        if (entry.isIntersecting) {
-          this.handleEntityRegistration();
-        } else {
-          this.handleEntityUnregistration();
+      this.parent.registerObserverHandler(
+        this.instanceId,
+        this.scrollEl,
+        (entry) => {
+          if (entry.isIntersecting) {
+            this.handleEntityRegistration();
+          } else {
+            this.handleEntityUnregistration();
+          }
         }
-      });
+      );
     } else {
       this.handleEntityRegistration();
     }
@@ -131,6 +140,7 @@ export class ScrollManager {
     this.observer.disconnect();
     this.unbindScrollHandlers();
     this.scrollEl.removeEventListener("scroll", this.onScroll);
+    this.dndManager.emitter.off("scrollResize", this.onScroll);
     this.parent?.unregisterObserverHandler(this.instanceId, this.scrollEl);
     this.dndManager.unobserveResize(this.scrollEl);
   }
@@ -281,8 +291,8 @@ export class ScrollManager {
         const shouldIncreaseScroll = ["right", "bottom"].includes(side);
 
         scrollBy[scrollKey] = shouldIncreaseScroll
-          ? Math.max(13 - (13 * strength) / 35, 0)
-          : Math.min(-13 + (13 * strength) / 35, 0);
+          ? Math.max(scrollStrengthModifier - (scrollStrengthModifier * strength) / 35, 0)
+          : Math.min(-scrollStrengthModifier + (scrollStrengthModifier * strength) / 35, 0);
       });
 
       this.scrollEl.scrollBy(scrollBy);

@@ -207,10 +207,7 @@ export const DraggableItem = React.memo(function DraggableItem(
   return (
     <div
       ref={measureRef}
-      className={classcat([
-        c("item-wrapper"),
-        { "is-dragging": props.isStatic },
-      ])}
+      className={c("item-wrapper")}
     >
       <div ref={elementRef} className={c("item")}>
         {props.isStatic ? (

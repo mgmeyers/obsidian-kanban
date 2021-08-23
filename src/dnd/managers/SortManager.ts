@@ -131,7 +131,15 @@ export class SortManager {
     });
   };
 
-  resetSelf(maintainHidden: boolean, transition?: string) {
+  resetSelf({
+    maintainHidden,
+    shiftTransition,
+    placeholderTransition,
+  }: {
+    maintainHidden: boolean;
+    shiftTransition?: string;
+    placeholderTransition?: string;
+  }) {
     if (this.isSorting) {
       this.setSortState(false);
       this.deactivatePlaceholder();
@@ -141,7 +149,7 @@ export class SortManager {
       this.shifted.forEach((entityId) => {
         if (this.sortables.has(entityId)) {
           const [, el] = this.sortables.get(entityId);
-          this.resetEl(el, transition);
+          this.resetEl(el, shiftTransition);
         }
       });
 
@@ -152,7 +160,7 @@ export class SortManager {
       this.hidden.forEach((entityId) => {
         if (this.sortables.has(entityId)) {
           const [, , measure] = this.sortables.get(entityId);
-          this.resetEl(measure, transition);
+          this.resetEl(measure, placeholderTransition);
         }
       });
 
@@ -173,10 +181,10 @@ export class SortManager {
         dragEntity &&
         this.sortables.has(dragEntity.entityId)
       ) {
-        return this.resetSelf(false);
+        return this.resetSelf({ maintainHidden: false });
       }
 
-      return this.resetSelf(true);
+      return this.resetSelf({ maintainHidden: true });
     }
 
     clearTimeout(this.dragEnterTimeout);
@@ -201,7 +209,11 @@ export class SortManager {
         this.dndManager.onDrop(dragEntity, primaryIntersection);
       }
 
-      this.resetSelf(false, transitions.none);
+      this.resetSelf({
+        maintainHidden: false,
+        shiftTransition: transitions.none,
+        placeholderTransition: transitions.none,
+      });
     }, dropDuration);
 
     this.hitboxDimensions = emptyDimensions;
@@ -224,7 +236,7 @@ export class SortManager {
       !dragOriginHitbox
     ) {
       if (!haveSortable && this.isSorting) {
-        this.resetSelf(true);
+        this.resetSelf({ maintainHidden: true });
       }
 
       return;
@@ -276,7 +288,7 @@ export class SortManager {
     clearTimeout(this.dragLeaveTimeout);
     clearTimeout(this.dragEnterTimeout);
     this.dragLeaveTimeout = window.setTimeout(() => {
-      this.resetSelf(true);
+      this.resetSelf({ maintainHidden: true });
     }, dragLeaveDebounceLength);
 
     this.hitboxDimensions = emptyDimensions;
@@ -297,10 +309,10 @@ export class SortManager {
     }
   }
 
-  deactivatePlaceholder() {
+  deactivatePlaceholder(transition: string = transitions.placeholder) {
     if (this.placeholder) {
       const [, , measure] = this.placeholder;
-      measure.style.setProperty("transition", transitions.none);
+      measure.style.setProperty("transition", transitions.placeholder);
       measure.style.removeProperty("width");
       measure.style.removeProperty("height");
     }

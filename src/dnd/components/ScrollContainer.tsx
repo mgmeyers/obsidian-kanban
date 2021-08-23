@@ -21,34 +21,10 @@ export function ScrollContainer({
   id,
   index,
 }: ScrollContainerProps) {
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-
-  useStoredScrollState(id, index, scrollRef);
-
-  React.useEffect(() => {
-    if (isStatic) {
-      scrollRef.current?.style.setProperty("overflow", "hidden");
-    } else {
-      scrollRef.current?.style.removeProperty("overflow");
-    }
-  }, [isStatic]);
-
-  React.useEffect(() => {
-    if (isStatic) return;
-
-    scrollRef.current?.style.setProperty("overflow", "hidden");
-
-    const timeout = setTimeout(() => {
-      scrollRef.current?.style.removeProperty("overflow");
-    }, 10);
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [id, index, isStatic]);
+  const { setRef, scrollRef } = useStoredScrollState(id, index);
 
   return (
-    <div ref={scrollRef} className={classcat([className, c("scroll-container")])}>
+    <div ref={setRef} className={classcat([className, c("scroll-container")])}>
       {isStatic ? (
         children
       ) : (

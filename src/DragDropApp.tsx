@@ -17,7 +17,7 @@ import { getBoardModifiers } from "./components/helpers/boardModifiers";
 import { KanbanContext } from "./components/context";
 import KanbanPlugin from "./main";
 import { c } from "./components/helpers";
-// import { Debug } from "./dnd/Debug";
+import { DndScrollState } from "./dnd/components/ScrollStateContext";
 
 export function createApp(plugin: KanbanPlugin) {
   return <DragDropApp plugin={plugin} />;
@@ -83,55 +83,56 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
   if (portals.length)
     return (
       <DndContext onDrop={handleDrop}>
-        {...portals}
-        <DragOverlay>
-          {(entity, styles) => {
-            // TODO: mock this, instead?
-            const [data, context] = React.useMemo(() => {
-              const view = plugin.getKanbanView(entity.scopeId);
-              const stateManager = plugin.stateManagers.get(view.file);
-              const data = getEntityFromPath(
-                stateManager.state,
-                entity.getPath()
-              );
-              const boardModifiers = getBoardModifiers(stateManager);
-              const filePath = view.file.path;
+        <DndScrollState>
+          {...portals}
+          <DragOverlay>
+            {(entity, styles) => {
+              // TODO: mock this, instead?
+              const [data, context] = React.useMemo(() => {
+                const view = plugin.getKanbanView(entity.scopeId);
+                const stateManager = plugin.stateManagers.get(view.file);
+                const data = getEntityFromPath(
+                  stateManager.state,
+                  entity.getPath()
+                );
+                const boardModifiers = getBoardModifiers(stateManager);
+                const filePath = view.file.path;
 
-              return [data, { view, stateManager, boardModifiers, filePath }];
-            }, [entity]);
+                return [data, { view, stateManager, boardModifiers, filePath }];
+              }, [entity]);
 
-            if (data.type === "lane") {
-              return (
-                <KanbanContext.Provider value={context}>
-                  <div style={styles}>
-                    <DraggableLane
-                      lane={data as Lane}
-                      laneIndex={0}
-                      isStatic={true}
-                    />
-                  </div>
-                </KanbanContext.Provider>
-              );
-            }
+              if (data.type === "lane") {
+                return (
+                  <KanbanContext.Provider value={context}>
+                    <div className={c("drag-container")} style={styles}>
+                      <DraggableLane
+                        lane={data as Lane}
+                        laneIndex={0}
+                        isStatic={true}
+                      />
+                    </div>
+                  </KanbanContext.Provider>
+                );
+              }
 
-            if (data.type === "item") {
-              return (
-                <KanbanContext.Provider value={context}>
-                  <div className={c("drag-container")} style={styles}>
-                    <DraggableItem
-                      item={data as Item}
-                      itemIndex={0}
-                      isStatic={true}
-                    />
-                  </div>
-                </KanbanContext.Provider>
-              );
-            }
+              if (data.type === "item") {
+                return (
+                  <KanbanContext.Provider value={context}>
+                    <div className={c("drag-container")} style={styles}>
+                      <DraggableItem
+                        item={data as Item}
+                        itemIndex={0}
+                        isStatic={true}
+                      />
+                    </div>
+                  </KanbanContext.Provider>
+                );
+              }
 
-            return <div />;
-          }}
-        </DragOverlay>
-        {/* <Debug /> */}
+              return <div />;
+            }}
+          </DragOverlay>
+        </DndScrollState>
       </DndContext>
     );
 }

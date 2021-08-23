@@ -1,6 +1,6 @@
 import React from "react";
 import { useRaf } from "./util/raf";
-import { Hitbox, Entity } from "./types";
+import { Hitbox } from "./types";
 import { DndManagerContext } from "./components/context";
 import { c } from "src/components/helpers";
 
@@ -71,23 +71,6 @@ export function Debug() {
             zIndex={9998}
             color="tomato"
             key={id}
-            hitbox={hb.getHitbox()}
-          />
-        );
-      })}
-    </>
-  );
-}
-
-export function DebugIntersections({ hitboxes }: { hitboxes: Entity[] }) {
-  return (
-    <>
-      {hitboxes.map((hb, i) => {
-        return (
-          <HitBoxDebug
-            zIndex={10000}
-            color="tomato"
-            key={i}
             hitbox={hb.getHitbox()}
           />
         );

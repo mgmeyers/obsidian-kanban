@@ -63,12 +63,17 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
 
 .kanban-plugin__board {
   display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.kanban-plugin__board > div {
+  display: flex;
   align-items: flex-start;
   justify-content: flex-start;
   padding: 1rem;
-  width: 100%;
+  width: fit-content;
   height: 100%;
-  overflow: auto;
 }
 
 .kanban-plugin__lane-wrapper {
@@ -91,6 +96,7 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
 .kanban-plugin__placeholder.kanban-plugin__lane-placeholder {
   height: 100%;
   flex-grow: 1;
+  margin-right: 5px;
 }
 
 .kanban-plugin__lane.is-hidden {
@@ -149,15 +155,16 @@ button.kanban-plugin__new-lane-button:hover {
 }
 
 .kanban-plugin__lane-header-wrapper {
-  margin-bottom: 10px;
-  padding: 10px 11px 0;
+  padding: 10px 11px 10px;
   display: flex;
   align-items: center;
   flex-shrink: 0;
   flex-grow: 0;
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 .kanban-plugin__lane-grip {
+  cursor: grab;
   flex-grow: 0;
   margin-right: 5px;
   color: var(--text-faint);
@@ -240,9 +247,8 @@ button.kanban-plugin__lane-settings-button
 }
 
 .kanban-plugin__lane-items {
-  transition: 150ms background-color ease-in-out;
-  padding: 0 4px;
-  border-radius: 6px;
+  padding: 4px;
+  margin: 0 4px;
   display: flex;
   flex-direction: column;
 }
@@ -251,17 +257,13 @@ button.kanban-plugin__lane-settings-button
   flex-grow: 1;
 }
 
-.kanban-plugin__lane-wrapper.is-sorting .kanban-plugin__lane-items {
-  background-color: rgba(var(--interactive-accent-rgb), 0.15);
-}
-
 .kanban-plugin__lane-items > div {
   margin-top: 4px;
 }
 
 .kanban-plugin__item-button-wrapper {
   border-top: 1px solid var(--background-modifier-border);
-  padding: 10px;
+  padding: 5px;
   flex-shrink: 0;
   flex-grow: 0;
 }
@@ -1197,21 +1199,22 @@ button.kanban-plugin__cancel-action-button {
 }
 
 .kanban-plugin__scroll-container::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
   background-color: transparent;
+  width: 16px;
+  height: 16px;
+}
+
+.kanban-plugin__scroll-container::-webkit-scrollbar-thumb {
+  border: 4px solid transparent;
+  background-clip: content-box;
 }
 
 .kanban-plugin__scroll-container.kanban-plugin__horizontal {
-  width: 100%;
-  height: 100%;
   overflow-y: hidden;
-  overflow-x: scroll;
+  overflow-x: auto;
 }
 
 .kanban-plugin__scroll-container.kanban-plugin__vertical {
-  width: 100%;
-  height: 100%;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
 }

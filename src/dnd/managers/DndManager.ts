@@ -20,7 +20,7 @@ export class DndManager {
     this.onDrop = onDrop;
 
     this.resizeObserver = new ResizeObserver(
-      debounce(this.recalcVisibleHitboxes, 100, true)
+      debounce(this.handleResize, 100, true)
     );
     this.dragManager = new DragManager(
       this.emitter,
@@ -33,10 +33,22 @@ export class DndManager {
     this.resizeObserver.disconnect();
   }
 
-  recalcVisibleHitboxes = () => {
+  scrollResizeDebounce = 0;
+  handleResize: ResizeObserverCallback = (entries) => {
+    entries.forEach((e) => {
+      if ((e.target as HTMLElement).dataset.scrollid) {
+        clearTimeout(this.scrollResizeDebounce);
+
+        this.scrollResizeDebounce = window.setTimeout(() => {
+          this.emitter.emit('scrollResize', null)
+        }, 50)
+      }
+    });
+
     this.hitboxEntities.forEach((entity) => {
       entity.recalcInitial();
     });
+  
     this.scrollEntities.forEach((entity) => {
       entity.recalcInitial();
     });

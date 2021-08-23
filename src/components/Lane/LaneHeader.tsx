@@ -33,11 +33,7 @@ export const LaneHeader = React.memo(
           onDoubleClick={() => setIsEditing(true)}
           className={c("lane-header-wrapper")}
         >
-          <div
-            className={c("lane-grip")}
-            ref={dragHandleRef}
-            aria-label={t("Move list")}
-          >
+          <div className={c("lane-grip")} ref={dragHandleRef}>
             <GripIcon />
           </div>
 

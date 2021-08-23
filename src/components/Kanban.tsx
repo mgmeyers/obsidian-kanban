@@ -3,6 +3,7 @@ import React from "react";
 import { DataTypes } from "./types";
 import { c, baseClassName } from "./helpers";
 import { Lanes } from "./Lane/Lane";
+import { LaneForm } from "./lane/LaneForm";
 import { KanbanContext, SearchContext } from "./context";
 import { KanbanView } from "src/KanbanView";
 import { frontMatterKey } from "../parsers/common";
@@ -10,7 +11,6 @@ import { t } from "src/lang/helpers";
 import { Icon } from "./Icon/Icon";
 import { getBoardModifiers } from "./helpers/boardModifiers";
 import { DndScope } from "../dnd/components/Scope";
-import { DndScrollState } from "src/dnd/components/ScrollStateContext";
 import { ScrollContainer } from "src/dnd/components/ScrollContainer";
 import { Sortable } from "src/dnd/components/Sortable";
 import { SortPlaceholder } from "src/dnd/components/SortPlaceholder";
@@ -172,58 +172,58 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
 
   return (
     <DndScope id={view.id}>
-      <DndScrollState>
-        <KanbanContext.Provider value={kanbanContext}>
-          <SearchContext.Provider
-            value={
-              debouncedSearchQuery
-                ? debouncedSearchQuery.toLocaleLowerCase()
-                : null
-            }
-          >
-            {boardData.data.isSearching && (
-              <div className={c("search-wrapper")}>
-                <input
-                  ref={searchRef}
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Escape") {
-                      setSearchQuery("");
-                      setDebouncedSearchQuery("");
-                      (e.target as HTMLInputElement).blur();
-                      stateManager.toggleSearch();
-                    }
-                  }}
-                  type="text"
-                  className={c("filter-input")}
-                  placeholder={t("Search...")}
-                />
-                <button
-                  className={c("search-cancel-button")}
-                  onClick={() => {
+      <KanbanContext.Provider value={kanbanContext}>
+        <SearchContext.Provider
+          value={
+            debouncedSearchQuery
+              ? debouncedSearchQuery.toLocaleLowerCase()
+              : null
+          }
+        >
+          {boardData.data.isSearching && (
+            <div className={c("search-wrapper")}>
+              <input
+                ref={searchRef}
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
                     setSearchQuery("");
                     setDebouncedSearchQuery("");
+                    (e.target as HTMLInputElement).blur();
                     stateManager.toggleSearch();
-                  }}
-                  aria-label={t("Cancel")}
-                >
-                  <Icon name="cross" />
-                </button>
-              </div>
-            )}
-            <div
-              className={baseClassName}
-              onMouseOver={onMouseOver}
-              onClick={onClick}
-            >
-              <ScrollContainer
-                id="lanes"
-                className={classcat([c("board"), c("horizontal")])}
-                triggerTypes={boardScrollTiggers}
+                  }
+                }}
+                type="text"
+                className={c("filter-input")}
+                placeholder={t("Search...")}
+              />
+              <button
+                className={c("search-cancel-button")}
+                onClick={() => {
+                  setSearchQuery("");
+                  setDebouncedSearchQuery("");
+                  stateManager.toggleSearch();
+                }}
+                aria-label={t("Cancel")}
               >
+                <Icon name="cross" />
+              </button>
+            </div>
+          )}
+          <div
+            className={baseClassName}
+            onMouseOver={onMouseOver}
+            onClick={onClick}
+          >
+            <ScrollContainer
+              id="lanes"
+              className={classcat([c("board"), c("horizontal")])}
+              triggerTypes={boardScrollTiggers}
+            >
+              <div>
                 <Sortable axis="horizontal">
                   <Lanes lanes={boardData.children} />
                   <SortPlaceholder
@@ -232,11 +232,12 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                     index={boardData.children.length}
                   />
                 </Sortable>
-              </ScrollContainer>
-            </div>
-          </SearchContext.Provider>
-        </KanbanContext.Provider>
-      </DndScrollState>
+                <LaneForm />
+              </div>
+            </ScrollContainer>
+          </div>
+        </SearchContext.Provider>
+      </KanbanContext.Provider>
     </DndScope>
   );
 };

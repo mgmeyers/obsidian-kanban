@@ -53,7 +53,7 @@ export class DragManager {
   dragPosition?: Coordinates;
 
   primaryIntersection?: Entity;
-  scrollIntersections?: [Entity, number][];
+  scrollIntersection?: [Entity, number];
 
   constructor(
     emitter: Emitter,
@@ -74,7 +74,7 @@ export class DragManager {
       dragOriginHitbox: this.dragOriginHitbox,
       dragPosition: this.dragPosition,
       primaryIntersection: this.primaryIntersection,
-      scrollIntersections: this.scrollIntersections,
+      scrollIntersection: this.scrollIntersection,
     };
   }
 
@@ -118,7 +118,7 @@ export class DragManager {
     this.dragOrigin = undefined;
     this.dragOriginHitbox = undefined;
     this.dragPosition = undefined;
-    this.scrollIntersections = undefined;
+    this.scrollIntersection = undefined;
     this.primaryIntersection = undefined;
   }
 
@@ -161,6 +161,7 @@ export class DragManager {
 
     const isScrolling = this.handleScrollIntersect(
       dragHitbox,
+      this.dragEntity.entityId,
       scrollHitboxes,
       scrollEntities
     );
@@ -177,6 +178,7 @@ export class DragManager {
 
   handleScrollIntersect(
     dragHitbox: Hitbox,
+    dragId: string,
     hitboxes: Hitbox[],
     hitboxEntities: Entity[]
   ) {
@@ -184,55 +186,18 @@ export class DragManager {
       (match) => hitboxEntities[match[1]]
     );
 
-    const scrollIntersections = getScrollIntersection(scrollHits, dragHitbox);
-
-    const { add, update, remove } = getScrollIntersectionDiff(
-      this.scrollIntersections || [],
-      scrollIntersections
+    const scrollIntersection = getScrollIntersection(
+      scrollHits,
+      dragHitbox,
+      dragId
     );
 
-    this.scrollIntersections = scrollIntersections;
-
-    add.forEach((e) => {
-      const [scrollEntity, scrollStrength] = e;
-      const scrollEntityData = scrollEntity.getData();
-      const scrollEntityId = scrollEntity.entityId;
-      const scrollEntitySide = scrollEntityData.side;
-
-      this.emitter.emit(
-        "beginDragScroll",
-        {
-          ...this.getDragEventData(),
-          scrollEntity,
-          scrollEntityId,
-          scrollEntitySide,
-          scrollStrength,
-        },
-        scrollEntityId
-      );
-    });
-
-    update.forEach((e) => {
-      const [scrollEntity, scrollStrength] = e;
-      const scrollEntityData = scrollEntity.getData();
-      const scrollEntityId = scrollEntity.entityId;
-      const scrollEntitySide = scrollEntityData.side;
-
-      this.emitter.emit(
-        "updateDragScroll",
-        {
-          ...this.getDragEventData(),
-          scrollEntity,
-          scrollEntityId,
-          scrollEntitySide,
-          scrollStrength,
-        },
-        scrollEntityId
-      );
-    });
-
-    remove.forEach((e) => {
-      const [scrollEntity, scrollStrength] = e;
+    if (
+      this.scrollIntersection &&
+      (!scrollIntersection ||
+        scrollIntersection[0] !== this.scrollIntersection[0])
+    ) {
+      const [scrollEntity, scrollStrength] = this.scrollIntersection;
       const scrollEntityData = scrollEntity.getData();
       const scrollEntityId = scrollEntity.entityId;
       const scrollEntitySide = scrollEntityData.side;
@@ -248,9 +213,59 @@ export class DragManager {
         },
         scrollEntityId
       );
-    });
 
-    return !!(add.length + update.length);
+      this.scrollIntersection = undefined;
+    }
+
+    if (
+      scrollIntersection &&
+      (!this.scrollIntersection ||
+        this.scrollIntersection[0] !== scrollIntersection[0])
+    ) {
+      const [scrollEntity, scrollStrength] = scrollIntersection;
+      const scrollEntityData = scrollEntity.getData();
+      const scrollEntityId = scrollEntity.entityId;
+      const scrollEntitySide = scrollEntityData.side;
+
+      this.emitter.emit(
+        "beginDragScroll",
+        {
+          ...this.getDragEventData(),
+          scrollEntity,
+          scrollEntityId,
+          scrollEntitySide,
+          scrollStrength,
+        },
+        scrollEntityId
+      );
+
+      this.scrollIntersection = scrollIntersection;
+    } else if (
+      scrollIntersection &&
+      this.scrollIntersection &&
+      scrollIntersection[0] === this.scrollIntersection[0]
+    ) {
+      const [scrollEntity, scrollStrength] = scrollIntersection;
+      const scrollEntityData = scrollEntity.getData();
+      const scrollEntityId = scrollEntity.entityId;
+      const scrollEntitySide = scrollEntityData.side;
+
+      this.emitter.emit(
+        "updateDragScroll",
+        {
+          ...this.getDragEventData(),
+          scrollEntity,
+          scrollEntityId,
+          scrollEntitySide,
+          scrollStrength,
+        },
+        scrollEntityId
+      );
+
+      this.scrollIntersection = scrollIntersection;
+    }
+
+    return !!scrollIntersection;
   }
 
   handleHitboxIntersect(

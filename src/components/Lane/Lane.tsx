@@ -96,7 +96,6 @@ export const DraggableLane = React.memo(function DraggableLane(
       className={classcat([
         c("lane-wrapper"),
         {
-          "is-dragging": isStatic,
           "is-sorting": isSorting,
         },
       ])}
