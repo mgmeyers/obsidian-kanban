@@ -47,7 +47,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
   };
 
   return {
-    appendItems: (parentPath: Path, items: Item[]) => {
+    appendItems: (path: Path, items: Item[]) => {
       items.forEach((item) =>
         stateManager.app.workspace.trigger(
           "kanban:card-added",
@@ -57,11 +57,11 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
       );
 
       stateManager.setState((boardData) =>
-        appendEntities(boardData, parentPath, items)
+        appendEntities(boardData, path, items)
       );
     },
 
-    prependItems: (parentPath: Path, items: Item[]) => {
+    prependItems: (path: Path, items: Item[]) => {
       items.forEach((item) =>
         stateManager.app.workspace.trigger(
           "kanban:card-added",
@@ -71,7 +71,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
       );
 
       stateManager.setState((boardData) =>
-        prependEntities(boardData, parentPath, items)
+        prependEntities(boardData, path, items)
       );
     },
 

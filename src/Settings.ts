@@ -33,6 +33,7 @@ export type KanbanFormats = "basic";
 
 export interface KanbanSettings {
   [frontMatterKey]?: KanbanFormats;
+  "new-card-insertion-method"?: "prepend" | "append";
   "new-note-folder"?: string;
   "new-note-template"?: string;
   "lane-width"?: number;
@@ -130,6 +131,34 @@ export class SettingsManager {
         ),
       });
     }
+
+    new Setting(contentEl)
+      .setName(t("Prepend / append new cards"))
+      .setDesc(
+        t(
+          "This setting controls weather new cards are added to the beginning or end of the list."
+        )
+      )
+      .addDropdown((dropdown) => {
+        dropdown.addOption("prepend", t("Prepend"));
+        dropdown.addOption("append", t("Append"));
+
+        const [value, globalValue] = this.getSetting(
+          "new-card-insertion-method",
+          local
+        );
+
+        dropdown.setValue(
+          (value as string) || (globalValue as string) || "prepend"
+        );
+        dropdown.onChange((value) => {
+          this.applySettingsUpdate({
+            "new-card-insertion-method": {
+              $set: value as "prepend" | "append",
+            },
+          });
+        });
+      });
 
     new Setting(contentEl)
       .setName(t("Note template"))

@@ -701,6 +701,7 @@ button.kanban-plugin__cancel-action-button {
   border: 1px solid var(--background-modifier-border);
   padding: 5px 7px;
   font: inherit;
+  line-height: 1.5;
   grid-area: 1 / 1 / 2 / 2;
   font-size: 0.875rem;
   overflow: hidden;

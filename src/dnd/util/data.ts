@@ -66,8 +66,15 @@ export function buildPrependMutation(destination: Path, entities: Nestable[]) {
   });
 }
 
-export function moveEntity(root: Nestable, source: Path, destination: Path) {
-  const entity = getEntityFromPath(root, source);
+export function moveEntity(
+  root: Nestable,
+  source: Path,
+  destination: Path,
+  transform?: (entity: Nestable) => Nestable
+) {
+  const entity = transform
+    ? transform(getEntityFromPath(root, source))
+    : getEntityFromPath(root, source);
   const siblingDirection = getSiblingDirection(source, destination);
 
   let destinationModifier =
@@ -98,7 +105,7 @@ export function removeEntity(root: Nestable, target: Path) {
 export function insertEntity(
   root: Nestable,
   destination: Path,
-  entity: Nestable
+  entity: Nestable,
 ) {
   return update(root, buildInsertMutation(destination, entity));
 }

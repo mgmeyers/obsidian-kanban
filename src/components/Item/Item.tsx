@@ -99,7 +99,6 @@ export interface ItemInnerProps {
 
 const ItemInner = React.memo(function ItemInner({
   item,
-  isStatic,
   shouldMarkItemsComplete,
 }: ItemInnerProps) {
   const { stateManager, boardModifiers } = React.useContext(KanbanContext);

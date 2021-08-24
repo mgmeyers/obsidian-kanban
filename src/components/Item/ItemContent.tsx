@@ -46,6 +46,7 @@ export const ItemContent = React.memo(
           className={c("grow-wrap")}
         >
           <textarea
+            data-ignore-drag={true}
             rows={1}
             ref={inputRef}
             className={c("item-input")}

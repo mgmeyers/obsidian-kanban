@@ -21,13 +21,16 @@ export default {
   "Open board settings": "Open board settings",
   "Archive completed cards": "Archive completed cards",
   "Something went wrong": "Something went wrong",
-  "You may wish to open as markdown and inspect or edit the file.": "You may wish to open as markdown and inspect or edit the file.",
+  "You may wish to open as markdown and inspect or edit the file.":
+    "You may wish to open as markdown and inspect or edit the file.",
 
   // parser.ts
   Complete: "Complete",
   Archive: "Archive",
-  "Invalid Kanban file: problems parsing frontmatter": "Invalid Kanban file: problems parsing frontmatter",
-  "I don't know how to interpret this line:": "I don't know how to interpret this line:",
+  "Invalid Kanban file: problems parsing frontmatter":
+    "Invalid Kanban file: problems parsing frontmatter",
+  "I don't know how to interpret this line:":
+    "I don't know how to interpret this line:",
   Untitled: "Untitled", // auto-created column
 
   // settingHelpers.ts
@@ -37,6 +40,11 @@ export default {
   "Search...": "Search...",
 
   // Settings.ts
+  "Prepend / append new cards": "Prepend / append new cards",
+  "This setting controls weather new cards are added to the beginning or end of the list.":
+    "This setting controls weather new cards are added to the beginning or end of the list.",
+  "Prepend": "Prepend",
+  "Append": "Append",
   "These settings will take precedence over the default Kanban board settings.":
     "These settings will take precedence over the default Kanban board settings.",
   "Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.":

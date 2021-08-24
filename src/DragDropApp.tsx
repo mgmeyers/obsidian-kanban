@@ -1,7 +1,7 @@
 import React from "react";
 
 import { createPortal } from "react-dom";
-import { Item, Lane } from "./components/types";
+import { DataTypes, Item, Lane } from "./components/types";
 import { KanbanView } from "./KanbanView";
 import { DragOverlay } from "./dnd/components/DragOverlay";
 import { DndContext } from "./dnd/components/DndContext";
@@ -16,7 +16,7 @@ import {
 import { getBoardModifiers } from "./components/helpers/boardModifiers";
 import { KanbanContext } from "./components/context";
 import KanbanPlugin from "./main";
-import { c } from "./components/helpers";
+import { c, maybeCompleteForMove } from "./components/helpers";
 import { DndScrollState } from "./dnd/components/ScrollStateContext";
 
 export function createApp(plugin: KanbanPlugin) {
@@ -56,7 +56,19 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
         );
 
         return stateManager.setState((board) => {
-          return moveEntity(board, dragPath, dropPath);
+          return moveEntity(board, dragPath, dropPath, (entity) => {
+            if (entity.type === DataTypes.Item) {
+              return maybeCompleteForMove(
+                board,
+                dragPath,
+                board,
+                dropPath,
+                entity
+              );
+            }
+
+            return entity;
+          });
         });
       }
 
@@ -67,14 +79,24 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
         dropEntity.scopeId
       );
 
-      sourceStateManager.setState((board) => {
-        const entity = getEntityFromPath(board, dragPath);
+      sourceStateManager.setState((sourceBoard) => {
+        const entity = getEntityFromPath(sourceBoard, dragPath);
 
-        destinationStateManager.setState((board) => {
-          return insertEntity(board, dropPath, entity);
+        destinationStateManager.setState((destinationBoard) => {
+          const toInsert =
+            entity.type === DataTypes.Item
+              ? maybeCompleteForMove(
+                  sourceBoard,
+                  dragPath,
+                  destinationBoard,
+                  dropPath,
+                  entity
+                )
+              : entity;
+          return insertEntity(destinationBoard, dropPath, toInsert);
         });
 
-        return removeEntity(board, dragPath);
+        return removeEntity(sourceBoard, dragPath);
       });
     },
     [views]

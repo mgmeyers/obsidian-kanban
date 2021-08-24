@@ -1,8 +1,10 @@
 import React from "react";
 import update from "immutability-helper";
-import { Item, Lane } from "./types";
+import { Board, Item, Lane } from "./types";
 import { App, MarkdownView, TFile } from "obsidian";
 import { StateManager } from "src/StateManager";
+import { Path } from "src/dnd/types";
+import { getEntityFromPath } from "src/dnd/util/data";
 
 export const baseClassName = "kanban-plugin";
 
@@ -17,12 +19,20 @@ export function generateInstanceId(): string {
 }
 
 export function maybeCompleteForMove(
-  item: Item,
-  fromLane: Lane,
-  toLane: Lane
+  sourceBoard: Board,
+  sourcePath: Path,
+  destinationBoard: Board,
+  destinationPath: Path,
+  item: Item
 ): Item {
-  const oldShouldComplete = fromLane.data.shouldMarkItemsComplete;
-  const newShouldComplete = toLane.data.shouldMarkItemsComplete;
+  const sourceParent = getEntityFromPath(sourceBoard, sourcePath.slice(0, -1));
+  const destinationParent = getEntityFromPath(
+    destinationBoard,
+    destinationPath.slice(0, -1)
+  );
+
+  const oldShouldComplete = sourceParent?.data?.shouldMarkItemsComplete;
+  const newShouldComplete = destinationParent?.data?.shouldMarkItemsComplete;
 
   // If neither the old or new lane set it complete, leave it alone
   if (!oldShouldComplete && !newShouldComplete) return item;

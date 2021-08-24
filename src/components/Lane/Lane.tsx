@@ -14,6 +14,8 @@ import { SortPlaceholder } from "src/dnd/components/SortPlaceholder";
 import { Sortable } from "src/dnd/components/Sortable";
 import { ScrollContainer } from "src/dnd/components/ScrollContainer";
 
+import scroll from "scroll";
+
 const laneAccepts = [DataTypes.Item];
 
 export interface DraggableLaneProps {
@@ -30,6 +32,7 @@ export const DraggableLane = React.memo(function DraggableLane(
 
   const path = useNestedEntityPath(laneIndex);
   const laneWidth = stateManager.getSetting("lane-width");
+  const insertionMethod = stateManager.getSetting("new-card-insertion-method");
   const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
 
   const laneStyles = laneWidth ? { width: `${laneWidth}px` } : undefined;
@@ -42,7 +45,9 @@ export const DraggableLane = React.memo(function DraggableLane(
   useDragHandle(measureRef, dragHandleRef);
 
   const addItems = (items: Item[]) => {
-    boardModifiers.prependItems(
+    boardModifiers[
+      insertionMethod === "append" ? "appendItems" : "prependItems"
+    ](
       [...path, lane.children.length - 1],
       items.map((item) =>
         update(item, {
@@ -55,6 +60,26 @@ export const DraggableLane = React.memo(function DraggableLane(
         })
       )
     );
+
+    // TODO: can we find a less brute force way to do this?
+    setTimeout(() => {
+      const laneItems = elementRef.current?.getElementsByClassName(
+        c("lane-items")
+      );
+
+      if (laneItems.length) {
+        scroll.top(
+          laneItems[0] as HTMLElement,
+          insertionMethod === "append" ? laneItems[0].scrollHeight : 0,
+          {
+            duration: 150,
+            ease: (x: number) => {
+              return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+            },
+          }
+        );
+      }
+    });
   };
 
   const laneContent = (

@@ -142,7 +142,7 @@ export class SortManager {
   }) {
     if (this.isSorting) {
       this.setSortState(false);
-      this.deactivatePlaceholder();
+      this.deactivatePlaceholder(placeholderTransition);
     }
 
     if (this.shifted.size > 0) {
@@ -160,7 +160,7 @@ export class SortManager {
       this.hidden.forEach((entityId) => {
         if (this.sortables.has(entityId)) {
           const [, , measure] = this.sortables.get(entityId);
-          this.resetEl(measure, placeholderTransition);
+          this.resetEl(measure, shiftTransition);
         }
       });
 
@@ -312,7 +312,7 @@ export class SortManager {
   deactivatePlaceholder(transition: string = transitions.placeholder) {
     if (this.placeholder) {
       const [, , measure] = this.placeholder;
-      measure.style.setProperty("transition", transitions.placeholder);
+      measure.style.setProperty("transition", transition);
       measure.style.removeProperty("width");
       measure.style.removeProperty("height");
     }
