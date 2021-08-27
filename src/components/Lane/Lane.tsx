@@ -13,8 +13,7 @@ import classcat from "classcat";
 import { SortPlaceholder } from "src/dnd/components/SortPlaceholder";
 import { Sortable } from "src/dnd/components/Sortable";
 import { ScrollContainer } from "src/dnd/components/ScrollContainer";
-
-import scroll from "scroll";
+import animateScrollTo from "animated-scroll-to";
 
 const laneAccepts = [DataTypes.Item];
 
@@ -68,12 +67,13 @@ export const DraggableLane = React.memo(function DraggableLane(
       );
 
       if (laneItems.length) {
-        scroll.top(
-          laneItems[0] as HTMLElement,
-          insertionMethod === "append" ? laneItems[0].scrollHeight : 0,
+        animateScrollTo(
+          [0, insertionMethod === "append" ? laneItems[0].scrollHeight : 0],
           {
-            duration: 150,
-            ease: (x: number) => {
+            elementToScroll: laneItems[0],
+            speed: 200,
+            minDuration: 150,
+            easing: (x: number) => {
               return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
             },
           }

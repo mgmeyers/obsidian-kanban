@@ -28,7 +28,7 @@
     "@types/raf-schd": "^4.0.1",
     "@types/react-beautiful-dnd": "^13.0.0",
     "@types/react-dom": "^17.0.3",
-    "@types/scroll": "^3.0.1",
+    "animated-scroll-to": "^2.2.0",
     "box-intersect": "^1.0.2",
     "choices.js": "^9.0.1",
     "classcat": "^5.0.3",
@@ -46,7 +46,6 @@
     "react": "npm:@preact/compat",
     "react-beautiful-dnd": "^13.1.0",
     "react-cool-onclickoutside": "^1.6.1",
-    "react-dom": "npm:@preact/compat",
-    "scroll": "^3.0.1"
+    "react-dom": "npm:@preact/compat"
   }
 }

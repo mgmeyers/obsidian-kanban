@@ -26,6 +26,7 @@ export class SortManager {
   shifted: Set<string>;
   hidden: Set<string>;
   isSorting: boolean;
+  isPlaceholderActive: boolean;
   axis: Axis;
   placeholder: EntityAndElement | null;
   instanceId: string;
@@ -133,15 +134,20 @@ export class SortManager {
 
   resetSelf({
     maintainHidden,
+    maintainPlaceholder,
     shiftTransition,
     placeholderTransition,
   }: {
-    maintainHidden: boolean;
+    maintainHidden?: boolean;
+    maintainPlaceholder?: boolean;
     shiftTransition?: string;
     placeholderTransition?: string;
   }) {
     if (this.isSorting) {
       this.setSortState(false);
+    }
+    
+    if (this.isPlaceholderActive && !maintainPlaceholder) {
       this.deactivatePlaceholder(placeholderTransition);
     }
 
@@ -236,7 +242,7 @@ export class SortManager {
       !dragOriginHitbox
     ) {
       if (!haveSortable && this.isSorting) {
-        this.resetSelf({ maintainHidden: true });
+        this.resetSelf({ maintainHidden: true, maintainPlaceholder: true });
       }
 
       return;
@@ -288,7 +294,7 @@ export class SortManager {
     clearTimeout(this.dragLeaveTimeout);
     clearTimeout(this.dragEnterTimeout);
     this.dragLeaveTimeout = window.setTimeout(() => {
-      this.resetSelf({ maintainHidden: true });
+      this.resetSelf({ maintainHidden: true, maintainPlaceholder: true });
     }, dragLeaveDebounceLength);
 
     this.hitboxDimensions = emptyDimensions;
@@ -306,6 +312,8 @@ export class SortManager {
         isHorizontal ? "width" : "height",
         `${isHorizontal ? dimensions.width : dimensions.height}px`
       );
+
+      this.isPlaceholderActive = true;
     }
   }
 
@@ -315,6 +323,7 @@ export class SortManager {
       measure.style.setProperty("transition", transition);
       measure.style.removeProperty("width");
       measure.style.removeProperty("height");
+      this.isPlaceholderActive = false;
     }
   }
 

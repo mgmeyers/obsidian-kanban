@@ -30,13 +30,21 @@ export const ItemContent = React.memo(
   }: ItemContentProps) => {
     const { stateManager, filePath } = React.useContext(KanbanContext);
     const inputRef = React.useRef<HTMLTextAreaElement>();
-    const onAction = () => setIsSettingsVisible && setIsSettingsVisible(false);
+    const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (!e.shiftKey) {
+        e.preventDefault();
+        setIsSettingsVisible && setIsSettingsVisible(false);
+      }
+    };
+    const onEscape = () => {
+      setIsSettingsVisible && setIsSettingsVisible(false);
+    };
     const hideTagsDisplay = stateManager.getSetting("hide-tags-display");
 
     const autocompleteProps = useAutocompleteInputProps({
       isInputVisible: isSettingsVisible,
-      onEnter: onAction,
-      onEscape: onAction,
+      onEnter: onEnter,
+      onEscape: onEscape,
     });
 
     if (isSettingsVisible) {

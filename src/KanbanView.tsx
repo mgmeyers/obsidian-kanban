@@ -14,17 +14,68 @@ import { Board } from "./components/types";
 import KanbanPlugin from "./main";
 import { SettingsModal } from "./Settings";
 import { t } from "./lang/helpers";
+import { Emitter, createEmitter } from "./dnd/util/emitter";
+import { c } from "./components/helpers";
 
 export const kanbanViewType = "kanban";
 export const kanbanIcon = "blocks";
 
+interface ViewEvents {
+  showLaneForm(data: { referenceRect: DOMRect }): void;
+  toggleSearch(): void;
+}
+
 export class KanbanView extends TextFileView implements HoverParent {
   plugin: KanbanPlugin;
   hoverPopover: HoverPopover | null;
+  emitter: Emitter<ViewEvents>;
 
   constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
     super(leaf);
     this.plugin = plugin;
+    this.emitter = createEmitter();
+
+    this.addAction("gear", "Board settings", () => {
+      const stateManager = this.plugin.stateManagers.get(this.file);
+      const board = stateManager.state;
+
+      new SettingsModal(
+        this,
+        {
+          onSettingsChange: (settings) => {
+            const updatedBoard = update(board, {
+              data: {
+                settings: {
+                  $set: settings,
+                },
+              },
+            });
+
+            // Save to disk, compute text of new board
+            stateManager.setState(updatedBoard);
+          },
+        },
+        board.data.settings
+      ).open();
+    });
+
+    this.addAction("document", "View board as markdown", () => {
+      this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] =
+        "markdown";
+      this.plugin.setMarkdownView(this.leaf);
+    });
+
+    this.addAction("sheets-in-box", "Archive all completed cards", () => {
+      console.log("TODO: prompt via modal");
+      const stateManager = this.plugin.stateManagers.get(this.file);
+      stateManager.archiveCompletedCards();
+    });
+
+    this.addAction("plus-with-circle", "Add list", (e) => {
+      this.emitter.emit("showLaneForm", {
+        referenceRect: (e.target as HTMLElement).getBoundingClientRect(),
+      });
+    }).addClass(c("ignore-click-outside"));
   }
 
   get id(): string {
@@ -93,6 +144,10 @@ export class KanbanView extends TextFileView implements HoverParent {
     const stateManager = this.plugin.stateManagers.get(this.file);
 
     return <Kanban stateManager={stateManager} view={this} />;
+  }
+
+  toggleSearch() {
+    this.emitter.emit("toggleSearch", null);
   }
 
   onMoreOptionsMenu(menu: Menu) {

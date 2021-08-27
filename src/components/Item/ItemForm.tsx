@@ -12,7 +12,6 @@ import { c } from "../helpers";
 import { useAutocompleteInputProps } from "./autocomplete";
 import { KanbanContext } from "../context";
 import { t } from "src/lang/helpers";
-import { KanbanView } from "src/KanbanView";
 import { StateManager } from "src/StateManager";
 
 function linkTo(
@@ -138,7 +137,20 @@ export function ItemForm({ addItems }: ItemFormProps) {
     setIsInputVisible(false);
   };
 
-  const createItem = () => {
+  const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!e.shiftKey) {
+      e.preventDefault();
+
+      const title = itemTitle.trim();
+
+      if (title) {
+        addItemsFromStrings([title]);
+        setItemTitle("");
+      }
+    }
+  };
+
+  const addItem = () => {
     const title = itemTitle.trim();
 
     if (title) {
@@ -149,7 +161,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
 
   const autocompleteProps = useAutocompleteInputProps({
     isInputVisible,
-    onEnter: createItem,
+    onEnter,
     onEscape: clear,
   });
 
@@ -182,7 +194,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
               onChange={(e) => {
                 selectionStart.current = e.target.selectionStart;
                 selectionEnd.current = e.target.selectionEnd;
-                setItemTitle(e.target.value.replace(/[\r\n]+/g, " "));
+                setItemTitle(e.target.value);
               }}
               onDragOver={(e) => {
                 const action = dropAction(stateManager, e.dataTransfer);
@@ -249,7 +261,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
           </div>
         </div>
         <div className={c("item-input-actions")}>
-          <button className={c("item-action-add")} onClick={createItem}>
+          <button className={c("item-action-add")} onClick={addItem}>
             {t("Add item")}
           </button>
           <button className={c("item-action-cancel")} onClick={clear}>

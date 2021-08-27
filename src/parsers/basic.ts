@@ -76,7 +76,7 @@ function getSearchTitle(
 
 function itemToMd(item: Item) {
   return `- [${item.data.isComplete ? "x" : " "}] ${item.data.titleRaw.replace(
-    /\n/g,
+    /(\r\n|\n)/g,
     "<br>"
   )}`;
 }
@@ -380,9 +380,6 @@ export class KanbanParser {
 
     let fileMetadata: FileMetadata;
 
-    // TODO: how are we invalidating this cache?
-    // Do we even need this if we switch to the better approach of using a single source of truth?
-
     if (file) {
       fileMetadata = this.fileCache.has(file)
         ? this.fileCache.get(file)
@@ -430,7 +427,8 @@ export class KanbanParser {
         const itemMatch = newLine.value.match(itemRegex);
         if (itemMatch && oldItem) {
           // Generaate a new item, but with the old ID
-          const [_full, marker, titleRaw] = itemMatch;
+          const [_full, marker, title] = itemMatch;
+          const titleRaw = title.replace(/<br(\s+\/)?>/g, "\n");
           const processed = this.processTitle(titleRaw);
           const line = newLine.value;
           const item: Item = {
@@ -601,7 +599,8 @@ export class KanbanParser {
         item = this.lastItems.get(line)?.shift();
 
         if (!item) {
-          const [_full, marker, titleRaw] = itemMatch;
+          const [_full, marker, title] = itemMatch;
+          const titleRaw = title.replace(/<br(\s+\/)?>/g, "\n");
           const processed = this.processTitle(titleRaw);
 
           item = {

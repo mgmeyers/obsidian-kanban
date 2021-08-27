@@ -16,6 +16,7 @@ import { Sortable } from "src/dnd/components/Sortable";
 import { SortPlaceholder } from "src/dnd/components/SortPlaceholder";
 import classcat from "classcat";
 import { StateManager } from "src/StateManager";
+import animateScrollTo from "animated-scroll-to";
 
 const boardScrollTiggers = [DataTypes.Item, DataTypes.Lane];
 const boardAccepts = [DataTypes.Lane];
@@ -28,19 +29,63 @@ interface KanbanProps {
 export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const boardData = stateManager.useState();
 
+  const rootRef = React.useRef<HTMLDivElement>();
   const searchRef = React.useRef<HTMLInputElement>();
   const [searchQuery, setSearchQuery] = React.useState<string>("");
+  const [isSearching, setIsSearching] = React.useState<boolean>(false);
   const [debouncedSearchQuery, setDebouncedSearchQuery] =
     React.useState<string>("");
+
+  const [isLaneFormVisible, setIsLaneFormVisible] =
+    React.useState<boolean>(false);
 
   const filePath = stateManager.file.path;
   const maxArchiveLength = stateManager.getSetting("max-archive-size");
 
+  const closeLaneForm = React.useCallback(() => {
+    setIsLaneFormVisible(false);
+  }, []);
+
+  const onNewLane = React.useCallback(() => {
+    setTimeout(() => {
+      const board = rootRef.current?.getElementsByClassName(c("board"));
+
+      if (board.length) {
+        animateScrollTo([board[0].scrollWidth, 0], {
+          elementToScroll: board[0],
+          speed: 300,
+          minDuration: 150,
+          easing: (x: number) => {
+            return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+          },
+        });
+      }
+    });
+  }, []);
+
   React.useEffect(() => {
-    if (boardData.data.isSearching) {
+    const toggleSearch = () => {
+      setIsSearching((val) => !val);
+    };
+
+    const showLaneForm = () => {
+      setIsLaneFormVisible(true);
+    };
+
+    view.emitter.on("toggleSearch", toggleSearch);
+    view.emitter.on("showLaneForm", showLaneForm);
+
+    return () => {
+      view.emitter.off("toggleSearch", toggleSearch);
+      view.emitter.off("showLaneForm", showLaneForm);
+    };
+  }, [view]);
+
+  React.useEffect(() => {
+    if (isSearching) {
       searchRef.current?.focus();
     }
-  }, [boardData.data.isSearching]);
+  }, [isSearching]);
 
   React.useEffect(() => {
     const trimmed = searchQuery.trim();
@@ -180,47 +225,57 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
               : null
           }
         >
-          {boardData.data.isSearching && (
-            <div className={c("search-wrapper")}>
-              <input
-                ref={searchRef}
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") {
-                    setSearchQuery("");
-                    setDebouncedSearchQuery("");
-                    (e.target as HTMLInputElement).blur();
-                    stateManager.toggleSearch();
-                  }
-                }}
-                type="text"
-                className={c("filter-input")}
-                placeholder={t("Search...")}
-              />
-              <button
-                className={c("search-cancel-button")}
-                onClick={() => {
-                  setSearchQuery("");
-                  setDebouncedSearchQuery("");
-                  stateManager.toggleSearch();
-                }}
-                aria-label={t("Cancel")}
-              >
-                <Icon name="cross" />
-              </button>
-            </div>
-          )}
           <div
+            ref={rootRef}
             className={baseClassName}
             onMouseOver={onMouseOver}
             onClick={onClick}
           >
+            {isLaneFormVisible && (
+              <LaneForm onNewLane={onNewLane} closeLaneForm={closeLaneForm} />
+            )}
+            {boardData.data.isSearching && (
+              <div className={c("search-wrapper")}>
+                <input
+                  ref={searchRef}
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setSearchQuery("");
+                      setDebouncedSearchQuery("");
+                      (e.target as HTMLInputElement).blur();
+                      stateManager.toggleSearch();
+                    }
+                  }}
+                  type="text"
+                  className={c("filter-input")}
+                  placeholder={t("Search...")}
+                />
+                <button
+                  className={c("search-cancel-button")}
+                  onClick={() => {
+                    setSearchQuery("");
+                    setDebouncedSearchQuery("");
+                    stateManager.toggleSearch();
+                  }}
+                  aria-label={t("Cancel")}
+                >
+                  <Icon name="cross" />
+                </button>
+              </div>
+            )}
             <ScrollContainer
               id="lanes"
-              className={classcat([c("board"), c("horizontal")])}
+              className={classcat([
+                c("board"),
+                c("horizontal"),
+                {
+                  "is-adding-lane": isLaneFormVisible,
+                },
+              ])}
               triggerTypes={boardScrollTiggers}
             >
               <div>
@@ -232,7 +287,6 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                     index={boardData.children.length}
                   />
                 </Sortable>
-                <LaneForm />
               </div>
             </ScrollContainer>
           </div>

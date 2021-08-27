@@ -109,7 +109,6 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
           {...portals}
           <DragOverlay>
             {(entity, styles) => {
-              // TODO: mock this, instead?
               const [data, context] = React.useMemo(() => {
                 const view = plugin.getKanbanView(entity.scopeId);
                 const stateManager = plugin.stateManagers.get(view.file);

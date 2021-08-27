@@ -40,10 +40,9 @@ function useItemContentEvents({
     const onContentChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
       e
     ) => {
-      const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
       boardModifiers.updateItem(
         path,
-        stateManager.parser.updateItem(item, titleRaw)
+        stateManager.parser.updateItem(item, e.target.value)
       );
     };
 
@@ -204,10 +203,7 @@ export const DraggableItem = React.memo(function DraggableItem(
   useDragHandle(measureRef, measureRef);
 
   return (
-    <div
-      ref={measureRef}
-      className={c("item-wrapper")}
-    >
+    <div ref={measureRef} className={c("item-wrapper")}>
       <div ref={elementRef} className={c("item")}>
         {props.isStatic ? (
           <ItemInner {...innerProps} />

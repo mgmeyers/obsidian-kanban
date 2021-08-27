@@ -338,7 +338,7 @@ export default class KanbanPlugin extends Plugin {
               const view = self.app.workspace.getActiveViewOfType(KanbanView);
 
               if (view) {
-                self.stateManagers.get(view.file).toggleSearch();
+                view.toggleSearch();
               } else {
                 next.call(this, false);
               }

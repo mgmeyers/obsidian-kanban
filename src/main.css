@@ -11,6 +11,8 @@
   height: 100%;
   width: 100%;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .kanban-plugin__search-wrapper {
@@ -76,6 +78,10 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   height: 100%;
 }
 
+.kanban-plugin__board.is-adding-lane > div {
+  padding-right: calc(250px + 1rem);
+}
+
 .kanban-plugin__lane-wrapper {
   display: flex;
   flex-shrink: 0;
@@ -107,9 +113,17 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   padding: 8px 10px;
 }
 
-.kanban-plugin__new-lane-button-wrapper {
-  width: var(--lane-width);
-  flex-shrink: 0;
+.kanban-plugin__lane-form-wrapper {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 250px;
+  background-color: var(--background-secondary);
+  border-radius: 6px;
+  border: 2px solid rgba(var(--interactive-accent-rgb), 0.7);
+  z-index: var(--layer-popover);
+  box-shadow: 0px 0.5px 1px 0.5px rgba(0, 0, 0, 0.1),
+    0px 2px 10px rgba(0, 0, 0, 0.1), 0px 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .kanban-plugin__lane-input-wrapper {
@@ -139,19 +153,6 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
 .kanban-plugin__item-action-add:hover,
 .kanban-plugin__lane-action-add:hover {
   background-color: var(--interactive-accent-hover);
-}
-
-button.kanban-plugin__new-lane-button {
-  border: 1px solid var(--background-modifier-border);
-  color: var(--text-muted);
-  width: 100%;
-  text-align: left;
-  margin: 1px;
-}
-
-button.kanban-plugin__new-lane-button:hover {
-  background-color: var(--interactive-accent-hover);
-  color: var(--text-on-accent);
 }
 
 .kanban-plugin__lane-header-wrapper {
@@ -358,11 +359,33 @@ button.kanban-plugin__new-item-button {
   -webkit-user-select: unset;
 }
 
-.kanban-plugin__markdown-preview-view p {
-  margin: 0;
+/* TODO: why white-space pre-wrap, again? */
+/* .kanban-plugin__markdown-preview-view p {
   overflow-x: auto;
   white-space: pre-wrap;
   overflow-wrap: break-word;
+}
+*/
+.kanban-plugin__markdown-preview-view > div > * {
+  overflow-x: auto;
+  overflow-wrap: break-word;
+}
+
+.kanban-plugin__markdown-preview-view > p {
+  margin: 0;
+}
+
+.kanban-plugin__markdown-preview-view > div > *:first-child {
+  margin-top: 0;
+}
+
+.kanban-plugin__markdown-preview-view > div > *:last-child {
+  margin-bottom: 0;
+}
+
+.kanban-plugin__markdown-preview-view ul,
+.kanban-plugin__markdown-preview-view ol {
+  padding-inline-start: 25px;
 }
 
 .kanban-plugin__meta-value .kanban-plugin__markdown-preview-view p,

@@ -413,8 +413,8 @@ export function constructAutocomplete({
 
 export interface UseAutocompleteInputPropsParams {
   isInputVisible: boolean;
-  onEnter: () => void;
-  onEscape: () => void;
+  onEnter: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  onEscape: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   excludeDatePicker?: boolean;
 }
 
@@ -456,10 +456,9 @@ export function useAutocompleteInputProps({
       }
 
       if (e.key === "Enter") {
-        e.preventDefault();
-        onEnter();
+        onEnter(e);
       } else if (e.key === "Escape") {
-        onEscape();
+        onEscape(e);
       }
     },
   };

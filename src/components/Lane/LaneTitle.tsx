@@ -24,12 +24,21 @@ export function LaneTitle({
   const { stateManager, filePath } = React.useContext(KanbanContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
 
-  const onAction = () => isEditing && setIsEditing(false);
+  const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!e.shiftKey) {
+      e.preventDefault();
+      isEditing && setIsEditing(false);
+    }
+  };
+
+  const onEscape = () => {
+    isEditing && setIsEditing(false);
+  };
 
   const autocompleteProps = useAutocompleteInputProps({
     isInputVisible: isEditing,
-    onEnter: onAction,
-    onEscape: onAction,
+    onEnter,
+    onEscape,
     excludeDatePicker: true,
   });
 
