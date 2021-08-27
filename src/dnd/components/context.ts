@@ -2,6 +2,7 @@ import React from "react";
 import { DndManager } from "../managers/DndManager";
 import { EntityManager } from "../managers/EntityManager";
 import { ScrollManager } from "../managers/ScrollManager";
+import { ScrollStateManager } from "../managers/ScrollStateManager";
 import { SortManager } from "../managers/SortManager";
 import { CoordinateShift } from "../types";
 
@@ -13,9 +14,9 @@ export const ScrollManagerContext = React.createContext<ScrollManager | null>(
   null
 );
 
-export const ScrollStateContext = React.createContext<
-  Map<string, CoordinateShift>
->(new Map());
+export const ScrollStateContext = React.createContext<ScrollStateManager>(
+  new ScrollStateManager()
+);
 
 export const SortManagerContext = React.createContext<SortManager | null>(null);
 

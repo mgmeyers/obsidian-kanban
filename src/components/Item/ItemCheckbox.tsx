@@ -24,7 +24,7 @@ export const ItemCheckbox = React.memo(
     stateManager,
     boardModifiers,
   }: ItemCheckboxProps) => {
-    const shouldShowCheckbox = stateManager.getSetting("show-checkboxes");
+    const shouldShowCheckbox = stateManager.useSetting("show-checkboxes");
 
     const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] =
       React.useState(false);

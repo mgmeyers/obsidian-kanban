@@ -36,7 +36,7 @@ interface DateProps {
 }
 
 export function RelativeDate({ item, stateManager }: DateProps) {
-  const shouldShowRelativeDate = stateManager.getSetting("show-relative-date");
+  const shouldShowRelativeDate = stateManager.useSetting("show-relative-date");
 
   if (!shouldShowRelativeDate || !item.data.metadata.date) {
     return null;
@@ -65,14 +65,13 @@ export function DateAndTime({
   onEditDate,
   onEditTime,
 }: DateProps & DateAndTimeProps) {
-  const hideDateDisplay = stateManager.getSetting("hide-date-display");
+  const hideDateDisplay = stateManager.useSetting("hide-date-display");
+  const dateFormat = stateManager.useSetting("date-format");
+  const timeFormat = stateManager.useSetting("time-format");
+  const dateDisplayFormat = stateManager.useSetting("date-display-format");
+  const shouldLinkDate = stateManager.useSetting("link-date-to-daily-note");
 
   if (hideDateDisplay || !item.data.metadata.date) return null;
-
-  const dateFormat = stateManager.getSetting("date-format");
-  const timeFormat = stateManager.getSetting("time-format");
-  const dateDisplayFormat = stateManager.getSetting("date-display-format");
-  const shouldLinkDate = stateManager.getSetting("link-date-to-daily-note");
 
   const dateStr = item.data.metadata.date.format(dateFormat);
 

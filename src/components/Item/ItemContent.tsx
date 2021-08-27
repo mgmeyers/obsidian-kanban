@@ -39,7 +39,7 @@ export const ItemContent = React.memo(
     const onEscape = () => {
       setIsSettingsVisible && setIsSettingsVisible(false);
     };
-    const hideTagsDisplay = stateManager.getSetting("hide-tags-display");
+    const hideTagsDisplay = stateManager.useSetting("hide-tags-display");
 
     const autocompleteProps = useAutocompleteInputProps({
       isInputVisible: isSettingsVisible,

@@ -36,15 +36,24 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const [debouncedSearchQuery, setDebouncedSearchQuery] =
     React.useState<string>("");
 
-  const [isLaneFormVisible, setIsLaneFormVisible] =
-    React.useState<boolean>(false);
+  const [isLaneFormVisible, setIsLaneFormVisible] = React.useState<boolean>(
+    boardData.children.length === 0
+  );
 
   const filePath = stateManager.file.path;
-  const maxArchiveLength = stateManager.getSetting("max-archive-size");
+  const maxArchiveLength = stateManager.useSetting("max-archive-size");
 
   const closeLaneForm = React.useCallback(() => {
-    setIsLaneFormVisible(false);
-  }, []);
+    if (boardData.children.length > 0) {
+      setIsLaneFormVisible(false);
+    }
+  }, [boardData.children.length]);
+
+  React.useEffect(() => {
+    if (boardData.children.length === 0) {
+      setIsLaneFormVisible(true);
+    }
+  }, [boardData.children.length]);
 
   const onNewLane = React.useCallback(() => {
     setTimeout(() => {
@@ -231,7 +240,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
             onMouseOver={onMouseOver}
             onClick={onClick}
           >
-            {isLaneFormVisible && (
+            {(isLaneFormVisible || boardData.children.length === 0) && (
               <LaneForm onNewLane={onNewLane} closeLaneForm={closeLaneForm} />
             )}
             {boardData.data.isSearching && (
@@ -268,7 +277,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
               </div>
             )}
             <ScrollContainer
-              id="lanes"
+              id={view.id}
               className={classcat([
                 c("board"),
                 c("horizontal"),

@@ -2,6 +2,7 @@ import React from "react";
 import { DndManager } from "../managers/DndManager";
 import { Entity, WithChildren } from "../types";
 import { DndManagerContext } from "./context";
+import { DndScrollState } from "./ScrollStateContext";
 
 interface DndContextProps extends WithChildren {
   onDrop(dragEntity: Entity, dropEntity: Entity): void;
@@ -26,7 +27,7 @@ export function DndContext({ children, onDrop }: DndContextProps) {
 
   return (
     <DndManagerContext.Provider value={dndManager}>
-      {children}
+      <DndScrollState>{children}</DndScrollState>
     </DndManagerContext.Provider>
   );
 }

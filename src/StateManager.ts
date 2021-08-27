@@ -2,7 +2,7 @@ import update from "immutability-helper";
 import { App, TFile, moment } from "obsidian";
 import React from "react";
 import {
-  escapeRegExpStr,
+  generateInstanceId,
   getDefaultDateFormat,
   getDefaultTimeFormat,
 } from "./components/helpers";
@@ -10,7 +10,6 @@ import { renderMarkdown } from "./components/helpers/renderMarkdown";
 import { Board, BoardTemplate, Item } from "./components/types";
 import { KanbanView } from "./KanbanView";
 import { KanbanParser } from "./parsers/basic";
-import { frontMatterKey } from "./parsers/common";
 import { defaultDateTrigger, defaultTimeTrigger } from "./settingHelpers";
 import { KanbanSettings, SettingRetrievers } from "./Settings";
 
@@ -19,6 +18,9 @@ export class StateManager {
   private getGlobalSettings: () => KanbanSettings;
 
   private stateReceivers: Array<(state: Board) => void> = [];
+  private settingsNotifiers: Map<keyof KanbanSettings, Array<() => void>> =
+    new Map();
+
   private views: Map<string, KanbanView> = new Map();
   private ids: string[] = [];
   private compiledSettings: KanbanSettings = {};
@@ -136,6 +138,8 @@ export class StateManager {
     state: Board | ((board: Board) => Board),
     shouldSave: boolean = true
   ) {
+    const oldSettings = this.state?.data.settings;
+
     if (typeof state === "function") {
       this.state = state(this.state);
     } else {
@@ -149,6 +153,19 @@ export class StateManager {
     }
 
     this.stateReceivers.forEach((receiver) => receiver(this.state));
+
+    const newSettings = this.state?.data.settings;
+
+    if (oldSettings !== newSettings && newSettings) {
+      this.settingsNotifiers.forEach((notifiers, key) => {
+        if (
+          (!oldSettings && newSettings) ||
+          oldSettings[key] !== newSettings[key]
+        ) {
+          notifiers.forEach((fn) => fn());
+        }
+      });
+    }
   }
 
   useState(): Board {
@@ -159,6 +176,30 @@ export class StateManager {
 
       return () => {
         this.stateReceivers.remove(setState);
+      };
+    }, []);
+
+    return state;
+  }
+
+  useSetting<K extends keyof KanbanSettings>(key: K): KanbanSettings[K] {
+    const [state, setState] = React.useState<KanbanSettings[K]>(
+      this.getSetting(key)
+    );
+
+    React.useEffect(() => {
+      const receiver = () => {
+        setState(this.getSetting(key));
+      };
+
+      if (this.settingsNotifiers.has(key)) {
+        this.settingsNotifiers.get(key).push(receiver);
+      } else {
+        this.settingsNotifiers.set(key, [receiver]);
+      }
+
+      return () => {
+        this.settingsNotifiers.get(key).remove(receiver);
       };
     }, []);
 
@@ -217,20 +258,31 @@ export class StateManager {
     key: K,
     suppliedLocalSettings?: KanbanSettings
   ): KanbanSettings[K] => {
-    return suppliedLocalSettings
-      ? suppliedLocalSettings[key]
-      : this.compiledSettings[key] || this.getSettingRaw(key);
+    if (suppliedLocalSettings && suppliedLocalSettings[key] !== undefined) {
+      return suppliedLocalSettings[key];
+    }
+
+    if (this.compiledSettings && this.compiledSettings[key] !== undefined) {
+      return this.compiledSettings[key];
+    }
+
+    return this.getSettingRaw(key);
   };
 
   getSettingRaw = <K extends keyof KanbanSettings>(
     key: K,
     suppliedLocalSettings?: KanbanSettings
   ): KanbanSettings[K] => {
-    const localSetting = suppliedLocalSettings
-      ? suppliedLocalSettings[key]
-      : this.state.data.settings[key];
+    if (suppliedLocalSettings && suppliedLocalSettings[key] !== undefined) {
+      return suppliedLocalSettings[key];
+    }
 
-    if (localSetting !== undefined) return localSetting;
+    if (
+      this.state?.data?.settings &&
+      this.state.data.settings[key] !== undefined
+    ) {
+      return this.state.data.settings[key];
+    }
 
     return this.getGlobalSetting(key);
   };
@@ -238,8 +290,11 @@ export class StateManager {
   getGlobalSetting = <K extends keyof KanbanSettings>(
     key: K
   ): KanbanSettings[K] => {
-    const globalSetting = this.getGlobalSettings()[key];
-    if (globalSetting !== undefined) return globalSetting;
+    const globalSettings = this.getGlobalSettings();
+
+    if (globalSettings && globalSettings[key] !== undefined)
+      return globalSettings[key];
+
     return null;
   };
 

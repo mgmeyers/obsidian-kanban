@@ -149,7 +149,7 @@ export class SettingsManager {
         );
 
         dropdown.setValue(
-          (value as string) || (globalValue as string) || "prepend"
+          (value as string) || (globalValue as string) || "append"
         );
         dropdown.onChange((value) => {
           this.applySettingsUpdate({

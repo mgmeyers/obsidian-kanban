@@ -30,8 +30,8 @@ export const DraggableLane = React.memo(function DraggableLane(
   const { stateManager, boardModifiers } = React.useContext(KanbanContext);
 
   const path = useNestedEntityPath(laneIndex);
-  const laneWidth = stateManager.getSetting("lane-width");
-  const insertionMethod = stateManager.getSetting("new-card-insertion-method");
+  const laneWidth = stateManager.useSetting("lane-width");
+  const insertionMethod = stateManager.useSetting("new-card-insertion-method");
   const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
 
   const laneStyles = laneWidth ? { width: `${laneWidth}px` } : undefined;
@@ -41,12 +41,12 @@ export const DraggableLane = React.memo(function DraggableLane(
   const dragHandleRef = React.useRef<HTMLDivElement>(null);
   const [isSorting, setIsSorting] = React.useState(false);
 
+  const shouldPrepend = insertionMethod === "prepend";
+
   useDragHandle(measureRef, dragHandleRef);
 
   const addItems = (items: Item[]) => {
-    boardModifiers[
-      insertionMethod === "append" ? "appendItems" : "prependItems"
-    ](
+    boardModifiers[shouldPrepend ? "prependItems" : "appendItems"](
       [...path, lane.children.length - 1],
       items.map((item) =>
         update(item, {
@@ -126,12 +126,17 @@ export const DraggableLane = React.memo(function DraggableLane(
       ])}
       style={laneStyles}
     >
-      <div ref={elementRef} className={c("lane")}>
+      <div
+        ref={elementRef}
+        className={classcat([c("lane"), { "will-prepend": shouldPrepend }])}
+      >
         <LaneHeader
           dragHandleRef={dragHandleRef}
           laneIndex={laneIndex}
           lane={lane}
         />
+
+        {shouldPrepend && <ItemForm addItems={addItems} />}
 
         {props.isStatic ? (
           laneBody
@@ -147,7 +152,7 @@ export const DraggableLane = React.memo(function DraggableLane(
           </Droppable>
         )}
 
-        <ItemForm addItems={addItems} />
+        {!shouldPrepend && <ItemForm addItems={addItems} />}
       </div>
     </div>
   );

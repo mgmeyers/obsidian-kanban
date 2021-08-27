@@ -1,11 +1,12 @@
 import rafSchd from "raf-schd";
 import React from "react";
-import { CoordinateShift, WithChildren } from "../types";
-import { ScrollStateContext } from "./context";
+import { ScrollStateManager } from "../managers/ScrollStateManager";
+import { WithChildren } from "../types";
+import { ScopeIdContext, ScrollStateContext } from "./context";
 
 export function DndScrollState({ children }: WithChildren) {
   const manager = React.useMemo(() => {
-    return new Map<string, CoordinateShift>();
+    return new ScrollStateManager();
   }, []);
 
   return (
@@ -16,15 +17,16 @@ export function DndScrollState({ children }: WithChildren) {
 }
 
 export function useStoredScrollState(id: string, index: number | undefined) {
+  const scopeId = React.useContext(ScopeIdContext);
   const scrollRef = React.useRef<HTMLDivElement>(null);
-  const scrollStates = React.useContext(ScrollStateContext);
-  
+  const scrollStateManager = React.useContext(ScrollStateContext);
+
   const setRef = (el: HTMLDivElement) => {
     scrollRef.current = el;
 
     if (scrollRef.current) {
       requestAnimationFrame(() => {
-        const state = scrollStates.get(id);
+        const state = scrollStateManager.getScrollState(id);
 
         if (state && (state.x !== 0 || state.y !== 0)) {
           scrollRef.current.scrollLeft = state.x;
@@ -42,7 +44,7 @@ export function useStoredScrollState(id: string, index: number | undefined) {
     const onScroll = rafSchd((e: Event) => {
       const target = e.target as HTMLElement;
 
-      scrollStates.set(id, {
+      scrollStateManager.setScrollState(scopeId, id, {
         x: target.scrollLeft,
         y: target.scrollTop,
       });
@@ -53,7 +55,7 @@ export function useStoredScrollState(id: string, index: number | undefined) {
     return () => {
       el.removeEventListener("scroll", onScroll);
     };
-  }, [scrollStates, id, index]);
+  }, [scrollStateManager, id, index]);
 
   return { setRef, scrollRef };
 }

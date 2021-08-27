@@ -183,7 +183,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
 
   if (isInputVisible) {
     return (
-      <div ref={clickOutsideRef}>
+      <div className={c("item-form")} ref={clickOutsideRef}>
         <div className={c("item-input-wrapper")}>
           <div data-replicated-value={itemTitle} className={c("grow-wrap")}>
             <textarea
@@ -259,14 +259,6 @@ export function ItemForm({ addItems }: ItemFormProps) {
               {...autocompleteProps}
             />
           </div>
-        </div>
-        <div className={c("item-input-actions")}>
-          <button className={c("item-action-add")} onClick={addItem}>
-            {t("Add item")}
-          </button>
-          <button className={c("item-action-cancel")} onClick={clear}>
-            {t("Cancel")}
-          </button>
         </div>
       </div>
     );

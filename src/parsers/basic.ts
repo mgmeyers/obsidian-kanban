@@ -298,12 +298,12 @@ function settingsToFrontmatter(settings: KanbanSettings): string {
 
 export class KanbanParser {
   settings: ParserSettings;
-  lastFrontMatter: string;
-  lastBody: string;
-  lastSettings: KanbanSettings;
-  lastGlobalSettings: KanbanSettings;
-  lastItems: Map<string, Item[]> = new Map();
-  lastLanes: Map<string, Lane> = new Map();
+  previousFrontMatter: string;
+  previousBody: string;
+  previousSettings: KanbanSettings;
+  previousGlobalSettings: KanbanSettings;
+  previousItems: Map<string, Item[]> = new Map();
+  previousLanes: Map<string, Lane> = new Map();
   fileCache: Map<TFile, FileMetadata> = new Map();
 
   app: App;
@@ -312,7 +312,7 @@ export class KanbanParser {
   settingRetrievers: SettingRetrievers;
 
   // we use a string instead of a file, because a file changing path could change the meaning of links
-  lastParsedPath: string;
+  PreviousParsedPath: string;
 
   constructor(
     app: App,
@@ -412,7 +412,7 @@ export class KanbanParser {
   }
 
   diffBody(body: string) {
-    const diff = diffLines(this.lastBody, body, { newlineIsToken: true });
+    const diff = diffLines(this.previousBody, body, { newlineIsToken: true });
 
     if (diff.length === 4) {
       const [_before, oldLine, newLine, _after] = diff;
@@ -423,7 +423,7 @@ export class KanbanParser {
         newLine.count === 1
       ) {
         // We found a one-line change of text only -- see if it was and still is an item
-        const oldItem = this.lastItems.get(oldLine.value)?.shift();
+        const oldItem = this.previousItems.get(oldLine.value)?.shift();
         const itemMatch = newLine.value.match(itemRegex);
         if (itemMatch && oldItem) {
           // Generaate a new item, but with the old ID
@@ -447,14 +447,14 @@ export class KanbanParser {
           // (Theoretically we could just issue an update to the baord itself here, and skip
           // the parsing altogether.  For now, just update the lane cache, as that's still
           // pretty darn fast.)
-          this.lastItems.has(line)
-            ? this.lastItems.get(line).push(item)
-            : this.lastItems.set(line, [item]);
+          this.previousItems.has(line)
+            ? this.previousItems.get(line).push(item)
+            : this.previousItems.set(line, [item]);
 
-          for (const [key, lane] of this.lastLanes.entries()) {
+          for (const [key, lane] of this.previousLanes.entries()) {
             const pos = lane.children.indexOf(oldItem);
             if (pos >= 0) {
-              this.lastLanes.set(
+              this.previousLanes.set(
                 key,
                 update(lane, { children: { $splice: [[pos, 1, item]] } })
               );
@@ -466,10 +466,10 @@ export class KanbanParser {
   }
 
   parseSettings(suppliedSettings: KanbanSettings) {
-    this.lastItems.clear(); // Settings changed, must re-parse items
+    this.previousItems.clear(); // Settings changed, must re-parse items
     this.fileCache.clear(); // including metadata, since the keys might be different
-    this.lastLanes.clear();
-    this.lastBody = null;
+    this.previousLanes.clear();
+    this.previousBody = null;
 
     const globalKeys =
       this.settingRetrievers.getGlobalSetting("metadata-keys") || [];
@@ -538,23 +538,23 @@ export class KanbanParser {
       throw new Error(t("Invalid Kanban file: problems parsing frontmatter"));
 
     const settings =
-      frontMatter === this.lastFrontMatter
-        ? this.lastSettings
+      frontMatter === this.previousFrontMatter
+        ? this.previousSettings
         : (yaml.load(frontMatter) as KanbanSettings);
 
     const globalSettings = this.settingRetrievers.getGlobalSettings();
 
     if (
-      settings !== this.lastSettings ||
-      globalSettings !== this.lastGlobalSettings ||
-      this.lastParsedPath !== filePath
+      settings !== this.previousSettings ||
+      globalSettings !== this.previousGlobalSettings ||
+      this.PreviousParsedPath !== filePath
     ) {
       this.parseSettings(settings);
     }
 
     // Try to recognize single-line item edits, and try to keep the same ID
     // (So the item will be refreshed, but not re-created)
-    if (this.lastBody && this.lastBody !== body) {
+    if (this.previousBody && this.previousBody !== body) {
       this.diffBody(body);
     }
 
@@ -563,7 +563,7 @@ export class KanbanParser {
     const archive: Item[] = [];
     const thisItems: Map<string, Item[]> = new Map();
     const thisLanes: Map<string, Lane> = new Map();
-    const lastLanes = this.lastLanes;
+    const lastLanes = this.previousLanes;
 
     let haveSeenArchiveMarker = false;
     let currentLane: Lane | null = null;
@@ -596,7 +596,7 @@ export class KanbanParser {
       let item: Item;
 
       if (itemMatch) {
-        item = this.lastItems.get(line)?.shift();
+        item = this.previousItems.get(line)?.shift();
 
         if (!item) {
           const [_full, marker, title] = itemMatch;
@@ -708,13 +708,13 @@ export class KanbanParser {
     // Push the last lane
     if (currentLane !== null) pushLane();
 
-    this.lastBody = body;
-    this.lastItems = thisItems;
-    this.lastLanes = thisLanes;
-    this.lastSettings = settings;
-    this.lastGlobalSettings = globalSettings;
-    this.lastFrontMatter = frontMatter;
-    this.lastParsedPath = filePath;
+    this.previousBody = body;
+    this.previousItems = thisItems;
+    this.previousLanes = thisLanes;
+    this.previousSettings = settings;
+    this.previousGlobalSettings = globalSettings;
+    this.previousFrontMatter = frontMatter;
+    this.PreviousParsedPath = filePath;
 
     return {
       ...BoardTemplate,

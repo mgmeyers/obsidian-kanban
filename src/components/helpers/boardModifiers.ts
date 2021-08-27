@@ -27,15 +27,11 @@ export interface BoardModifiers {
 }
 
 export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
-  const shouldAppendArchiveDate = !!stateManager.getSetting(
-    "prepend-archive-date"
-  );
-  const archiveDateSeparator = stateManager.getSetting(
-    "prepend-archive-separator"
-  );
-  const archiveDateFormat = stateManager.getSetting("prepend-archive-format");
-
   const appendArchiveDate = (item: Item) => {
+    const archiveDateFormat = stateManager.getSetting("prepend-archive-format");
+    const archiveDateSeparator = stateManager.getSetting(
+      "prepend-archive-separator"
+    );
     const newTitle = [moment().format(archiveDateFormat)];
 
     if (archiveDateSeparator) newTitle.push(archiveDateSeparator);
@@ -119,7 +115,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
         return update(removeEntity(boardData, path), {
           data: {
             archive: {
-              $push: shouldAppendArchiveDate
+              $push: !!stateManager.getSetting("prepend-archive-date")
                 ? items.map(appendArchiveDate)
                 : items,
             },
@@ -148,7 +144,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
           {
             data: {
               archive: {
-                $push: shouldAppendArchiveDate
+                $push: !!stateManager.getSetting("prepend-archive-date")
                   ? items.map(appendArchiveDate)
                   : items,
               },
@@ -207,7 +203,11 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
         return update(removeEntity(boardData, path), {
           data: {
             archive: {
-              $push: [shouldAppendArchiveDate ? appendArchiveDate(item) : item],
+              $push: [
+                !!stateManager.getSetting("prepend-archive-date")
+                  ? appendArchiveDate(item)
+                  : item,
+              ],
             },
           },
         });

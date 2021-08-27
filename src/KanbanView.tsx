@@ -15,7 +15,7 @@ import KanbanPlugin from "./main";
 import { SettingsModal } from "./Settings";
 import { t } from "./lang/helpers";
 import { Emitter, createEmitter } from "./dnd/util/emitter";
-import { c } from "./components/helpers";
+import { c, generateInstanceId } from "./components/helpers";
 
 export const kanbanViewType = "kanban";
 export const kanbanIcon = "blocks";
