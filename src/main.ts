@@ -246,6 +246,22 @@ export default class KanbanPlugin extends Plugin {
       })
     );
 
+    this.registerEvent(
+      this.app.metadataCache.on("dataview:api-ready", () => {
+        this.stateManagers.forEach((manager) => {
+          manager.forceRefresh();
+        });
+      })
+    );
+
+    this.registerEvent(
+      this.app.metadataCache.on("dataview:metadata-change", (_, file) => {
+        this.stateManagers.forEach((manager) => {
+          manager.onFileMetadataChange(file);
+        });
+      })
+    );
+
     // @ts-ignore
     this.app.workspace.registerHoverLinkSource(frontMatterKey, {
       display: "Kanban",

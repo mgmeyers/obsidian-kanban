@@ -8,6 +8,7 @@ import {
 } from "obsidian";
 import {
   c,
+  generateInstanceId,
   getDefaultDateFormat,
   getDefaultTimeFormat,
 } from "./components/helpers";
@@ -25,7 +26,11 @@ import {
   cleanupMetadataSettings,
   renderMetadataSettings,
 } from "./MetadataSettings";
-import { DataKey } from "./components/types";
+import {
+  DataKey,
+  MetadataSetting,
+  MetadataSettingTemplate,
+} from "./components/types";
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
@@ -988,14 +993,26 @@ export class SettingsManager {
 
       const [value] = this.getSetting("metadata-keys", local);
 
-      const keys: DataKey[] = (value as DataKey[]) || [];
+      const keys: MetadataSetting[] = (
+        (value as DataKey[]) || ([] as DataKey[])
+      ).map((k) => {
+        return {
+          ...MetadataSettingTemplate,
+          id: generateInstanceId(),
+          data: k,
+        };
+      });
 
-      renderMetadataSettings(setting.settingEl, keys, (keys: DataKey[]) =>
-        this.applySettingsUpdate({
-          "metadata-keys": {
-            $set: keys,
-          },
-        })
+      renderMetadataSettings(
+        setting.settingEl,
+        contentEl,
+        keys,
+        (keys: MetadataSetting[]) =>
+          this.applySettingsUpdate({
+            "metadata-keys": {
+              $set: keys.map((k) => k.data),
+            },
+          })
       );
 
       this.cleanupFns.push(() => {

@@ -120,7 +120,7 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
               return [data, { view, stateManager, boardModifiers, filePath }];
             }, [entity]);
 
-            if (data.type === "lane") {
+            if (data.type === DataTypes.Lane) {
               return (
                 <KanbanContext.Provider value={context}>
                   <div className={c("drag-container")} style={styles}>
@@ -134,7 +134,7 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
               );
             }
 
-            if (data.type === "item") {
+            if (data.type === DataTypes.Item) {
               return (
                 <KanbanContext.Provider value={context}>
                   <div className={c("drag-container")} style={styles}>

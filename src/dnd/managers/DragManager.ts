@@ -90,8 +90,8 @@ export class DragManager {
     );
 
     this.dragEntityId = id;
-    this.dragOrigin = { x: e.screenX, y: e.screenY };
-    this.dragPosition = { x: e.screenX, y: e.screenY };
+    this.dragOrigin = { x: e.pageX, y: e.pageY };
+    this.dragPosition = { x: e.pageX, y: e.pageY };
     this.dragEntity = this.hitboxEntities.get(id);
     this.dragOriginHitbox = this.dragEntity?.getHitbox();
     this.dragEntityMargin = [
@@ -105,7 +105,7 @@ export class DragManager {
   }
 
   dragMove(e: PointerEvent) {
-    this.dragPosition = { x: e.screenX, y: e.screenY };
+    this.dragPosition = { x: e.pageX, y: e.pageY };
     this.emitter.emit("dragMove", this.getDragEventData());
     this.calculateDragIntersect();
   }

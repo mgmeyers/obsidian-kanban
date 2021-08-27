@@ -8,7 +8,6 @@ export interface LaneData {
 }
 
 export interface DataKey {
-  id: string;
   metadataKey: string;
   label: string;
   shouldHideLabel: boolean;
@@ -55,11 +54,13 @@ export interface BoardData {
 export type Item = Nestable<ItemData>;
 export type Lane = Nestable<LaneData, Item>;
 export type Board = Nestable<BoardData, Lane>;
+export type MetadataSetting = Nestable<DataKey>;
 
 export const DataTypes = {
   Item: "item",
   Lane: "lane",
   Board: "board",
+  MetadataSetting: "metadata-setting",
 };
 
 export const ItemTemplate = {
@@ -76,4 +77,10 @@ export const LaneTemplate = {
 export const BoardTemplate = {
   accepts: [] as string[],
   type: DataTypes.Board,
+};
+
+export const MetadataSettingTemplate = {
+  accepts: [DataTypes.MetadataSetting],
+  type: DataTypes.MetadataSetting,
+  children: [] as any[],
 };

@@ -517,6 +517,45 @@ export class KanbanParser {
     };
   }
 
+  refreshBoard(board: Board): Board {
+    this.parseSettings(board.data.settings);
+
+    return update(board, {
+      children: {
+        $set: board.children.map((lane) =>
+          update(lane, {
+            children: {
+              $set: lane.children.map((item) =>
+                this.updateItem(item, item.data.titleRaw)
+              ),
+            },
+          })
+        ),
+      },
+    });
+  }
+
+  shouldRefreshBoard(oldSettings: KanbanSettings, newSettings: KanbanSettings) {
+    if (!oldSettings && newSettings) {
+      return true;
+    }
+
+    const toCompare: Array<keyof KanbanSettings> = [
+      "metadata-keys",
+      "date-trigger",
+      "time-trigger",
+      "link-date-to-daily-note",
+      "date-format",
+      "time-format",
+      "hide-date-in-title",
+      "hide-tags-in-title",
+    ];
+
+    return !toCompare.every((k) => {
+      return oldSettings[k] === newSettings[k];
+    });
+  }
+
   mdToBoard(boardMd: string, filePath: string): Board {
     /*
     Steps:

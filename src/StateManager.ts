@@ -2,7 +2,6 @@ import update from "immutability-helper";
 import { App, TFile, moment } from "obsidian";
 import React from "react";
 import {
-  generateInstanceId,
   getDefaultDateFormat,
   getDefaultTimeFormat,
 } from "./components/helpers";
@@ -134,16 +133,27 @@ export class StateManager {
     }
   }
 
+  forceRefresh() {
+    this.state = this.parser.refreshBoard(this.state);
+    this.stateReceivers.forEach((receiver) => receiver(this.state));
+  }
+
   setState(
     state: Board | ((board: Board) => Board),
     shouldSave: boolean = true
   ) {
     const oldSettings = this.state?.data.settings;
+    const newState = typeof state === "function" ? state(this.state) : state;
+    const newSettings = newState?.data.settings;
 
-    if (typeof state === "function") {
-      this.state = state(this.state);
+    if (
+      oldSettings &&
+      newSettings &&
+      this.parser.shouldRefreshBoard(oldSettings, newSettings)
+    ) {
+      this.state = this.parser.refreshBoard(newState);
     } else {
-      this.state = state;
+      this.state = newState;
     }
 
     this.compiledSettings = this.compileSettings();
@@ -153,8 +163,6 @@ export class StateManager {
     }
 
     this.stateReceivers.forEach((receiver) => receiver(this.state));
-
-    const newSettings = this.state?.data.settings;
 
     if (oldSettings !== newSettings && newSettings) {
       this.settingsNotifiers.forEach((notifiers, key) => {
@@ -388,6 +396,11 @@ export class StateManager {
         );
       }
     }
+  }
+
+  reparseBoard() {
+    const board = this.getParsedBoard(this.getAView().data);
+    this.setState(board);
   }
 
   archiveCompletedCards() {
