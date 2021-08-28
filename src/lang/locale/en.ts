@@ -23,6 +23,8 @@ export default {
   "Something went wrong": "Something went wrong",
   "You may wish to open as markdown and inspect or edit the file.":
     "You may wish to open as markdown and inspect or edit the file.",
+  "Are you sure you want to archive all completed cards on this board?":
+    "Are you sure you want to archive all completed cards on this board?",
 
   // parser.ts
   Complete: "Complete",
@@ -43,8 +45,8 @@ export default {
   "Prepend / append new cards": "Prepend / append new cards",
   "This setting controls weather new cards are added to the beginning or end of the list.":
     "This setting controls weather new cards are added to the beginning or end of the list.",
-  "Prepend": "Prepend",
-  "Append": "Append",
+  Prepend: "Prepend",
+  Append: "Append",
   "These settings will take precedence over the default Kanban board settings.":
     "These settings will take precedence over the default Kanban board settings.",
   "Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.":

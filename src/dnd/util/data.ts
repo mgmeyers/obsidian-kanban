@@ -17,6 +17,20 @@ export function getEntityFromPath(root: Nestable, path: Path): Nestable {
 export function buildUpdateMutation(path: Path, mutation: Spec<Nestable>) {
   let pathedMutation: Spec<Nestable> = mutation;
 
+  for (let i = path.length - 1; i >= 0; i--) {
+    pathedMutation = {
+      children: {
+        [path[i]]: pathedMutation,
+      },
+    };
+  }
+
+  return pathedMutation;
+}
+
+export function buildUpdateParentMutation(path: Path, mutation: Spec<Nestable>) {
+  let pathedMutation: Spec<Nestable> = mutation;
+
   for (let i = path.length - 2; i >= 0; i--) {
     pathedMutation = {
       children: {
@@ -29,7 +43,7 @@ export function buildUpdateMutation(path: Path, mutation: Spec<Nestable>) {
 }
 
 export function buildRemoveMutation(path: Path) {
-  return buildUpdateMutation(path, {
+  return buildUpdateParentMutation(path, {
     children: {
       $splice: [[path[path.length - 1], 1]],
     },
@@ -41,7 +55,7 @@ export function buildInsertMutation(
   entity: Nestable,
   destinationModifier: number = 0
 ) {
-  return buildUpdateMutation(destination, {
+  return buildUpdateParentMutation(destination, {
     children: {
       $splice: [
         [destination[destination.length - 1] + destinationModifier, 0, entity],
@@ -51,7 +65,7 @@ export function buildInsertMutation(
 }
 
 export function buildAppendMutation(destination: Path, entities: Nestable[]) {
-  return buildUpdateMutation(destination, {
+  return buildUpdateParentMutation(destination, {
     children: {
       $push: entities,
     },
@@ -59,7 +73,7 @@ export function buildAppendMutation(destination: Path, entities: Nestable[]) {
 }
 
 export function buildPrependMutation(destination: Path, entities: Nestable[]) {
-  return buildUpdateMutation(destination, {
+  return buildUpdateParentMutation(destination, {
     children: {
       $unshift: entities,
     },
@@ -132,4 +146,12 @@ export function updateEntity(
   mutation: Spec<Nestable>
 ) {
   return update(root, buildUpdateMutation(path, mutation));
+}
+
+export function updateParentEntity(
+  root: Nestable,
+  path: Path,
+  mutation: Spec<Nestable>
+) {
+  return update(root, buildUpdateParentMutation(path, mutation));
 }

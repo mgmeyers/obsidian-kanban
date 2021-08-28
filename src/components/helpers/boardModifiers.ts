@@ -10,6 +10,7 @@ import {
   prependEntities,
   removeEntity,
   updateEntity,
+  updateParentEntity,
 } from "src/dnd/util/data";
 import { StateManager } from "src/StateManager";
 
@@ -91,7 +92,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
       );
 
       stateManager.setState((boardData) =>
-        updateEntity(boardData, path, {
+        updateParentEntity(boardData, path, {
           children: {
             [path[path.length - 1]]: {
               $set: lane,
@@ -115,7 +116,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
         return update(removeEntity(boardData, path), {
           data: {
             archive: {
-              $push: !!stateManager.getSetting("prepend-archive-date")
+              $unshift: !!stateManager.getSetting("prepend-archive-date")
                 ? items.map(appendArchiveDate)
                 : items,
             },
@@ -144,7 +145,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
           {
             data: {
               archive: {
-                $push: !!stateManager.getSetting("prepend-archive-date")
+                $unshift: !!stateManager.getSetting("prepend-archive-date")
                   ? items.map(appendArchiveDate)
                   : items,
               },
@@ -179,7 +180,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
           item
         );
 
-        return updateEntity(boardData, path, {
+        return updateParentEntity(boardData, path, {
           children: {
             [path[path.length - 1]]: {
               $set: item,

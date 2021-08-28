@@ -437,7 +437,7 @@ export function useAutocompleteInputProps({
       input.focus();
       input.selectionStart = input.selectionEnd = input.value.length;
 
-      constructAutocomplete({
+      return constructAutocomplete({
         inputRef,
         isAutocompleteVisibleRef,
         obsidianContext,

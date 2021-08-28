@@ -7,6 +7,8 @@ import {
   TextFileView,
   WorkspaceLeaf,
   TFile,
+  Modal,
+  App,
 } from "obsidian";
 
 import { Kanban } from "./components/Kanban";
@@ -15,7 +17,8 @@ import KanbanPlugin from "./main";
 import { SettingsModal } from "./Settings";
 import { t } from "./lang/helpers";
 import { Emitter, createEmitter } from "./dnd/util/emitter";
-import { c, generateInstanceId } from "./components/helpers";
+import { c } from "./components/helpers";
+import { StateManager } from "./StateManager";
 
 export const kanbanViewType = "kanban";
 export const kanbanIcon = "blocks";
@@ -66,7 +69,6 @@ export class KanbanView extends TextFileView implements HoverParent {
     });
 
     this.addAction("sheets-in-box", "Archive all completed cards", () => {
-      console.log("TODO: prompt via modal");
       const stateManager = this.plugin.stateManagers.get(this.file);
       stateManager.archiveCompletedCards();
     });

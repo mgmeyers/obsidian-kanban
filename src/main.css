@@ -541,6 +541,9 @@ button.kanban-plugin__new-item-button {
 
 .kanban-plugin__item-prefix-button-wrapper input[type="checkbox"] {
   margin: 4px 7px 4px 0px;
+  width: 15px;
+  height: 15px;
+  filter: hue-rotate(42deg);
 }
 
 .kanban-plugin__item-prefix-button-wrapper input[type="checkbox"] + button {

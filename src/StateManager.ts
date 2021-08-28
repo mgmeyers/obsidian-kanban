@@ -426,13 +426,13 @@ export class StateManager {
       return update(lane, {
         children: {
           $set: lane.children.filter((item) => {
-            if (item.data.isComplete) {
+            if (lane.data.shouldMarkItemsComplete || item.data.isComplete) {
               archived.push(
                 shouldAppendArchiveDate ? appendArchiveDate(item) : item
               );
             }
 
-            return !item.data.isComplete;
+            return !item.data.isComplete && !lane.data.shouldMarkItemsComplete;
           }),
         },
       });
