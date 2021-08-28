@@ -6,6 +6,7 @@ import { KanbanContext } from "../context";
 import { useAutocompleteInputProps } from "./autocomplete";
 import { MarkdownRenderer } from "../MarkdownRenderer";
 import { DateAndTime, RelativeDate } from "./DateAndTime";
+import { useNestedEntityPath } from "src/dnd/components/Droppable";
 
 export interface ItemContentProps {
   item: Item;
@@ -28,7 +29,9 @@ export const ItemContent = React.memo(
     onEditDate,
     onEditTime,
   }: ItemContentProps) => {
-    const { stateManager, filePath } = React.useContext(KanbanContext);
+    const { stateManager, filePath, boardModifiers } =
+      React.useContext(KanbanContext);
+    const path = useNestedEntityPath();
     const inputRef = React.useRef<HTMLTextAreaElement>();
     const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (!e.shiftKey) {
@@ -46,6 +49,43 @@ export const ItemContent = React.memo(
       onEnter: onEnter,
       onEscape: onEscape,
     });
+
+    const onCheckboxContainerClick = React.useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLElement;
+
+        if (target.hasClass("task-list-item-checkbox")) {
+          const index = parseInt(target.dataset.checkboxIndex, 10);
+
+          let count = 0;
+
+          const checked = item.data.titleRaw.replace(
+            /^(\s*[-+*]\s+?\[)([^\]])(\]\s+)/gm,
+            (sub, before, check, after) => {
+              let match = sub;
+
+              if (count === index) {
+                if (check === " ") {
+                  match = `${before}x${after}`;
+                } else {
+                  match = `${before} ${after}`;
+                }
+              }
+
+              count++;
+
+              return match;
+            }
+          );
+
+          boardModifiers.updateItem(
+            path,
+            stateManager.parser.updateItem(item, checked)
+          );
+        }
+      },
+      [path, boardModifiers, stateManager, item]
+    );
 
     if (isSettingsVisible) {
       return (
@@ -72,6 +112,7 @@ export const ItemContent = React.memo(
           className={c("item-markdown")}
           dom={item.data.dom}
           searchQuery={searchQuery}
+          onClick={onCheckboxContainerClick}
         />
         <div className={c("item-metadata")}>
           <RelativeDate item={item} stateManager={stateManager} />

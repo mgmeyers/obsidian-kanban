@@ -3,8 +3,8 @@ import React from "react";
 import { t } from "src/lang/helpers";
 import { KanbanContext } from "../context";
 import { c } from "../helpers";
-import { renderMarkdown } from "../helpers/renderMarkdown";
 import { useAutocompleteInputProps } from "../Item/autocomplete";
+import { MarkdownRenderer } from "../MarkdownRenderer";
 
 export interface LaneTitleProps {
   itemCount: number;
@@ -21,7 +21,7 @@ export function LaneTitle({
   title,
   onChange,
 }: LaneTitleProps) {
-  const { stateManager, filePath } = React.useContext(KanbanContext);
+  const { stateManager } = React.useContext(KanbanContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
 
   const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -51,14 +51,6 @@ export function LaneTitle({
     }
   }, [isEditing]);
 
-  // TODO: use markdown renderer component?
-  const markdownContent = React.useMemo(() => {
-    const tempEl = renderMarkdown(stateManager.getAView(), title);
-    return {
-      innerHTML: { __html: tempEl.innerHTML.toString() },
-    };
-  }, [title, filePath, stateManager]);
-
   return (
     <div className={c("lane-title")}>
       {isEditing ? (
@@ -75,10 +67,8 @@ export function LaneTitle({
         </div>
       ) : (
         <>
-          <span
-            className={`markdown-preview-view ${c("markdown-preview-view")} ${c(
-              "lane-title-text"
-            )}`}
+          <div
+            className={c("lane-title-text")}
             onContextMenu={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -97,9 +87,10 @@ export function LaneTitle({
                 );
               }
             }}
-            dangerouslySetInnerHTML={markdownContent.innerHTML}
-          ></span>
-          <span className={c("lane-title-count")}>{itemCount}</span>
+          >
+            <MarkdownRenderer markdownString={title} />
+          </div>
+          <div className={c("lane-title-count")}>{itemCount}</div>
         </>
       )}
     </div>

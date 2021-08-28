@@ -154,13 +154,24 @@ const ItemInner = React.memo(function ItemInner({
     setIsEditing(true);
   }, [setIsEditing]);
 
+  const ignoreAttr = React.useMemo(() => {
+    if (isEditing) {
+      return {
+        "data-ignore-drag": true,
+      };
+    }
+
+    return {};
+  }, [isEditing]);
+
   return (
     <div
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
       className={classcat([c("item-content-wrapper"), ...classModifiers])}
+      {...ignoreAttr}
     >
-      <div className={c("item-title-wrapper")}>
+      <div className={c("item-title-wrapper")} {...ignoreAttr}>
         <ItemCheckbox
           boardModifiers={boardModifiers}
           item={item}

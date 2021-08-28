@@ -2,6 +2,7 @@ import boxIntersect from "box-intersect";
 import { Emitter } from "../util/emitter";
 import {
   adjustHitboxForMovement,
+  distanceBetween,
   getBestIntersect,
   getScrollIntersection,
   getScrollIntersectionDiff,
@@ -331,14 +332,27 @@ export function useDragHandle(
       e.stopPropagation();
       e.preventDefault();
 
+      const initialEvent = e;
+      const initialPosition: Coordinates = {
+        x: e.pageX,
+        y: e.pageY,
+      };
+
       let isDragging = false;
       let dragStarted = false;
 
       const onMove = rafSchd((e: PointerEvent) => {
         if (!dragStarted) {
-          dndManager.dragManager.dragStart(e, droppable);
-          isDragging = true;
-          dragStarted = true;
+          if (
+            distanceBetween(initialPosition, {
+              x: e.pageX,
+              y: e.pageY,
+            }) > 5
+          ) {
+            dndManager.dragManager.dragStart(initialEvent, droppable);
+            isDragging = true;
+            dragStarted = true;
+          }
         } else if (isDragging) {
           dndManager.dragManager.dragMove(e);
         }

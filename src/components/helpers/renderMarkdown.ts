@@ -7,7 +7,7 @@ export function renderMarkdown(
 ): HTMLDivElement {
   const tempEl = createDiv();
 
-  MarkdownRenderer.renderMarkdown(markdownString, tempEl, view.file.path, view);
+  MarkdownRenderer.renderMarkdown(markdownString, tempEl, view.file.path, view)
 
   tempEl.findAll(".internal-embed").forEach((el) => {
     const src = el.getAttribute("src");

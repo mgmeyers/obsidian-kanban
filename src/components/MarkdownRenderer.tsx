@@ -5,7 +5,7 @@ import { c } from "./helpers";
 import { renderMarkdown } from "./helpers/renderMarkdown";
 import classcat from "classcat";
 
-interface MarkdownRendererProps {
+interface MarkdownRendererProps extends React.HTMLProps<HTMLDivElement> {
   className?: string;
   markdownString?: string;
   dom?: HTMLDivElement;
@@ -17,13 +17,23 @@ export const MarkdownRenderer = React.memo(function MarkdownRenderer({
   className,
   markdownString,
   searchQuery,
+  ...divProps
 }: MarkdownRendererProps) {
   const { stateManager } = React.useContext(KanbanContext);
   const contentEl = React.useMemo(() => {
-    return (
+    const renderedMarkdown =
       (dom?.cloneNode(true) as HTMLDivElement) ||
-      renderMarkdown(stateManager.getAView(), markdownString)
+      renderMarkdown(stateManager.getAView(), markdownString);
+
+    const checkboxes = renderedMarkdown.querySelectorAll(
+      ".task-list-item-checkbox"
     );
+
+    checkboxes.forEach((el, i) => {
+      (el as HTMLElement).dataset.checkboxIndex = i.toString();
+    });
+
+    return renderedMarkdown;
   }, [dom, stateManager, markdownString]);
 
   const marker = React.useMemo(() => {
@@ -52,6 +62,7 @@ export const MarkdownRenderer = React.memo(function MarkdownRenderer({
         c("markdown-preview-view"),
         className,
       ])}
+      {...divProps}
     />
   );
 });

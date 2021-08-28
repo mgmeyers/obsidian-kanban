@@ -379,19 +379,18 @@ button.kanban-plugin__new-item-button {
 }
 
 /* TODO: why white-space pre-wrap, again? */
-/* .kanban-plugin__markdown-preview-view p {
-  overflow-x: auto;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
+
+.kanban-plugin__markdown-preview-view p,
+.kanban-plugin__markdown-preview-view ul,
+.kanban-plugin__markdown-preview-view ol,
+.kanban-plugin__markdown-preview-view blockquote {
+  margin-block-start: 0.66em;
+  margin-block-end: 0.66em;
 }
-*/
+
 .kanban-plugin__markdown-preview-view > div > * {
   overflow-x: auto;
   overflow-wrap: break-word;
-}
-
-.kanban-plugin__markdown-preview-view > p {
-  margin: 0;
 }
 
 .kanban-plugin__markdown-preview-view > div > *:first-child {
@@ -404,7 +403,7 @@ button.kanban-plugin__new-item-button {
 
 .kanban-plugin__markdown-preview-view ul,
 .kanban-plugin__markdown-preview-view ol {
-  padding-inline-start: 25px;
+  padding-inline-start: 19px;
 }
 
 .kanban-plugin__meta-value .kanban-plugin__markdown-preview-view p,

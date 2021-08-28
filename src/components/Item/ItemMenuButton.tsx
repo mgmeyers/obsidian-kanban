@@ -11,10 +11,21 @@ interface ItemMenuButtonProps {
 
 export const ItemMenuButton = React.memo(
   ({ isEditing, setIsEditing, showMenu }: ItemMenuButtonProps) => {
+    const ignoreAttr = React.useMemo(() => {
+      if (isEditing) {
+        return {
+          "data-ignore-drag": true,
+        };
+      }
+
+      return {};
+    }, [isEditing]);
+
     return (
-      <div className={c("item-postfix-button-wrapper")}>
+      <div {...ignoreAttr} className={c("item-postfix-button-wrapper")}>
         {isEditing ? (
           <button
+            data-ignore-drag={true}
             onPointerDown={(e) => {
               e.preventDefault();
             }}
@@ -28,6 +39,7 @@ export const ItemMenuButton = React.memo(
           </button>
         ) : (
           <button
+            data-ignore-drag={true}
             onPointerDown={(e) => e.preventDefault()}
             onClick={
               showMenu as unknown as React.MouseEventHandler<HTMLButtonElement>
