@@ -1,20 +1,19 @@
-import { getLinkpath, Menu, TFolder } from "obsidian";
-import React from "react";
+import { Menu, TFolder, getLinkpath } from 'obsidian';
+import React from 'react';
 
-import { Item } from "../types";
-import { applyTemplate, escapeRegExpStr } from "../helpers";
-import { defaultDateTrigger, defaultTimeTrigger } from "src/settingHelpers";
+import { Path } from 'src/dnd/types';
+import { t } from 'src/lang/helpers';
+import { StateManager } from 'src/StateManager';
+
+import { applyTemplate, escapeRegExpStr } from '../helpers';
+import { BoardModifiers } from '../helpers/boardModifiers';
+import { Item } from '../types';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
   constructMenuTimePickerOnChange,
   constructTimePicker,
-} from "./helpers";
-import { t } from "src/lang/helpers";
-import { KanbanView } from "src/KanbanView";
-import { BoardModifiers } from "../helpers/boardModifiers";
-import { Path } from "src/dnd/types";
-import { StateManager } from "src/StateManager";
+} from './helpers';
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
 
@@ -47,26 +46,26 @@ export function useItemMenu({
         const hasTime = !!item.data.metadata.time;
 
         const menu = new Menu(stateManager.app).addItem((i) => {
-          i.setIcon("pencil")
-            .setTitle(t("Edit card"))
+          i.setIcon('pencil')
+            .setTitle(t('Edit card'))
             .onClick(() => setIsEditing(true));
         });
 
         menu
           .addItem((i) => {
-            i.setIcon("create-new")
-              .setTitle(t("New note from card"))
+            i.setIcon('create-new')
+              .setTitle(t('New note from card'))
               .onClick(async () => {
                 const prevTitle = item.data.title;
                 const sanitizedTitle = item.data.title.replace(
                   illegalCharsRegEx,
-                  " "
+                  ' '
                 );
 
                 const newNoteFolder =
-                  stateManager.getSetting("new-note-folder");
+                  stateManager.getSetting('new-note-folder');
                 const newNoteTemplatePath =
-                  stateManager.getSetting("new-note-template");
+                  stateManager.getSetting('new-note-template');
 
                 const targetFolder = newNoteFolder
                   ? (stateManager.app.vault.getAbstractFileByPath(
@@ -76,12 +75,9 @@ export function useItemMenu({
                       stateManager.file.path
                     );
 
-                const newFile =
-                  // @ts-ignore
-                  await stateManager.app.fileManager.createNewMarkdownFile(
-                    targetFolder,
-                    sanitizedTitle
-                  );
+                const newFile = await (
+                  stateManager.app.fileManager as any
+                ).createNewMarkdownFile(targetFolder, sanitizedTitle);
 
                 const newLeaf = stateManager.app.workspace.splitActiveLeaf();
 
@@ -107,24 +103,24 @@ export function useItemMenu({
           })
           .addSeparator()
           .addItem((i) => {
-            i.setIcon("documents")
-              .setTitle(t("Duplicate card"))
+            i.setIcon('documents')
+              .setTitle(t('Duplicate card'))
               .onClick(() => boardModifiers.duplicateEntity(path));
           })
           .addItem((i) => {
-            i.setIcon("sheets-in-box")
-              .setTitle(t("Archive card"))
+            i.setIcon('sheets-in-box')
+              .setTitle(t('Archive card'))
               .onClick(() => boardModifiers.archiveItem(path));
           })
           .addItem((i) => {
-            i.setIcon("trash")
-              .setTitle(t("Delete card"))
+            i.setIcon('trash')
+              .setTitle(t('Delete card'))
               .onClick(() => boardModifiers.deleteEntity(path));
           })
           .addSeparator()
           .addItem((i) => {
-            i.setIcon("calendar-with-checkmark")
-              .setTitle(hasDate ? t("Edit date") : t("Add date"))
+            i.setIcon('calendar-with-checkmark')
+              .setTitle(hasDate ? t('Edit date') : t('Add date'))
               .onClick(() => {
                 constructDatePicker(
                   coordinates,
@@ -142,16 +138,16 @@ export function useItemMenu({
 
         if (hasDate) {
           menu.addItem((i) => {
-            i.setIcon("cross")
-              .setTitle(t("Remove date"))
+            i.setIcon('cross')
+              .setTitle(t('Remove date'))
               .onClick(() => {
                 const shouldLinkDates = stateManager.getSetting(
-                  "link-date-to-daily-note"
+                  'link-date-to-daily-note'
                 );
-                const dateTrigger = stateManager.getSetting("date-trigger");
+                const dateTrigger = stateManager.getSetting('date-trigger');
                 const contentMatch = shouldLinkDates
-                  ? "\\[\\[[^}]+\\]\\]"
-                  : "{[^}]+}";
+                  ? '\\[\\[[^}]+\\]\\]'
+                  : '{[^}]+}';
                 const dateRegEx = new RegExp(
                   `(^|\\s)${escapeRegExpStr(
                     dateTrigger as string
@@ -159,7 +155,7 @@ export function useItemMenu({
                 );
 
                 const titleRaw = item.data.titleRaw
-                  .replace(dateRegEx, "")
+                  .replace(dateRegEx, '')
                   .trim();
                 boardModifiers.updateItem(
                   path,
@@ -169,8 +165,8 @@ export function useItemMenu({
           });
 
           menu.addItem((i) => {
-            i.setIcon("clock")
-              .setTitle(hasTime ? t("Edit time") : t("Add time"))
+            i.setIcon('clock')
+              .setTitle(hasTime ? t('Edit time') : t('Add time'))
               .onClick(() => {
                 constructTimePicker(
                   stateManager,
@@ -189,16 +185,16 @@ export function useItemMenu({
 
           if (hasTime) {
             menu.addItem((i) => {
-              i.setIcon("cross")
-                .setTitle(t("Remove time"))
+              i.setIcon('cross')
+                .setTitle(t('Remove time'))
                 .onClick(() => {
-                  const timeTrigger = stateManager.getSetting("time-trigger");
+                  const timeTrigger = stateManager.getSetting('time-trigger');
                   const timeRegEx = new RegExp(
                     `(^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
                   );
 
                   const titleRaw = item.data.titleRaw
-                    .replace(timeRegEx, "")
+                    .replace(timeRegEx, '')
                     .trim();
                   boardModifiers.updateItem(
                     path,

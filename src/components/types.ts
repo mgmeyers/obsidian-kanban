@@ -1,6 +1,7 @@
-import { TFile } from "obsidian";
-import { Nestable } from "src/dnd/types";
-import { KanbanSettings } from "src/Settings";
+import { TFile } from 'obsidian';
+
+import { Nestable } from 'src/dnd/types';
+import { KanbanSettings } from 'src/Settings';
 
 export interface LaneData {
   shouldMarkItemsComplete?: boolean;
@@ -57,10 +58,10 @@ export type Board = Nestable<BoardData, Lane>;
 export type MetadataSetting = Nestable<DataKey>;
 
 export const DataTypes = {
-  Item: "item",
-  Lane: "lane",
-  Board: "board",
-  MetadataSetting: "metadata-setting",
+  Item: 'item',
+  Lane: 'lane',
+  Board: 'board',
+  MetadataSetting: 'metadata-setting',
 };
 
 export const ItemTemplate = {

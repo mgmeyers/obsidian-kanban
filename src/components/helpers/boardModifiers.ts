@@ -1,8 +1,7 @@
-import { moment } from "obsidian";
-import update from "immutability-helper";
-import { Item, Lane } from "../types";
-import { generateInstanceId } from "../helpers";
-import { Path } from "src/dnd/types";
+import update from 'immutability-helper';
+import { moment } from 'obsidian';
+
+import { Path } from 'src/dnd/types';
 import {
   appendEntities,
   getEntityFromPath,
@@ -11,8 +10,11 @@ import {
   removeEntity,
   updateEntity,
   updateParentEntity,
-} from "src/dnd/util/data";
-import { StateManager } from "src/StateManager";
+} from 'src/dnd/util/data';
+import { StateManager } from 'src/StateManager';
+
+import { generateInstanceId } from '../helpers';
+import { Item, Lane } from '../types';
 
 export interface BoardModifiers {
   appendItems: (path: Path, items: Item[]) => void;
@@ -29,9 +31,9 @@ export interface BoardModifiers {
 
 export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
   const appendArchiveDate = (item: Item) => {
-    const archiveDateFormat = stateManager.getSetting("prepend-archive-format");
+    const archiveDateFormat = stateManager.getSetting('prepend-archive-format');
     const archiveDateSeparator = stateManager.getSetting(
-      "prepend-archive-separator"
+      'prepend-archive-separator'
     );
     const newTitle = [moment().format(archiveDateFormat)];
 
@@ -39,7 +41,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
 
     newTitle.push(item.data.titleRaw);
 
-    const titleRaw = newTitle.join(" ");
+    const titleRaw = newTitle.join(' ');
     return stateManager.parser.updateItem(item, titleRaw);
   };
 
@@ -47,7 +49,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     appendItems: (path: Path, items: Item[]) => {
       items.forEach((item) =>
         stateManager.app.workspace.trigger(
-          "kanban:card-added",
+          'kanban:card-added',
           stateManager.file,
           item
         )
@@ -61,7 +63,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     prependItems: (path: Path, items: Item[]) => {
       items.forEach((item) =>
         stateManager.app.workspace.trigger(
-          "kanban:card-added",
+          'kanban:card-added',
           stateManager.file,
           item
         )
@@ -74,7 +76,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
 
     addLane: (lane: Lane) => {
       stateManager.app.workspace.trigger(
-        "kanban:lane-added",
+        'kanban:lane-added',
         stateManager.file,
         lane
       );
@@ -86,7 +88,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
 
     updateLane: (path: Path, lane: Lane) => {
       stateManager.app.workspace.trigger(
-        "kanban:lane-updated",
+        'kanban:lane-updated',
         stateManager.file,
         lane
       );
@@ -108,7 +110,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
         const items = lane.children;
 
         stateManager.app.workspace.trigger(
-          "kanban:lane-archived",
+          'kanban:lane-archived',
           stateManager.file,
           lane
         );
@@ -116,7 +118,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
         return update(removeEntity(boardData, path), {
           data: {
             archive: {
-              $unshift: !!stateManager.getSetting("prepend-archive-date")
+              $unshift: stateManager.getSetting('prepend-archive-date')
                 ? items.map(appendArchiveDate)
                 : items,
             },
@@ -131,7 +133,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
         const items = lane.children;
 
         stateManager.app.workspace.trigger(
-          "kanban:lane-cards-archived",
+          'kanban:lane-cards-archived',
           stateManager.file,
           items
         );
@@ -145,7 +147,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
           {
             data: {
               archive: {
-                $unshift: !!stateManager.getSetting("prepend-archive-date")
+                $unshift: stateManager.getSetting('prepend-archive-date')
                   ? items.map(appendArchiveDate)
                   : items,
               },
@@ -174,7 +176,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
         const oldItem = getEntityFromPath(boardData, path);
 
         stateManager.app.workspace.trigger(
-          "kanban:card-updated",
+          'kanban:card-updated',
           stateManager.file,
           oldItem,
           item
@@ -195,7 +197,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
         const item = getEntityFromPath(boardData, path);
 
         stateManager.app.workspace.trigger(
-          "kanban:card-archived",
+          'kanban:card-archived',
           stateManager.file,
           path,
           item
@@ -205,7 +207,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
           data: {
             archive: {
               $push: [
-                !!stateManager.getSetting("prepend-archive-date")
+                stateManager.getSetting('prepend-archive-date')
                   ? appendArchiveDate(item)
                   : item,
               ],

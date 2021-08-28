@@ -1,27 +1,24 @@
-import update from "immutability-helper";
-import React from "react";
+import update from 'immutability-helper';
 import {
   HoverParent,
   HoverPopover,
   Menu,
+  TFile,
   TextFileView,
   WorkspaceLeaf,
-  TFile,
-  Modal,
-  App,
-} from "obsidian";
+} from 'obsidian';
+import React from 'react';
 
-import { Kanban } from "./components/Kanban";
-import { Board } from "./components/types";
-import KanbanPlugin from "./main";
-import { SettingsModal } from "./Settings";
-import { t } from "./lang/helpers";
-import { Emitter, createEmitter } from "./dnd/util/emitter";
-import { c } from "./components/helpers";
-import { StateManager } from "./StateManager";
+import { c } from './components/helpers';
+import { Kanban } from './components/Kanban';
+import { Board } from './components/types';
+import { Emitter, createEmitter } from './dnd/util/emitter';
+import { t } from './lang/helpers';
+import KanbanPlugin from './main';
+import { SettingsModal } from './Settings';
 
-export const kanbanViewType = "kanban";
-export const kanbanIcon = "blocks";
+export const kanbanViewType = 'kanban';
+export const kanbanIcon = 'blocks';
 
 interface ViewEvents {
   showLaneForm(data: { referenceRect: DOMRect }): void;
@@ -38,7 +35,7 @@ export class KanbanView extends TextFileView implements HoverParent {
     this.plugin = plugin;
     this.emitter = createEmitter();
 
-    this.addAction("gear", "Board settings", () => {
+    this.addAction('gear', 'Board settings', () => {
       const stateManager = this.plugin.stateManagers.get(this.file);
       const board = stateManager.state;
 
@@ -62,22 +59,22 @@ export class KanbanView extends TextFileView implements HoverParent {
       ).open();
     });
 
-    this.addAction("document", "View board as markdown", () => {
+    this.addAction('document', 'View board as markdown', () => {
       this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] =
-        "markdown";
+        'markdown';
       this.plugin.setMarkdownView(this.leaf);
     });
 
-    this.addAction("sheets-in-box", "Archive all completed cards", () => {
+    this.addAction('sheets-in-box', 'Archive all completed cards', () => {
       const stateManager = this.plugin.stateManagers.get(this.file);
       stateManager.archiveCompletedCards();
     });
 
-    this.addAction("plus-with-circle", "Add list", (e) => {
-      this.emitter.emit("showLaneForm", {
+    this.addAction('plus-with-circle', 'Add list', (e) => {
+      this.emitter.emit('showLaneForm', {
         referenceRect: (e.target as HTMLElement).getBoundingClientRect(),
       });
-    }).addClass(c("ignore-click-outside"));
+    }).addClass(c('ignore-click-outside'));
   }
 
   get id(): string {
@@ -103,7 +100,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   getDisplayText() {
-    return this.file?.basename || "Kanban";
+    return this.file?.basename || 'Kanban';
   }
 
   async onClose() {
@@ -149,7 +146,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   toggleSearch() {
-    this.emitter.emit("toggleSearch", null);
+    this.emitter.emit('toggleSearch', null);
   }
 
   onMoreOptionsMenu(menu: Menu) {
@@ -157,19 +154,19 @@ export class KanbanView extends TextFileView implements HoverParent {
     menu
       .addItem((item) => {
         item
-          .setTitle(t("Open as markdown"))
-          .setIcon("document")
+          .setTitle(t('Open as markdown'))
+          .setIcon('document')
           .onClick(() => {
             this.plugin.kanbanFileModes[
               (this.leaf as any).id || this.file.path
-            ] = "markdown";
+            ] = 'markdown';
             this.plugin.setMarkdownView(this.leaf);
           });
       })
       .addItem((item) => {
         item
-          .setTitle(t("Open board settings"))
-          .setIcon("gear")
+          .setTitle(t('Open board settings'))
+          .setIcon('gear')
           .onClick(() => {
             const stateManager = this.plugin.stateManagers.get(this.file);
             const board = stateManager.state;
@@ -196,8 +193,8 @@ export class KanbanView extends TextFileView implements HoverParent {
       })
       .addItem((item) => {
         item
-          .setTitle(t("Archive completed cards"))
-          .setIcon("sheets-in-box")
+          .setTitle(t('Archive completed cards'))
+          .setIcon('sheets-in-box')
           .onClick(() => {
             const stateManager = this.plugin.stateManagers.get(this.file);
             stateManager.archiveCompletedCards();

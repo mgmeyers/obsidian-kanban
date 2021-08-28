@@ -1,36 +1,37 @@
+import 'choices.js/public/assets/styles/choices.css';
+import 'flatpickr/dist/flatpickr.min.css';
+
+import './main.css';
+
+import { around } from 'monkey-around';
 import {
+  MarkdownView,
+  Menu,
   Plugin,
-  WorkspaceLeaf,
   TFile,
   TFolder,
   ViewState,
-  MarkdownView,
-  Menu,
-} from "obsidian";
-import { around } from "monkey-around";
+  WorkspaceLeaf,
+} from 'obsidian';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
-import { kanbanIcon, KanbanView, kanbanViewType } from "./KanbanView";
-import { createApp } from "./DragDropApp";
-import { frontMatterKey } from "./parsers/common";
-import { KanbanSettings, KanbanSettingsTab } from "./Settings";
-import ReactDOM from "react-dom";
-
-import "choices.js/public/assets/styles/choices.css";
-import "flatpickr/dist/flatpickr.min.css";
-import "./main.css";
-import { t } from "./lang/helpers";
-import { StateManager } from "./StateManager";
-import React from "react";
+import { createApp } from './DragDropApp';
+import { KanbanView, kanbanIcon, kanbanViewType } from './KanbanView';
+import { t } from './lang/helpers';
+import { frontMatterKey } from './parsers/common';
+import { KanbanSettings, KanbanSettingsTab } from './Settings';
+import { StateManager } from './StateManager';
 
 const basicFrontmatter = [
-  "---",
-  "",
+  '---',
+  '',
   `${frontMatterKey}: basic`,
-  "",
-  "---",
-  "",
-  "",
-].join("\n");
+  '',
+  '---',
+  '',
+  '',
+].join('\n');
 
 export default class KanbanPlugin extends Plugin {
   settingsTab: KanbanSettingsTab;
@@ -63,8 +64,7 @@ export default class KanbanPlugin extends Plugin {
       this.setMarkdownView(leaf);
     });
 
-    // @ts-ignore
-    this.app.workspace.unregisterHoverLinkSource(frontMatterKey);
+    (this.app.workspace as any).unregisterHoverLinkSource(frontMatterKey);
 
     if (this.appEl) {
       ReactDOM.unmountComponentAtNode(this.appEl);
@@ -183,7 +183,7 @@ export default class KanbanPlugin extends Plugin {
   async setMarkdownView(leaf: WorkspaceLeaf) {
     await leaf.setViewState(
       {
-        type: "markdown",
+        type: 'markdown',
         state: leaf.view.getState(),
         popstate: true,
       } as ViewState,
@@ -203,15 +203,13 @@ export default class KanbanPlugin extends Plugin {
     const targetFolder = folder
       ? folder
       : this.app.fileManager.getNewFileParent(
-          this.app.workspace.getActiveFile()?.path || ""
+          this.app.workspace.getActiveFile()?.path || ''
         );
 
     try {
-      // @ts-ignore
-      const kanban: TFile = await this.app.fileManager.createNewMarkdownFile(
-        targetFolder,
-        t("Untitled Kanban")
-      );
+      const kanban: TFile = await (
+        this.app.fileManager as any
+      ).createNewMarkdownFile(targetFolder, t('Untitled Kanban'));
 
       await this.app.vault.modify(kanban, basicFrontmatter);
       await this.app.workspace.activeLeaf.setViewState({
@@ -219,18 +217,18 @@ export default class KanbanPlugin extends Plugin {
         state: { file: kanban.path },
       });
     } catch (e) {
-      console.error("Error creating kanban board:", e);
+      console.error('Error creating kanban board:', e);
     }
   }
 
   registerEvents() {
     this.registerEvent(
-      this.app.workspace.on("file-menu", (menu, file: TFile) => {
+      this.app.workspace.on('file-menu', (menu, file: TFile) => {
         // Add a menu item to the folder context menu to create a board
         if (file instanceof TFolder) {
           menu.addItem((item) => {
             item
-              .setTitle(t("New kanban board"))
+              .setTitle(t('New kanban board'))
               .setIcon(kanbanIcon)
               .onClick(() => this.newKanban(file));
           });
@@ -239,7 +237,7 @@ export default class KanbanPlugin extends Plugin {
     );
 
     this.registerEvent(
-      this.app.metadataCache.on("changed", (file) => {
+      this.app.metadataCache.on('changed', (file) => {
         this.stateManagers.forEach((manager) => {
           manager.onFileMetadataChange(file);
         });
@@ -247,7 +245,7 @@ export default class KanbanPlugin extends Plugin {
     );
 
     this.registerEvent(
-      this.app.metadataCache.on("dataview:api-ready", () => {
+      this.app.metadataCache.on('dataview:api-ready', () => {
         this.stateManagers.forEach((manager) => {
           manager.forceRefresh();
         });
@@ -255,30 +253,29 @@ export default class KanbanPlugin extends Plugin {
     );
 
     this.registerEvent(
-      this.app.metadataCache.on("dataview:metadata-change", (_, file) => {
+      this.app.metadataCache.on('dataview:metadata-change', (_, file) => {
         this.stateManagers.forEach((manager) => {
           manager.onFileMetadataChange(file);
         });
       })
     );
 
-    // @ts-ignore
-    this.app.workspace.registerHoverLinkSource(frontMatterKey, {
-      display: "Kanban",
+    (this.app.workspace as any).registerHoverLinkSource(frontMatterKey, {
+      display: 'Kanban',
       defaultMod: true,
     });
   }
 
   registerCommands() {
     this.addCommand({
-      id: "create-new-kanban-board",
-      name: t("Create new board"),
+      id: 'create-new-kanban-board',
+      name: t('Create new board'),
       callback: () => this.newKanban(),
     });
 
     this.addCommand({
-      id: "archive-completed-cards",
-      name: t("Archive completed cards in active board"),
+      id: 'archive-completed-cards',
+      name: t('Archive completed cards in active board'),
       checkCallback: (checking) => {
         const activeView = this.app.workspace.getActiveViewOfType(KanbanView);
 
@@ -290,8 +287,8 @@ export default class KanbanPlugin extends Plugin {
     });
 
     this.addCommand({
-      id: "toggle-kanban-view",
-      name: t("Toggle between Kanban and markdown mode"),
+      id: 'toggle-kanban-view',
+      name: t('Toggle between Kanban and markdown mode'),
       checkCallback: (checking) => {
         const activeFile = this.app.workspace.getActiveFile();
 
@@ -309,7 +306,7 @@ export default class KanbanPlugin extends Plugin {
 
         if (activeLeaf?.view && activeLeaf.view instanceof KanbanView) {
           this.kanbanFileModes[(activeLeaf as any).id || activeFile.path] =
-            "markdown";
+            'markdown';
           this.setMarkdownView(activeLeaf);
         } else if (fileIsKanban) {
           this.kanbanFileModes[(activeLeaf as any).id || activeFile.path] =
@@ -320,8 +317,8 @@ export default class KanbanPlugin extends Plugin {
     });
 
     this.addCommand({
-      id: "convert-to-kanban",
-      name: t("Convert empty note to Kanban"),
+      id: 'convert-to-kanban',
+      name: t('Convert empty note to Kanban'),
       checkCallback: (checking) => {
         const activeFile = this.app.workspace.getActiveFile();
         const activeLeaf = this.app.workspace.activeLeaf;
@@ -345,7 +342,7 @@ export default class KanbanPlugin extends Plugin {
 
     this.app.workspace.onLayoutReady(() => {
       this.register(
-        around((this.app as any).commands.commands["editor:open-search"], {
+        around((this.app as any).commands.commands['editor:open-search'], {
           checkCallback(next) {
             return function (isChecking: boolean) {
               if (isChecking) {
@@ -387,10 +384,10 @@ export default class KanbanPlugin extends Plugin {
               // Don't force kanban mode during shutdown
               self._loaded &&
               // If we have a markdown file
-              state.type === "markdown" &&
+              state.type === 'markdown' &&
               state.state?.file &&
               // And the current mode of the file is not set to markdown
-              self.kanbanFileModes[this.id || state.state.file] !== "markdown"
+              self.kanbanFileModes[this.id || state.state.file] !== 'markdown'
             ) {
               // Then check for the kanban frontMatterKey
               const cache = self.app.metadataCache.getCache(state.state.file);
@@ -435,7 +432,7 @@ export default class KanbanPlugin extends Plugin {
             menu
               .addItem((item) => {
                 item
-                  .setTitle(t("Open as kanban board"))
+                  .setTitle(t('Open as kanban board'))
                   .setIcon(kanbanIcon)
                   .onClick(() => {
                     self.kanbanFileModes[this.leaf.id || file.path] =

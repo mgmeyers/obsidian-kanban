@@ -1,7 +1,9 @@
-import React from "react";
-import { generateInstanceId } from "src/components/helpers";
-import { WithChildren } from "../types";
-import { ScopeIdContext, ScrollStateContext } from "./context";
+import React from 'react';
+
+import { generateInstanceId } from 'src/components/helpers';
+
+import { WithChildren } from '../types';
+import { ScopeIdContext, ScrollStateContext } from './context';
 
 interface ScopeProps extends WithChildren {
   id?: string;

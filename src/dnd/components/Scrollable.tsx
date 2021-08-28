@@ -1,11 +1,12 @@
-import React from "react";
-import { WithChildren } from "../types";
-import { ScrollManager } from "../managers/ScrollManager";
+import React from 'react';
+
+import { ScrollManager } from '../managers/ScrollManager';
+import { WithChildren } from '../types';
 import {
   DndManagerContext,
   ScopeIdContext,
   ScrollManagerContext,
-} from "./context";
+} from './context';
 
 interface ScrollContextProps extends WithChildren {
   scrollRef: React.MutableRefObject<HTMLElement | null>;

@@ -1,27 +1,27 @@
-import React from "react";
+import classcat from 'classcat';
+import React from 'react';
 
-import { Item } from "../types";
-import { c } from "../helpers";
-import { getItemClassModifiers } from "./helpers";
-import { KanbanContext, SearchContext } from "../context";
-import { ItemContent } from "./ItemContent";
-import { useItemMenu } from "./ItemMenu";
-import { ItemMetadata } from "./MetadataTable";
+import { Droppable, useNestedEntityPath } from 'src/dnd/components/Droppable';
+import { useDragHandle } from 'src/dnd/managers/DragManager';
+import { Path } from 'src/dnd/types';
+import { StateManager } from 'src/StateManager';
+
+import { KanbanContext, SearchContext } from '../context';
+import { c } from '../helpers';
+import { BoardModifiers } from '../helpers/boardModifiers';
+import { Item } from '../types';
+import { getItemClassModifiers } from './helpers';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
   constructMenuTimePickerOnChange,
   constructTimePicker,
-} from "./helpers";
-import { ItemCheckbox } from "./ItemCheckbox";
-import { ItemMenuButton } from "./ItemMenuButton";
-import { BoardModifiers } from "../helpers/boardModifiers";
-import { useDragHandle } from "src/dnd/managers/DragManager";
-
-import { Droppable, useNestedEntityPath } from "src/dnd/components/Droppable";
-import { Path } from "src/dnd/types";
-import classcat from "classcat";
-import { StateManager } from "src/StateManager";
+} from './helpers';
+import { ItemCheckbox } from './ItemCheckbox';
+import { ItemContent } from './ItemContent';
+import { useItemMenu } from './ItemMenu';
+import { ItemMenuButton } from './ItemMenuButton';
+import { ItemMetadata } from './MetadataTable';
 
 interface UseItemContentEventsParams {
   stateManager: StateManager;
@@ -113,9 +113,9 @@ const ItemInner = React.memo(function ItemInner({
 
   if (searchQuery) {
     if (isMatch) {
-      classModifiers.push("is-search-hit");
+      classModifiers.push('is-search-hit');
     } else {
-      classModifiers.push("is-search-miss");
+      classModifiers.push('is-search-miss');
     }
   }
 
@@ -141,7 +141,7 @@ const ItemInner = React.memo(function ItemInner({
 
       const internalLinkPath =
         e.target instanceof HTMLAnchorElement &&
-        e.target.hasClass("internal-link")
+        e.target.hasClass('internal-link')
           ? e.target.dataset.href
           : undefined;
 
@@ -157,7 +157,7 @@ const ItemInner = React.memo(function ItemInner({
   const ignoreAttr = React.useMemo(() => {
     if (isEditing) {
       return {
-        "data-ignore-drag": true,
+        'data-ignore-drag': true,
       };
     }
 
@@ -168,10 +168,10 @@ const ItemInner = React.memo(function ItemInner({
     <div
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
-      className={classcat([c("item-content-wrapper"), ...classModifiers])}
+      className={classcat([c('item-content-wrapper'), ...classModifiers])}
       {...ignoreAttr}
     >
-      <div className={c("item-title-wrapper")} {...ignoreAttr}>
+      <div className={c('item-title-wrapper')} {...ignoreAttr}>
         <ItemCheckbox
           boardModifiers={boardModifiers}
           item={item}
@@ -214,8 +214,8 @@ export const DraggableItem = React.memo(function DraggableItem(
   useDragHandle(measureRef, measureRef);
 
   return (
-    <div ref={measureRef} className={c("item-wrapper")}>
-      <div ref={elementRef} className={c("item")}>
+    <div ref={measureRef} className={c('item-wrapper')}>
+      <div ref={elementRef} className={c('item')}>
         {props.isStatic ? (
           <ItemInner {...innerProps} />
         ) : (

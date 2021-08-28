@@ -1,19 +1,20 @@
-import update from "immutability-helper";
-import React from "react";
+import animateScrollTo from 'animated-scroll-to';
+import classcat from 'classcat';
+import update from 'immutability-helper';
+import React from 'react';
 
-import { DataTypes, Item, Lane } from "../types";
-import { c } from "../helpers";
-import { Items } from "../Item/Item";
-import { ItemForm } from "../Item/ItemForm";
-import { LaneHeader } from "./LaneHeader";
-import { KanbanContext } from "../context";
-import { useDragHandle } from "src/dnd/managers/DragManager";
-import { Droppable, useNestedEntityPath } from "src/dnd/components/Droppable";
-import classcat from "classcat";
-import { SortPlaceholder } from "src/dnd/components/SortPlaceholder";
-import { Sortable } from "src/dnd/components/Sortable";
-import { ScrollContainer } from "src/dnd/components/ScrollContainer";
-import animateScrollTo from "animated-scroll-to";
+import { Droppable, useNestedEntityPath } from 'src/dnd/components/Droppable';
+import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
+import { Sortable } from 'src/dnd/components/Sortable';
+import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
+import { useDragHandle } from 'src/dnd/managers/DragManager';
+
+import { KanbanContext } from '../context';
+import { c } from '../helpers';
+import { Items } from '../Item/Item';
+import { ItemForm } from '../Item/ItemForm';
+import { DataTypes, Item, Lane } from '../types';
+import { LaneHeader } from './LaneHeader';
 
 const laneAccepts = [DataTypes.Item];
 
@@ -30,8 +31,8 @@ export const DraggableLane = React.memo(function DraggableLane(
   const { stateManager, boardModifiers } = React.useContext(KanbanContext);
 
   const path = useNestedEntityPath(laneIndex);
-  const laneWidth = stateManager.useSetting("lane-width");
-  const insertionMethod = stateManager.useSetting("new-card-insertion-method");
+  const laneWidth = stateManager.useSetting('lane-width');
+  const insertionMethod = stateManager.useSetting('new-card-insertion-method');
   const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
 
   const laneStyles = laneWidth ? { width: `${laneWidth}px` } : undefined;
@@ -41,12 +42,12 @@ export const DraggableLane = React.memo(function DraggableLane(
   const dragHandleRef = React.useRef<HTMLDivElement>(null);
   const [isSorting, setIsSorting] = React.useState(false);
 
-  const shouldPrepend = insertionMethod === "prepend";
+  const shouldPrepend = insertionMethod === 'prepend';
 
   useDragHandle(measureRef, dragHandleRef);
 
   const addItems = (items: Item[]) => {
-    boardModifiers[shouldPrepend ? "prependItems" : "appendItems"](
+    boardModifiers[shouldPrepend ? 'prependItems' : 'appendItems'](
       [...path, lane.children.length - 1],
       items.map((item) =>
         update(item, {
@@ -63,12 +64,12 @@ export const DraggableLane = React.memo(function DraggableLane(
     // TODO: can we find a less brute force way to do this?
     setTimeout(() => {
       const laneItems = elementRef.current?.getElementsByClassName(
-        c("lane-items")
+        c('lane-items')
       );
 
       if (laneItems.length) {
         animateScrollTo(
-          [0, insertionMethod === "append" ? laneItems[0].scrollHeight : 0],
+          [0, insertionMethod === 'append' ? laneItems[0].scrollHeight : 0],
           {
             elementToScroll: laneItems[0],
             speed: 200,
@@ -101,7 +102,7 @@ export const DraggableLane = React.memo(function DraggableLane(
     <ScrollContainer
       id={lane.id}
       index={laneIndex}
-      className={classcat([c("lane-items"), c("vertical")])}
+      className={classcat([c('lane-items'), c('vertical')])}
       triggerTypes={laneAccepts}
       isStatic={isStatic}
     >
@@ -119,16 +120,16 @@ export const DraggableLane = React.memo(function DraggableLane(
     <div
       ref={measureRef}
       className={classcat([
-        c("lane-wrapper"),
+        c('lane-wrapper'),
         {
-          "is-sorting": isSorting,
+          'is-sorting': isSorting,
         },
       ])}
       style={laneStyles}
     >
       <div
         ref={elementRef}
-        className={classcat([c("lane"), { "will-prepend": shouldPrepend }])}
+        className={classcat([c('lane'), { 'will-prepend': shouldPrepend }])}
       >
         <LaneHeader
           dragHandleRef={dragHandleRef}

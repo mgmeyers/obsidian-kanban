@@ -1,9 +1,10 @@
-import React from "react";
-import Mark from "mark.js";
-import { KanbanContext } from "./context";
-import { c } from "./helpers";
-import { renderMarkdown } from "./helpers/renderMarkdown";
-import classcat from "classcat";
+import classcat from 'classcat';
+import Mark from 'mark.js';
+import React from 'react';
+
+import { KanbanContext } from './context';
+import { c } from './helpers';
+import { renderMarkdown } from './helpers/renderMarkdown';
 
 interface MarkdownRendererProps extends React.HTMLProps<HTMLDivElement> {
   className?: string;
@@ -26,7 +27,7 @@ export const MarkdownRenderer = React.memo(function MarkdownRenderer({
       renderMarkdown(stateManager.getAView(), markdownString);
 
     const checkboxes = renderedMarkdown.querySelectorAll(
-      ".task-list-item-checkbox"
+      '.task-list-item-checkbox'
     );
 
     checkboxes.forEach((el, i) => {
@@ -58,8 +59,8 @@ export const MarkdownRenderer = React.memo(function MarkdownRenderer({
         }
       }}
       className={classcat([
-        "markdown-preview-view",
-        c("markdown-preview-view"),
+        'markdown-preview-view',
+        c('markdown-preview-view'),
         className,
       ])}
       {...divProps}

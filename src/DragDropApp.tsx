@@ -1,28 +1,28 @@
-import React from "react";
+import React from 'react';
+import { createPortal } from 'react-dom';
 
-import { createPortal } from "react-dom";
-import { DataTypes, Item, Lane } from "./components/types";
-import { KanbanView } from "./KanbanView";
-import { DragOverlay } from "./dnd/components/DragOverlay";
-import { DndContext } from "./dnd/components/DndContext";
-import { DraggableLane } from "./components/Lane/Lane";
-import { DraggableItem } from "./components/Item/Item";
+import { KanbanContext } from './components/context';
+import { c, maybeCompleteForMove } from './components/helpers';
+import { getBoardModifiers } from './components/helpers/boardModifiers';
+import { DraggableItem } from './components/Item/Item';
+import { DraggableLane } from './components/Lane/Lane';
+import { DataTypes, Item, Lane } from './components/types';
+import { DndContext } from './dnd/components/DndContext';
+import { DragOverlay } from './dnd/components/DragOverlay';
 import {
   getEntityFromPath,
   insertEntity,
   moveEntity,
   removeEntity,
-} from "./dnd/util/data";
-import { getBoardModifiers } from "./components/helpers/boardModifiers";
-import { KanbanContext } from "./components/context";
-import KanbanPlugin from "./main";
-import { c, maybeCompleteForMove } from "./components/helpers";
+} from './dnd/util/data';
+import { KanbanView } from './KanbanView';
+import KanbanPlugin from './main';
 
 export function createApp(plugin: KanbanPlugin) {
   return <DragDropApp plugin={plugin} />;
 }
 
-const View = React.memo(({ view }: { view: KanbanView }) => {
+const View = React.memo(function View({ view }: { view: KanbanView }) {
   return createPortal(view.getPortal(), view.contentEl);
 });
 
@@ -37,8 +37,8 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
       const dragPath = dragEntity.getPath();
       const dropPath = dropEntity.getPath();
 
-      const [, sourceFile] = dragEntity.scopeId.split(":::");
-      const [, destinationFile] = dropEntity.scopeId.split(":::");
+      const [, sourceFile] = dragEntity.scopeId.split(':::');
+      const [, destinationFile] = dropEntity.scopeId.split(':::');
 
       // Same board
       if (sourceFile === destinationFile) {
@@ -47,7 +47,7 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
         );
 
         plugin.app.workspace.trigger(
-          "kanban:card-moved",
+          'kanban:card-moved',
           stateManager.file,
           dragPath,
           dropPath,
@@ -117,13 +117,21 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
               const boardModifiers = getBoardModifiers(stateManager);
               const filePath = view.file.path;
 
-              return [data, { view, stateManager, boardModifiers, filePath }];
+              return [
+                data,
+                {
+                  view,
+                  stateManager,
+                  boardModifiers,
+                  filePath,
+                },
+              ];
             }, [entity]);
 
             if (data.type === DataTypes.Lane) {
               return (
                 <KanbanContext.Provider value={context}>
-                  <div className={c("drag-container")} style={styles}>
+                  <div className={c('drag-container')} style={styles}>
                     <DraggableLane
                       lane={data as Lane}
                       laneIndex={0}
@@ -137,7 +145,7 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
             if (data.type === DataTypes.Item) {
               return (
                 <KanbanContext.Provider value={context}>
-                  <div className={c("drag-container")} style={styles}>
+                  <div className={c('drag-container')} style={styles}>
                     <DraggableItem
                       item={data as Item}
                       itemIndex={0}

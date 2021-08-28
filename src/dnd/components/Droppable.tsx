@@ -1,13 +1,14 @@
-import React from "react";
-import { EntityData, WithChildren } from "../types";
-import { EntityManager } from "../managers/EntityManager";
+import React from 'react';
+
+import { EntityManager } from '../managers/EntityManager';
+import { EntityData, WithChildren } from '../types';
 import {
   DndManagerContext,
   EntityManagerContext,
   ScopeIdContext,
   ScrollManagerContext,
   SortManagerContext,
-} from "./context";
+} from './context';
 
 interface DraggableProps extends WithChildren {
   id: string;

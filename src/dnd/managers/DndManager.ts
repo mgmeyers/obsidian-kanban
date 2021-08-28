@@ -1,7 +1,8 @@
-import { createEmitter, Emitter } from "../util/emitter";
-import { Entity } from "../types";
-import { DragManager } from "./DragManager";
-import { debounce } from "obsidian";
+import { debounce } from 'obsidian';
+
+import { Entity } from '../types';
+import { Emitter, createEmitter } from '../util/emitter';
+import { DragManager } from './DragManager';
 
 export type DropHandler = (dragEntity: Entity, dropEntity: Entity) => void;
 
@@ -40,22 +41,22 @@ export class DndManager {
         clearTimeout(this.scrollResizeDebounce);
 
         this.scrollResizeDebounce = window.setTimeout(() => {
-          this.emitter.emit('scrollResize', null)
-        }, 50)
+          this.emitter.emit('scrollResize', null);
+        }, 50);
       }
     });
 
     this.hitboxEntities.forEach((entity) => {
       entity.recalcInitial();
     });
-  
+
     this.scrollEntities.forEach((entity) => {
       entity.recalcInitial();
     });
   };
 
   observeResize(element: HTMLElement) {
-    this.resizeObserver.observe(element, { box: "border-box" });
+    this.resizeObserver.observe(element, { box: 'border-box' });
   }
 
   unobserveResize(element: HTMLElement) {

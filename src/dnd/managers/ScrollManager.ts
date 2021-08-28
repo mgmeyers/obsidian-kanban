@@ -1,31 +1,32 @@
+import { generateInstanceId } from 'src/components/helpers';
+
+import {
+  CoordinateShift,
+  Entity,
+  Path,
+  ScrollState,
+  Side,
+  initialScrollShift,
+  initialScrollState,
+} from '../types';
 import {
   adjustHitbox,
   calculateScrollHitbox,
   getElementScrollOffsets,
   numberOrZero,
-} from "../util/hitbox";
-import {
-  CoordinateShift,
-  Entity,
-  initialScrollShift,
-  initialScrollState,
-  Path,
-  ScrollState,
-  Side,
-} from "../types";
-import { DndManager } from "./DndManager";
-import { ScrollEventData } from "./DragManager";
-import { generateInstanceId } from "src/components/helpers";
+} from '../util/hitbox';
+import { DndManager } from './DndManager';
+import { ScrollEventData } from './DragManager';
 
 export type IntersectionObserverHandler = (
   entry: IntersectionObserverEntry
 ) => void;
 
-export const scrollContainerEntityType = "scroll-container";
+export const scrollContainerEntityType = 'scroll-container';
 
 const scrollStrengthModifier = 8;
 
-const sides: Side[] = ["top", "right", "bottom", "left"];
+const sides: Side[] = ['top', 'right', 'bottom', 'left'];
 
 export class ScrollManager {
   dndManager: DndManager;
@@ -78,10 +79,10 @@ export class ScrollManager {
     this.scrollEl.dataset.hitboxid = this.instanceId;
     this.scrollEl.dataset.scrollid = this.instanceId;
 
-    this.top = this.createScrollEntity("top");
-    this.right = this.createScrollEntity("right");
-    this.bottom = this.createScrollEntity("bottom");
-    this.left = this.createScrollEntity("left");
+    this.top = this.createScrollEntity('top');
+    this.right = this.createScrollEntity('right');
+    this.bottom = this.createScrollEntity('bottom');
+    this.left = this.createScrollEntity('left');
 
     this.bindScrollHandlers();
 
@@ -105,12 +106,12 @@ export class ScrollManager {
       }
     );
 
-    this.scrollEl.addEventListener("scroll", this.onScroll, {
+    this.scrollEl.addEventListener('scroll', this.onScroll, {
       passive: true,
       capture: false,
     });
 
-    this.dndManager.emitter.on("scrollResize", this.onScroll);
+    this.dndManager.emitter.on('scrollResize', this.onScroll);
 
     setTimeout(() => {
       this.onScroll();
@@ -139,8 +140,8 @@ export class ScrollManager {
     this.handleEntityUnregistration();
     this.observer.disconnect();
     this.unbindScrollHandlers();
-    this.scrollEl.removeEventListener("scroll", this.onScroll);
-    this.dndManager.emitter.off("scrollResize", this.onScroll);
+    this.scrollEl.removeEventListener('scroll', this.onScroll);
+    this.dndManager.emitter.off('scrollResize', this.onScroll);
     this.parent?.unregisterObserverHandler(this.instanceId, this.scrollEl);
     this.dndManager.unobserveResize(this.scrollEl);
   }
@@ -184,21 +185,21 @@ export class ScrollManager {
     sides.forEach((side) => {
       const id = this.getId(side);
       this.dndManager.dragManager.emitter.on(
-        "beginDragScroll",
+        'beginDragScroll',
         this.handleBeginDragScroll,
         id
       );
       this.dndManager.dragManager.emitter.on(
-        "updateDragScroll",
+        'updateDragScroll',
         this.handleUpdateDragScroll,
         id
       );
       this.dndManager.dragManager.emitter.on(
-        "endDragScroll",
+        'endDragScroll',
         this.handleEndDragScroll,
         id
       );
-      this.dndManager.dragManager.emitter.on("dragEnd", this.onDragEnd);
+      this.dndManager.dragManager.emitter.on('dragEnd', this.onDragEnd);
     });
   }
 
@@ -206,21 +207,21 @@ export class ScrollManager {
     sides.forEach((side) => {
       const id = this.getId(side);
       this.dndManager.dragManager.emitter.off(
-        "beginDragScroll",
+        'beginDragScroll',
         this.handleBeginDragScroll,
         id
       );
       this.dndManager.dragManager.emitter.off(
-        "updateDragScroll",
+        'updateDragScroll',
         this.handleUpdateDragScroll,
         id
       );
       this.dndManager.dragManager.emitter.off(
-        "endDragScroll",
+        'endDragScroll',
         this.handleEndDragScroll,
         id
       );
-      this.dndManager.dragManager.emitter.off("dragEnd", this.onDragEnd);
+      this.dndManager.dragManager.emitter.off('dragEnd', this.onDragEnd);
     });
   }
 
@@ -260,13 +261,13 @@ export class ScrollManager {
 
   isDoneScrolling(side: Side) {
     switch (side) {
-      case "top":
+      case 'top':
         return this.scrollState.y === 0;
-      case "right":
+      case 'right':
         return this.scrollState.x === this.scrollState.maxX;
-      case "bottom":
+      case 'bottom':
         return this.scrollState.y === this.scrollState.maxY;
-      case "left":
+      case 'left':
         return this.scrollState.x === 0;
     }
   }
@@ -287,12 +288,19 @@ export class ScrollManager {
           return this.activeScroll.delete(side);
         }
 
-        const scrollKey = ["left", "right"].includes(side) ? "left" : "top";
-        const shouldIncreaseScroll = ["right", "bottom"].includes(side);
+        const scrollKey = ['left', 'right'].includes(side) ? 'left' : 'top';
+        const shouldIncreaseScroll = ['right', 'bottom'].includes(side);
 
         scrollBy[scrollKey] = shouldIncreaseScroll
-          ? Math.max(scrollStrengthModifier - (scrollStrengthModifier * strength) / 35, 0)
-          : Math.min(-scrollStrengthModifier + (scrollStrengthModifier * strength) / 35, 0);
+          ? Math.max(
+              scrollStrengthModifier - (scrollStrengthModifier * strength) / 35,
+              0
+            )
+          : Math.min(
+              -scrollStrengthModifier +
+                (scrollStrengthModifier * strength) / 35,
+              0
+            );
       });
 
       this.scrollEl.scrollBy(scrollBy);
@@ -308,11 +316,11 @@ export class ScrollManager {
 
   getPath(side?: Side): Path {
     switch (side) {
-      case "right":
+      case 'right':
         return [...(this.parent?.getPath() || []), 1];
-      case "bottom":
+      case 'bottom':
         return [...(this.parent?.getPath() || []), 2];
-      case "left":
+      case 'left':
         return [...(this.parent?.getPath() || []), 3];
     }
 

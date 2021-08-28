@@ -1,6 +1,7 @@
-import React from "react";
-import { setIcon } from "obsidian";
-import { c } from "../helpers";
+import { setIcon } from 'obsidian';
+import React from 'react';
+
+import { c } from '../helpers';
 
 interface IconProps {
   name: string;

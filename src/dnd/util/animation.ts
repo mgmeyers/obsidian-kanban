@@ -1,9 +1,9 @@
-import { distanceBetween } from "./hitbox";
-import { Coordinates } from "../types";
+import { Coordinates } from '../types';
+import { distanceBetween } from './hitbox';
 
 export const curves = {
-  outOfTheWay: "cubic-bezier(0.2, 0, 0, 1)",
-  drop: "cubic-bezier(.2,1,.1,1)",
+  outOfTheWay: 'cubic-bezier(0.2, 0, 0, 1)',
+  drop: 'cubic-bezier(.2,1,.1,1)',
 };
 
 export const combine = {
@@ -94,4 +94,16 @@ export function getDropDuration({
     : duration;
 
   return Math.round(withDuration);
+}
+
+export function setStyle(el: HTMLElement, property: string, value: string) {
+  if (el.style.getPropertyValue(property) !== value) {
+    el.style.setProperty(property, value);
+  }
+}
+
+export function removeStyle(el: HTMLElement, property: string) {
+  if (el.style.getPropertyValue(property)) {
+    el.style.removeProperty(property);
+  }
 }

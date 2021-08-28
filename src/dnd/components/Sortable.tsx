@@ -1,7 +1,8 @@
-import React from "react";
-import { SortManager } from "../managers/SortManager";
-import { Axis, WithChildren } from "../types";
-import { DndManagerContext, SortManagerContext } from "./context";
+import React from 'react';
+
+import { SortManager } from '../managers/SortManager';
+import { Axis, WithChildren } from '../types';
+import { DndManagerContext, SortManagerContext } from './context';
 
 interface SortableProps extends WithChildren {
   axis: Axis;

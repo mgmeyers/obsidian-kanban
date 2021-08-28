@@ -1,12 +1,13 @@
-import React from "react";
+import React from 'react';
 
-import { Item } from "../types";
-import { c } from "../helpers";
-import { KanbanContext } from "../context";
-import { useAutocompleteInputProps } from "./autocomplete";
-import { MarkdownRenderer } from "../MarkdownRenderer";
-import { DateAndTime, RelativeDate } from "./DateAndTime";
-import { useNestedEntityPath } from "src/dnd/components/Droppable";
+import { useNestedEntityPath } from 'src/dnd/components/Droppable';
+
+import { KanbanContext } from '../context';
+import { c } from '../helpers';
+import { MarkdownRenderer } from '../MarkdownRenderer';
+import { Item } from '../types';
+import { useAutocompleteInputProps } from './autocomplete';
+import { DateAndTime, RelativeDate } from './DateAndTime';
 
 export interface ItemContentProps {
   item: Item;
@@ -42,7 +43,7 @@ export const ItemContent = React.memo(
     const onEscape = () => {
       setIsSettingsVisible && setIsSettingsVisible(false);
     };
-    const hideTagsDisplay = stateManager.useSetting("hide-tags-display");
+    const hideTagsDisplay = stateManager.useSetting('hide-tags-display');
 
     const autocompleteProps = useAutocompleteInputProps({
       isInputVisible: isSettingsVisible,
@@ -54,7 +55,7 @@ export const ItemContent = React.memo(
       (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
 
-        if (target.hasClass("task-list-item-checkbox")) {
+        if (target.hasClass('task-list-item-checkbox')) {
           const index = parseInt(target.dataset.checkboxIndex, 10);
 
           let count = 0;
@@ -65,7 +66,7 @@ export const ItemContent = React.memo(
               let match = sub;
 
               if (count === index) {
-                if (check === " ") {
+                if (check === ' ') {
                   match = `${before}x${after}`;
                 } else {
                   match = `${before} ${after}`;
@@ -91,13 +92,13 @@ export const ItemContent = React.memo(
       return (
         <div
           data-replicated-value={item.data.titleRaw}
-          className={c("grow-wrap")}
+          className={c('grow-wrap')}
         >
           <textarea
             data-ignore-drag={true}
             rows={1}
             ref={inputRef}
-            className={c("item-input")}
+            className={c('item-input')}
             value={item.data.titleRaw}
             onChange={onChange}
             {...autocompleteProps}
@@ -107,14 +108,14 @@ export const ItemContent = React.memo(
     }
 
     return (
-      <div className={c("item-title")}>
+      <div className={c('item-title')}>
         <MarkdownRenderer
-          className={c("item-markdown")}
+          className={c('item-markdown')}
           dom={item.data.dom}
           searchQuery={searchQuery}
           onClick={onCheckboxContainerClick}
         />
-        <div className={c("item-metadata")}>
+        <div className={c('item-metadata')}>
           <RelativeDate item={item} stateManager={stateManager} />
           <DateAndTime
             item={item}
@@ -124,16 +125,16 @@ export const ItemContent = React.memo(
             onEditTime={onEditTime}
           />
           {!hideTagsDisplay && !!item.data.metadata.tags?.length && (
-            <div className={c("item-tags")}>
+            <div className={c('item-tags')}>
               {item.data.metadata.tags.map((tag, i) => {
                 return (
                   <a
                     href={tag}
                     key={i}
-                    className={`tag ${c("item-tag")} ${
+                    className={`tag ${c('item-tag')} ${
                       tag.toLocaleLowerCase().contains(searchQuery)
-                        ? "is-search-match"
-                        : ""
+                        ? 'is-search-match'
+                        : ''
                     }`}
                   >
                     <span>{tag[0]}</span>

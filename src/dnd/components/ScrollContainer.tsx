@@ -1,8 +1,10 @@
-import React from "react";
-import classcat from "classcat";
-import { Scrollable } from "./Scrollable";
-import { useStoredScrollState } from "./ScrollStateContext";
-import { c } from "src/components/helpers";
+import classcat from 'classcat';
+import React from 'react';
+
+import { c } from 'src/components/helpers';
+
+import { Scrollable } from './Scrollable';
+import { useStoredScrollState } from './ScrollStateContext';
 
 interface ScrollContainerProps {
   children?: React.ReactNode;
@@ -24,7 +26,7 @@ export function ScrollContainer({
   const { setRef, scrollRef } = useStoredScrollState(id, index);
 
   return (
-    <div ref={setRef} className={classcat([className, c("scroll-container")])}>
+    <div ref={setRef} className={classcat([className, c('scroll-container')])}>
       {isStatic ? (
         children
       ) : (

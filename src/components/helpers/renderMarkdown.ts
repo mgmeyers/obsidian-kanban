@@ -1,5 +1,6 @@
-import { MarkdownRenderer, TFile } from "obsidian";
-import { KanbanView } from "src/KanbanView";
+import { MarkdownRenderer, TFile } from 'obsidian';
+
+import { KanbanView } from 'src/KanbanView';
 
 export function renderMarkdown(
   view: KanbanView,
@@ -7,31 +8,31 @@ export function renderMarkdown(
 ): HTMLDivElement {
   const tempEl = createDiv();
 
-  MarkdownRenderer.renderMarkdown(markdownString, tempEl, view.file.path, view)
+  MarkdownRenderer.renderMarkdown(markdownString, tempEl, view.file.path, view);
 
-  tempEl.findAll(".internal-embed").forEach((el) => {
-    const src = el.getAttribute("src");
+  tempEl.findAll('.internal-embed').forEach((el) => {
+    const src = el.getAttribute('src');
     const target =
-      typeof src === "string" &&
+      typeof src === 'string' &&
       view.app.metadataCache.getFirstLinkpathDest(src, view.file.path);
 
-    if (target instanceof TFile && target.extension !== "md") {
-      el.innerText = "";
+    if (target instanceof TFile && target.extension !== 'md') {
+      el.innerText = '';
       el.createEl(
-        "img",
+        'img',
         { attr: { src: view.app.vault.getResourcePath(target) } },
         (img) => {
-          if (el.hasAttribute("width")) {
-            img.setAttribute("width", el.getAttribute("width"));
+          if (el.hasAttribute('width')) {
+            img.setAttribute('width', el.getAttribute('width'));
           }
 
-          if (el.hasAttribute("alt")) {
-            img.setAttribute("alt", el.getAttribute("alt"));
+          if (el.hasAttribute('alt')) {
+            img.setAttribute('alt', el.getAttribute('alt'));
           }
         }
       );
 
-      el.addClasses(["image-embed", "is-loaded"]);
+      el.addClasses(['image-embed', 'is-loaded']);
     }
   });
 

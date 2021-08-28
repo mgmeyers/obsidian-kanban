@@ -1,22 +1,24 @@
-import update from "immutability-helper";
-import React from "react";
-import { DataTypes } from "./types";
-import { c, baseClassName } from "./helpers";
-import { Lanes } from "./Lane/Lane";
-import { LaneForm } from "./lane/LaneForm";
-import { KanbanContext, SearchContext } from "./context";
-import { KanbanView } from "src/KanbanView";
-import { frontMatterKey } from "../parsers/common";
-import { t } from "src/lang/helpers";
-import { Icon } from "./Icon/Icon";
-import { getBoardModifiers } from "./helpers/boardModifiers";
-import { DndScope } from "../dnd/components/Scope";
-import { ScrollContainer } from "src/dnd/components/ScrollContainer";
-import { Sortable } from "src/dnd/components/Sortable";
-import { SortPlaceholder } from "src/dnd/components/SortPlaceholder";
-import classcat from "classcat";
-import { StateManager } from "src/StateManager";
-import animateScrollTo from "animated-scroll-to";
+import animateScrollTo from 'animated-scroll-to';
+import classcat from 'classcat';
+import update from 'immutability-helper';
+import React from 'react';
+
+import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
+import { Sortable } from 'src/dnd/components/Sortable';
+import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
+import { KanbanView } from 'src/KanbanView';
+import { t } from 'src/lang/helpers';
+import { StateManager } from 'src/StateManager';
+
+import { DndScope } from '../dnd/components/Scope';
+import { frontMatterKey } from '../parsers/common';
+import { KanbanContext, SearchContext } from './context';
+import { baseClassName, c } from './helpers';
+import { getBoardModifiers } from './helpers/boardModifiers';
+import { Icon } from './Icon/Icon';
+import { Lanes } from './Lane/Lane';
+import { LaneForm } from './lane/LaneForm';
+import { DataTypes } from './types';
 
 const boardScrollTiggers = [DataTypes.Item, DataTypes.Lane];
 const boardAccepts = [DataTypes.Lane];
@@ -31,17 +33,17 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
 
   const rootRef = React.useRef<HTMLDivElement>();
   const searchRef = React.useRef<HTMLInputElement>();
-  const [searchQuery, setSearchQuery] = React.useState<string>("");
+  const [searchQuery, setSearchQuery] = React.useState<string>('');
   const [isSearching, setIsSearching] = React.useState<boolean>(false);
   const [debouncedSearchQuery, setDebouncedSearchQuery] =
-    React.useState<string>("");
+    React.useState<string>('');
 
   const [isLaneFormVisible, setIsLaneFormVisible] = React.useState<boolean>(
     boardData.children.length === 0
   );
 
   const filePath = stateManager.file.path;
-  const maxArchiveLength = stateManager.useSetting("max-archive-size");
+  const maxArchiveLength = stateManager.useSetting('max-archive-size');
 
   const closeLaneForm = React.useCallback(() => {
     if (boardData.children.length > 0) {
@@ -57,7 +59,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
 
   const onNewLane = React.useCallback(() => {
     setTimeout(() => {
-      const board = rootRef.current?.getElementsByClassName(c("board"));
+      const board = rootRef.current?.getElementsByClassName(c('board'));
 
       if (board.length) {
         animateScrollTo([board[0].scrollWidth, 0], {
@@ -81,12 +83,12 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       setIsLaneFormVisible(true);
     };
 
-    view.emitter.on("toggleSearch", toggleSearch);
-    view.emitter.on("showLaneForm", showLaneForm);
+    view.emitter.on('toggleSearch', toggleSearch);
+    view.emitter.on('showLaneForm', showLaneForm);
 
     return () => {
-      view.emitter.off("toggleSearch", toggleSearch);
-      view.emitter.off("showLaneForm", showLaneForm);
+      view.emitter.off('toggleSearch', toggleSearch);
+      view.emitter.off('showLaneForm', showLaneForm);
     };
   }, [view]);
 
@@ -105,7 +107,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
         setDebouncedSearchQuery(trimmed);
       }, 250);
     } else {
-      setDebouncedSearchQuery("");
+      setDebouncedSearchQuery('');
     }
 
     return () => {
@@ -119,7 +121,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     }
 
     if (
-      typeof maxArchiveLength === "number" &&
+      typeof maxArchiveLength === 'number' &&
       boardData.data.archive.length > maxArchiveLength
     ) {
       stateManager.setState((board) =>
@@ -142,15 +144,15 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       const targetEl = e.target as HTMLElement;
 
-      if (targetEl.tagName !== "A") return;
+      if (targetEl.tagName !== 'A') return;
 
-      if (targetEl.hasClass("internal-link")) {
-        view.app.workspace.trigger("hover-link", {
+      if (targetEl.hasClass('internal-link')) {
+        view.app.workspace.trigger('hover-link', {
           event: e.nativeEvent,
           source: frontMatterKey,
           hoverParent: view,
           targetEl,
-          linktext: targetEl.getAttr("href"),
+          linktext: targetEl.getAttr('href'),
           sourcePath: view.file.path,
         });
       }
@@ -162,14 +164,14 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       const targetEl = e.target as HTMLElement;
 
-      if (targetEl.tagName !== "A") return;
+      if (targetEl.tagName !== 'A') return;
 
       // Open an internal link in a new pane
-      if (targetEl.hasClass("internal-link")) {
+      if (targetEl.hasClass('internal-link')) {
         e.preventDefault();
 
         stateManager.app.workspace.openLinkText(
-          targetEl.getAttr("href"),
+          targetEl.getAttr('href'),
           filePath,
           e.ctrlKey || e.metaKey
         );
@@ -178,20 +180,19 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       }
 
       // Open a tag search
-      if (targetEl.hasClass("tag")) {
+      if (targetEl.hasClass('tag')) {
         e.preventDefault();
-
         (stateManager.app as any).internalPlugins
-          .getPluginById("global-search")
-          .instance.openGlobalSearch(`tag:${targetEl.getAttr("href")}`);
+          .getPluginById('global-search')
+          .instance.openGlobalSearch(`tag:${targetEl.getAttr('href')}`);
 
         return;
       }
 
       // Open external link
-      if (targetEl.hasClass("external-link")) {
+      if (targetEl.hasClass('external-link')) {
         e.preventDefault();
-        window.open(targetEl.getAttr("href"), "_blank");
+        window.open(targetEl.getAttr('href'), '_blank');
       }
     },
     [stateManager, filePath]
@@ -244,7 +245,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
               <LaneForm onNewLane={onNewLane} closeLaneForm={closeLaneForm} />
             )}
             {boardData.data.isSearching && (
-              <div className={c("search-wrapper")}>
+              <div className={c('search-wrapper')}>
                 <input
                   ref={searchRef}
                   value={searchQuery}
@@ -252,25 +253,25 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                     setSearchQuery(e.target.value);
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === "Escape") {
-                      setSearchQuery("");
-                      setDebouncedSearchQuery("");
+                    if (e.key === 'Escape') {
+                      setSearchQuery('');
+                      setDebouncedSearchQuery('');
                       (e.target as HTMLInputElement).blur();
                       stateManager.toggleSearch();
                     }
                   }}
                   type="text"
-                  className={c("filter-input")}
-                  placeholder={t("Search...")}
+                  className={c('filter-input')}
+                  placeholder={t('Search...')}
                 />
                 <button
-                  className={c("search-cancel-button")}
+                  className={c('search-cancel-button')}
                   onClick={() => {
-                    setSearchQuery("");
-                    setDebouncedSearchQuery("");
+                    setSearchQuery('');
+                    setDebouncedSearchQuery('');
                     stateManager.toggleSearch();
                   }}
-                  aria-label={t("Cancel")}
+                  aria-label={t('Cancel')}
                 >
                   <Icon name="cross" />
                 </button>
@@ -279,10 +280,10 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
             <ScrollContainer
               id={view.id}
               className={classcat([
-                c("board"),
-                c("horizontal"),
+                c('board'),
+                c('horizontal'),
                 {
-                  "is-adding-lane": isLaneFormVisible,
+                  'is-adding-lane': isLaneFormVisible,
                 },
               ])}
               triggerTypes={boardScrollTiggers}
@@ -291,7 +292,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                 <Sortable axis="horizontal">
                   <Lanes lanes={boardData.children} />
                   <SortPlaceholder
-                    className={c("lane-placeholder")}
+                    className={c('lane-placeholder')}
                     accepts={boardAccepts}
                     index={boardData.children.length}
                   />

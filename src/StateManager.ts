@@ -1,16 +1,17 @@
-import update from "immutability-helper";
-import { App, TFile, moment } from "obsidian";
-import React from "react";
+import update from 'immutability-helper';
+import { App, TFile, moment } from 'obsidian';
+import React from 'react';
+
 import {
   getDefaultDateFormat,
   getDefaultTimeFormat,
-} from "./components/helpers";
-import { renderMarkdown } from "./components/helpers/renderMarkdown";
-import { Board, BoardTemplate, Item } from "./components/types";
-import { KanbanView } from "./KanbanView";
-import { KanbanParser } from "./parsers/basic";
-import { defaultDateTrigger, defaultTimeTrigger } from "./settingHelpers";
-import { KanbanSettings, SettingRetrievers } from "./Settings";
+} from './components/helpers';
+import { renderMarkdown } from './components/helpers/renderMarkdown';
+import { Board, BoardTemplate, Item } from './components/types';
+import { KanbanView } from './KanbanView';
+import { KanbanParser } from './parsers/basic';
+import { defaultDateTrigger, defaultTimeTrigger } from './settingHelpers';
+import { KanbanSettings, SettingRetrievers } from './Settings';
 
 export class StateManager {
   private onEmpty: () => void;
@@ -143,7 +144,7 @@ export class StateManager {
     shouldSave: boolean = true
   ) {
     const oldSettings = this.state?.data.settings;
-    const newState = typeof state === "function" ? state(this.state) : state;
+    const newState = typeof state === 'function' ? state(this.state) : state;
     const newSettings = newState?.data.settings;
 
     if (
@@ -215,50 +216,50 @@ export class StateManager {
   }
 
   compileSettings(suppliedSettings?: KanbanSettings): KanbanSettings {
-    const globalKeys = this.getGlobalSetting("metadata-keys") || [];
+    const globalKeys = this.getGlobalSetting('metadata-keys') || [];
     const localKeys =
-      this.getSettingRaw("metadata-keys", suppliedSettings) || [];
+      this.getSettingRaw('metadata-keys', suppliedSettings) || [];
 
     const dateFormat =
-      this.getSettingRaw("date-format", suppliedSettings) ||
+      this.getSettingRaw('date-format', suppliedSettings) ||
       getDefaultDateFormat(this.app);
 
     const timeFormat =
-      this.getSettingRaw("time-format", suppliedSettings) ||
+      this.getSettingRaw('time-format', suppliedSettings) ||
       getDefaultTimeFormat(this.app);
 
     const archiveDateFormat =
-      this.getSettingRaw("prepend-archive-format", suppliedSettings) ||
+      this.getSettingRaw('prepend-archive-format', suppliedSettings) ||
       `${dateFormat} ${timeFormat}`;
 
     return {
-      "date-format": dateFormat,
-      "date-display-format":
-        this.getSettingRaw("date-display-format", suppliedSettings) ||
+      'date-format': dateFormat,
+      'date-display-format':
+        this.getSettingRaw('date-display-format', suppliedSettings) ||
         dateFormat,
-      "date-trigger":
-        this.getSettingRaw("date-trigger", suppliedSettings) ||
+      'date-trigger':
+        this.getSettingRaw('date-trigger', suppliedSettings) ||
         defaultDateTrigger,
-      "time-format": timeFormat,
-      "time-trigger":
-        this.getSettingRaw("time-trigger", suppliedSettings) ||
+      'time-format': timeFormat,
+      'time-trigger':
+        this.getSettingRaw('time-trigger', suppliedSettings) ||
         defaultTimeTrigger,
-      "link-date-to-daily-note": this.getSettingRaw(
-        "link-date-to-daily-note",
+      'link-date-to-daily-note': this.getSettingRaw(
+        'link-date-to-daily-note',
         suppliedSettings
       ),
-      "hide-date-in-title": this.getSettingRaw(
-        "hide-date-in-title",
+      'hide-date-in-title': this.getSettingRaw(
+        'hide-date-in-title',
         suppliedSettings
       ),
-      "hide-tags-in-title": this.getSettingRaw(
-        "hide-tags-in-title",
+      'hide-tags-in-title': this.getSettingRaw(
+        'hide-tags-in-title',
         suppliedSettings
       ),
-      "metadata-keys": [...globalKeys, ...localKeys],
-      "prepend-archive-separator":
-        this.getSettingRaw("prepend-archive-separator") || "",
-      "prepend-archive-format": archiveDateFormat,
+      'metadata-keys': [...globalKeys, ...localKeys],
+      'prepend-archive-separator':
+        this.getSettingRaw('prepend-archive-separator') || '',
+      'prepend-archive-format': archiveDateFormat,
     };
   }
 
@@ -315,7 +316,7 @@ export class StateManager {
       children: [],
       data: {
         archive: [],
-        settings: { "kanban-plugin": "basic" },
+        settings: { 'kanban-plugin': 'basic' },
         isSearching: false,
         errors: [],
       },
@@ -407,9 +408,9 @@ export class StateManager {
     const board = this.state;
 
     const archived: Item[] = [];
-    const shouldAppendArchiveDate = !!this.getSetting("prepend-archive-date");
-    const archiveDateSeparator = this.getSetting("prepend-archive-separator");
-    const archiveDateFormat = this.getSetting("prepend-archive-format");
+    const shouldAppendArchiveDate = !!this.getSetting('prepend-archive-date');
+    const archiveDateSeparator = this.getSetting('prepend-archive-separator');
+    const archiveDateFormat = this.getSetting('prepend-archive-format');
 
     const appendArchiveDate = (item: Item) => {
       const newTitle = [moment().format(archiveDateFormat)];
@@ -418,7 +419,7 @@ export class StateManager {
 
       newTitle.push(item.data.titleRaw);
 
-      const titleRaw = newTitle.join(" ");
+      const titleRaw = newTitle.join(' ');
       return this.parser.updateItem(item, titleRaw);
     };
 
@@ -439,7 +440,7 @@ export class StateManager {
     });
 
     this.app.workspace.trigger(
-      "kanban:board-cards-archived",
+      'kanban:board-cards-archived',
       this.file,
       archived
     );
@@ -462,7 +463,7 @@ export class StateManager {
     this.setState(
       update(this.state, {
         data: {
-          $toggle: ["isSearching"],
+          $toggle: ['isSearching'],
         },
       }),
       false

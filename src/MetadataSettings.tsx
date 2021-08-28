@@ -1,30 +1,29 @@
-import ReactDOM from "react-dom";
-import React from "react";
-import update from "immutability-helper";
-import { Icon } from "./components/Icon/Icon";
+import update from 'immutability-helper';
+import React from 'react';
+import ReactDOM from 'react-dom';
+
 import {
   c,
   generateInstanceId,
   noop,
   useIMEInputProps,
-} from "./components/helpers";
-
-import { t } from "./lang/helpers";
+} from './components/helpers';
+import { Icon } from './components/Icon/Icon';
 import {
   DataTypes,
   MetadataSetting,
   MetadataSettingTemplate,
-} from "./components/types";
-import { DndContext } from "./dnd/components/DndContext";
-import { Entity } from "./dnd/types";
-import { DndScope } from "./dnd/components/Scope";
-import { Sortable } from "./dnd/components/Sortable";
-import { SortPlaceholder } from "./dnd/components/SortPlaceholder";
-import { useDragHandle } from "./dnd/managers/DragManager";
-import { Droppable } from "./dnd/components/Droppable";
-import { DragOverlay } from "./dnd/components/DragOverlay";
-import { DndManagerContext } from "./dnd/components/context";
-import rafSchd from "raf-schd";
+} from './components/types';
+import { DndManagerContext } from './dnd/components/context';
+import { DndContext } from './dnd/components/DndContext';
+import { DragOverlay } from './dnd/components/DragOverlay';
+import { Droppable } from './dnd/components/Droppable';
+import { DndScope } from './dnd/components/Scope';
+import { Sortable } from './dnd/components/Sortable';
+import { SortPlaceholder } from './dnd/components/SortPlaceholder';
+import { useDragHandle } from './dnd/managers/DragManager';
+import { Entity } from './dnd/types';
+import { t } from './lang/helpers';
 
 interface ItemProps {
   itemIndex: number;
@@ -54,10 +53,10 @@ function Item({
   useDragHandle(measureRef, dragHandleRef);
 
   const body = (
-    <div className={c("setting-controls-wrapper")}>
-      <div className={c("setting-input-wrapper")}>
+    <div className={c('setting-controls-wrapper')}>
+      <div className={c('setting-input-wrapper')}>
         <div>
-          <div className={c("setting-item-label")}>{t("Metadata key")}</div>
+          <div className={c('setting-item-label')}>{t('Metadata key')}</div>
           <input
             type="text"
             value={item.data.metadataKey}
@@ -65,7 +64,7 @@ function Item({
           />
         </div>
         <div>
-          <div className={c("setting-item-label")}>{t("Display label")}</div>
+          <div className={c('setting-item-label')}>{t('Display label')}</div>
           <input
             type="text"
             value={item.data.label}
@@ -73,27 +72,27 @@ function Item({
           />
         </div>
       </div>
-      <div className={c("setting-toggle-wrapper")}>
+      <div className={c('setting-toggle-wrapper')}>
         <div>
           <div
             className={`checkbox-container ${
-              item.data.shouldHideLabel ? "is-enabled" : ""
+              item.data.shouldHideLabel ? 'is-enabled' : ''
             }`}
             onClick={toggleShouldHideLabel}
-            aria-label={t("Hide label")}
+            aria-label={t('Hide label')}
           />
-          <div className={c("setting-item-label")}>{t("Hide label")}</div>
+          <div className={c('setting-item-label')}>{t('Hide label')}</div>
         </div>
         <div>
           <div
             className={`checkbox-container ${
-              item.data.containsMarkdown ? "is-enabled" : ""
+              item.data.containsMarkdown ? 'is-enabled' : ''
             }`}
             onClick={toggleContainsMarkdown}
-            aria-label={t("Field contains markdown")}
+            aria-label={t('Field contains markdown')}
           />
-          <div className={c("setting-item-label")}>
-            {t("Field contains markdown")}
+          <div className={c('setting-item-label')}>
+            {t('Field contains markdown')}
           </div>
         </div>
       </div>
@@ -101,8 +100,8 @@ function Item({
   );
 
   return (
-    <div ref={measureRef} className={c("setting-item-wrapper")}>
-      <div ref={elementRef} className={c("setting-item")}>
+    <div ref={measureRef} className={c('setting-item-wrapper')}>
+      <div ref={elementRef} className={c('setting-item')}>
         {isStatic ? (
           body
         ) : (
@@ -116,13 +115,13 @@ function Item({
             {body}
           </Droppable>
         )}
-        <div className={c("setting-button-wrapper")}>
-          <div onClick={deleteKey} aria-label={t("Delete")}>
+        <div className={c('setting-button-wrapper')}>
+          <div onClick={deleteKey} aria-label={t('Delete')}>
             <Icon name="cross" />
           </div>
           <div
             className="mobile-option-setting-drag-icon"
-            aria-label={t("Drag to rearrange")}
+            aria-label={t('Drag to rearrange')}
             ref={dragHandleRef}
           >
             <Icon name="three-horizontal-bars" />
@@ -191,7 +190,7 @@ function useKeyModifiers({
         update(keys, {
           [i]: {
             data: {
-              $toggle: ["shouldHideLabel"],
+              $toggle: ['shouldHideLabel'],
             },
           },
         })
@@ -203,7 +202,7 @@ function useKeyModifiers({
         update(keys, {
           [i]: {
             data: {
-              $toggle: ["containsMarkdown"],
+              $toggle: ['containsMarkdown'],
             },
           },
         })
@@ -227,7 +226,7 @@ function useKeyModifiers({
               id: generateInstanceId(),
               data: {
                 metadataKey: inputValue,
-                label: "",
+                label: '',
                 shouldHideLabel: false,
                 containsMarkdown: false,
               },
@@ -268,7 +267,7 @@ function Overlay({ keys }: { keys: MetadataSetting[] }) {
         const item = keys[index];
 
         return (
-          <div className={c("drag-container")} style={styles}>
+          <div className={c('drag-container')} style={styles}>
             <Item
               item={item}
               itemIndex={index}
@@ -302,10 +301,13 @@ function RespondToScroll({ scrollEl }: { scrollEl: HTMLElement }): JSX.Element {
       }, 100);
     };
 
-    scrollEl.addEventListener("scroll", onScroll);
+    scrollEl.addEventListener('scroll', onScroll, {
+      passive: true,
+      capture: false,
+    });
 
     return () => {
-      scrollEl.removeEventListener("scroll", onScroll);
+      scrollEl.removeEventListener('scroll', onScroll);
     };
   }, [scrollEl, dndManager]);
 
@@ -314,7 +316,7 @@ function RespondToScroll({ scrollEl }: { scrollEl: HTMLElement }): JSX.Element {
 
 function MetadataSettings(props: MetadataSettingsProps) {
   const [keys, setKeys] = React.useState(props.dataKeys);
-  const [inputValue, setInputValue] = React.useState("");
+  const [inputValue, setInputValue] = React.useState('');
   const { getShouldIMEBlockAction, ...inputProps } = useIMEInputProps();
 
   const {
@@ -357,18 +359,18 @@ function MetadataSettings(props: MetadataSettingsProps) {
         </DndScope>
         <Overlay keys={keys} />
       </DndContext>
-      <div className={c("setting-key-input-wrapper")}>
+      <div className={c('setting-key-input-wrapper')}>
         <input
-          placeholder={t("Metadata key")}
+          placeholder={t('Metadata key')}
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={(e) => {
             if (getShouldIMEBlockAction()) return;
 
-            if (e.key === "Enter") {
+            if (e.key === 'Enter') {
               newKey();
-              setInputValue("");
+              setInputValue('');
               const target = e.target as HTMLInputElement;
 
               setTimeout(() => {
@@ -377,8 +379,8 @@ function MetadataSettings(props: MetadataSettingsProps) {
               return;
             }
 
-            if (e.key === "Escape") {
-              setInputValue("");
+            if (e.key === 'Escape') {
+              setInputValue('');
               (e.target as HTMLInputElement).blur();
             }
           }}
@@ -387,7 +389,7 @@ function MetadataSettings(props: MetadataSettingsProps) {
         <button
           onClick={(e) => {
             newKey();
-            setInputValue("");
+            setInputValue('');
             const target = e.target as HTMLElement;
 
             setTimeout(() => {
@@ -396,7 +398,7 @@ function MetadataSettings(props: MetadataSettingsProps) {
             return;
           }}
         >
-          {t("Add key")}
+          {t('Add key')}
         </button>
       </div>
     </>

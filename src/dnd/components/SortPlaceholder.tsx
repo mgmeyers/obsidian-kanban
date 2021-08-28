@@ -1,8 +1,10 @@
-import classcat from "classcat";
-import React from "react";
-import { c, generateInstanceId } from "src/components/helpers";
-import { EntityData } from "../types";
-import { Droppable } from "./Droppable";
+import classcat from 'classcat';
+import React from 'react';
+
+import { c, generateInstanceId } from 'src/components/helpers';
+
+import { EntityData } from '../types';
+import { Droppable } from './Droppable';
 
 interface SortPlaceholderProps {
   index: number;
@@ -23,13 +25,13 @@ export function SortPlaceholder({
   const data = React.useMemo<EntityData>(() => {
     return {
       id: generateInstanceId(),
-      type: "placeholder",
+      type: 'placeholder',
       accepts,
     };
   }, accepts);
 
   return (
-    <div ref={measureRef} className={classcat([className, c("placeholder")])}>
+    <div ref={measureRef} className={classcat([className, c('placeholder')])}>
       <div ref={elementRef}>
         {!isStatic && (
           <Droppable

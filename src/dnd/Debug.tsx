@@ -1,14 +1,16 @@
-import React from "react";
-import { useRaf } from "./util/raf";
-import { Hitbox } from "./types";
-import { DndManagerContext } from "./components/context";
-import { c } from "src/components/helpers";
+import React from 'react';
+
+import { c } from 'src/components/helpers';
+
+import { DndManagerContext } from './components/context';
+import { Hitbox } from './types';
+import { useRaf } from './util/raf';
 
 interface HitBoxDebugProps {
   hitbox: Hitbox;
   color: string;
   zIndex: number;
-  children?: React.ReactNode
+  children?: React.ReactNode;
 }
 
 function HitBoxDebug({ color, hitbox, zIndex, children }: HitBoxDebugProps) {
@@ -17,14 +19,18 @@ function HitBoxDebug({ color, hitbox, zIndex, children }: HitBoxDebugProps) {
     transform: `translate3d(${hitbox[0]}px, ${hitbox[1]}px, 0px)`,
     width: hitbox[2] - hitbox[0],
     height: hitbox[3] - hitbox[1],
-    position: "fixed",
+    position: 'fixed',
     top: 0,
     left: 0,
     zIndex: zIndex,
-    pointerEvents: "none",
+    pointerEvents: 'none',
   };
 
-  return <div className={c("hitbox")} style={style}>{children}</div>;
+  return (
+    <div className={c('hitbox')} style={style}>
+      {children}
+    </div>
+  );
 }
 
 export function DebugScrollContainers() {
@@ -46,7 +52,9 @@ export function DebugScrollContainers() {
             color="#8787d3"
             key={id}
             hitbox={hb.getHitbox()}
-          >{id}</HitBoxDebug>
+          >
+            {id}
+          </HitBoxDebug>
         );
       })}
     </>

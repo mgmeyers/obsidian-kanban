@@ -1,4 +1,4 @@
-import { Path } from "../types";
+import { Path } from '../types';
 
 export function isNextSibling(source: Path, sib: Path): boolean {
   if (source.length !== sib.length) {

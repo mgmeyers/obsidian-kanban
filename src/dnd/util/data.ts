@@ -1,11 +1,12 @@
-import { Nestable, Path } from "../types";
-import update, { Spec } from "immutability-helper";
-import { getSiblingDirection, SiblingDirection } from "./path";
-import merge from "deepmerge";
-import { isPlainObject } from "is-plain-object";
+import merge from 'deepmerge';
+import update, { Spec } from 'immutability-helper';
+import { isPlainObject } from 'is-plain-object';
+
+import { Nestable, Path } from '../types';
+import { SiblingDirection, getSiblingDirection } from './path';
 
 export function getEntityFromPath(root: Nestable, path: Path): Nestable {
-  const step = !!path.length ? path[0] : null;
+  const step = path.length ? path[0] : null;
 
   if (step !== null && root.children && root.children[step]) {
     return getEntityFromPath(root.children[step], path.slice(1));
@@ -28,7 +29,10 @@ export function buildUpdateMutation(path: Path, mutation: Spec<Nestable>) {
   return pathedMutation;
 }
 
-export function buildUpdateParentMutation(path: Path, mutation: Spec<Nestable>) {
+export function buildUpdateParentMutation(
+  path: Path,
+  mutation: Spec<Nestable>
+) {
   let pathedMutation: Spec<Nestable> = mutation;
 
   for (let i = path.length - 2; i >= 0; i--) {
@@ -91,7 +95,7 @@ export function moveEntity(
     : getEntityFromPath(root, source);
   const siblingDirection = getSiblingDirection(source, destination);
 
-  let destinationModifier =
+  const destinationModifier =
     siblingDirection === SiblingDirection.After ? -1 : 0;
 
   const removeMutation = buildRemoveMutation(source);
@@ -119,7 +123,7 @@ export function removeEntity(root: Nestable, target: Path) {
 export function insertEntity(
   root: Nestable,
   destination: Path,
-  entity: Nestable,
+  entity: Nestable
 ) {
   return update(root, buildInsertMutation(destination, entity));
 }

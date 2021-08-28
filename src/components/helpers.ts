@@ -1,12 +1,14 @@
-import React from "react";
-import update from "immutability-helper";
-import { Board, Item, Lane } from "./types";
-import { App, MarkdownView, TFile } from "obsidian";
-import { StateManager } from "src/StateManager";
-import { Path } from "src/dnd/types";
-import { getEntityFromPath } from "src/dnd/util/data";
+import update from 'immutability-helper';
+import { App, MarkdownView, TFile } from 'obsidian';
+import React from 'react';
 
-export const baseClassName = "kanban-plugin";
+import { Path } from 'src/dnd/types';
+import { getEntityFromPath } from 'src/dnd/util/data';
+import { StateManager } from 'src/StateManager';
+
+import { Board, Item } from './types';
+
+export const baseClassName = 'kanban-plugin';
 
 export function noop() {}
 
@@ -83,12 +85,12 @@ export async function applyTemplate(
     // Force the view to source mode, if needed
     if (
       activeView instanceof MarkdownView &&
-      activeView.getMode() !== "source"
+      activeView.getMode() !== 'source'
     ) {
       await activeView.setState(
         {
           ...activeView.getState(),
-          mode: "source",
+          mode: 'source',
         },
         {}
       );
@@ -130,10 +132,10 @@ export async function applyTemplate(
 
 export function getDefaultDateFormat(app: App) {
   const internalPlugins = (app as any).internalPlugins.plugins;
-  const dailyNotesEnabled = internalPlugins["daily-notes"]?.enabled;
+  const dailyNotesEnabled = internalPlugins['daily-notes']?.enabled;
   const dailyNotesValue =
-    internalPlugins["daily-notes"]?.instance.options.format;
-  const nlDatesValue = (app as any).plugins.plugins["nldates-obsidian"]
+    internalPlugins['daily-notes']?.instance.options.format;
+  const nlDatesValue = (app as any).plugins.plugins['nldates-obsidian']
     ?.settings.format;
   const templatesEnabled = internalPlugins.templates?.enabled;
   const templatesValue = internalPlugins.templates?.instance.options.dateFormat;
@@ -142,18 +144,18 @@ export function getDefaultDateFormat(app: App) {
     (dailyNotesEnabled && dailyNotesValue) ||
     nlDatesValue ||
     (templatesEnabled && templatesValue) ||
-    "YYYY-MM-DD"
+    'YYYY-MM-DD'
   );
 }
 
 export function getDefaultTimeFormat(app: App) {
   const internalPlugins = (app as any).internalPlugins.plugins;
-  const nlDatesValue = (app as any).plugins.plugins["nldates-obsidian"]
+  const nlDatesValue = (app as any).plugins.plugins['nldates-obsidian']
     ?.settings.timeFormat;
   const templatesEnabled = internalPlugins.templates?.enabled;
   const templatesValue = internalPlugins.templates?.instance.options.timeFormat;
 
-  return nlDatesValue || (templatesEnabled && templatesValue) || "HH:mm";
+  return nlDatesValue || (templatesEnabled && templatesValue) || 'HH:mm';
 }
 
 const reRegExChar = /[\\^$.*+?()[\]{}|]/g;
@@ -161,20 +163,20 @@ const reHasRegExChar = RegExp(reRegExChar.source);
 
 export function escapeRegExpStr(str: string) {
   return str && reHasRegExChar.test(str)
-    ? str.replace(reRegExChar, "\\$&")
-    : str || "";
+    ? str.replace(reRegExChar, '\\$&')
+    : str || '';
 }
 
 export function getTemplatePlugins(app: App) {
   const templatesPlugin = (app as any).internalPlugins.plugins.templates;
   const templatesEnabled = templatesPlugin.enabled;
-  const templaterPlugin = (app as any).plugins.plugins["templater-obsidian"];
+  const templaterPlugin = (app as any).plugins.plugins['templater-obsidian'];
   const templaterEnabled = (app as any).plugins.enabledPlugins.has(
-    "templater-obsidian"
+    'templater-obsidian'
   );
   const templaterEmptyFileTemplate =
     templaterPlugin &&
-    (this.app as any).plugins.plugins["templater-obsidian"].settings
+    (this.app as any).plugins.plugins['templater-obsidian'].settings
       ?.empty_file_template;
 
   const templateFolder = templatesEnabled

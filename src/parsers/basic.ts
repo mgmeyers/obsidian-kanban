@@ -1,10 +1,14 @@
-import { App, moment, TFile } from "obsidian";
+import { diffLines } from 'diff';
+import update from 'immutability-helper';
+import yaml from 'js-yaml';
+import { App, TFile, moment } from 'obsidian';
+
 import {
   escapeRegExpStr,
   generateInstanceId,
   getDefaultDateFormat,
   getDefaultTimeFormat,
-} from "../components/helpers";
+} from '../components/helpers';
 import {
   Board,
   BoardTemplate,
@@ -13,14 +17,11 @@ import {
   ItemTemplate,
   Lane,
   LaneTemplate,
-} from "../components/types";
-import { KanbanSettings, SettingRetrievers } from "../Settings";
-import { defaultDateTrigger, defaultTimeTrigger } from "../settingHelpers";
-import yaml from "js-yaml";
-import { t } from "../lang/helpers";
-import update from "immutability-helper";
-import { diffLines } from "diff";
-import { ParserSettings } from "./common";
+} from '../components/types';
+import { t } from '../lang/helpers';
+import { defaultDateTrigger, defaultTimeTrigger } from '../settingHelpers';
+import { KanbanSettings, SettingRetrievers } from '../Settings';
+import { ParserSettings } from './common';
 
 const newLineRegex = /[\r\n]+/g;
 
@@ -35,15 +36,15 @@ const itemRegex = new RegExp(
     /(.*)$/, // Text (group 2)
   ]
     .map((r) => r.source)
-    .join("")
+    .join('')
 );
 
-const completeString = `**${t("Complete")}**`;
-const completeRegex = new RegExp(`^${escapeRegExpStr(completeString)}$`, "i");
-const archiveString = "***";
+const completeString = `**${t('Complete')}**`;
+const completeRegex = new RegExp(`^${escapeRegExpStr(completeString)}$`, 'i');
+const archiveString = '***';
 const archiveMarkerRegex = /^\*\*\*$/;
 const tagRegex = /(^|\s)(#[^#\s]+)/g;
-const linkRegex = /\[\[([^\|\]]+)(?:\||\]\])/;
+const linkRegex = /\[\[([^|\]]+)(?:\||\]\])/;
 
 function getSearchTitle(
   dom: HTMLDivElement,
@@ -53,31 +54,31 @@ function getSearchTitle(
   let searchTitle = dom.innerText.trim();
 
   if (tags?.length) {
-    searchTitle += " " + tags.join(" ");
+    searchTitle += ' ' + tags.join(' ');
   }
 
   if (fileMetadata) {
-    const keys = Object.keys(fileMetadata).join(" ");
+    const keys = Object.keys(fileMetadata).join(' ');
     const values = Object.values(fileMetadata)
       .map((v) => {
         if (Array.isArray(v.value)) {
-          return v.value.join(" ");
+          return v.value.join(' ');
         }
 
         return v.value.toString();
       })
-      .join(" ");
+      .join(' ');
 
-    searchTitle += " " + keys + " " + values;
+    searchTitle += ' ' + keys + ' ' + values;
   }
 
   return searchTitle.toLocaleLowerCase();
 }
 
 function itemToMd(item: Item) {
-  return `- [${item.data.isComplete ? "x" : " "}] ${item.data.titleRaw.replace(
+  return `- [${item.data.isComplete ? 'x' : ' '}] ${item.data.titleRaw.replace(
     /(\r\n|\n)/g,
-    "<br>"
+    '<br>'
   )}`;
 }
 
@@ -93,7 +94,7 @@ function extractItemTags(title: string, settings: ParserSettings) {
   }
 
   if (settings.shouldHideTags) {
-    processedTitle = processedTitle.replace(tagRegex, "$1");
+    processedTitle = processedTitle.replace(tagRegex, '$1');
   }
 
   return {
@@ -127,8 +128,8 @@ function extractDates(title: string, settings: ParserSettings) {
 
   if (settings.shouldHideDate) {
     processedTitle = processedTitle
-      .replace(settings.dateRegEx, "")
-      .replace(settings.timeRegEx, "");
+      .replace(settings.dateRegEx, '')
+      .replace(settings.timeRegEx, '');
   }
 
   return {
@@ -166,7 +167,7 @@ function extractFirstLinkedFile(
 
 function getDataViewCache(app: App, linkedFile: TFile, sourceFile: TFile) {
   if (
-    (app as any).plugins.enabledPlugins.has("dataview") &&
+    (app as any).plugins.enabledPlugins.has('dataview') &&
     (app as any).plugins?.plugins?.dataview?.api
   ) {
     return (app as any).plugins.plugins.dataview.api.page(
@@ -208,7 +209,7 @@ function getLinkedPageMetadata(
 
     seenKey[k.metadataKey] = true;
 
-    if (k.metadataKey === "tags") {
+    if (k.metadataKey === 'tags') {
       let tags = cache?.tags || [];
 
       if (cache?.frontmatter?.tags) {
@@ -261,7 +262,7 @@ function laneToMd(lane: Lane) {
 
   lines.push(`## ${lane.data.title}`);
 
-  lines.push("");
+  lines.push('');
 
   if (lane.data.shouldMarkItemsComplete) {
     lines.push(completeString);
@@ -271,29 +272,29 @@ function laneToMd(lane: Lane) {
     lines.push(itemToMd(item));
   });
 
-  lines.push("");
-  lines.push("");
-  lines.push("");
+  lines.push('');
+  lines.push('');
+  lines.push('');
 
-  return lines.join("\n");
+  return lines.join('\n');
 }
 
 function archiveToMd(archive: Item[]) {
   if (archive.length) {
-    const lines: string[] = [archiveString, "", `## ${t("Archive")}`, ""];
+    const lines: string[] = [archiveString, '', `## ${t('Archive')}`, ''];
 
     archive.forEach((item) => {
       lines.push(itemToMd(item));
     });
 
-    return lines.join("\n");
+    return lines.join('\n');
   }
 
-  return "";
+  return '';
 }
 
 function settingsToFrontmatter(settings: KanbanSettings): string {
-  return ["---", "", yaml.dump(settings), "---", "", ""].join("\n");
+  return ['---', '', yaml.dump(settings), '---', '', ''].join('\n');
 }
 
 export class KanbanParser {
@@ -359,7 +360,7 @@ export class KanbanParser {
   boardToMd(board: Board) {
     const lanes = board.children.reduce((md, lane) => {
       return md + laneToMd(lane);
-    }, "");
+    }, '');
 
     return (
       settingsToFrontmatter(board.data.settings) +
@@ -415,7 +416,7 @@ export class KanbanParser {
     const diff = diffLines(this.previousBody, body, { newlineIsToken: true });
 
     if (diff.length === 4) {
-      const [_before, oldLine, newLine, _after] = diff;
+      const [, oldLine, newLine] = diff;
       if (
         oldLine.removed &&
         oldLine.count === 1 &&
@@ -427,8 +428,8 @@ export class KanbanParser {
         const itemMatch = newLine.value.match(itemRegex);
         if (itemMatch && oldItem) {
           // Generaate a new item, but with the old ID
-          const [_full, marker, title] = itemMatch;
-          const titleRaw = title.replace(/<br(\s+\/)?>/g, "\n");
+          const [, marker, title] = itemMatch;
+          const titleRaw = title.replace(/<br(\s+\/)?>/g, '\n');
           const processed = this.processTitle(titleRaw);
           const line = newLine.value;
           const item: Item = {
@@ -438,7 +439,7 @@ export class KanbanParser {
               title: processed.title,
               titleSearch: processed.titleSearch,
               titleRaw,
-              isComplete: marker && marker !== " ",
+              isComplete: marker && marker !== ' ',
               metadata: processed.metadata,
               dom: processed.dom,
             },
@@ -472,39 +473,39 @@ export class KanbanParser {
     this.previousBody = null;
 
     const globalKeys =
-      this.settingRetrievers.getGlobalSetting("metadata-keys") || [];
+      this.settingRetrievers.getGlobalSetting('metadata-keys') || [];
     const localKeys =
-      this.settingRetrievers.getSetting("metadata-keys", suppliedSettings) ||
+      this.settingRetrievers.getSetting('metadata-keys', suppliedSettings) ||
       [];
 
     const dateTrigger =
-      this.settingRetrievers.getSetting("date-trigger", suppliedSettings) ||
+      this.settingRetrievers.getSetting('date-trigger', suppliedSettings) ||
       defaultDateTrigger;
     const timeTrigger =
-      this.settingRetrievers.getSetting("time-trigger", suppliedSettings) ||
+      this.settingRetrievers.getSetting('time-trigger', suppliedSettings) ||
       defaultTimeTrigger;
     const shouldLinkDate = this.settingRetrievers.getSetting(
-      "link-date-to-daily-note",
+      'link-date-to-daily-note',
       suppliedSettings
     );
-    const contentMatch = shouldLinkDate ? "\\[\\[([^}]+)\\]\\]" : "{([^}]+)}";
+    const contentMatch = shouldLinkDate ? '\\[\\[([^}]+)\\]\\]' : '{([^}]+)}';
 
     this.settings = {
       dateFormat:
-        this.settingRetrievers.getSetting("date-format", suppliedSettings) ||
+        this.settingRetrievers.getSetting('date-format', suppliedSettings) ||
         getDefaultDateFormat(this.app),
       timeFormat:
-        this.settingRetrievers.getSetting("time-format", suppliedSettings) ||
+        this.settingRetrievers.getSetting('time-format', suppliedSettings) ||
         getDefaultTimeFormat(this.app),
       dateTrigger,
       timeTrigger,
       shouldLinkDate,
       shouldHideDate: this.settingRetrievers.getSetting(
-        "hide-date-in-title",
+        'hide-date-in-title',
         suppliedSettings
       ),
       shouldHideTags: this.settingRetrievers.getSetting(
-        "hide-tags-in-title",
+        'hide-tags-in-title',
         suppliedSettings
       ),
       metaKeys: [...globalKeys, ...localKeys],
@@ -541,14 +542,14 @@ export class KanbanParser {
     }
 
     const toCompare: Array<keyof KanbanSettings> = [
-      "metadata-keys",
-      "date-trigger",
-      "time-trigger",
-      "link-date-to-daily-note",
-      "date-format",
-      "time-format",
-      "hide-date-in-title",
-      "hide-tags-in-title",
+      'metadata-keys',
+      'date-trigger',
+      'time-trigger',
+      'link-date-to-daily-note',
+      'date-format',
+      'time-format',
+      'hide-date-in-title',
+      'hide-tags-in-title',
     ];
 
     return !toCompare.every((k) => {
@@ -571,10 +572,10 @@ export class KanbanParser {
 
     const [beforeFrontMatter, frontMatter, ...bodyParts] =
       boardMd.split(/^---$/m);
-    const body = bodyParts.join("---");
+    const body = bodyParts.join('---');
 
     if (beforeFrontMatter.trim())
-      throw new Error(t("Invalid Kanban file: problems parsing frontmatter"));
+      throw new Error(t('Invalid Kanban file: problems parsing frontmatter'));
 
     const settings =
       frontMatter === this.previousFrontMatter
@@ -611,7 +612,7 @@ export class KanbanParser {
       // Don't replace lanes and items more than necessary
       const laneKey = `${
         currentLane.data.shouldMarkItemsComplete
-      } ${currentLane.children.map((item) => item.id).join(",")}`;
+      } ${currentLane.children.map((item) => item.id).join(',')}`;
 
       const oldLane = lastLanes.get(laneKey);
 
@@ -638,8 +639,8 @@ export class KanbanParser {
         item = this.previousItems.get(line)?.shift();
 
         if (!item) {
-          const [_full, marker, title] = itemMatch;
-          const titleRaw = title.replace(/<br(\s+\/)?>/g, "\n");
+          const [, marker, title] = itemMatch;
+          const titleRaw = title.replace(/<br(\s+\/)?>/g, '\n');
           const processed = this.processTitle(titleRaw);
 
           item = {
@@ -649,7 +650,7 @@ export class KanbanParser {
               title: processed.title,
               titleSearch: processed.titleSearch,
               titleRaw,
-              isComplete: marker !== " ",
+              isComplete: marker !== ' ',
               metadata: processed.metadata,
               dom: processed.dom,
             },
@@ -659,7 +660,7 @@ export class KanbanParser {
           const file = item.data.metadata.file;
 
           if (file) {
-            let fileMetadata = this.fileCache.has(file)
+            const fileMetadata = this.fileCache.has(file)
               ? this.fileCache.get(file)
               : getLinkedPageMetadata(
                   file,
@@ -695,7 +696,7 @@ export class KanbanParser {
               children: [],
               id: generateInstanceId(),
               data: {
-                title: t("Untitled"),
+                title: t('Untitled'),
               },
             };
           }
@@ -740,7 +741,7 @@ export class KanbanParser {
 
       if (line.trim())
         throw new Error(
-          t("I don't know how to interpret this line:") + "\n" + line
+          t("I don't know how to interpret this line:") + '\n' + line
         );
     }
 

@@ -1,18 +1,19 @@
-import React from "react";
 import {
   MarkdownSourceView,
-  parseLinktext,
   TFile,
   htmlToMarkdown,
-} from "obsidian";
-import useOnclickOutside from "react-cool-onclickoutside";
+  parseLinktext,
+} from 'obsidian';
+import React from 'react';
+import useOnclickOutside from 'react-cool-onclickoutside';
 
-import { Item } from "../types";
-import { c } from "../helpers";
-import { useAutocompleteInputProps } from "./autocomplete";
-import { KanbanContext } from "../context";
-import { t } from "src/lang/helpers";
-import { StateManager } from "src/StateManager";
+import { t } from 'src/lang/helpers';
+import { StateManager } from 'src/StateManager';
+
+import { KanbanContext } from '../context';
+import { c } from '../helpers';
+import { Item } from '../types';
+import { useAutocompleteInputProps } from './autocomplete';
 
 function linkTo(
   stateManager: StateManager,
@@ -49,25 +50,25 @@ function fixBulletsAndLinks(text: string) {
   // Internal links from e.g. dataview plugin incorrectly begin with `app://obsidian.md/`, and
   // we also want to remove bullet points and task markers from text and markdown
   return text
-    .replace(/^\s*[-+*]\s+(\[.]\s+)?/, "")
+    .replace(/^\s*[-+*]\s+(\[.]\s+)?/, '')
     .trim()
-    .replace(/^\[(.*)\]\(app:\/\/obsidian.md\/(.*)\)$/, "[$1]($2)");
+    .replace(/^\[(.*)\]\(app:\/\/obsidian.md\/(.*)\)$/, '[$1]($2)');
 }
 
 function dropAction(stateManager: StateManager, transfer: DataTransfer) {
   // Return a 'copy' or 'link' action according to the content types, or undefined if no recognized type
-  if (transfer.types.includes("text/uri-list")) return "link";
+  if (transfer.types.includes('text/uri-list')) return 'link';
   if (
-    ["file", "files", "link"].includes(
+    ['file', 'files', 'link'].includes(
       (stateManager.app as any).dragManager.draggable?.type
     )
   )
-    return "link";
+    return 'link';
   if (
-    transfer.types.includes("text/html") ||
-    transfer.types.includes("text/plain")
+    transfer.types.includes('text/html') ||
+    transfer.types.includes('text/plain')
   )
-    return "copy";
+    return 'copy';
 }
 
 function importLines(
@@ -77,18 +78,18 @@ function importLines(
   forcePlaintext: boolean = false
 ): string[] {
   const draggable = (stateManager.app as any).dragManager.draggable;
-  const html = transfer.getData("text/html");
-  const plain = transfer.getData("text/plain");
-  const uris = transfer.getData("text/uri-list");
+  const html = transfer.getData('text/html');
+  const plain = transfer.getData('text/plain');
+  const uris = transfer.getData('text/uri-list');
 
   switch (draggable?.type) {
-    case "file":
+    case 'file':
       return [linkTo(stateManager, draggable.file, filePath)];
-    case "files":
+    case 'files':
       return draggable.files.map((f: TFile) =>
         linkTo(stateManager, f, filePath)
       );
-    case "link":
+    case 'link': {
       let link = draggable.file
         ? linkTo(
             stateManager,
@@ -96,21 +97,23 @@ function importLines(
             parseLinktext(draggable.linktext).subpath
           )
         : `[[${draggable.linktext}]]`;
-      let alias = new DOMParser().parseFromString(html, "text/html")
+      const alias = new DOMParser().parseFromString(html, 'text/html')
         .documentElement.textContent; // Get raw text
       link = link
         .replace(/]]$/, `|${alias}]]`)
         .replace(/^\[[^\]].+]\(/, `[${alias}](`);
       return [link];
-    default:
+    }
+    default: {
       const text = forcePlaintext
         ? plain || html
         : getMarkdown(stateManager, transfer, html);
       // Split lines and strip leading bullets/task indicators
-      const lines: string[] = (text || uris || plain || html || "")
+      const lines: string[] = (text || uris || plain || html || '')
         .split(/\r\n?|\n/)
         .map(fixBulletsAndLinks);
       return lines.filter((line) => line);
+    }
   }
 }
 
@@ -120,7 +123,7 @@ interface ItemFormProps {
 
 export function ItemForm({ addItems }: ItemFormProps) {
   const [isInputVisible, setIsInputVisible] = React.useState(false);
-  const [itemTitle, setItemTitle] = React.useState("");
+  const [itemTitle, setItemTitle] = React.useState('');
   const { stateManager, filePath } = React.useContext(KanbanContext);
 
   const clickOutsideRef = useOnclickOutside(
@@ -128,12 +131,12 @@ export function ItemForm({ addItems }: ItemFormProps) {
       setIsInputVisible(false);
     },
     {
-      ignoreClass: c("ignore-click-outside"),
+      ignoreClass: c('ignore-click-outside'),
     }
   );
 
   const clear = () => {
-    setItemTitle("");
+    setItemTitle('');
     setIsInputVisible(false);
   };
 
@@ -145,17 +148,8 @@ export function ItemForm({ addItems }: ItemFormProps) {
 
       if (title) {
         addItemsFromStrings([title]);
-        setItemTitle("");
+        setItemTitle('');
       }
-    }
-  };
-
-  const addItem = () => {
-    const title = itemTitle.trim();
-
-    if (title) {
-      addItemsFromStrings([title]);
-      setItemTitle("");
     }
   };
 
@@ -183,14 +177,14 @@ export function ItemForm({ addItems }: ItemFormProps) {
 
   if (isInputVisible) {
     return (
-      <div className={c("item-form")} ref={clickOutsideRef}>
-        <div className={c("item-input-wrapper")}>
-          <div data-replicated-value={itemTitle} className={c("grow-wrap")}>
+      <div className={c('item-form')} ref={clickOutsideRef}>
+        <div className={c('item-input-wrapper')}>
+          <div data-replicated-value={itemTitle} className={c('grow-wrap')}>
             <textarea
               rows={1}
               value={itemTitle}
-              className={c("item-input")}
-              placeholder={t("Item title...")}
+              className={c('item-input')}
+              placeholder={t('Item title...')}
               onChange={(e) => {
                 selectionStart.current = e.target.selectionStart;
                 selectionEnd.current = e.target.selectionEnd;
@@ -221,7 +215,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
                 if (!itemTitle) setIsInputVisible(false);
               }}
               onPaste={(e) => {
-                const html = e.clipboardData.getData("text/html");
+                const html = e.clipboardData.getData('text/html');
                 const pasteLines = importLines(
                   stateManager,
                   filePath,
@@ -235,7 +229,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
                   // We want to use the markdown instead of the HTML, but you can't intercept paste
                   // So we have to simulate a paste event the hard way
                   const input = e.target as HTMLTextAreaElement;
-                  const paste = pasteLines.join("");
+                  const paste = pasteLines.join('');
 
                   selectionStart.current = input.selectionStart;
                   selectionEnd.current = input.selectionEnd;
@@ -265,9 +259,9 @@ export function ItemForm({ addItems }: ItemFormProps) {
   }
 
   return (
-    <div className={c("item-button-wrapper")}>
+    <div className={c('item-button-wrapper')}>
       <button
-        className={c("new-item-button")}
+        className={c('new-item-button')}
         onClick={() => setIsInputVisible(true)}
         onDragOver={(e) => {
           if (dropAction(stateManager, e.dataTransfer)) {
@@ -275,7 +269,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
           }
         }}
       >
-        <span className={c("item-button-plus")}>+</span> {t("Add a card")}
+        <span className={c('item-button-plus')}>+</span> {t('Add a card')}
       </button>
     </div>
   );

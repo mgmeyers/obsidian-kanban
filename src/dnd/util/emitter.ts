@@ -39,13 +39,13 @@ export function createEmitter<
     events: {},
 
     emit(event, data, id) {
-      const scopedKey: keyof Events = `${event}${id || ""}`;
+      const scopedKey: keyof Events = `${event}${id || ''}`;
 
       const globalHandlers = this.events[event];
       const scopedHandlers = this.events[scopedKey];
 
       if (!globalHandlers && !scopedHandlers) {
-        console.warn("Event emitted with no handler", event, id);
+        console.warn('Event emitted with no handler', event, id);
         return;
       }
 
@@ -59,7 +59,7 @@ export function createEmitter<
     },
 
     on(event, cb, id) {
-      const key: keyof Events = `${event}${id || ""}`;
+      const key: keyof Events = `${event}${id || ''}`;
 
       let handlers = this.events[key];
       if (!handlers) this.events[key] = handlers = [];
@@ -70,7 +70,7 @@ export function createEmitter<
     },
 
     off(event, cb, id) {
-      const key: keyof Events = `${event}${id || ""}`;
+      const key: keyof Events = `${event}${id || ''}`;
       const handlers = this.events[key];
 
       if (handlers) {

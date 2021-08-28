@@ -1,11 +1,13 @@
-import { moment, setIcon } from "obsidian";
-import { Item } from "../types";
-import { c, escapeRegExpStr } from "../helpers";
-import flatpickr from "flatpickr";
-import { getDefaultLocale } from "./datePickerLocale";
-import { Path } from "src/dnd/types";
-import { BoardModifiers } from "../helpers/boardModifiers";
-import { StateManager } from "src/StateManager";
+import flatpickr from 'flatpickr';
+import { moment, setIcon } from 'obsidian';
+
+import { Path } from 'src/dnd/types';
+import { StateManager } from 'src/StateManager';
+
+import { c, escapeRegExpStr } from '../helpers';
+import { BoardModifiers } from '../helpers/boardModifiers';
+import { Item } from '../types';
+import { getDefaultLocale } from './datePickerLocale';
 
 export function constructDatePicker(
   coordinates: { x: number; y: number },
@@ -13,26 +15,26 @@ export function constructDatePicker(
   date?: Date
 ) {
   return document.body.createDiv(
-    { cls: `${c("date-picker")} ${c("ignore-click-outside")}` },
+    { cls: `${c('date-picker')} ${c('ignore-click-outside')}` },
     (div) => {
       div.style.left = `${coordinates.x || 0}px`;
       div.style.top = `${coordinates.y || 0}px`;
 
-      div.createEl("input", { type: "text" }, (input) => {
+      div.createEl('input', { type: 'text' }, (input) => {
         setTimeout(() => {
           let picker: flatpickr.Instance | null = null;
 
           const clickHandler = (e: MouseEvent) => {
             if (
               e.target instanceof HTMLElement &&
-              e.target.closest(`.${c("date-picker")}`) === null
+              e.target.closest(`.${c('date-picker')}`) === null
             ) {
               selfDestruct();
             }
           };
 
           const keyHandler = (e: KeyboardEvent) => {
-            if (e.key === "Escape") {
+            if (e.key === 'Escape') {
               selfDestruct();
             }
           };
@@ -40,8 +42,8 @@ export function constructDatePicker(
           const selfDestruct = () => {
             picker.destroy();
             div.remove();
-            document.body.removeEventListener("click", clickHandler);
-            document.removeEventListener("keydown", keyHandler);
+            document.body.removeEventListener('click', clickHandler);
+            document.removeEventListener('keydown', keyHandler);
           };
 
           picker = flatpickr(input, {
@@ -67,8 +69,8 @@ export function constructDatePicker(
             }
           });
 
-          document.body.addEventListener("click", clickHandler);
-          document.addEventListener("keydown", keyHandler);
+          document.body.addEventListener('click', clickHandler);
+          document.addEventListener('keydown', keyHandler);
         });
       });
     }
@@ -90,10 +92,10 @@ export function constructMenuDatePickerOnChange({
   hasDate,
   path,
 }: ConstructMenuDatePickerOnChangeParams) {
-  const dateFormat = stateManager.getSetting("date-format");
-  const shouldLinkDates = stateManager.getSetting("link-date-to-daily-note");
-  const dateTrigger = stateManager.getSetting("date-trigger");
-  const contentMatch = shouldLinkDates ? "\\[\\[([^}]+)\\]\\]" : "{([^}]+)}";
+  const dateFormat = stateManager.getSetting('date-format');
+  const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
+  const dateTrigger = stateManager.getSetting('date-trigger');
+  const contentMatch = shouldLinkDates ? '\\[\\[([^}]+)\\]\\]' : '{([^}]+)}';
   const dateRegEx = new RegExp(
     `(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`
   );
@@ -124,7 +126,7 @@ export function constructMenuDatePickerOnChange({
 }
 
 export function buildTimeArray(stateManager: StateManager) {
-  const format = stateManager.getSetting("time-format");
+  const format = stateManager.getSetting('time-format');
   const time: string[] = [];
 
   for (let i = 0; i < 24; i++) {
@@ -143,19 +145,19 @@ export function constructTimePicker(
   onSelect: (opt: string) => void,
   time?: moment.Moment
 ) {
-  const pickerClassName = c("time-picker");
-  const timeFormat = stateManager.getSetting("time-format");
+  const pickerClassName = c('time-picker');
+  const timeFormat = stateManager.getSetting('time-format');
   const selected = time?.format(timeFormat);
 
   document.body.createDiv(
-    { cls: `${pickerClassName} ${c("ignore-click-outside")}` },
+    { cls: `${pickerClassName} ${c('ignore-click-outside')}` },
     (div) => {
       const options = buildTimeArray(stateManager);
 
       const clickHandler = (e: MouseEvent) => {
         if (
           e.target instanceof HTMLElement &&
-          e.target.hasClass(c("time-picker-item")) &&
+          e.target.hasClass(c('time-picker-item')) &&
           e.target.dataset.value
         ) {
           onSelect(e.target.dataset.value);
@@ -173,16 +175,16 @@ export function constructTimePicker(
       };
 
       const escHandler = (e: KeyboardEvent) => {
-        if (e.key === "Escape") {
+        if (e.key === 'Escape') {
           selfDestruct();
         }
       };
 
       const selfDestruct = () => {
         div.remove();
-        div.removeEventListener("click", clickHandler);
-        document.body.removeEventListener("click", clickOutsideHandler);
-        document.removeEventListener("keydown", escHandler);
+        div.removeEventListener('click', clickHandler);
+        document.body.removeEventListener('click', clickOutsideHandler);
+        document.removeEventListener('keydown', escHandler);
       };
 
       div.style.left = `${coordinates.x || 0}px`;
@@ -195,20 +197,20 @@ export function constructTimePicker(
         const isSelected = opt === selected;
         div.createDiv(
           {
-            cls: `${c("time-picker-item")} ${isSelected ? "is-selected" : ""}`,
+            cls: `${c('time-picker-item')} ${isSelected ? 'is-selected' : ''}`,
             text: opt,
           },
           (item) => {
             item.createEl(
-              "span",
-              { cls: c("time-picker-check"), prepend: true },
+              'span',
+              { cls: c('time-picker-check'), prepend: true },
               (span) => {
-                setIcon(span, "checkmark");
+                setIcon(span, 'checkmark');
               }
             );
 
             if (index % 4 === 0) {
-              item.addClass("is-hour");
+              item.addClass('is-hour');
             }
 
             item.dataset.value = opt;
@@ -234,13 +236,13 @@ export function constructTimePicker(
         }
 
         (selectedItem || middleItem)?.scrollIntoView({
-          block: "center",
-          inline: "nearest",
+          block: 'center',
+          inline: 'nearest',
         });
 
-        div.addEventListener("click", clickHandler);
-        document.body.addEventListener("click", clickOutsideHandler);
-        document.addEventListener("keydown", escHandler);
+        div.addEventListener('click', clickHandler);
+        document.body.addEventListener('click', clickOutsideHandler);
+        document.addEventListener('keydown', escHandler);
       });
     }
   );
@@ -261,7 +263,7 @@ export function constructMenuTimePickerOnChange({
   hasTime,
   path,
 }: ConstructMenuTimePickerOnChangeParams) {
-  const timeTrigger = stateManager.getSetting("time-trigger");
+  const timeTrigger = stateManager.getSetting('time-trigger');
   const timeRegEx = new RegExp(
     `(^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
   );
@@ -290,24 +292,24 @@ export function getItemClassModifiers(item: Item) {
   const classModifiers: string[] = [];
 
   if (date) {
-    if (date.isSame(new Date(), "day")) {
-      classModifiers.push("is-today");
+    if (date.isSame(new Date(), 'day')) {
+      classModifiers.push('is-today');
     }
 
-    if (date.isAfter(new Date(), "day")) {
-      classModifiers.push("is-future");
+    if (date.isAfter(new Date(), 'day')) {
+      classModifiers.push('is-future');
     }
 
-    if (date.isBefore(new Date(), "day")) {
-      classModifiers.push("is-past");
+    if (date.isBefore(new Date(), 'day')) {
+      classModifiers.push('is-past');
     }
   }
 
   if (item.data.isComplete) {
-    classModifiers.push("is-complete");
+    classModifiers.push('is-complete');
   }
 
-  for (let tag of item.data.metadata.tags) {
+  for (const tag of item.data.metadata.tags) {
     classModifiers.push(`has-tag-${tag.slice(1)}`);
   }
 

@@ -1,16 +1,16 @@
-import boxIntersect from "box-intersect";
-import { Emitter } from "../util/emitter";
+import boxIntersect from 'box-intersect';
+import rafSchd from 'raf-schd';
+import React from 'react';
+
+import { DndManagerContext } from '../components/context';
+import { Coordinates, Entity, Hitbox, Side } from '../types';
+import { Emitter } from '../util/emitter';
 import {
   adjustHitboxForMovement,
   distanceBetween,
   getBestIntersect,
   getScrollIntersection,
-  getScrollIntersectionDiff,
-} from "../util/hitbox";
-import { Coordinates, Entity, Hitbox, Side } from "../types";
-import rafSchd from "raf-schd";
-import React from "react";
-import { DndManagerContext } from "../components/context";
+} from '../util/hitbox';
 
 export interface DragEventData {
   dragEntity?: Entity;
@@ -102,17 +102,18 @@ export class DragManager {
       parseFloat(styles.marginBottom) || 0,
     ];
 
-    this.emitter.emit("dragStart", this.getDragEventData());
+    this.emitter.emit('dragStart', this.getDragEventData());
   }
 
   dragMove(e: PointerEvent) {
     this.dragPosition = { x: e.pageX, y: e.pageY };
-    this.emitter.emit("dragMove", this.getDragEventData());
+    this.emitter.emit('dragMove', this.getDragEventData());
     this.calculateDragIntersect();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   dragEnd(e: PointerEvent) {
-    this.emitter.emit("dragEnd", this.getDragEventData());
+    this.emitter.emit('dragEnd', this.getDragEventData());
     this.dragEntityMargin = undefined;
     this.dragEntity = undefined;
     this.dragEntityId = undefined;
@@ -204,7 +205,7 @@ export class DragManager {
       const scrollEntitySide = scrollEntityData.side;
 
       this.emitter.emit(
-        "endDragScroll",
+        'endDragScroll',
         {
           ...this.getDragEventData(),
           scrollEntity,
@@ -229,7 +230,7 @@ export class DragManager {
       const scrollEntitySide = scrollEntityData.side;
 
       this.emitter.emit(
-        "beginDragScroll",
+        'beginDragScroll',
         {
           ...this.getDragEventData(),
           scrollEntity,
@@ -252,7 +253,7 @@ export class DragManager {
       const scrollEntitySide = scrollEntityData.side;
 
       this.emitter.emit(
-        "updateDragScroll",
+        'updateDragScroll',
         {
           ...this.getDragEventData(),
           scrollEntity,
@@ -286,7 +287,7 @@ export class DragManager {
       this.primaryIntersection !== primaryIntersection
     ) {
       this.emitter.emit(
-        "dragLeave",
+        'dragLeave',
         this.getDragEventData(),
         this.primaryIntersection.entityId
       );
@@ -298,7 +299,7 @@ export class DragManager {
       this.primaryIntersection !== primaryIntersection
     ) {
       this.emitter.emit(
-        "dragEnter",
+        'dragEnter',
         {
           ...this.getDragEventData(),
           primaryIntersection,
@@ -364,20 +365,20 @@ export function useDragHandle(
 
         dndManager.dragManager.dragEnd(e);
 
-        window.removeEventListener("pointermove", onMove);
-        window.removeEventListener("pointerup", onEnd);
-        window.removeEventListener("pointercancel", onEnd);
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onEnd);
+        window.removeEventListener('pointercancel', onEnd);
       };
 
-      window.addEventListener("pointermove", onMove);
-      window.addEventListener("pointerup", onEnd);
-      window.addEventListener("pointercancel", onEnd);
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onEnd);
+      window.addEventListener('pointercancel', onEnd);
     };
 
-    handle.addEventListener("pointerdown", onPointerDown);
+    handle.addEventListener('pointerdown', onPointerDown);
 
     return () => {
-      handle.removeEventListener("pointerdown", onPointerDown);
+      handle.removeEventListener('pointerdown', onPointerDown);
     };
   }, [droppableElement, handleElement, dndManager]);
 }

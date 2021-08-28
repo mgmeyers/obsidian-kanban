@@ -1,15 +1,16 @@
-import { adjustHitbox, calculateHitbox, emptyDomRect } from "../util/hitbox";
+import { generateInstanceId } from 'src/components/helpers';
+
 import {
   Entity,
   EntityData,
+  Path,
   initialScrollShift,
   initialScrollState,
-  Path,
-} from "../types";
-import { ScrollManager } from "./ScrollManager";
-import { SortManager } from "./SortManager";
-import { DndManager } from "./DndManager";
-import { generateInstanceId } from "src/components/helpers";
+} from '../types';
+import { adjustHitbox, calculateHitbox, emptyDomRect } from '../util/hitbox';
+import { DndManager } from './DndManager';
+import { ScrollManager } from './ScrollManager';
+import { SortManager } from './SortManager';
 
 interface Child {
   manager: EntityManager;

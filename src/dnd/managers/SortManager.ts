@@ -1,10 +1,16 @@
-import { getDropDuration, transitions } from "../util/animation";
-import { Axis, Entity, Hitbox } from "../types";
-import { DndManager } from "./DndManager";
-import { DragEventData } from "./DragManager";
-import { getSiblingDirection, SiblingDirection } from "../util/path";
-import { generateInstanceId } from "src/components/helpers";
-import { getHitboxDimensions } from "../util/hitbox";
+import { generateInstanceId } from 'src/components/helpers';
+
+import { Axis, Entity } from '../types';
+import {
+  getDropDuration,
+  removeStyle,
+  setStyle,
+  transitions,
+} from '../util/animation';
+import { getHitboxDimensions } from '../util/hitbox';
+import { SiblingDirection, getSiblingDirection } from '../util/path';
+import { DndManager } from './DndManager';
+import { DragEventData } from './DragManager';
 
 type EntityAndElement = [Entity, HTMLElement, HTMLElement];
 
@@ -48,20 +54,20 @@ export class SortManager {
     this.placeholder = null;
     this.sortListeners = onSortChange ? [onSortChange] : [];
 
-    dndManager.dragManager.emitter.on("dragStart", this.handleDragStart);
-    dndManager.dragManager.emitter.on("dragEnd", this.handleDragEnd);
-    dndManager.dragManager.emitter.on("dragEnter", this.handleDragEnter);
-    dndManager.dragManager.emitter.on("dragLeave", this.handleDragLeave);
+    dndManager.dragManager.emitter.on('dragStart', this.handleDragStart);
+    dndManager.dragManager.emitter.on('dragEnd', this.handleDragEnd);
+    dndManager.dragManager.emitter.on('dragEnter', this.handleDragEnter);
+    dndManager.dragManager.emitter.on('dragLeave', this.handleDragLeave);
   }
 
   destroy() {
     clearTimeout(this.dragLeaveTimeout);
     clearTimeout(this.dragEndTimeout);
 
-    this.dndManager.dragManager.emitter.off("dragStart", this.handleDragStart);
-    this.dndManager.dragManager.emitter.off("dragEnd", this.handleDragEnd);
-    this.dndManager.dragManager.emitter.off("dragEnter", this.handleDragEnter);
-    this.dndManager.dragManager.emitter.off("dragLeave", this.handleDragLeave);
+    this.dndManager.dragManager.emitter.off('dragStart', this.handleDragStart);
+    this.dndManager.dragManager.emitter.off('dragEnd', this.handleDragEnd);
+    this.dndManager.dragManager.emitter.off('dragEnter', this.handleDragEnter);
+    this.dndManager.dragManager.emitter.off('dragLeave', this.handleDragLeave);
   }
 
   registerSortable(
@@ -70,16 +76,16 @@ export class SortManager {
     el: HTMLElement,
     measureEl: HTMLElement
   ) {
-    const isPlaceholder = entity.getData().type === "placeholder";
+    const isPlaceholder = entity.getData().type === 'placeholder';
 
     this.sortables.set(id, [entity, el, measureEl]);
 
     if (isPlaceholder) {
       this.placeholder = [entity, el, measureEl];
       measureEl.dataset.axis = this.axis;
-      measureEl.style.setProperty("transition", transitions.none);
+      setStyle(measureEl, 'transition', transitions.none);
     } else {
-      el.style.setProperty("transition", transitions.none);
+      setStyle(el, 'transition', transitions.none);
     }
   }
 
@@ -146,7 +152,7 @@ export class SortManager {
     if (this.isSorting) {
       this.setSortState(false);
     }
-    
+
     if (this.isPlaceholderActive && !maintainPlaceholder) {
       this.deactivatePlaceholder(placeholderTransition);
     }
@@ -305,11 +311,13 @@ export class SortManager {
     transition: string
   ) {
     if (this.placeholder) {
-      const isHorizontal = this.axis === "horizontal";
+      const isHorizontal = this.axis === 'horizontal';
       const [, , measure] = this.placeholder;
-      measure.style.setProperty("transition", transition);
-      measure.style.setProperty(
-        isHorizontal ? "width" : "height",
+
+      setStyle(measure, 'transition', transition);
+      setStyle(
+        measure,
+        isHorizontal ? 'width' : 'height',
         `${isHorizontal ? dimensions.width : dimensions.height}px`
       );
 
@@ -320,15 +328,17 @@ export class SortManager {
   deactivatePlaceholder(transition: string = transitions.placeholder) {
     if (this.placeholder) {
       const [, , measure] = this.placeholder;
-      measure.style.setProperty("transition", transition);
-      measure.style.removeProperty("width");
-      measure.style.removeProperty("height");
+
+      setStyle(measure, 'transition', transition);
+      removeStyle(measure, 'width');
+      removeStyle(measure, 'height');
+
       this.isPlaceholderActive = false;
     }
   }
 
   hideDraggingEntity(el: HTMLElement) {
-    el.style.setProperty("display", "none");
+    setStyle(el, 'display', 'none');
   }
 
   shiftEl(
@@ -336,19 +346,19 @@ export class SortManager {
     transition: string,
     dimensions: { width: number; height: number }
   ) {
-    el.style.setProperty("transition", transition);
-    el.style.setProperty(
-      "transform",
-      this.axis === "horizontal"
+    const shift =
+      this.axis === 'horizontal'
         ? `translate3d(${dimensions.width}px, 0, 0)`
-        : `translate3d(0, ${dimensions.height}px, 0)`
-    );
+        : `translate3d(0, ${dimensions.height}px, 0)`;
+
+    setStyle(el, 'transition', transition);
+    setStyle(el, 'transform', shift);
   }
 
   resetEl(el: HTMLElement, transition: string = transitions.outOfTheWay) {
-    el.style.setProperty("transition", transition);
-    el.style.removeProperty("transform");
-    el.style.removeProperty("display");
+    setStyle(el, 'transition', transition);
+    setStyle(el, 'transform', 'translate3d(0, 0, 0)');
+    removeStyle(el, 'display');
   }
 
   addSortNotifier(fn: (isSorting: boolean) => void) {

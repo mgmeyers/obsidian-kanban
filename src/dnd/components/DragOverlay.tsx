@@ -1,9 +1,10 @@
-import React from "react";
-import { DragEventData } from "../managers/DragManager";
-import { Coordinates, Entity, Hitbox } from "../types";
-import { getDropDuration, transforms, transitions } from "../util/animation";
-import { emptyHitbox } from "../util/hitbox";
-import { DndManagerContext } from "./context";
+import React from 'react';
+
+import { DragEventData } from '../managers/DragManager';
+import { Coordinates, Entity, Hitbox } from '../types';
+import { getDropDuration, transforms, transitions } from '../util/animation';
+import { emptyHitbox } from '../util/hitbox';
+import { DndManagerContext } from './context';
 
 export interface DragOverlayProps {
   children(entity: Entity, styles: React.CSSProperties): JSX.Element;
@@ -25,9 +26,6 @@ function getDragOverlayStyles(
   ];
 
   return {
-    position: "absolute",
-    top: 0,
-    left: 0,
     transform:
       transform ||
       `translate3d(${position.x - origin.x + adjustedHitbox[0]}px, ${
@@ -130,14 +128,14 @@ export function DragOverlay({ children }: DragOverlayProps) {
       }
     };
 
-    dndManager.dragManager.emitter.on("dragStart", dragStart);
-    dndManager.dragManager.emitter.on("dragMove", dragMove);
-    dndManager.dragManager.emitter.on("dragEnd", dragEnd);
+    dndManager.dragManager.emitter.on('dragStart', dragStart);
+    dndManager.dragManager.emitter.on('dragMove', dragMove);
+    dndManager.dragManager.emitter.on('dragEnd', dragEnd);
 
     return () => {
-      dndManager.dragManager.emitter.off("dragStart", dragStart);
-      dndManager.dragManager.emitter.off("dragMove", dragMove);
-      dndManager.dragManager.emitter.off("dragEnd", dragEnd);
+      dndManager.dragManager.emitter.off('dragStart', dragStart);
+      dndManager.dragManager.emitter.off('dragMove', dragMove);
+      dndManager.dragManager.emitter.off('dragEnd', dragEnd);
     };
   }, [dndManager]);
 

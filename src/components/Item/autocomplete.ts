@@ -1,16 +1,16 @@
-import { TFile, moment } from "obsidian";
-import React from "react";
+import { CursorOffset, StrategyProps, Textcomplete } from '@textcomplete/core';
+import { TextareaEditor } from '@textcomplete/textarea';
+import flatpickr from 'flatpickr';
+import Fuse from 'fuse.js';
+import { TFile, moment } from 'obsidian';
+import React from 'react';
 
-import { CursorOffset, StrategyProps, Textcomplete } from "@textcomplete/core";
-import { TextareaEditor } from "@textcomplete/textarea";
-import Fuse from "fuse.js";
-import { c, escapeRegExpStr, useIMEInputProps } from "../helpers";
-import { KanbanContext, KanbanContextProps } from "../context";
-import flatpickr from "flatpickr";
+import { StateManager } from 'src/StateManager';
 
-import { getDefaultLocale } from "./datePickerLocale";
-import { buildTimeArray } from "./helpers";
-import { StateManager } from "src/StateManager";
+import { KanbanContext, KanbanContextProps } from '../context';
+import { c, escapeRegExpStr, useIMEInputProps } from '../helpers';
+import { getDefaultLocale } from './datePickerLocale';
+import { buildTimeArray } from './helpers';
 
 const tagRegex = /\B#([^\s]*)?$/;
 const linkRegex = /\B\[\[([^\]]*)?$/;
@@ -19,10 +19,10 @@ const embedRegex = /\B!\[\[([^\]]*)?$/;
 export function forceChangeEvent(input: HTMLTextAreaElement, value: string) {
   Object.getOwnPropertyDescriptor(
     HTMLTextAreaElement.prototype,
-    "value"
+    'value'
   ).set.call(input, value);
 
-  input.dispatchEvent(new Event("input", { bubbles: true }));
+  input.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 export function applyDate(
@@ -30,8 +30,8 @@ export function applyDate(
   inputRef: React.MutableRefObject<HTMLTextAreaElement>,
   stateManager: StateManager
 ) {
-  const dateFormat = stateManager.getSetting("date-format");
-  const shouldLinkDates = stateManager.getSetting("link-date-to-daily-note");
+  const dateFormat = stateManager.getSetting('date-format');
+  const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
 
   const formattedDate = moment(date).format(dateFormat);
   const wrappedDate = shouldLinkDates
@@ -56,7 +56,7 @@ function constructDatePicker({
   cb,
   stateManager,
 }: ConstructDatePickerParams) {
-  div.createEl("input", { type: "text" }, (input) => {
+  div.createEl('input', { type: 'text' }, (input) => {
     setTimeout(() =>
       cb(
         flatpickr(input, {
@@ -90,14 +90,14 @@ export function ensureDatePickerIsOnScreen(
 function getTimePickerConfig(
   stateManager: StateManager
 ): StrategyProps<string> {
-  const timeTrigger = stateManager.getSetting("time-trigger");
+  const timeTrigger = stateManager.getSetting('time-trigger');
   const timeTriggerRegex = new RegExp(
     `\\B${escapeRegExpStr(timeTrigger as string)}{?([^}]*)$`
   );
   const times = buildTimeArray(stateManager);
 
   return {
-    id: "time",
+    id: 'time',
     match: timeTriggerRegex,
     index: 1,
     search: (term: string, callback: (results: string[]) => void) => {
@@ -121,7 +121,7 @@ function getTagSearchConfig(
   tagSearch: Fuse<string>
 ): StrategyProps<Fuse.FuseResult<string>> {
   return {
-    id: "tag",
+    id: 'tag',
     match: tagRegex,
     index: 1,
     search: (
@@ -151,7 +151,7 @@ function getFileSearchConfig(
   isEmbed: boolean
 ): StrategyProps<Fuse.FuseResult<TFile>> {
   return {
-    id: "link",
+    id: 'link',
     match: isEmbed ? embedRegex : linkRegex,
     index: 1,
     template: (res: Fuse.FuseResult<TFile>) => {
@@ -170,7 +170,7 @@ function getFileSearchConfig(
       }
     },
     replace: (result: Fuse.FuseResult<TFile>): string =>
-      `${isEmbed ? "!" : ""}[[${stateManager.app.metadataCache.fileToLinktext(
+      `${isEmbed ? '!' : ''}[[${stateManager.app.metadataCache.fileToLinktext(
         result.item,
         filePath
       )}]] `,
@@ -179,15 +179,15 @@ function getFileSearchConfig(
 
 function toPreviousMonth(date: moment.Moment) {
   const initialMonth = date.month();
-  const first = date.clone().startOf("month").weekday(0);
-  const diff = date.diff(first, "week");
+  const first = date.clone().startOf('month').weekday(0);
+  const diff = date.diff(first, 'week');
 
-  date.subtract(1, "month").startOf("month").weekday(6).add(diff, "week");
+  date.subtract(1, 'month').startOf('month').weekday(6).add(diff, 'week');
 
   let nextMonth = date.month();
 
   while (initialMonth === nextMonth) {
-    date.subtract(1, "week");
+    date.subtract(1, 'week');
     nextMonth = date.month();
   }
 
@@ -196,15 +196,15 @@ function toPreviousMonth(date: moment.Moment) {
 
 function toNextMonth(date: moment.Moment) {
   const initialMonth = date.month();
-  const first = date.clone().startOf("month").weekday(6);
-  const diff = date.diff(first, "week");
+  const first = date.clone().startOf('month').weekday(6);
+  const diff = date.diff(first, 'week');
 
-  date.add(1, "month").startOf("month").weekday(0).add(diff, "week");
+  date.add(1, 'month').startOf('month').weekday(0).add(diff, 'week');
 
   let nextMonth = date.month();
 
   while (initialMonth === nextMonth) {
-    date.add(1, "week");
+    date.add(1, 'week');
     nextMonth = date.month();
   }
 
@@ -229,7 +229,7 @@ export function constructAutocomplete({
   let datePickerEl: null | HTMLDivElement = null;
   let datePickerInstance: flatpickr.Instance | null = null;
 
-  const dateTrigger = stateManager.getSetting("date-trigger");
+  const dateTrigger = stateManager.getSetting('date-trigger');
   const dateTriggerRegex = new RegExp(
     `(?:^|\\s)${escapeRegExpStr(dateTrigger as string)}$`
   );
@@ -241,7 +241,7 @@ export function constructAutocomplete({
 
   const files = stateManager.app.vault.getFiles();
   const fileSearch = new Fuse(files, {
-    keys: ["name"],
+    keys: ['name'],
   });
 
   const configs: StrategyProps[] = [
@@ -257,12 +257,12 @@ export function constructAutocomplete({
   const editor = new TextareaEditor(inputRef.current);
   const autocomplete = new Textcomplete(editor, configs, {
     dropdown: {
-      className: `${c("autocomplete")} ${c("ignore-click-outside")}`,
+      className: `${c('autocomplete')} ${c('ignore-click-outside')}`,
       rotate: true,
       item: {
-        className: `${c("autocomplete-item")} ${c("ignore-click-outside")}`,
-        activeClassName: `${c("autocomplete-item-active")} ${c(
-          "ignore-click-outside"
+        className: `${c('autocomplete-item')} ${c('ignore-click-outside')}`,
+        activeClassName: `${c('autocomplete-item-active')} ${c(
+          'ignore-click-outside'
         )}`,
       },
     },
@@ -278,11 +278,11 @@ export function constructAutocomplete({
     setTimeout(() => (datePickerEl = null));
   };
 
-  autocomplete.on("show", () => {
+  autocomplete.on('show', () => {
     isAutocompleteVisibleRef.current = true;
   });
 
-  autocomplete.on("hidden", () => {
+  autocomplete.on('hidden', () => {
     isAutocompleteVisibleRef.current = false;
   });
 
@@ -294,7 +294,7 @@ export function constructAutocomplete({
         return;
       }
 
-      if (e.key === "Enter") {
+      if (e.key === 'Enter') {
         e.preventDefault();
 
         const selectedDates = datePickerInstance.selectedDates;
@@ -308,7 +308,7 @@ export function constructAutocomplete({
         return destroyDatePicker();
       }
 
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         e.preventDefault();
         return destroyDatePicker();
       }
@@ -317,17 +317,17 @@ export function constructAutocomplete({
         datePickerInstance.selectedDates[0] || new Date()
       );
 
-      if (e.key === "ArrowRight") {
+      if (e.key === 'ArrowRight') {
         e.preventDefault();
         if (currentDate.weekday() === 6) {
           datePickerInstance.setDate(toNextMonth(currentDate).toDate(), false);
         } else {
-          datePickerInstance.setDate(currentDate.add(1, "day").toDate(), false);
+          datePickerInstance.setDate(currentDate.add(1, 'day').toDate(), false);
         }
         return;
       }
 
-      if (e.key === "ArrowLeft") {
+      if (e.key === 'ArrowLeft') {
         e.preventDefault();
         if (currentDate.weekday() === 0) {
           datePickerInstance.setDate(
@@ -336,32 +336,32 @@ export function constructAutocomplete({
           );
         } else {
           datePickerInstance.setDate(
-            currentDate.subtract(1, "day").toDate(),
+            currentDate.subtract(1, 'day').toDate(),
             false
           );
         }
         return;
       }
 
-      if (e.key === "ArrowUp") {
+      if (e.key === 'ArrowUp') {
         e.preventDefault();
         datePickerInstance.setDate(
-          currentDate.subtract(1, "week").toDate(),
+          currentDate.subtract(1, 'week').toDate(),
           false
         );
         return;
       }
 
-      if (e.key === "ArrowDown") {
+      if (e.key === 'ArrowDown') {
         e.preventDefault();
-        datePickerInstance.setDate(currentDate.add(1, "week").toDate(), false);
+        datePickerInstance.setDate(currentDate.add(1, 'week').toDate(), false);
         return;
       }
     };
 
-    inputRef.current.addEventListener("keydown", keydownHandler);
+    inputRef.current.addEventListener('keydown', keydownHandler);
 
-    editor.on("change", (e: CustomEvent) => {
+    editor.on('change', (e: CustomEvent) => {
       const beforeCursor = e.detail.beforeCursor as string;
 
       if (beforeCursor && dateTriggerRegex.test(beforeCursor)) {
@@ -373,7 +373,7 @@ export function constructAutocomplete({
           ensureDatePickerIsOnScreen(position, datePickerEl);
         } else {
           datePickerEl = document.body.createDiv(
-            { cls: `${c("date-picker")} ${c("ignore-click-outside")}` },
+            { cls: `${c('date-picker')} ${c('ignore-click-outside')}` },
             (div) => {
               div.style.left = `${position.left || 0}px`;
               div.style.top = `${position.top || 0}px`;
@@ -399,7 +399,7 @@ export function constructAutocomplete({
 
   return () => {
     if (!excludeDatePicker && inputRef.current) {
-      inputRef.current.removeEventListener("keydown", keydownHandler);
+      inputRef.current.removeEventListener('keydown', keydownHandler);
     }
 
     if (datePickerEl) {
@@ -455,9 +455,9 @@ export function useAutocompleteInputProps({
         return;
       }
 
-      if (e.key === "Enter") {
+      if (e.key === 'Enter') {
         onEnter(e);
-      } else if (e.key === "Escape") {
+      } else if (e.key === 'Escape') {
         onEscape(e);
       }
     },

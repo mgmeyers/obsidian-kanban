@@ -1,8 +1,9 @@
-import rafSchd from "raf-schd";
-import React from "react";
-import { ScrollStateManager } from "../managers/ScrollStateManager";
-import { WithChildren } from "../types";
-import { ScopeIdContext, ScrollStateContext } from "./context";
+import rafSchd from 'raf-schd';
+import React from 'react';
+
+import { ScrollStateManager } from '../managers/ScrollStateManager';
+import { WithChildren } from '../types';
+import { ScopeIdContext, ScrollStateContext } from './context';
 
 export function DndScrollState({ children }: WithChildren) {
   const manager = React.useMemo(() => {
@@ -50,10 +51,10 @@ export function useStoredScrollState(id: string, index: number | undefined) {
       });
     });
 
-    el.addEventListener("scroll", onScroll);
+    el.addEventListener('scroll', onScroll);
 
     return () => {
-      el.removeEventListener("scroll", onScroll);
+      el.removeEventListener('scroll', onScroll);
     };
   }, [scrollStateManager, id, index]);
 

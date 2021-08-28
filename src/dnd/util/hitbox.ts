@@ -1,11 +1,11 @@
 import {
+  CoordinateShift,
   Coordinates,
   Entity,
   Hitbox,
-  CoordinateShift,
   ScrollState,
   Side,
-} from "../types";
+} from '../types';
 
 export const emptyDomRect: DOMRectReadOnly = {
   bottom: 0,
@@ -68,17 +68,17 @@ export function calculateScrollHitbox(
 ): Hitbox {
   const hitbox = calculateHitbox(rect, scroll, scrollShift, null);
 
-  if (side === "top") {
+  if (side === 'top') {
     hitbox[3] = hitbox[1] + 35;
     return hitbox;
   }
 
-  if (side === "right") {
+  if (side === 'right') {
     hitbox[0] = hitbox[0] + rect.width - 35;
     return hitbox;
   }
 
-  if (side === "bottom") {
+  if (side === 'bottom') {
     hitbox[1] = hitbox[1] + rect.height - 35;
     return hitbox;
   }
@@ -121,7 +121,7 @@ export function getValueIndex(
   let tracked = array[0];
   let index = 0;
 
-  for (var i = 1; i < array.length; i++) {
+  for (let i = 1; i < array.length; i++) {
     if (comparator(array[i], tracked)) {
       index = i;
       tracked = array[i];
@@ -185,16 +185,16 @@ export function getScrollIntersection(
   let targetIndex = 0;
   let hitboxIndex = 0;
 
-  if (side === "left") {
+  if (side === 'left') {
     targetIndex = 0;
     hitboxIndex = 2;
-  } else if (side === "right") {
+  } else if (side === 'right') {
     targetIndex = 2;
     hitboxIndex = 0;
-  } else if (side === "top") {
+  } else if (side === 'top') {
     targetIndex = 1;
     hitboxIndex = 3;
-  } else if (side === "bottom") {
+  } else if (side === 'bottom') {
     targetIndex = 3;
     hitboxIndex = 1;
   }
@@ -291,7 +291,7 @@ export function getBestIntersect(
     const entityHitbox = entity.getHitbox();
     const entityTopLeft = cornersOfRectangle(entityHitbox)[0];
     const entityCenter = centerOfRectangle(dragHitbox);
-    const axis = entity.getData().sortAxis === "horizontal" ? "x" : "y";
+    const axis = entity.getData().sortAxis === 'horizontal' ? 'x' : 'y';
 
     const modifier = entityCenter[axis] > dragTopLeft[axis] ? 1000 : 0;
 

@@ -1,5 +1,5 @@
-export type Axis = "horizontal" | "vertical";
-export type Side = "top" | "right" | "bottom" | "left";
+export type Axis = 'horizontal' | 'vertical';
+export type Side = 'top' | 'right' | 'bottom' | 'left';
 export type Path = number[];
 
 export interface NestableProps {

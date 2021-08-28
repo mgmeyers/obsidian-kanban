@@ -1,8 +1,8 @@
-import { CoordinateShift, initialScrollState } from "../types";
+import { CoordinateShift, initialScrollState } from '../types';
 
 export class ScrollStateManager {
   scrollStates: Map<string, CoordinateShift>;
-  idScopes: Map<string, Set<String>>;
+  idScopes: Map<string, Set<string>>;
 
   constructor() {
     this.scrollStates = new Map();

@@ -1,10 +1,12 @@
-import { getLinkpath } from "obsidian";
-import React from "react";
-import { t } from "src/lang/helpers";
-import { KanbanContext } from "../context";
-import { c } from "../helpers";
-import { useAutocompleteInputProps } from "../Item/autocomplete";
-import { MarkdownRenderer } from "../MarkdownRenderer";
+import { getLinkpath } from 'obsidian';
+import React from 'react';
+
+import { t } from 'src/lang/helpers';
+
+import { KanbanContext } from '../context';
+import { c } from '../helpers';
+import { useAutocompleteInputProps } from '../Item/autocomplete';
+import { MarkdownRenderer } from '../MarkdownRenderer';
 
 export interface LaneTitleProps {
   itemCount: number;
@@ -52,15 +54,15 @@ export function LaneTitle({
   }, [isEditing]);
 
   return (
-    <div className={c("lane-title")}>
+    <div className={c('lane-title')}>
       {isEditing ? (
-        <div data-replicated-value={title} className={c("grow-wrap")}>
+        <div data-replicated-value={title} className={c('grow-wrap')}>
           <textarea
             ref={inputRef}
             rows={1}
             value={title}
-            className={c("lane-input")}
-            placeholder={t("Enter list title...")}
+            className={c('lane-input')}
+            placeholder={t('Enter list title...')}
             onChange={onChange}
             {...autocompleteProps}
           />
@@ -68,14 +70,14 @@ export function LaneTitle({
       ) : (
         <>
           <div
-            className={c("lane-title-text")}
+            className={c('lane-title-text')}
             onContextMenu={(e) => {
               e.preventDefault();
               e.stopPropagation();
 
               const internalLinkPath =
                 e.target instanceof HTMLAnchorElement &&
-                e.target.hasClass("internal-link")
+                e.target.hasClass('internal-link')
                   ? e.target.dataset.href
                   : undefined;
 
@@ -90,7 +92,7 @@ export function LaneTitle({
           >
             <MarkdownRenderer markdownString={title} />
           </div>
-          <div className={c("lane-title-count")}>{itemCount}</div>
+          <div className={c('lane-title-count')}>{itemCount}</div>
         </>
       )}
     </div>
