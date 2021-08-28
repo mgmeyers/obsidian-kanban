@@ -4,7 +4,8 @@ import useOnclickOutside from 'react-cool-onclickoutside';
 import { t } from 'src/lang/helpers';
 
 import { KanbanContext } from '../context';
-import { c, generateInstanceId, useIMEInputProps } from '../helpers';
+import { c, generateInstanceId } from '../helpers';
+import { useAutocompleteInputProps } from '../Item/autocomplete';
 import { LaneTemplate } from '../types';
 
 export function LaneForm({
@@ -28,8 +29,6 @@ export function LaneForm({
     }
   );
 
-  const { getShouldIMEBlockAction, ...inputProps } = useIMEInputProps();
-
   React.useLayoutEffect(() => {
     inputRef.current?.focus();
   }, []);
@@ -50,6 +49,16 @@ export function LaneForm({
     onNewLane();
   };
 
+  const autocompleteProps = useAutocompleteInputProps({
+    isInputVisible: true,
+    onEnter: (e) => {
+      e.preventDefault();
+      createLane();
+    },
+    onEscape: closeLaneForm,
+    excludeDatePicker: true,
+  });
+
   return (
     <div ref={clickOutsideRef} className={c('lane-form-wrapper')}>
       <div className={c('lane-input-wrapper')}>
@@ -61,16 +70,7 @@ export function LaneForm({
             className={c('lane-input')}
             placeholder={t('Enter list title...')}
             onChange={(e) => setLaneTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (getShouldIMEBlockAction()) return;
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                createLane();
-              } else if (e.key === 'Escape') {
-                closeLaneForm();
-              }
-            }}
-            {...inputProps}
+            {...autocompleteProps}
           />
         </div>
       </div>

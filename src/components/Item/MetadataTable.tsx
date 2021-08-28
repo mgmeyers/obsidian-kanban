@@ -1,3 +1,4 @@
+import { Link } from 'obsidian-dataview';
 import React from 'react';
 
 import { c } from '../helpers';
@@ -32,21 +33,25 @@ interface MetadataValueProps {
   searchQuery: string;
 }
 
+function getLinkFromObj(v: Link) {
+  return `[[${v.path}${v.display ? `|${v.display}` : ''}]]`;
+}
+
 function MetadataValue({ data, searchQuery }: MetadataValueProps) {
   if (Array.isArray(data.value)) {
     return (
       <span className={c('meta-value')}>
         {data.value.map((v, i, arr) => {
           const str = `${v}`;
-          const linkPath = typeof v === 'object' && (v as any).path;
+          const link = typeof v === 'object' && getLinkFromObj(v as Link);
           const isMatch = str.toLocaleLowerCase().contains(searchQuery);
 
           return (
             <>
-              {linkPath || data.containsMarkdown ? (
+              {link || data.containsMarkdown ? (
                 <MarkdownRenderer
                   className="inline"
-                  markdownString={linkPath ? `[[${linkPath}]]` : str}
+                  markdownString={link ? link : str}
                   searchQuery={searchQuery}
                 />
               ) : isMatch ? (
@@ -64,7 +69,8 @@ function MetadataValue({ data, searchQuery }: MetadataValueProps) {
 
   const str = `${data.value}`;
   const isMatch = str.toLocaleLowerCase().contains(searchQuery);
-  const linkPath = typeof data.value === 'object' && (data.value as any).path;
+  const link =
+    typeof data.value === 'object' && getLinkFromObj(data.value as Link);
 
   return (
     <span
@@ -72,9 +78,9 @@ function MetadataValue({ data, searchQuery }: MetadataValueProps) {
         isMatch && !data.containsMarkdown ? 'is-search-match' : ''
       }`}
     >
-      {data.containsMarkdown || !!linkPath ? (
+      {data.containsMarkdown || !!link ? (
         <MarkdownRenderer
-          markdownString={linkPath ? `[[${linkPath}]]` : str}
+          markdownString={link ? link : str}
           searchQuery={searchQuery}
         />
       ) : (
