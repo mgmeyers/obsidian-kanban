@@ -16,6 +16,10 @@
   flex-direction: column;
 }
 
+.kanban-plugin.something-is-dragging * {
+  pointer-events: none;
+}
+
 .kanban-plugin__search-wrapper {
   width: 100%;
   position: sticky;

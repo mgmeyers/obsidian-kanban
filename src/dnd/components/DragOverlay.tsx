@@ -145,3 +145,28 @@ export function DragOverlay({ children }: DragOverlayProps) {
 
   return children(dragEntity, styles);
 }
+
+export function useIsAnythingDragging() {
+  const dndManager = React.useContext(DndManagerContext);
+  const [isDragging, setIsDragging] = React.useState(false);
+
+  React.useEffect(() => {
+    const onDragStart = () => {
+      setIsDragging(true);
+    };
+
+    const onDragEnd = () => {
+      setIsDragging(false);
+    };
+
+    dndManager.dragManager.emitter.on('dragStart', onDragStart);
+    dndManager.dragManager.emitter.on('dragEnd', onDragEnd);
+
+    return () => {
+      dndManager.dragManager.emitter.off('dragStart', onDragStart);
+      dndManager.dragManager.emitter.off('dragEnd', onDragEnd);
+    };
+  }, [dndManager]);
+
+  return isDragging;
+}

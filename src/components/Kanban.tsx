@@ -3,6 +3,7 @@ import classcat from 'classcat';
 import update from 'immutability-helper';
 import React from 'react';
 
+import { useIsAnythingDragging } from 'src/dnd/components/DragOverlay';
 import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
 import { Sortable } from 'src/dnd/components/Sortable';
 import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
@@ -30,6 +31,7 @@ interface KanbanProps {
 
 export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const boardData = stateManager.useState();
+  const isAnythingDragging = useIsAnythingDragging();
 
   const rootRef = React.useRef<HTMLDivElement>();
   const searchRef = React.useRef<HTMLInputElement>();
@@ -237,7 +239,12 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
         >
           <div
             ref={rootRef}
-            className={baseClassName}
+            className={classcat([
+              baseClassName,
+              {
+                'something-is-dragging': isAnythingDragging,
+              },
+            ])}
             onMouseOver={onMouseOver}
             onClick={onClick}
           >
