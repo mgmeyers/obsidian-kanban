@@ -418,9 +418,9 @@
   integrity sha512-jrm2K65CokCCX4NmowtA+MfXyuprZC13jbRuwprs6/04z/EcFg/MCwYdsHn+zgV4CQBiATiI7AEq7y1sZCtWKA==
 
 "@types/estree@*":
-  version "0.0.48"
-  resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.48.tgz#18dc8091b285df90db2f25aa7d906cfc394b7f74"
-  integrity sha512-LfZwXoGUDo0C3me81HXgkBg5CTQYb6xzEl+fNmbO4JdRiSKQ8A0GD1OBBvKAIsbCUgoyAty7m99GqqMQe784ew==
+  version "0.0.50"
+  resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.50.tgz#1e0caa9364d3fccd2931c3ed96fdbeaa5d4cca83"
+  integrity sha512-C6N5s2ZFtuZRj54k2/zyRhNDjJwwcViAM3Nbm8zjBpbqAdZ00mr0CFxvSKeO8Y/e03WVFLpQMdHYVfUd6SB+Hw==
 
 "@types/glob@^7.1.1":
   version "7.1.4"
@@ -511,9 +511,9 @@
   integrity sha512-JYM8x9EGF163bEyhdJBpR2QX1R5naCJHC8ucJylJ3w9/CVBaskdQ8WqBf8MmQrd1kRvp/a4TS8HJ+bxzR7ZJYQ==
 
 "@types/tern@*":
-  version "0.23.3"
-  resolved "https://registry.yarnpkg.com/@types/tern/-/tern-0.23.3.tgz#4b54538f04a88c9ff79de1f6f94f575a7f339460"
-  integrity sha512-imDtS4TAoTcXk0g7u4kkWqedB3E4qpjXzCpD2LU5M5NAXHzCDsypyvXSaG7mM8DKYkCRa7tFp4tS/lp/Wo7Q3w==
+  version "0.23.4"
+  resolved "https://registry.yarnpkg.com/@types/tern/-/tern-0.23.4.tgz#03926eb13dbeaf3ae0d390caf706b2643a0127fb"
+  integrity sha512-JAUw1iXGO1qaWwEOzxTKJZ/5JxVeON9kvGZ/osgZaJImBnyjyn0cjovPsf6FNLmyGY8Vw9DoXZCMlfMkMwHRWg==
   dependencies:
     "@types/estree" "*"
 
@@ -3204,10 +3204,10 @@ obsidian-utils@^0.10.0:
     node-fetch "^2.6.1"
     which "^2.0.2"
 
-obsidian@^0.12.5:
-  version "0.12.5"
-  resolved "https://registry.yarnpkg.com/obsidian/-/obsidian-0.12.5.tgz#34ac8c05f7aecdb4358d9c027b74b938bde0e0e4"
-  integrity sha512-dQkcHWVgPzVlCxvkeu02Co8P1t4Ii95dC2NsFJV5bKK04J4//YxEdTTI/TFKr77CtYcH78LlUmOFeY5rHwyU/Q==
+obsidian@^0.12.11:
+  version "0.12.11"
+  resolved "https://registry.yarnpkg.com/obsidian/-/obsidian-0.12.11.tgz#c92fbbb29fc2d4732e156b41a66d4ba8d42baaab"
+  integrity sha512-Kv4m1n4nfd17FzpqHZfqFS2YZAyY+cxAUM7/5jqh1bmbPlmKoNd1XJZC7o9KvkXfTCxALiXfGRdrjHB+GUFAEA==
   dependencies:
     "@types/codemirror" "0.0.108"
     moment "2.29.1"

@@ -78,7 +78,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   get id(): string {
-    return `${(this.leaf as any).id}:::${this.file.path}`;
+    return `${(this.leaf as any).id}:::${this.file?.path}`;
   }
 
   setBoard(board: Board, shouldSave: boolean = true) {
@@ -117,6 +117,17 @@ export class KanbanView extends TextFileView implements HoverParent {
       stateManager.setError(e);
 
       throw e;
+    }
+  }
+
+  async onUnloadFile(file: TFile) {
+    this.plugin.removeView(this);
+    return await super.onUnloadFile(file);
+  }
+
+  handleRename(newPath: string, oldPath: string) {
+    if (this.file.path === newPath) {
+      this.plugin.handleViewFileRename(this, oldPath);
     }
   }
 

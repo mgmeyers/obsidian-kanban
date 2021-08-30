@@ -132,10 +132,6 @@ export default class KanbanPlugin extends Plugin {
   }
 
   addView(view: KanbanView, data: string) {
-    //
-    // TODO: file move? file rename?
-    //
-
     if (!this.viewMap.has(view.id)) {
       this.viewMap.set(view.id, view);
     }
@@ -170,6 +166,18 @@ export default class KanbanPlugin extends Plugin {
     if (this.stateManagers.has(file)) {
       this.stateManagers.get(file).unregisterView(view);
       this.viewStateReceivers.forEach((fn) => fn(this.getKanbanViews()));
+    }
+  }
+
+  handleViewFileRename(view: KanbanView, oldPath: string) {
+    const oldId = `${(view.leaf as any).id}:::${oldPath}`;
+
+    if (this.viewMap.has(oldId)) {
+      this.viewMap.delete(oldId);
+    }
+
+    if (!this.viewMap.has(view.id)) {
+      this.viewMap.set(view.id, view);
     }
   }
 
@@ -233,6 +241,16 @@ export default class KanbanPlugin extends Plugin {
               .onClick(() => this.newKanban(file));
           });
         }
+      })
+    );
+
+    this.registerEvent(
+      this.app.vault.on('rename', (file, oldPath) => {
+        const kanbanLeaves = this.app.workspace.getLeavesOfType(kanbanViewType);
+
+        kanbanLeaves.forEach((leaf) => {
+          (leaf.view as KanbanView).handleRename(file.path, oldPath);
+        });
       })
     );
 
