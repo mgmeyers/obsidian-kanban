@@ -340,6 +340,7 @@ button.kanban-plugin__new-item-button {
   opacity: 0.5;
 }
 
+/* todo */
 .kanban-plugin__item.is-search-miss .kanban-plugin__item-title p {
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -407,6 +408,15 @@ button.kanban-plugin__new-item-button {
 .kanban-plugin__markdown-preview-view ul,
 .kanban-plugin__markdown-preview-view ol {
   padding-inline-start: 19px;
+}
+
+.kanban-plugin__markdown-preview-view ul.contains-task-list {
+  padding-inline-start: 0;
+}
+
+.kanban-plugin__markdown-preview-view ol > li.task-list-item,
+.kanban-plugin__markdown-preview-view ul > li.task-list-item {
+  text-indent: 0;
 }
 
 .kanban-plugin__meta-value .kanban-plugin__markdown-preview-view p,
