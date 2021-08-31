@@ -94,30 +94,20 @@ export interface ItemInnerProps {
   item: Item;
   isStatic?: boolean;
   shouldMarkItemsComplete?: boolean;
+  isMatch?: boolean;
+  searchQuery?: string;
 }
 
 const ItemInner = React.memo(function ItemInner({
   item,
   shouldMarkItemsComplete,
+  isMatch,
+  searchQuery,
 }: ItemInnerProps) {
   const { stateManager, boardModifiers } = React.useContext(KanbanContext);
-  const searchQuery = React.useContext(SearchContext);
   const [isEditing, setIsEditing] = React.useState(false);
 
   const path = useNestedEntityPath();
-
-  const isMatch = searchQuery
-    ? item.data.titleSearch.contains(searchQuery)
-    : false;
-  const classModifiers: string[] = getItemClassModifiers(item);
-
-  if (searchQuery) {
-    if (isMatch) {
-      classModifiers.push('is-search-hit');
-    } else {
-      classModifiers.push('is-search-miss');
-    }
-  }
 
   const showItemMenu = useItemMenu({
     boardModifiers,
@@ -168,7 +158,7 @@ const ItemInner = React.memo(function ItemInner({
     <div
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
-      className={classcat([c('item-content-wrapper'), ...classModifiers])}
+      className={c('item-content-wrapper')}
       {...ignoreAttr}
     >
       <div className={c('item-title-wrapper')} {...ignoreAttr}>
@@ -208,16 +198,38 @@ export const DraggableItem = React.memo(function DraggableItem(
 ) {
   const elementRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
+  const searchQuery = React.useContext(SearchContext);
 
   const { itemIndex, ...innerProps } = props;
 
   useDragHandle(measureRef, measureRef);
 
+  const isMatch = searchQuery
+    ? innerProps.item.data.titleSearch.contains(searchQuery)
+    : false;
+
+  const classModifiers: string[] = getItemClassModifiers(innerProps.item);
+
+  if (searchQuery) {
+    if (isMatch) {
+      classModifiers.push('is-search-hit');
+    } else {
+      classModifiers.push('is-search-miss');
+    }
+  }
+
   return (
     <div ref={measureRef} className={c('item-wrapper')}>
-      <div ref={elementRef} className={c('item')}>
+      <div
+        ref={elementRef}
+        className={classcat([c('item'), ...classModifiers])}
+      >
         {props.isStatic ? (
-          <ItemInner {...innerProps} />
+          <ItemInner
+            {...innerProps}
+            isMatch={isMatch}
+            searchQuery={searchQuery}
+          />
         ) : (
           <Droppable
             elementRef={elementRef}
@@ -226,7 +238,11 @@ export const DraggableItem = React.memo(function DraggableItem(
             index={itemIndex}
             data={props.item}
           >
-            <ItemInner {...innerProps} />
+            <ItemInner
+              {...innerProps}
+              isMatch={isMatch}
+              searchQuery={searchQuery}
+            />
           </Droppable>
         )}
       </div>

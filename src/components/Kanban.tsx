@@ -251,7 +251,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
             {(isLaneFormVisible || boardData.children.length === 0) && (
               <LaneForm onNewLane={onNewLane} closeLaneForm={closeLaneForm} />
             )}
-            {boardData.data.isSearching && (
+            {isSearching && (
               <div className={c('search-wrapper')}>
                 <input
                   ref={searchRef}
@@ -264,7 +264,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                       setSearchQuery('');
                       setDebouncedSearchQuery('');
                       (e.target as HTMLInputElement).blur();
-                      stateManager.toggleSearch();
+                      setIsSearching(false);
                     }
                   }}
                   type="text"
@@ -276,7 +276,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                   onClick={() => {
                     setSearchQuery('');
                     setDebouncedSearchQuery('');
-                    stateManager.toggleSearch();
+                    setIsSearching(false);
                   }}
                   aria-label={t('Cancel')}
                 >

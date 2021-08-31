@@ -458,15 +458,4 @@ export class StateManager {
       })
     );
   }
-
-  toggleSearch() {
-    this.setState(
-      update(this.state, {
-        data: {
-          $toggle: ['isSearching'],
-        },
-      }),
-      false
-    );
-  }
 }
