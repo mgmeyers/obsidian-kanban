@@ -386,6 +386,14 @@ button.kanban-plugin__new-item-button {
   margin-block-end: 0.66em;
 }
 
+.kanban-plugin__markdown-preview-view ul ol,
+.kanban-plugin__markdown-preview-view ol ul,
+.kanban-plugin__markdown-preview-view ul ul,
+.kanban-plugin__markdown-preview-view ol ol {
+  margin-block-start: 0em;
+  margin-block-end: 0em;
+}
+
 .kanban-plugin__markdown-preview-view > div > * {
   overflow-x: auto;
   overflow-wrap: break-word;
@@ -399,11 +407,14 @@ button.kanban-plugin__new-item-button {
   margin-bottom: 0;
 }
 
+.kanban-plugin__markdown-preview-view ol.contains-task-list .contains-task-list,
+.kanban-plugin__markdown-preview-view ul.contains-task-list .contains-task-list,
 .kanban-plugin__markdown-preview-view ul,
 .kanban-plugin__markdown-preview-view ol {
   padding-inline-start: 19px;
 }
 
+.kanban-plugin__markdown-preview-view ol.contains-task-list,
 .kanban-plugin__markdown-preview-view ul.contains-task-list {
   padding-inline-start: 0;
 }
