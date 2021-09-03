@@ -11,9 +11,9 @@ import { t } from 'src/lang/helpers';
 import { StateManager } from 'src/StateManager';
 
 import { KanbanContext } from '../context';
+import { MarkdownEditor } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { Item } from '../types';
-import { useAutocompleteInputProps } from './autocomplete';
 
 function linkTo(
   stateManager: StateManager,
@@ -125,6 +125,9 @@ export function ItemForm({ addItems }: ItemFormProps) {
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const [itemTitle, setItemTitle] = React.useState('');
   const { stateManager, filePath } = React.useContext(KanbanContext);
+  const inputRef = React.useRef<HTMLTextAreaElement>();
+  const selectionStart = React.useRef<number>(null);
+  const selectionEnd = React.useRef<number>(null);
 
   const clickOutsideRef = useOnclickOutside(
     () => {
@@ -135,10 +138,10 @@ export function ItemForm({ addItems }: ItemFormProps) {
     }
   );
 
-  const clear = () => {
+  const clear = React.useCallback(() => {
     setItemTitle('');
     setIsInputVisible(false);
-  };
+  }, []);
 
   const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (!e.shiftKey) {
@@ -153,24 +156,6 @@ export function ItemForm({ addItems }: ItemFormProps) {
     }
   };
 
-  const autocompleteProps = useAutocompleteInputProps({
-    isInputVisible,
-    onEnter,
-    onEscape: clear,
-  });
-
-  const selectionStart = React.useRef<number>(null);
-  const selectionEnd = React.useRef<number>(null);
-
-  React.useLayoutEffect(() => {
-    if (selectionStart.current && selectionEnd.current) {
-      autocompleteProps.ref.current?.setSelectionRange(
-        selectionStart.current,
-        selectionEnd.current
-      );
-    }
-  }, [itemTitle]);
-
   const addItemsFromStrings = (titles: string[]) => {
     addItems(titles.map((title) => stateManager.parser.newItem(title)));
   };
@@ -179,80 +164,72 @@ export function ItemForm({ addItems }: ItemFormProps) {
     return (
       <div className={c('item-form')} ref={clickOutsideRef}>
         <div className={c('item-input-wrapper')}>
-          <div data-replicated-value={itemTitle} className={c('grow-wrap')}>
-            <textarea
-              rows={1}
-              value={itemTitle}
-              className={c('item-input')}
-              placeholder={t('Item title...')}
-              onChange={(e) => {
-                selectionStart.current = e.target.selectionStart;
-                selectionEnd.current = e.target.selectionEnd;
-                setItemTitle(e.target.value);
-              }}
-              onDragOver={(e) => {
-                const action = dropAction(stateManager, e.dataTransfer);
+          <MarkdownEditor
+            ref={inputRef}
+            className={c('item-input')}
+            placeholder={t('Item title...')}
+            onEnter={onEnter}
+            onEscape={clear}
+            value={itemTitle}
+            onChange={(e) => {
+              setItemTitle((e.target as HTMLTextAreaElement).value);
+            }}
+            onDragOver={(e) => {
+              const action = dropAction(stateManager, e.dataTransfer);
 
-                if (action) {
-                  e.dataTransfer.dropEffect = action;
-                  e.preventDefault();
-                  return false;
-                }
-              }}
-              onDragLeave={() => {
-                if (!itemTitle) setIsInputVisible(false);
-              }}
-              onDrop={(e) => {
-                // shift key to force plain text, the same way Obsidian does it
-                addItemsFromStrings(
-                  importLines(
-                    stateManager,
-                    filePath,
-                    e.dataTransfer,
-                    e.shiftKey
-                  )
-                );
-                if (!itemTitle) setIsInputVisible(false);
-              }}
-              onPaste={(e) => {
-                const html = e.clipboardData.getData('text/html');
-                const pasteLines = importLines(
-                  stateManager,
-                  filePath,
-                  e.clipboardData
-                );
-                if (pasteLines.length > 1) {
-                  addItemsFromStrings(pasteLines);
-                  e.preventDefault();
-                  return false;
-                } else if (html) {
-                  // We want to use the markdown instead of the HTML, but you can't intercept paste
-                  // So we have to simulate a paste event the hard way
-                  const input = e.target as HTMLTextAreaElement;
-                  const paste = pasteLines.join('');
+              if (action) {
+                e.dataTransfer.dropEffect = action;
+                e.preventDefault();
+                return false;
+              }
+            }}
+            onDragLeave={() => {
+              if (!itemTitle) setIsInputVisible(false);
+            }}
+            onDrop={(e) => {
+              // shift key to force plain text, the same way Obsidian does it
+              addItemsFromStrings(
+                importLines(stateManager, filePath, e.dataTransfer, e.shiftKey)
+              );
+              if (!itemTitle) setIsInputVisible(false);
+            }}
+            onPaste={(e) => {
+              const html = e.clipboardData.getData('text/html');
+              const pasteLines = importLines(
+                stateManager,
+                filePath,
+                e.clipboardData
+              );
+              if (pasteLines.length > 1) {
+                addItemsFromStrings(pasteLines);
+                e.preventDefault();
+                return false;
+              } else if (html) {
+                // We want to use the markdown instead of the HTML, but you can't intercept paste
+                // So we have to simulate a paste event the hard way
+                const input = e.target as HTMLTextAreaElement;
+                const paste = pasteLines.join('');
 
-                  selectionStart.current = input.selectionStart;
-                  selectionEnd.current = input.selectionEnd;
+                selectionStart.current = input.selectionStart;
+                selectionEnd.current = input.selectionEnd;
 
-                  const replace =
-                    itemTitle.substr(0, selectionStart.current) +
-                    paste +
-                    itemTitle.substr(selectionEnd.current);
+                const replace =
+                  itemTitle.substr(0, selectionStart.current) +
+                  paste +
+                  itemTitle.substr(selectionEnd.current);
 
-                  selectionStart.current = selectionEnd.current =
-                    selectionStart.current + paste.length;
+                selectionStart.current = selectionEnd.current =
+                  selectionStart.current + paste.length;
 
-                  setItemTitle(replace);
+                setItemTitle(replace);
 
-                  // And then cancel the default event
-                  e.preventDefault();
-                  return false;
-                }
-                // plain text/other, fall through to standard cut/paste
-              }}
-              {...autocompleteProps}
-            />
-          </div>
+                // And then cancel the default event
+                e.preventDefault();
+                return false;
+              }
+              // plain text/other, fall through to standard cut/paste
+            }}
+          />
         </div>
       </div>
     );

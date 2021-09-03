@@ -1,11 +1,9 @@
 import { getLinkpath } from 'obsidian';
 import React from 'react';
 
-import { t } from 'src/lang/helpers';
-
 import { KanbanContext } from '../context';
+import { MarkdownEditor } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
-import { useAutocompleteInputProps } from '../Item/autocomplete';
 import { MarkdownRenderer } from '../MarkdownRenderer';
 
 export interface LaneTitleProps {
@@ -37,13 +35,6 @@ export function LaneTitle({
     isEditing && setIsEditing(false);
   };
 
-  const autocompleteProps = useAutocompleteInputProps({
-    isInputVisible: isEditing,
-    onEnter,
-    onEscape,
-    excludeDatePicker: true,
-  });
-
   React.useEffect(() => {
     if (isEditing && inputRef.current) {
       const input = inputRef.current;
@@ -56,17 +47,14 @@ export function LaneTitle({
   return (
     <div className={c('lane-title')}>
       {isEditing ? (
-        <div data-replicated-value={title} className={c('grow-wrap')}>
-          <textarea
-            ref={inputRef}
-            rows={1}
-            value={title}
-            className={c('lane-input')}
-            placeholder={t('Enter list title...')}
-            onChange={onChange}
-            {...autocompleteProps}
-          />
-        </div>
+        <MarkdownEditor
+          ref={inputRef}
+          className={c('lane-input')}
+          onChange={onChange}
+          onEnter={onEnter}
+          onEscape={onEscape}
+          value={title}
+        />
       ) : (
         <>
           <div

@@ -4,8 +4,8 @@ import useOnclickOutside from 'react-cool-onclickoutside';
 import { t } from 'src/lang/helpers';
 
 import { KanbanContext } from '../context';
+import { MarkdownEditor } from '../Editor/MarkdownEditor';
 import { c, generateInstanceId } from '../helpers';
-import { useAutocompleteInputProps } from '../Item/autocomplete';
 import { LaneTemplate } from '../types';
 
 export function LaneForm({
@@ -49,30 +49,24 @@ export function LaneForm({
     onNewLane();
   };
 
-  const autocompleteProps = useAutocompleteInputProps({
-    isInputVisible: true,
-    onEnter: (e) => {
-      e.preventDefault();
-      createLane();
-    },
-    onEscape: closeLaneForm,
-    excludeDatePicker: true,
-  });
-
   return (
     <div ref={clickOutsideRef} className={c('lane-form-wrapper')}>
       <div className={c('lane-input-wrapper')}>
-        <div data-replicated-value={laneTitle} className={c('grow-wrap')}>
-          <textarea
-            rows={1}
-            value={laneTitle}
-            ref={inputRef}
-            className={c('lane-input')}
-            placeholder={t('Enter list title...')}
-            onChange={(e) => setLaneTitle(e.target.value)}
-            {...autocompleteProps}
-          />
-        </div>
+        <MarkdownEditor
+          ref={inputRef}
+          className={c('lane-input')}
+          onChange={(e) =>
+            setLaneTitle((e.target as HTMLTextAreaElement).value)
+          }
+          onEnter={(e) => {
+            if (!e.shiftKey) {
+              e.preventDefault();
+              createLane();
+            }
+          }}
+          onEscape={closeLaneForm}
+          value={laneTitle}
+        />
       </div>
       <div className={c('checkbox-wrapper')}>
         <div className={c('checkbox-label')}>
