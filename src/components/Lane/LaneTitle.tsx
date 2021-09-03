@@ -2,7 +2,7 @@ import { getLinkpath } from 'obsidian';
 import React from 'react';
 
 import { KanbanContext } from '../context';
-import { MarkdownEditor } from '../Editor/MarkdownEditor';
+import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { MarkdownRenderer } from '../MarkdownRenderer';
 
@@ -25,7 +25,7 @@ export function LaneTitle({
   const inputRef = React.useRef<HTMLTextAreaElement>();
 
   const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (!e.shiftKey) {
+    if (!allowNewLine(e, stateManager)) {
       e.preventDefault();
       isEditing && setIsEditing(false);
     }

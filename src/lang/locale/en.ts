@@ -42,6 +42,11 @@ export default {
   'Search...': 'Search...',
 
   // Settings.ts
+  'New line trigger': 'New line trigger',
+  'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lanes.':
+    'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lanes.',
+  'Shift + Enter': 'Shift + Enter',
+  Enter: 'Enter',
   'Prepend / append new cards': 'Prepend / append new cards',
   'This setting controls weather new cards are added to the beginning or end of the list.':
     'This setting controls weather new cards are added to the beginning or end of the list.',

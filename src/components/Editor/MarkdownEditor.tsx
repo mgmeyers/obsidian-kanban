@@ -1,5 +1,7 @@
 import React, { ForwardedRef } from 'react';
 
+import { StateManager } from 'src/StateManager';
+
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
 import { useAutocompleteInputProps } from '../Item/autocomplete';
@@ -18,11 +20,24 @@ interface MarkdownEditorProps extends React.HTMLProps<HTMLTextAreaElement> {
   onEscape: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
+export function allowNewLine(
+  e: React.KeyboardEvent<HTMLTextAreaElement>,
+  stateManager: StateManager
+) {
+  const newLineTrigger = stateManager.getSetting('new-line-trigger');
+
+  if (newLineTrigger === 'enter') {
+    return e.key === 'Enter' && !(e.shiftKey || e.metaKey || e.ctrlKey);
+  }
+
+  return e.key === 'Enter' && e.shiftKey;
+}
+
 export const MarkdownEditor = React.forwardRef(function MarkdownEditor(
   { onEnter, onEscape, ...textareaProps }: MarkdownEditorProps,
   ref: ForwardedRef<HTMLTextAreaElement>
 ) {
-  const { view } = React.useContext(KanbanContext);
+  const { view, stateManager } = React.useContext(KanbanContext);
 
   const shouldAutoPairMarkdown = React.useMemo(() => {
     return (view.app.vault as any).getConfig('autoPairMarkdown');
@@ -52,7 +67,7 @@ export const MarkdownEditor = React.forwardRef(function MarkdownEditor(
         return unpairMarkdown(e.target as HTMLTextAreaElement);
       }
 
-      if (e.key === 'Enter' && e.shiftKey) {
+      if (allowNewLine(e, stateManager)) {
         const handled = handleNewLine(e.target as HTMLTextAreaElement);
         if (handled) {
           e.preventDefault();

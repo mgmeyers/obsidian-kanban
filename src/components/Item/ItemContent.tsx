@@ -3,7 +3,7 @@ import React from 'react';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 
 import { KanbanContext } from '../context';
-import { MarkdownEditor } from '../Editor/MarkdownEditor';
+import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { MarkdownRenderer } from '../MarkdownRenderer';
 import { Item } from '../types';
@@ -35,13 +35,13 @@ export const ItemContent = React.memo(function ItemContent({
 
   const onEnter = React.useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (!e.shiftKey) {
+      if (!allowNewLine(e, stateManager)) {
         e.preventDefault();
         setIsSettingsVisible(false);
         return true;
       }
     },
-    []
+    [stateManager]
   );
   const onEscape = React.useCallback(() => {
     setIsSettingsVisible(false);

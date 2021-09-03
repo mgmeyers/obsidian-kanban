@@ -4,7 +4,7 @@ import useOnclickOutside from 'react-cool-onclickoutside';
 import { t } from 'src/lang/helpers';
 
 import { KanbanContext } from '../context';
-import { MarkdownEditor } from '../Editor/MarkdownEditor';
+import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c, generateInstanceId } from '../helpers';
 import { LaneTemplate } from '../types';
 
@@ -15,7 +15,7 @@ export function LaneForm({
   onNewLane: () => void;
   closeLaneForm: () => void;
 }) {
-  const { boardModifiers } = React.useContext(KanbanContext);
+  const { boardModifiers, stateManager } = React.useContext(KanbanContext);
   const [shouldMarkAsComplete, setShouldMarkAsComplete] = React.useState(false);
   const [laneTitle, setLaneTitle] = React.useState('');
 
@@ -59,7 +59,7 @@ export function LaneForm({
             setLaneTitle((e.target as HTMLTextAreaElement).value)
           }
           onEnter={(e) => {
-            if (!e.shiftKey) {
+            if (!allowNewLine(e, stateManager)) {
               e.preventDefault();
               createLane();
             }

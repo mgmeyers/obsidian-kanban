@@ -39,6 +39,7 @@ export type KanbanFormats = 'basic';
 
 export interface KanbanSettings {
   [frontMatterKey]?: KanbanFormats;
+  'new-line-trigger'?: 'enter' | 'shift-enter';
   'new-card-insertion-method'?: 'prepend' | 'append';
   'new-note-folder'?: string;
   'new-note-template'?: string;
@@ -136,6 +137,31 @@ export class SettingsManager {
         ),
       });
     }
+
+    new Setting(contentEl)
+      .setName(t('New line trigger'))
+      .setDesc(
+        t(
+          'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lanes.'
+        )
+      )
+      .addDropdown((dropdown) => {
+        dropdown.addOption('shift-enter', t('Shift + Enter'));
+        dropdown.addOption('enter', t('Enter'));
+
+        const [value, globalValue] = this.getSetting('new-line-trigger', local);
+
+        dropdown.setValue(
+          (value as string) || (globalValue as string) || 'shift-enter'
+        );
+        dropdown.onChange((value) => {
+          this.applySettingsUpdate({
+            'new-line-trigger': {
+              $set: value as 'enter' | 'shift-enter',
+            },
+          });
+        });
+      });
 
     new Setting(contentEl)
       .setName(t('Prepend / append new cards'))

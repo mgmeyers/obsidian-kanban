@@ -11,7 +11,7 @@ import { t } from 'src/lang/helpers';
 import { StateManager } from 'src/StateManager';
 
 import { KanbanContext } from '../context';
-import { MarkdownEditor } from '../Editor/MarkdownEditor';
+import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { Item } from '../types';
 
@@ -144,7 +144,7 @@ export function ItemForm({ addItems }: ItemFormProps) {
   }, []);
 
   const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (!e.shiftKey) {
+    if (!allowNewLine(e, stateManager)) {
       e.preventDefault();
 
       const title = itemTitle.trim();
