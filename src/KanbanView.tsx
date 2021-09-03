@@ -21,8 +21,9 @@ export const kanbanViewType = 'kanban';
 export const kanbanIcon = 'blocks';
 
 interface ViewEvents {
-  showLaneForm(data: { referenceRect: DOMRect }): void;
-  toggleSearch(): void;
+  showLaneForm: (data: { referenceRect: DOMRect }) => void;
+  toggleSearch: () => void;
+  hotkey: (commandId: string) => void;
 }
 
 export class KanbanView extends TextFileView implements HoverParent {
@@ -154,10 +155,6 @@ export class KanbanView extends TextFileView implements HoverParent {
     const stateManager = this.plugin.stateManagers.get(this.file);
 
     return <Kanban stateManager={stateManager} view={this} />;
-  }
-
-  toggleSearch() {
-    this.emitter.emit('toggleSearch', null);
   }
 
   onMoreOptionsMenu(menu: Menu) {

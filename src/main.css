@@ -740,6 +740,7 @@ button.kanban-plugin__cancel-action-button {
 .kanban-plugin__grow-wrap > textarea {
   resize: none;
   overflow: hidden;
+  tab-size: 2;
 }
 
 .kanban-plugin__grow-wrap > textarea:focus {

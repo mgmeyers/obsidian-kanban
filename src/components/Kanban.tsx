@@ -77,19 +77,21 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   }, []);
 
   React.useEffect(() => {
-    const toggleSearch = () => {
-      setIsSearching((val) => !val);
+    const onSearchHotkey = (e: string) => {
+      if (e === 'editor:open-search') {
+        setIsSearching((val) => !val);
+      }
     };
 
     const showLaneForm = () => {
       setIsLaneFormVisible(true);
     };
 
-    view.emitter.on('toggleSearch', toggleSearch);
+    view.emitter.on('hotkey', onSearchHotkey);
     view.emitter.on('showLaneForm', showLaneForm);
 
     return () => {
-      view.emitter.off('toggleSearch', toggleSearch);
+      view.emitter.off('hotkey', onSearchHotkey);
       view.emitter.off('showLaneForm', showLaneForm);
     };
   }, [view]);

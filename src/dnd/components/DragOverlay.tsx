@@ -155,8 +155,23 @@ export function useIsAnythingDragging() {
       setIsDragging(true);
     };
 
-    const onDragEnd = () => {
-      setIsDragging(false);
+    const onDragEnd = ({
+      primaryIntersection,
+      dragPosition,
+    }: DragEventData) => {
+      const dropHitbox = primaryIntersection?.getHitbox() || [0, 0];
+      const dropDestination = {
+        x: dropHitbox[0],
+        y: dropHitbox[1],
+      };
+      const dropDuration = getDropDuration({
+        position: dragPosition || dropDestination,
+        destination: dropDestination,
+      });
+
+      setTimeout(() => {
+        setIsDragging(false);
+      }, dropDuration);
     };
 
     dndManager.dragManager.emitter.on('dragStart', onDragStart);

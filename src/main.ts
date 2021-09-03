@@ -360,19 +360,16 @@ export default class KanbanPlugin extends Plugin {
 
     this.app.workspace.onLayoutReady(() => {
       this.register(
-        around((this.app as any).commands.commands['editor:open-search'], {
-          checkCallback(next) {
-            return function (isChecking: boolean) {
-              if (isChecking) {
-                return next.call(this, isChecking);
-              }
+        around((this.app as any).commands, {
+          executeCommandById(next) {
+            return function (command: string) {
               const view = self.app.workspace.getActiveViewOfType(KanbanView);
 
               if (view) {
-                view.toggleSearch();
-              } else {
-                next.call(this, false);
+                view.emitter.emit('hotkey', command);
               }
+
+              return next.call(this, command);
             };
           },
         })

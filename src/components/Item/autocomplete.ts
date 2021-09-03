@@ -148,6 +148,7 @@ function getFileSearchConfig(
   fileSearch: Fuse<TFile>,
   filePath: string,
   stateManager: StateManager,
+  willAutoPairBrackets: boolean,
   isEmbed: boolean
 ): StrategyProps<Fuse.FuseResult<TFile>> {
   return {
@@ -173,7 +174,7 @@ function getFileSearchConfig(
       `${isEmbed ? '!' : ''}[[${stateManager.app.metadataCache.fileToLinktext(
         result.item,
         filePath
-      )}]] `,
+      )}${willAutoPairBrackets ? '' : ']] '}`,
   };
 }
 
@@ -224,7 +225,7 @@ export function constructAutocomplete({
   obsidianContext,
   excludeDatePicker,
 }: ConstructAutocompleteParams) {
-  const { stateManager, filePath } = obsidianContext;
+  const { stateManager, filePath, view } = obsidianContext;
 
   let datePickerEl: null | HTMLDivElement = null;
   let datePickerInstance: flatpickr.Instance | null = null;
@@ -244,10 +245,28 @@ export function constructAutocomplete({
     keys: ['name'],
   });
 
+  const willAutoPairBrackets = (view.app.vault as any).getConfig(
+    'autoPairBrackets'
+  );
+
   const configs: StrategyProps[] = [
     getTagSearchConfig(tags, tagSearch),
-    getFileSearchConfig(files, fileSearch, filePath, stateManager, false),
-    getFileSearchConfig(files, fileSearch, filePath, stateManager, true),
+    getFileSearchConfig(
+      files,
+      fileSearch,
+      filePath,
+      stateManager,
+      willAutoPairBrackets,
+      false
+    ),
+    getFileSearchConfig(
+      files,
+      fileSearch,
+      filePath,
+      stateManager,
+      willAutoPairBrackets,
+      true
+    ),
   ];
 
   if (!excludeDatePicker) {
@@ -413,8 +432,9 @@ export function constructAutocomplete({
 
 export interface UseAutocompleteInputPropsParams {
   isInputVisible: boolean;
-  onEnter: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
-  onEscape: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  onEnter?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => boolean | void;
+  onEscape?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => boolean | void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => boolean | void;
   excludeDatePicker?: boolean;
 }
 
@@ -422,6 +442,7 @@ export function useAutocompleteInputProps({
   isInputVisible,
   onEnter,
   onEscape,
+  onKeyDown,
   excludeDatePicker,
 }: UseAutocompleteInputPropsParams) {
   const obsidianContext = React.useContext(KanbanContext);
@@ -455,10 +476,14 @@ export function useAutocompleteInputProps({
         return;
       }
 
+      const handled = onKeyDown(e);
+
+      if (handled) return;
+
       if (e.key === 'Enter') {
-        onEnter(e);
+        onEnter && onEnter(e);
       } else if (e.key === 'Escape') {
-        onEscape(e);
+        onEscape && onEscape(e);
       }
     },
   };

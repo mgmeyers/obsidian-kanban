@@ -430,6 +430,11 @@
     "@types/minimatch" "*"
     "@types/node" "*"
 
+"@types/insert-text-at-cursor@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@types/insert-text-at-cursor/-/insert-text-at-cursor-0.3.0.tgz#c7fafad758e26cd7f6bd82c46bf3601fec7afc3e"
+  integrity sha512-58a+1l6hz5DQ25NjODvZEYmJUWA1ALbUxcf/GHjMfh92r41lZkI6buNN0NwxIvJQDkTFNqL73G2Fduu5ctHVhA==
+
 "@types/jquery@*":
   version "3.5.5"
   resolved "https://registry.yarnpkg.com/@types/jquery/-/jquery-3.5.5.tgz#2c63f47c9c8d96693d272f5453602afd8338c903"
@@ -2343,6 +2348,11 @@ inquirer@^6.2.2:
     string-width "^2.1.0"
     strip-ansi "^5.1.0"
     through "^2.3.6"
+
+insert-text-at-cursor@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/insert-text-at-cursor/-/insert-text-at-cursor-0.3.0.tgz#1819607680ec1570618347c4cd475e791faa25da"
+  integrity sha512-/nPtyeX9xPUvxZf+r0518B7uqNKlP+LqNJqSiXFEaa2T71rWIwTVXGH7hB9xO/EVdwa5/pWlFCPwShOW81XIxQ==
 
 internal-slot@^1.0.3:
   version "1.0.3"
