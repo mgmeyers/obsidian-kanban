@@ -131,7 +131,7 @@ export default class KanbanPlugin extends Plugin {
     return state;
   }
 
-  addView(view: KanbanView, data: string) {
+  addView(view: KanbanView, data: string, shouldParseData: boolean) {
     if (!this.viewMap.has(view.id)) {
       this.viewMap.set(view.id, view);
     }
@@ -139,7 +139,7 @@ export default class KanbanPlugin extends Plugin {
     const file = view.file;
 
     if (this.stateManagers.has(file)) {
-      this.stateManagers.get(file).registerView(view, data);
+      this.stateManagers.get(file).registerView(view, data, shouldParseData);
     } else {
       this.stateManagers.set(
         file,

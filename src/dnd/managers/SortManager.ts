@@ -196,6 +196,21 @@ export class SortManager {
         return this.resetSelf({ maintainHidden: false });
       }
 
+      if (primaryIntersection && dragEntity) {
+        const dropHitbox = primaryIntersection?.getHitbox() || dragOriginHitbox;
+        const dropDuration = getDropDuration({
+          position: dragPosition,
+          destination: {
+            x: dropHitbox[0],
+            y: dropHitbox[1],
+          },
+        });
+
+        return window.setTimeout(() => {
+          this.resetSelf({ maintainHidden: false });
+        }, dropDuration);
+      }
+
       return this.resetSelf({ maintainHidden: true });
     }
 
@@ -213,10 +228,15 @@ export class SortManager {
     });
 
     this.dragEndTimeout = window.setTimeout(() => {
+      const dragEntityId = dragEntity.entityId.split(':::').pop();
+      const primaryIntersectionId = primaryIntersection.entityId
+        .split(':::')
+        .pop();
+
       if (
         primaryIntersection &&
         this.sortables.has(primaryIntersection.entityId) &&
-        primaryIntersection.entityId !== dragEntity.entityId
+        primaryIntersectionId !== dragEntityId
       ) {
         this.dndManager.onDrop(dragEntity, primaryIntersection);
       }

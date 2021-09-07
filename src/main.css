@@ -386,6 +386,11 @@ button.kanban-plugin__new-item-button {
   margin-block-end: 0.66em;
 }
 
+.kanban-plugin__markdown-preview-view blockquote {
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+}
+
 .kanban-plugin__markdown-preview-view ul ol,
 .kanban-plugin__markdown-preview-view ol ul,
 .kanban-plugin__markdown-preview-view ul ul,
@@ -1308,4 +1313,31 @@ button.kanban-plugin__cancel-action-button {
   position: fixed;
   top: 0;
   left: 0;
+}
+
+.kanban-plugin__loading {
+  background-color: var(--background-secondary-alt);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sk-pulse {
+  width: 60px;
+  height: 60px;
+  background-color: var(--text-faint);
+  border-radius: 100%;
+  animation: sk-pulse 1.2s infinite cubic-bezier(0.455, 0.03, 0.515, 0.955);
+}
+
+@keyframes sk-pulse {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
 }

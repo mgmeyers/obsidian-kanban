@@ -26,7 +26,6 @@ export class StateManager {
   private compiledSettings: KanbanSettings = {};
 
   public parser: KanbanParser;
-  private lastParsedData: string;
 
   public app: App;
   public state: Board;
@@ -40,20 +39,18 @@ export class StateManager {
     getGlobalSettings: () => KanbanSettings
   ) {
     this.app = app;
-    this.registerView(initialView, initialData);
-
     this.file = initialView.file;
     this.onEmpty = onEmpty;
     this.getGlobalSettings = getGlobalSettings;
 
     this.parser = new KanbanParser(
       app,
-      this.file,
+      initialView.file,
       this.buildMarkdownRenderer(),
       this.buildSettingRetrievers()
     );
 
-    this.newBoard(initialData);
+    this.registerView(initialView, initialData, true);
   }
 
   getAView(): KanbanView {
@@ -61,13 +58,13 @@ export class StateManager {
     return this.views.get(viewId);
   }
 
-  registerView(view: KanbanView, data: string) {
+  registerView(view: KanbanView, data: string, shouldParseData: boolean) {
     if (!this.views.has(view.id)) {
       this.ids.push(view.id);
       this.views.set(view.id, view);
     }
 
-    if (this.lastParsedData && this.lastParsedData !== data) {
+    if (shouldParseData) {
       this.newBoard(data);
     }
   }
@@ -102,7 +99,6 @@ export class StateManager {
     if (!this.isParseThrottled) {
       this.isParseThrottled = true;
       this.setState(this.getParsedBoard(md), false);
-      this.lastParsedData = md;
 
       setTimeout(() => {
         this.isParseThrottled = false;

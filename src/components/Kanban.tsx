@@ -41,23 +41,23 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     React.useState<string>('');
 
   const [isLaneFormVisible, setIsLaneFormVisible] = React.useState<boolean>(
-    boardData.children.length === 0
+    boardData?.children.length === 0
   );
 
   const filePath = stateManager.file.path;
   const maxArchiveLength = stateManager.useSetting('max-archive-size');
 
   const closeLaneForm = React.useCallback(() => {
-    if (boardData.children.length > 0) {
+    if (boardData?.children.length > 0) {
       setIsLaneFormVisible(false);
     }
-  }, [boardData.children.length]);
+  }, [boardData?.children.length]);
 
   React.useEffect(() => {
-    if (boardData.children.length === 0) {
+    if (boardData?.children.length === 0) {
       setIsLaneFormVisible(true);
     }
-  }, [boardData.children.length]);
+  }, [boardData?.children.length]);
 
   const onNewLane = React.useCallback(() => {
     setTimeout(() => {
@@ -126,7 +126,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
 
     if (
       typeof maxArchiveLength === 'number' &&
-      boardData.data.archive.length > maxArchiveLength
+      boardData?.data.archive.length > maxArchiveLength
     ) {
       stateManager.setState((board) =>
         update(board, {
@@ -138,7 +138,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
         })
       );
     }
-  }, [boardData.data.archive.length, maxArchiveLength]);
+  }, [boardData?.data.archive.length, maxArchiveLength]);
 
   const boardModifiers = React.useMemo(() => {
     return getBoardModifiers(stateManager);
@@ -211,7 +211,12 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     };
   }, [view, stateManager, boardModifiers, filePath]);
 
-  if (boardData === null) return null;
+  if (window || boardData === null || boardData === undefined)
+    return (
+      <div className={c('loading')}>
+        <div className="sk-pulse"></div>
+      </div>
+    );
 
   if (boardData.data.errors.length > 0) {
     return (

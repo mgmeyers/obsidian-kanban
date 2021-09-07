@@ -78,6 +78,10 @@ export class KanbanView extends TextFileView implements HoverParent {
     }).addClass(c('ignore-click-outside'));
   }
 
+  get isPrimary(): boolean {
+    return this.plugin.getStateManager(this.file).getAView() === this;
+  }
+
   get id(): string {
     return `${(this.leaf as any).id}:::${this.file?.path}`;
   }
@@ -127,15 +131,17 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   handleRename(newPath: string, oldPath: string) {
-    if (this.file.path === newPath) {
+    if (this.file.path === newPath && this.isPrimary) {
       this.plugin.handleViewFileRename(this, oldPath);
     }
   }
 
   requestSaveToDisk(data: string) {
-    if (this.data !== data) {
+    if (this.data !== data && this.isPrimary) {
       this.data = data;
       this.requestSave();
+    } else {
+      this.data = data;
     }
   }
 
@@ -147,8 +153,8 @@ export class KanbanView extends TextFileView implements HoverParent {
     return this.data;
   }
 
-  setViewData(data: string) {
-    this.plugin.addView(this, data);
+  setViewData(data: string, clear?: boolean) {
+    this.plugin.addView(this, data, !clear && this.isPrimary);
   }
 
   getPortal() {
