@@ -211,7 +211,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     };
   }, [view, stateManager, boardModifiers, filePath]);
 
-  if (window || boardData === null || boardData === undefined)
+  if (boardData === null || boardData === undefined)
     return (
       <div className={c('loading')}>
         <div className="sk-pulse"></div>
