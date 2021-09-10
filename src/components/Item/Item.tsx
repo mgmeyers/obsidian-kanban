@@ -40,10 +40,12 @@ function useItemContentEvents({
     const onContentChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
       e
     ) => {
-      boardModifiers.updateItem(
-        path,
-        stateManager.parser.updateItem(item, e.target.value)
-      );
+      stateManager.parser
+        .updateItem(item, e.target.value)
+        .then((item) => {
+          boardModifiers.updateItem(path, item);
+        })
+        .catch((e) => console.error(e));
     };
 
     const onEditDate: React.MouseEventHandler = (e) => {

@@ -58,6 +58,7 @@ export class StateManager {
     return this.views.get(viewId);
   }
 
+  newBoardPromise: Promise<void> | null = null;
   registerView(view: KanbanView, data: string, shouldParseData: boolean) {
     if (!this.views.has(view.id)) {
       this.ids.push(view.id);
@@ -65,7 +66,9 @@ export class StateManager {
     }
 
     if (shouldParseData) {
-      this.newBoard(data);
+      this.newBoardPromise = this.newBoard(data).then(() => {
+        this.newBoardPromise = null;
+      });
     }
   }
 
@@ -95,11 +98,10 @@ export class StateManager {
   }
 
   private isParseThrottled = false;
-  newBoard(md: string) {
+  async newBoard(md: string) {
     if (!this.isParseThrottled) {
       this.isParseThrottled = true;
-      this.setState(this.getParsedBoard(md), false);
-
+      await this.setState(await this.getParsedBoard(md), false);
       setTimeout(() => {
         this.isParseThrottled = false;
       }, 50);
@@ -130,17 +132,23 @@ export class StateManager {
     }
   }
 
-  forceRefresh() {
-    this.state = this.parser.refreshBoard(this.state);
-    this.stateReceivers.forEach((receiver) => receiver(this.state));
+  async forceRefresh() {
+    if (this.state) {
+      this.state = await this.parser.refreshBoard(this.state);
+      this.stateReceivers.forEach((receiver) => receiver(this.state));
+    }
   }
 
-  setState(
-    state: Board | ((board: Board) => Board),
+  async setState(
+    state:
+      | Board
+      | ((board: Board) => Board)
+      | ((board: Board) => Promise<Board>),
     shouldSave: boolean = true
   ) {
     const oldSettings = this.state?.data.settings;
-    const newState = typeof state === 'function' ? state(this.state) : state;
+    const newState =
+      typeof state === 'function' ? await state(this.state) : state;
     const newSettings = newState?.data.settings;
 
     if (
@@ -148,7 +156,7 @@ export class StateManager {
       newSettings &&
       this.parser.shouldRefreshBoard(oldSettings, newSettings)
     ) {
-      this.state = this.parser.refreshBoard(newState);
+      this.state = await this.parser.refreshBoard(newState);
     } else {
       this.state = newState;
     }
@@ -177,7 +185,11 @@ export class StateManager {
     const [state, setState] = React.useState(this.state);
 
     React.useEffect(() => {
-      this.stateReceivers.push(setState);
+      this.stateReceivers.push((state) => {
+        setState(state);
+      });
+
+      setState(this.state);
 
       return () => {
         this.stateReceivers.remove(setState);
@@ -303,7 +315,7 @@ export class StateManager {
     return null;
   };
 
-  getParsedBoard(data: string) {
+  async getParsedBoard(data: string) {
     const trimmedContent = data.trim();
 
     let board: Board = {
@@ -320,7 +332,7 @@ export class StateManager {
 
     try {
       if (trimmedContent) {
-        board = this.parser.mdToBoard(trimmedContent, this.file?.path);
+        board = await this.parser.mdToBoard(trimmedContent, this.file?.path);
       }
     } catch (e) {
       console.error(e);
@@ -354,53 +366,15 @@ export class StateManager {
     // Invalidate the metadata caching and reparse the file if needed,
     // recreating all items that referenced the changed file
     if (this.parser.invalidateFile(file)) {
-      const board = this.getParsedBoard(this.getAView().data);
-      const oldBoard = this.state;
-
-      let lanesChanged = false;
-
-      const newLanes = oldBoard.children.map((lane, laneIndex) => {
-        let match = false;
-
-        const newItems = lane.children.map((item, itemIndex) => {
-          if (item.data.metadata.file === file) {
-            lanesChanged = true;
-            match = true;
-            return board.children[laneIndex].children[itemIndex];
-          }
-
-          return item;
-        });
-
-        if (match) {
-          return update(lane, {
-            children: {
-              $set: newItems,
-            },
-          });
-        }
-
-        return lane;
-      });
-
-      if (lanesChanged) {
-        this.setState(
-          update(oldBoard, {
-            children: {
-              $set: newLanes,
-            },
-          })
-        );
-      }
+      return this.reparseBoard();
     }
   }
 
-  reparseBoard() {
-    const board = this.getParsedBoard(this.getAView().data);
-    this.setState(board);
+  async reparseBoard() {
+    this.setState(await this.getParsedBoard(this.getAView().data));
   }
 
-  archiveCompletedCards() {
+  async archiveCompletedCards() {
     const board = this.state;
 
     const archived: Item[] = [];
@@ -419,21 +393,29 @@ export class StateManager {
       return this.parser.updateItem(item, titleRaw);
     };
 
-    const lanes = board.children.map((lane) => {
-      return update(lane, {
-        children: {
-          $set: lane.children.filter((item) => {
-            if (lane.data.shouldMarkItemsComplete || item.data.isComplete) {
-              archived.push(
-                shouldAppendArchiveDate ? appendArchiveDate(item) : item
-              );
-            }
+    const lanes = await Promise.all(
+      board.children.map(async (lane) => {
+        return update(lane, {
+          children: {
+            $set: await Promise.all(
+              lane.children.filter(async (item) => {
+                if (lane.data.shouldMarkItemsComplete || item.data.isComplete) {
+                  archived.push(
+                    shouldAppendArchiveDate
+                      ? await appendArchiveDate(item)
+                      : item
+                  );
+                }
 
-            return !item.data.isComplete && !lane.data.shouldMarkItemsComplete;
-          }),
-        },
-      });
-    });
+                return (
+                  !item.data.isComplete && !lane.data.shouldMarkItemsComplete
+                );
+              })
+            ),
+          },
+        });
+      })
+    );
 
     this.app.workspace.trigger(
       'kanban:board-cards-archived',

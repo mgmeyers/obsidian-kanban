@@ -156,8 +156,14 @@ export function ItemForm({ addItems }: ItemFormProps) {
     }
   };
 
-  const addItemsFromStrings = (titles: string[]) => {
-    addItems(titles.map((title) => stateManager.parser.newItem(title)));
+  const addItemsFromStrings = async (titles: string[]) => {
+    addItems(
+      await Promise.all(
+        titles.map(async (title) => {
+          return await stateManager.parser.newItem(title);
+        })
+      )
+    );
   };
 
   if (isInputVisible) {

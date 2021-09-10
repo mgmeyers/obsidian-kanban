@@ -8,34 +8,86 @@ import { renderMarkdown } from './helpers/renderMarkdown';
 
 interface MarkdownRendererProps extends React.HTMLProps<HTMLDivElement> {
   className?: string;
-  markdownString?: string;
-  dom?: HTMLDivElement;
+  markdownString: string;
   searchQuery?: string;
 }
 
+function appendOrReplaceFirstChild(
+  wrapper?: HTMLDivElement,
+  child?: HTMLDivElement
+) {
+  if (!child || !wrapper) return;
+
+  if (wrapper && !wrapper.firstChild) {
+    wrapper.appendChild(child);
+  } else if (wrapper.firstChild && wrapper.firstChild !== child) {
+    wrapper.replaceChild(child, wrapper.firstChild);
+  }
+}
+
 export const MarkdownRenderer = React.memo(function MarkdownRenderer({
-  dom,
   className,
   markdownString,
   searchQuery,
   ...divProps
 }: MarkdownRendererProps) {
   const { stateManager } = React.useContext(KanbanContext);
-  const contentEl = React.useMemo(() => {
-    const renderedMarkdown =
-      (dom?.cloneNode(true) as HTMLDivElement) ||
-      renderMarkdown(stateManager.getAView(), markdownString);
+  const wrapperRef = React.useRef<HTMLDivElement>();
+  const contentRef = React.useRef<HTMLDivElement>();
+  const markRef = React.useRef<Mark>();
 
-    const checkboxes = renderedMarkdown.querySelectorAll(
-      '.task-list-item-checkbox'
-    );
+  React.useEffect(() => {
+    renderMarkdown(stateManager.getAView(), markdownString).then((el) => {
+      contentRef.current = el;
+      markRef.current = new Mark(el);
 
-    checkboxes.forEach((el, i) => {
-      (el as HTMLElement).dataset.checkboxIndex = i.toString();
+      if (wrapperRef.current) {
+        appendOrReplaceFirstChild(wrapperRef.current, el);
+      }
     });
+  }, [stateManager, markdownString]);
 
-    return renderedMarkdown;
-  }, [dom, stateManager, markdownString]);
+  React.useEffect(() => {
+    markRef.current?.unmark();
+
+    if (searchQuery && searchQuery.trim()) {
+      markRef.current?.mark(searchQuery);
+    }
+  }, [searchQuery]);
+
+  return (
+    <div
+      ref={(node) => {
+        wrapperRef.current = node;
+        appendOrReplaceFirstChild(node, contentRef.current);
+      }}
+      className={classcat([
+        'markdown-preview-view',
+        c('markdown-preview-view'),
+        className,
+      ])}
+      {...divProps}
+    />
+  );
+});
+
+interface MarkdownDomRendererProps extends React.HTMLProps<HTMLDivElement> {
+  className?: string;
+  dom: HTMLDivElement;
+  searchQuery?: string;
+}
+
+export const MarkdownDomRenderer = React.memo(function MarkdownDomRenderer({
+  dom,
+  className,
+  searchQuery,
+  ...divProps
+}: MarkdownDomRendererProps) {
+  const { stateManager } = React.useContext(KanbanContext);
+
+  const contentEl = React.useMemo(() => {
+    return dom.cloneNode(true) as HTMLDivElement;
+  }, [dom, stateManager]);
 
   const marker = React.useMemo(() => {
     return new Mark(contentEl);
@@ -52,11 +104,7 @@ export const MarkdownRenderer = React.memo(function MarkdownRenderer({
   return (
     <div
       ref={(node) => {
-        if (node && !node.firstChild) {
-          node.appendChild(contentEl);
-        } else if (node?.firstChild && node.firstChild !== contentEl) {
-          node.replaceChild(contentEl, node.firstChild);
-        }
+        appendOrReplaceFirstChild(node, contentEl);
       }}
       className={classcat([
         'markdown-preview-view',

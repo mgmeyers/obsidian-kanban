@@ -1,7 +1,7 @@
 import { diffLines } from 'diff';
 import update from 'immutability-helper';
 import yaml from 'js-yaml';
-import { App, TFile, moment } from 'obsidian';
+import { App, TFile } from 'obsidian';
 
 import {
   escapeRegExpStr,
@@ -21,14 +21,23 @@ import {
 import { t } from '../lang/helpers';
 import { defaultDateTrigger, defaultTimeTrigger } from '../settingHelpers';
 import { KanbanSettings, SettingRetrievers } from '../Settings';
-import { ParserSettings } from './common';
+import {
+  ParserSettings,
+  anyHeadingRegex,
+  archiveMarkerRegex,
+  archiveString,
+  completeRegex,
+  completeString,
+  extractDates,
+  extractFirstLinkedFile,
+  extractItemTags,
+  getLinkedPageMetadata,
+  getSearchValue,
+  newLineRegex,
+  settingsToFrontmatter,
+} from './common';
 
-const newLineRegex = /[\r\n]+/g;
-
-// Begins with one or more # followed by a space
-const laneRegex = /^#+\s+(.*)$/;
-
-const itemRegex = new RegExp(
+const listItemRegex = new RegExp(
   [
     /^\s*/, // leading whitespace
     /[-+*]\s+?/, // bullet and its whitespace (at least one space required)
@@ -39,222 +48,11 @@ const itemRegex = new RegExp(
     .join('')
 );
 
-const completeString = `**${t('Complete')}**`;
-const completeRegex = new RegExp(`^${escapeRegExpStr(completeString)}$`, 'i');
-const archiveString = '***';
-const archiveMarkerRegex = /^\*\*\*$/;
-const tagRegex = /(^|\s)(#[^#\s]+)/g;
-const linkRegex = /\[\[([^|\]]+)(?:\||\]\])/;
-
-function getSearchTitle(
-  dom: HTMLDivElement,
-  tags?: string[],
-  fileMetadata?: FileMetadata
-) {
-  let searchTitle = dom.innerText.trim();
-
-  if (tags?.length) {
-    searchTitle += ' ' + tags.join(' ');
-  }
-
-  if (fileMetadata) {
-    const keys = Object.keys(fileMetadata).join(' ');
-    const values = Object.values(fileMetadata)
-      .map((v) => {
-        if (Array.isArray(v.value)) {
-          return v.value.join(' ');
-        }
-
-        return v.value.toString();
-      })
-      .join(' ');
-
-    searchTitle += ' ' + keys + ' ' + values;
-  }
-
-  return searchTitle.toLocaleLowerCase();
-}
-
 function itemToMd(item: Item) {
   return `- [${item.data.isComplete ? 'x' : ' '}] ${item.data.titleRaw.replace(
     /(\r\n|\n)/g,
     '<br>'
   )}`;
-}
-
-function extractItemTags(title: string, settings: ParserSettings) {
-  const tags: string[] = [];
-
-  let processedTitle = title;
-  let match = tagRegex.exec(title);
-
-  while (match != null) {
-    tags.push(match[2]);
-    match = tagRegex.exec(title);
-  }
-
-  if (settings.shouldHideTags) {
-    processedTitle = processedTitle.replace(tagRegex, '$1');
-  }
-
-  return {
-    processedTitle,
-    tags,
-  };
-}
-
-function extractDates(title: string, settings: ParserSettings) {
-  let date: undefined | moment.Moment = undefined;
-  let time: undefined | moment.Moment = undefined;
-  let processedTitle = title;
-
-  const dateMatch = settings.dateRegEx.exec(title);
-  const timeMatch = settings.timeRegEx.exec(title);
-
-  if (dateMatch) {
-    date = moment(dateMatch[1], settings.dateFormat as string);
-  }
-
-  if (timeMatch) {
-    time = moment(timeMatch[1], settings.timeFormat as string);
-
-    if (date) {
-      date.hour(time.hour());
-      date.minute(time.minute());
-
-      time = date.clone();
-    }
-  }
-
-  if (settings.shouldHideDate) {
-    processedTitle = processedTitle
-      .replace(settings.dateRegEx, '')
-      .replace(settings.timeRegEx, '');
-  }
-
-  return {
-    date,
-    time,
-    processedTitle,
-  };
-}
-
-function extractFirstLinkedFile(
-  app: App,
-  settings: ParserSettings,
-  sourceFile: TFile,
-  title: string
-) {
-  if (!settings.metaKeys.length) {
-    return null;
-  }
-
-  const match = title.match(linkRegex);
-
-  if (!match) {
-    return null;
-  }
-
-  const path = match[1];
-  const file = app.metadataCache.getFirstLinkpathDest(path, sourceFile.path);
-
-  if (!file) {
-    return null;
-  }
-
-  return file;
-}
-
-function getDataViewCache(app: App, linkedFile: TFile, sourceFile: TFile) {
-  if (
-    (app as any).plugins.enabledPlugins.has('dataview') &&
-    (app as any).plugins?.plugins?.dataview?.api
-  ) {
-    return (app as any).plugins.plugins.dataview.api.page(
-      linkedFile.path,
-      sourceFile.path
-    );
-  }
-}
-
-function getLinkedPageMetadata(
-  linkedFile: TFile | null | undefined,
-  sourceFile: TFile,
-  settings: ParserSettings,
-  app: App
-): FileMetadata | undefined {
-  if (!settings.metaKeys.length) {
-    return;
-  }
-
-  if (!linkedFile) {
-    return;
-  }
-
-  const cache = app.metadataCache.getFileCache(linkedFile);
-  const dataviewCache = getDataViewCache(app, linkedFile, sourceFile);
-
-  if (!cache && !dataviewCache) {
-    return;
-  }
-
-  const metadata: FileMetadata = {};
-  const seenTags: { [k: string]: boolean } = {};
-  const seenKey: { [k: string]: boolean } = {};
-
-  let haveData = false;
-
-  settings.metaKeys.forEach((k) => {
-    if (seenKey[k.metadataKey]) return;
-
-    seenKey[k.metadataKey] = true;
-
-    if (k.metadataKey === 'tags') {
-      let tags = cache?.tags || [];
-
-      if (cache?.frontmatter?.tags) {
-        tags = [].concat(
-          tags,
-          cache.frontmatter.tags.map((tag: string) => ({ tag: `#${tag}` }))
-        );
-      }
-
-      if (tags?.length === 0) return;
-
-      metadata.tags = {
-        ...k,
-        value: tags
-          .map((t) => t.tag)
-          .filter((t) => {
-            if (seenTags[t]) {
-              return false;
-            }
-
-            seenTags[t] = true;
-            return true;
-          }),
-      };
-
-      haveData = true;
-      return;
-    }
-
-    if (cache?.frontmatter && cache.frontmatter[k.metadataKey]) {
-      metadata[k.metadataKey] = {
-        ...k,
-        value: cache.frontmatter[k.metadataKey],
-      };
-      haveData = true;
-    } else if (dataviewCache && dataviewCache[k.metadataKey]) {
-      metadata[k.metadataKey] = {
-        ...k,
-        value: dataviewCache[k.metadataKey],
-      };
-      haveData = true;
-    }
-  });
-
-  return haveData ? metadata : undefined;
 }
 
 function laneToMd(lane: Lane) {
@@ -293,10 +91,6 @@ function archiveToMd(archive: Item[]) {
   return '';
 }
 
-function settingsToFrontmatter(settings: KanbanSettings): string {
-  return ['---', '', yaml.dump(settings), '---', '', ''].join('\n');
-}
-
 export class KanbanParser {
   settings: ParserSettings;
   previousFrontMatter: string;
@@ -309,7 +103,7 @@ export class KanbanParser {
 
   app: App;
   sourceFile: TFile;
-  renderMarkdown: (md: string) => HTMLDivElement;
+  renderMarkdown: (md: string) => Promise<HTMLDivElement>;
   settingRetrievers: SettingRetrievers;
 
   // we use a string instead of a file, because a file changing path could change the meaning of links
@@ -318,7 +112,7 @@ export class KanbanParser {
   constructor(
     app: App,
     sourceFile: TFile,
-    renderMarkdown: (md: string) => HTMLDivElement,
+    renderMarkdown: (md: string) => Promise<HTMLDivElement>,
     settingRetrievers: SettingRetrievers
   ) {
     this.app = app;
@@ -327,8 +121,8 @@ export class KanbanParser {
     this.settingRetrievers = settingRetrievers;
   }
 
-  newItem(titleRaw: string): Item {
-    const processed = this.processTitle(titleRaw);
+  async newItem(titleRaw: string): Promise<Item> {
+    const processed = await this.processTitle(titleRaw);
 
     return {
       ...ItemTemplate,
@@ -343,8 +137,8 @@ export class KanbanParser {
     };
   }
 
-  updateItem(item: Item, titleRaw: string) {
-    const processed = this.processTitle(titleRaw);
+  async updateItem(item: Item, titleRaw: string) {
+    const processed = await this.processTitle(titleRaw);
 
     return update(item, {
       data: {
@@ -369,14 +163,13 @@ export class KanbanParser {
     );
   }
 
-  private processTitle(title: string) {
+  private async processTitle(title: string) {
     const date = extractDates(title, this.settings);
-    const tags = extractItemTags(date.processedTitle, this.settings);
+    const tags = extractItemTags(date.processed, this.settings);
     const file = extractFirstLinkedFile(
       this.app,
-      this.settings,
       this.sourceFile,
-      tags.processedTitle
+      tags.processed
     );
 
     let fileMetadata: FileMetadata;
@@ -389,11 +182,11 @@ export class KanbanParser {
       this.fileCache.set(file, fileMetadata);
     }
 
-    const dom = this.renderMarkdown(tags.processedTitle);
+    const dom = await this.renderMarkdown(tags.processed);
 
     return {
-      title: tags.processedTitle.trim(),
-      titleSearch: getSearchTitle(dom, tags.tags, fileMetadata),
+      title: tags.processed.trim(),
+      titleSearch: getSearchValue(dom, tags.tags, fileMetadata),
       metadata: {
         date: date.date,
         time: date.time,
@@ -412,7 +205,7 @@ export class KanbanParser {
     }
   }
 
-  diffBody(body: string) {
+  async diffBody(body: string) {
     const diff = diffLines(this.previousBody, body, { newlineIsToken: true });
 
     if (diff.length === 4) {
@@ -425,12 +218,12 @@ export class KanbanParser {
       ) {
         // We found a one-line change of text only -- see if it was and still is an item
         const oldItem = this.previousItems.get(oldLine.value)?.shift();
-        const itemMatch = newLine.value.match(itemRegex);
+        const itemMatch = newLine.value.match(listItemRegex);
         if (itemMatch && oldItem) {
           // Generaate a new item, but with the old ID
           const [, marker, title] = itemMatch;
           const titleRaw = title.replace(/<br(\s+\/)?>/g, '\n');
-          const processed = this.processTitle(titleRaw);
+          const processed = await this.processTitle(titleRaw);
           const line = newLine.value;
           const item: Item = {
             ...ItemTemplate,
@@ -466,7 +259,7 @@ export class KanbanParser {
     }
   }
 
-  parseSettings(suppliedSettings: KanbanSettings) {
+  compileParserSettings(suppliedSettings: KanbanSettings) {
     this.previousItems.clear(); // Settings changed, must re-parse items
     this.fileCache.clear(); // including metadata, since the keys might be different
     this.previousLanes.clear();
@@ -518,19 +311,24 @@ export class KanbanParser {
     };
   }
 
-  refreshBoard(board: Board): Board {
-    this.parseSettings(board.data.settings);
+  async refreshBoard(board: Board): Promise<Board> {
+    this.compileParserSettings(board.data.settings);
 
     return update(board, {
       children: {
-        $set: board.children.map((lane) =>
-          update(lane, {
-            children: {
-              $set: lane.children.map((item) =>
-                this.updateItem(item, item.data.titleRaw)
-              ),
-            },
-          })
+        $set: await Promise.all(
+          board.children.map(async (lane) =>
+            update(lane, {
+              children: {
+                $set: await Promise.all(
+                  lane.children.map(
+                    async (item) =>
+                      await this.updateItem(item, item.data.titleRaw)
+                  )
+                ),
+              },
+            })
+          )
         ),
       },
     });
@@ -557,7 +355,7 @@ export class KanbanParser {
     });
   }
 
-  mdToBoard(boardMd: string, filePath: string): Board {
+  async mdToBoard(boardMd: string, filePath: string): Promise<Board> {
     /*
     Steps:
 
@@ -589,7 +387,7 @@ export class KanbanParser {
       globalSettings !== this.previousGlobalSettings ||
       this.PreviousParsedPath !== filePath
     ) {
-      this.parseSettings(settings);
+      this.compileParserSettings(settings);
     }
 
     // Try to recognize single-line item edits, and try to keep the same ID
@@ -632,7 +430,7 @@ export class KanbanParser {
     };
 
     for (const line of lines) {
-      const itemMatch = line.match(itemRegex);
+      const itemMatch = line.match(listItemRegex);
       let item: Item;
 
       if (itemMatch) {
@@ -641,7 +439,7 @@ export class KanbanParser {
         if (!item) {
           const [, marker, title] = itemMatch;
           const titleRaw = title.replace(/<br(\s+\/)?>/g, '\n');
-          const processed = this.processTitle(titleRaw);
+          const processed = await this.processTitle(titleRaw);
 
           item = {
             ...ItemTemplate,
@@ -660,7 +458,8 @@ export class KanbanParser {
           const file = item.data.metadata.file;
 
           if (file) {
-            const fileMetadata = this.fileCache.has(file)
+            const haveFileCache = this.fileCache.has(file);
+            const fileMetadata = haveFileCache
               ? this.fileCache.get(file)
               : getLinkedPageMetadata(
                   file,
@@ -671,13 +470,33 @@ export class KanbanParser {
 
             this.fileCache.set(file, fileMetadata);
 
-            if (item.data.metadata.fileMetadata !== fileMetadata) {
+            if (
+              item.data.metadata.fileMetadata &&
+              item.data.metadata.fileMetadata !== fileMetadata
+            ) {
               // Make a new item with updated metadata
               item = update(item, {
+                id: { $set: generateInstanceId() },
                 data: {
                   metadata: { fileMetadata: { $set: fileMetadata } },
                 },
               });
+            } else if (!item.data.metadata.fileMetadata && !haveFileCache) {
+              // Make a new item to refresh embeds
+              const processed = await this.processTitle(item.data.titleRaw);
+
+              item = {
+                ...ItemTemplate,
+                id: generateInstanceId(),
+                data: {
+                  title: processed.title,
+                  titleSearch: processed.titleSearch,
+                  titleRaw: item.data.titleRaw,
+                  isComplete: item.data.isComplete,
+                  metadata: processed.metadata,
+                  dom: processed.dom,
+                },
+              };
             }
           }
         }
@@ -700,16 +519,17 @@ export class KanbanParser {
               },
             };
           }
+
           currentLane.children.push(item);
         }
         continue;
       }
 
       // New lane
-      if (!haveSeenArchiveMarker && laneRegex.test(line)) {
+      if (!haveSeenArchiveMarker && anyHeadingRegex.test(line)) {
         if (currentLane !== null) pushLane();
 
-        const match = line.match(laneRegex);
+        const match = line.match(anyHeadingRegex);
 
         currentLane = {
           ...LaneTemplate,
@@ -724,7 +544,7 @@ export class KanbanParser {
       }
 
       // Archive lane title
-      if (haveSeenArchiveMarker && laneRegex.test(line)) {
+      if (haveSeenArchiveMarker && anyHeadingRegex.test(line)) {
         continue;
       }
 

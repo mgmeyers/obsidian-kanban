@@ -34,7 +34,9 @@ interface MetadataValueProps {
 }
 
 function getLinkFromObj(v: Link) {
-  return `[[${v.path}${v.display ? `|${v.display}` : ''}]]`;
+  return `${v.embed ? '!' : ''}[[${v.path}${
+    v.display ? `|${v.display}` : ''
+  }]]`;
 }
 
 function MetadataValue({ data, searchQuery }: MetadataValueProps) {

@@ -5,7 +5,7 @@ import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { KanbanContext } from '../context';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
-import { MarkdownRenderer } from '../MarkdownRenderer';
+import { MarkdownDomRenderer } from '../MarkdownRenderer';
 import { Item } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
 
@@ -78,10 +78,12 @@ export const ItemContent = React.memo(function ItemContent({
           }
         );
 
-        boardModifiers.updateItem(
-          path,
-          stateManager.parser.updateItem(item, checked)
-        );
+        stateManager.parser
+          .updateItem(item, checked)
+          .then((item) => {
+            boardModifiers.updateItem(path, item);
+          })
+          .catch((e) => console.error(e));
       }
     },
     [path, boardModifiers, stateManager, item]
@@ -101,7 +103,7 @@ export const ItemContent = React.memo(function ItemContent({
 
   return (
     <div className={c('item-title')}>
-      <MarkdownRenderer
+      <MarkdownDomRenderer
         className={c('item-markdown')}
         dom={item.data.dom}
         searchQuery={searchQuery}

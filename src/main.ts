@@ -12,6 +12,7 @@ import {
   TFolder,
   ViewState,
   WorkspaceLeaf,
+  debounce,
 } from 'obsidian';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -254,26 +255,45 @@ export default class KanbanPlugin extends Plugin {
       })
     );
 
-    this.registerEvent(
-      this.app.metadataCache.on('changed', (file) => {
+    let haveDataview = !!this.app.plugins.plugins.dataview?.api;
+
+    const notifyFileChange = debounce(
+      (file: TFile) => {
         this.stateManagers.forEach((manager) => {
           manager.onFileMetadataChange(file);
         });
+      },
+      2000,
+      true
+    );
+
+    this.registerEvent(
+      this.app.vault.on('modify', (file) => {
+        if (file instanceof TFile) {
+          notifyFileChange(file);
+        }
       })
     );
 
     this.registerEvent(
-      this.app.metadataCache.on('dataview:api-ready', () => {
-        this.stateManagers.forEach((manager) => {
-          manager.forceRefresh();
-        });
+      this.app.metadataCache.on('changed', (file) => {
+        if (haveDataview) return;
+        notifyFileChange(file);
       })
     );
 
     this.registerEvent(
       this.app.metadataCache.on('dataview:metadata-change', (_, file) => {
+        notifyFileChange(file);
+      })
+    );
+
+    this.registerEvent(
+      this.app.metadataCache.on('dataview:api-ready', () => {
+        haveDataview = true;
+
         this.stateManagers.forEach((manager) => {
-          manager.onFileMetadataChange(file);
+          manager.forceRefresh();
         });
       })
     );

@@ -105,7 +105,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     },
 
     archiveLane: (path: Path) => {
-      stateManager.setState((boardData) => {
+      stateManager.setState(async (boardData) => {
         const lane = getEntityFromPath(boardData, path);
         const items = lane.children;
 
@@ -119,7 +119,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
           data: {
             archive: {
               $unshift: stateManager.getSetting('prepend-archive-date')
-                ? items.map(appendArchiveDate)
+                ? await Promise.all(items.map(appendArchiveDate))
                 : items,
             },
           },
@@ -128,7 +128,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     },
 
     archiveLaneItems: (path: Path) => {
-      stateManager.setState((boardData) => {
+      stateManager.setState(async (boardData) => {
         const lane = getEntityFromPath(boardData, path);
         const items = lane.children;
 
@@ -148,7 +148,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
             data: {
               archive: {
                 $unshift: stateManager.getSetting('prepend-archive-date')
-                  ? items.map(appendArchiveDate)
+                  ? await Promise.all(items.map(appendArchiveDate))
                   : items,
               },
             },
@@ -193,7 +193,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     },
 
     archiveItem: (path: Path) => {
-      stateManager.setState((boardData) => {
+      stateManager.setState(async (boardData) => {
         const item = getEntityFromPath(boardData, path);
 
         stateManager.app.workspace.trigger(
@@ -208,7 +208,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
             archive: {
               $push: [
                 stateManager.getSetting('prepend-archive-date')
-                  ? appendArchiveDate(item)
+                  ? await appendArchiveDate(item)
                   : item,
               ],
             },

@@ -95,10 +95,12 @@ export function useItemMenu({
                   `[[${sanitizedTitle}]]`
                 );
 
-                boardModifiers.updateItem(
-                  path,
-                  stateManager.parser.updateItem(item, newTitleRaw)
-                );
+                stateManager.parser
+                  .updateItem(item, newTitleRaw)
+                  .then((item) => {
+                    boardModifiers.updateItem(path, item);
+                  })
+                  .catch((e) => console.error(e));
               });
           })
           .addSeparator()
@@ -157,10 +159,13 @@ export function useItemMenu({
                 const titleRaw = item.data.titleRaw
                   .replace(dateRegEx, '')
                   .trim();
-                boardModifiers.updateItem(
-                  path,
-                  stateManager.parser.updateItem(item, titleRaw)
-                );
+
+                stateManager.parser
+                  .updateItem(item, titleRaw)
+                  .then((item) => {
+                    boardModifiers.updateItem(path, item);
+                  })
+                  .catch((e) => console.error(e));
               });
           });
 
@@ -196,10 +201,13 @@ export function useItemMenu({
                   const titleRaw = item.data.titleRaw
                     .replace(timeRegEx, '')
                     .trim();
-                  boardModifiers.updateItem(
-                    path,
-                    stateManager.parser.updateItem(item, titleRaw)
-                  );
+
+                  stateManager.parser
+                    .updateItem(item, titleRaw)
+                    .then((item) => {
+                      boardModifiers.updateItem(path, item);
+                    })
+                    .catch((e) => console.error(e));
                 });
             });
           }
