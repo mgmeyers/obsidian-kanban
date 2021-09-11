@@ -32,7 +32,7 @@ export default {
   'Invalid Kanban file: problems parsing frontmatter':
     'Fehlerhafte Kanban Datei: Probleme beim Parsen des Frontmatters',
   "I don't know how to interpret this line:":
-    "Ich weiß nicht, wie ich diese Zeile interpretieren soll:",
+    'Ich weiß nicht, wie ich diese Zeile interpretieren soll:',
   Untitled: 'Unbenannt', // auto-created column
 
   // settingHelpers.ts
