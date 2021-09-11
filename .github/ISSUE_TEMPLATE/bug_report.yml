@@ -10,19 +10,19 @@ body:
     id: what-happened
     attributes:
       label: Describe the bug
-      placeholder: What's happening and when does it happen?
+      description: What's happening and when does it happen?
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
       label: Expected Behavior
-      description: What SHOULD happen?.
+      description: What SHOULD happen?
   - type: textarea
     id: reproduce
     attributes:
       label: Steps to reproduce
-      descrition: The more detail you provide, the easier it will be to narrow down and fix the bug
+      description: The more detail you provide, the easier it will be to narrow down and fix the bug
     validations:
       required: true
   - type: textarea
