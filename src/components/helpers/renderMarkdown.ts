@@ -1,6 +1,7 @@
 import { CachedMetadata, MarkdownRenderer, TFile } from 'obsidian';
 
 import { KanbanView } from 'src/KanbanView';
+import { t } from 'src/lang/helpers';
 
 import { c } from '../helpers';
 
@@ -41,7 +42,7 @@ function getSubpathBoundary(fileCache: CachedMetadata, subpath: string) {
       const blockId = firstSegment.substr(1).toLowerCase();
       const blockCache = fileCache.blocks;
 
-      if (blockCache[blockId]) {
+      if (blockCache && blockCache[blockId]) {
         const block = blockCache[blockId];
 
         return {
@@ -50,6 +51,8 @@ function getSubpathBoundary(fileCache: CachedMetadata, subpath: string) {
           start: block.position.start.offset,
           end: block.position.end.offset,
         };
+      } else {
+        return null;
       }
     }
   }
@@ -159,8 +162,7 @@ function handleVideo(el: HTMLElement, file: TFile, view: KanbanView) {
   el.addClasses(['media-embed', 'is-loaded']);
 }
 
-async function handleMarkdown(
-  el: HTMLElement,
+async function getEmbeddedMarkdownString(
   file: TFile,
   normalizedPath: { path: string; subpath: string },
   view: KanbanView
@@ -168,16 +170,57 @@ async function handleMarkdown(
   const fileCache = view.app.metadataCache.getFileCache(file);
 
   if (!fileCache) {
-    return;
+    return null;
   }
 
-  let content = await view.app.vault.cachedRead(file);
-
+  const content = await view.app.vault.cachedRead(file);
   const contentBoundary = getSubpathBoundary(fileCache, normalizedPath.subpath);
 
   if (contentBoundary) {
-    content = content.substring(contentBoundary.start, contentBoundary.end);
+    return content.substring(contentBoundary.start, contentBoundary.end);
+  } else if (normalizedPath.subpath) {
+    return `${t('Unable to find')} ${normalizedPath.path}${
+      normalizedPath.subpath
+    }`;
   }
+}
+
+function pollForCachedSubpath(
+  file: TFile,
+  normalizedPath: { path: string; subpath: string },
+  view: KanbanView,
+  remainingCount: number
+) {
+  setTimeout(async () => {
+    if (view.plugin.viewMap.has(view.id)) {
+      const string = await getEmbeddedMarkdownString(
+        file,
+        normalizedPath,
+        view
+      );
+
+      if (!string) return;
+
+      if (!string.startsWith(t('Unable to find'))) {
+        view.plugin.stateManagers.forEach((manager) => {
+          manager.onFileMetadataChange(file);
+        });
+      } else if (remainingCount > 0) {
+        pollForCachedSubpath(file, normalizedPath, view, remainingCount--);
+      }
+    }
+  }, 2000);
+}
+
+async function handleMarkdown(
+  el: HTMLElement,
+  file: TFile,
+  normalizedPath: { path: string; subpath: string },
+  view: KanbanView
+) {
+  const content = await getEmbeddedMarkdownString(file, normalizedPath, view);
+
+  if (!content) return;
 
   el.empty();
   const dom = createDiv();
@@ -193,6 +236,10 @@ async function handleMarkdown(
 
   el.append(dom);
   el.addClass('is-loaded');
+
+  if (content.startsWith(t('Unable to find'))) {
+    pollForCachedSubpath(file, normalizedPath, view, 4);
+  }
 }
 
 function handleEmbeds(dom: HTMLDivElement, view: KanbanView) {

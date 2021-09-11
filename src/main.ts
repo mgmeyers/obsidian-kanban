@@ -255,8 +255,6 @@ export default class KanbanPlugin extends Plugin {
       })
     );
 
-    let haveDataview = !!this.app.plugins.plugins.dataview?.api;
-
     const notifyFileChange = debounce(
       (file: TFile) => {
         this.stateManagers.forEach((manager) => {
@@ -277,7 +275,6 @@ export default class KanbanPlugin extends Plugin {
 
     this.registerEvent(
       this.app.metadataCache.on('changed', (file) => {
-        if (haveDataview) return;
         notifyFileChange(file);
       })
     );
@@ -290,8 +287,6 @@ export default class KanbanPlugin extends Plugin {
 
     this.registerEvent(
       this.app.metadataCache.on('dataview:api-ready', () => {
-        haveDataview = true;
-
         this.stateManagers.forEach((manager) => {
           manager.forceRefresh();
         });

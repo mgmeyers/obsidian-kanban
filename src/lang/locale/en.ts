@@ -184,4 +184,7 @@ export default {
   'Archive cards': 'Archive cards',
   'Archive list': 'Archive list',
   'Delete list': 'Delete list',
+
+  // components/helpers/renderMarkdown.ts
+  'Unable to find': 'Unable to find',
 };
