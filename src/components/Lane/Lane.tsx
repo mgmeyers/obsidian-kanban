@@ -68,17 +68,14 @@ export const DraggableLane = React.memo(function DraggableLane(
       );
 
       if (laneItems.length) {
-        animateScrollTo(
-          [0, insertionMethod === 'append' ? laneItems[0].scrollHeight : 0],
-          {
-            elementToScroll: laneItems[0],
-            speed: 200,
-            minDuration: 150,
-            easing: (x: number) => {
-              return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
-            },
-          }
-        );
+        animateScrollTo([0, shouldPrepend ? 0 : laneItems[0].scrollHeight], {
+          elementToScroll: laneItems[0],
+          speed: 200,
+          minDuration: 150,
+          easing: (x: number) => {
+            return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+          },
+        });
       }
     });
   };
