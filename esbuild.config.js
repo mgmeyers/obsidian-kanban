@@ -41,11 +41,7 @@ function NodeModulesPolyfillPlugin(options = {}) {
         try {
           const isCommonjs = args.namespace.endsWith('commonjs');
           const resolved =
-            args.path === 'buffer'
-              ? require.resolve(
-                  'rollup-plugin-node-polyfills/polyfills/buffer-es6'
-                )
-              : null;
+            args.path === 'buffer' ? require.resolve('./buffer-es6') : null;
           const contents = await (
             await fs.promises.readFile(resolved)
           ).toString();
