@@ -5,7 +5,7 @@ title: '[Feature]: '
 body:
   - type: markdown
     attributes:
-      value: Please check the [GitHub Issues](https://github.com/mgmeyers/obsidian-kanban/issues) (open or closed) for similar issues.
+      value: Before getting started, please check the [GitHub Issues](https://github.com/mgmeyers/obsidian-kanban/issues) (open or closed) for similar issues.
   - type: textarea
     validations:
       required: true
