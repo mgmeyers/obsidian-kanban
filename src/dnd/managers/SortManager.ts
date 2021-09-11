@@ -229,7 +229,7 @@ export class SortManager {
 
     this.dragEndTimeout = window.setTimeout(() => {
       const dragEntityId = dragEntity.entityId.split(':::').pop();
-      const primaryIntersectionId = primaryIntersection.entityId
+      const primaryIntersectionId = primaryIntersection?.entityId
         .split(':::')
         .pop();
 
