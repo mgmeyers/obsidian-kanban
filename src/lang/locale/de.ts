@@ -13,15 +13,27 @@ export default {
     'Fehler: Kanban konnte nicht erstellt werden, momentan geöffnete Datei ist nicht leer',
   'New kanban board': 'Neues Kanban-Board',
   'Untitled Kanban': 'Unbenanntes Kanban',
+  'Toggle between Kanban and markdown mode':
+    'Wechsle zwischen Kanban und Markdown Modus',
 
   // KanbanView.tsx
   'Open as markdown': 'Öffne als Markdown',
   'Open board settings': 'Öffne Board-Einstellungen',
   'Archive completed cards': 'Archiviere fertiggestellte Karten',
+  'Something went wrong': 'Etwas ist schief gelaufen',
+  'You may wish to open as markdown and inspect or edit the file.':
+    'Du kannst die Datei im Markdown Modus öffnen und überprüfen oder bearbeiten.',
+  'Are you sure you want to archive all completed cards on this board?':
+    'Bist du dir sicher, dass du alle fertiggestellten Karten des Boards archivieren möchtest?',
 
   // parser.ts
   Complete: 'Fertiggestellt',
   Archive: 'Archiv',
+  'Invalid Kanban file: problems parsing frontmatter':
+    'Fehlerhafte Kanban Datei: Probleme beim Parsen des Frontmatters',
+  "I don't know how to interpret this line:":
+    "Ich weiß nicht, wie ich diese Zeile interpretieren soll:",
+  Untitled: 'Unbenannt', // auto-created column
 
   // settingHelpers.ts
   'Note: No template plugins are currently enabled.':
@@ -91,6 +103,34 @@ export default {
   'Archive date/time format':
     'Format des Datums und der Uhrzeit für das Archiv',
   'Kanban Plugin': 'Kanban Erweiterung',
+  'New line trigger': 'Taste für neue Zeile', //No exact translation, but makes sense in App
+  'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lanes.':
+    'Wähle aus ob Enter oder Umschalttaste+Enter eine neue Zeile erstellen soll. Das Gegenteil kannst du verwenden um die Karte zu erstellen oder das bearbeiten der Karte oder Schiene zu beenden.',
+  'Shift + Enter': 'Umschalttaste + Enter',
+  Enter: 'Enter',
+  'Prepend / append new cards': 'Neue Karten voranfügen / anhängen',
+  'This setting controls weather new cards are added to the beginning or end of the list.':
+    'Diese Einstellung gibt an ob neue Karten am Anfang oder am Ende einer Liste hinzugefügt werden.',
+  Prepend: 'Voranfügen',
+  Append: 'Anhängen',
+  'Hide tags in card titles': 'Ausblenden von Tags in Kartentiteln',
+  'When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.':
+    'Ist diese Einstellung an, so werden Tags im Kartentitel nicht angezeigt. Dadurch wird verhindert, dass Tags beim Erstellen neuer Notizen in den Titel aufgenommen werden.',
+  'Hide card display tags': 'Ausblenden von Kartenanzeige-Tags',
+  'When toggled, tags will not be displayed below the card title.':
+    'Ist diese Einstellung an, werden Tags nicht unter dem Kartentitel angezeigt.',
+  'Linked Page Metadata': 'Metadaten für verknüpfte (verlinkte) Notizen',
+  'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
+    'Zeigen Sie Metadaten für die erste Notiz an, die innerhalb einer Karte verknüpft ist. Geben Sie an, welche Metadatenschlüssel unten angezeigt werden sollen. Ein optionales Label kann hinzugefügt werden, es kann aber auch vollständig ausgeblendet werden.',
+
+  // MetadataSettings.tsx
+  'Metadata key': 'Metadatenschlüssel',
+  'Display label': 'Anzeigelabel',
+  'Hide label': 'Label ausblenden',
+  'Drag to rearrange': 'Zum Neuanordnen ziehen',
+  Delete: 'Löschen',
+  'Add key': 'Schlüssel hinzufügen',
+  'Field contains markdown': 'Feld beinhaltet Markdown',
 
   // components/Item/Item.tsx
   'Archive item': 'Archiviere Karte',
@@ -120,6 +160,7 @@ export default {
   'Edit time': 'Karte editieren',
   'Add time': 'Uhrzeit hinzufügen',
   'Remove time': 'Uhrzeit entfernen',
+  'Duplicate card': 'Karte duplizieren',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Listen Titel eingeben..',
