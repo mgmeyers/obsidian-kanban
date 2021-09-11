@@ -1,0 +1,30 @@
+name: Feature Request
+description: Suggest a new Feature for this Plugin
+labels: ['enhancement']
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Self Check
+        - Try searching existing [GitHub Issues](https://github.com/phibr0/obsidian-dictionary/issues) (open or closed) for similar issues.
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Describe the feature
+      description: A clear description of what you want to have in this Plugin.
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Does this fix a problem? If so, specify.
+  - type: textarea
+    attributes:
+      label: Did you consider other alternatives?
+      description: If so, specify
+  - type: textarea
+    attributes:
+      label: Screenshots and recordings
+      description: |
+        If applicable, add screenshots or videos to help explain your problem. (You might edit them to show what you want, or just explain where the feature should go and any problems behind the existing behaviour!) (Videos should be as short as possible! Avoid watermarks too.)
