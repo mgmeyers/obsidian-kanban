@@ -336,7 +336,6 @@ export function useDragHandle(
       const isMobile = view.app.isMobile;
 
       if (!isMobile) {
-        handle.setPointerCapture(e.pointerId);
         e.stopPropagation();
         e.preventDefault();
       }
@@ -397,7 +396,9 @@ export function useDragHandle(
         clearTimeout(longPressTimeout);
         isDragging = false;
 
-        handle.releasePointerCapture(e.pointerId);
+        if (isMobile) {
+          handle.releasePointerCapture(e.pointerId);
+        }
 
         dndManager.dragManager.dragEnd(e);
 
