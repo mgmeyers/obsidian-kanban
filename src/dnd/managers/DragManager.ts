@@ -351,7 +351,6 @@ export function useDragHandle(
 
       if (isMobile) {
         longPressTimeout = window.setTimeout(() => {
-          handle.setPointerCapture(e.pointerId);
           dndManager.dragManager.dragStart(initialEvent, droppable);
           isDragging = true;
         }, 500);
@@ -367,7 +366,6 @@ export function useDragHandle(
               }) > 5
             ) {
               clearTimeout(longPressTimeout);
-              handle.releasePointerCapture(e.pointerId);
               window.removeEventListener('pointermove', onMove);
               window.removeEventListener('pointerup', onEnd);
               window.removeEventListener('pointercancel', onEnd);
@@ -395,10 +393,6 @@ export function useDragHandle(
       const onEnd = (e: PointerEvent) => {
         clearTimeout(longPressTimeout);
         isDragging = false;
-
-        if (isMobile) {
-          handle.releasePointerCapture(e.pointerId);
-        }
 
         dndManager.dragManager.dragEnd(e);
 
