@@ -56,11 +56,15 @@ export class DndManager {
   };
 
   observeResize(element: HTMLElement) {
-    this.resizeObserver.observe(element, { box: 'border-box' });
+    if (element instanceof Element) {
+      this.resizeObserver.observe(element, { box: 'border-box' });
+    }
   }
 
   unobserveResize(element: HTMLElement) {
-    this.resizeObserver.unobserve(element);
+    if (element instanceof Element) {
+      this.resizeObserver.unobserve(element);
+    }
   }
 
   registerHitboxEntity(id: string, entity: Entity) {

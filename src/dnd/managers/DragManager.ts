@@ -2,6 +2,8 @@ import boxIntersect from 'box-intersect';
 import rafSchd from 'raf-schd';
 import React from 'react';
 
+import { KanbanContext } from 'src/components/context';
+
 import { DndManagerContext } from '../components/context';
 import { Coordinates, Entity, Hitbox, Side } from '../types';
 import { Emitter } from '../util/emitter';
@@ -316,6 +318,7 @@ export function useDragHandle(
   handleElement: React.MutableRefObject<HTMLElement | null>
 ) {
   const dndManager = React.useContext(DndManagerContext);
+  const { view } = React.useContext(KanbanContext);
 
   React.useEffect(() => {
     const droppable = droppableElement.current;
@@ -330,8 +333,13 @@ export function useDragHandle(
         return;
       }
 
-      e.stopPropagation();
-      e.preventDefault();
+      const isMobile = view.app.isMobile;
+
+      if (!isMobile) {
+        handle.setPointerCapture(e.pointerId);
+        e.stopPropagation();
+        e.preventDefault();
+      }
 
       const initialEvent = e;
       const initialPosition: Coordinates = {
@@ -340,28 +348,55 @@ export function useDragHandle(
       };
 
       let isDragging = false;
-      let dragStarted = false;
+      let longPressTimeout = 0;
+
+      if (isMobile) {
+        longPressTimeout = window.setTimeout(() => {
+          handle.setPointerCapture(e.pointerId);
+          dndManager.dragManager.dragStart(initialEvent, droppable);
+          isDragging = true;
+        }, 300);
+      }
 
       const onMove = rafSchd((e: PointerEvent) => {
-        if (!dragStarted) {
-          if (
-            distanceBetween(initialPosition, {
-              x: e.pageX,
-              y: e.pageY,
-            }) > 5
-          ) {
-            dndManager.dragManager.dragStart(initialEvent, droppable);
-            isDragging = true;
-            dragStarted = true;
+        if (isMobile) {
+          if (!isDragging) {
+            if (
+              distanceBetween(initialPosition, {
+                x: e.pageX,
+                y: e.pageY,
+              }) > 5
+            ) {
+              clearTimeout(longPressTimeout);
+              handle.releasePointerCapture(e.pointerId);
+              window.removeEventListener('pointermove', onMove);
+              window.removeEventListener('pointerup', onEnd);
+              window.removeEventListener('pointercancel', onEnd);
+            }
+          } else {
+            dndManager.dragManager.dragMove(e);
           }
-        } else if (isDragging) {
-          dndManager.dragManager.dragMove(e);
+        } else {
+          if (!isDragging) {
+            if (
+              distanceBetween(initialPosition, {
+                x: e.pageX,
+                y: e.pageY,
+              }) > 5
+            ) {
+              dndManager.dragManager.dragStart(initialEvent, droppable);
+              isDragging = true;
+            }
+          } else {
+            dndManager.dragManager.dragMove(e);
+          }
         }
       });
 
       const onEnd = (e: PointerEvent) => {
         isDragging = false;
-        dragStarted = false;
+
+        handle.releasePointerCapture(e.pointerId);
 
         dndManager.dragManager.dragEnd(e);
 
@@ -375,10 +410,16 @@ export function useDragHandle(
       window.addEventListener('pointercancel', onEnd);
     };
 
+    const swallowTouchEvent = (e: TouchEvent) => {
+      e.stopPropagation();
+    };
+
     handle.addEventListener('pointerdown', onPointerDown);
+    handle.addEventListener('touchstart', swallowTouchEvent);
 
     return () => {
       handle.removeEventListener('pointerdown', onPointerDown);
+      handle.removeEventListener('touchstart', swallowTouchEvent);
     };
-  }, [droppableElement, handleElement, dndManager]);
+  }, [droppableElement, handleElement, dndManager, view]);
 }
