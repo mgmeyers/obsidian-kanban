@@ -313,6 +313,11 @@ export class DragManager {
   }
 }
 
+const cancelEvent = (e: TouchEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+};
+
 export function useDragHandle(
   droppableElement: React.MutableRefObject<HTMLElement | null>,
   handleElement: React.MutableRefObject<HTMLElement | null>
@@ -350,9 +355,14 @@ export function useDragHandle(
       let longPressTimeout = 0;
 
       if (isMobile) {
+        window.addEventListener('contextmenu', cancelEvent, true);
+
         longPressTimeout = window.setTimeout(() => {
           dndManager.dragManager.dragStart(initialEvent, droppable);
           isDragging = true;
+          window.addEventListener('touchmove', cancelEvent, {
+            passive: false,
+          });
         }, 500);
       }
 
@@ -366,6 +376,8 @@ export function useDragHandle(
               }) > 5
             ) {
               clearTimeout(longPressTimeout);
+              window.removeEventListener('touchmove', cancelEvent);
+              window.removeEventListener('contextmenu', cancelEvent, true);
               window.removeEventListener('pointermove', onMove);
               window.removeEventListener('pointerup', onEnd);
               window.removeEventListener('pointercancel', onEnd);
@@ -399,6 +411,11 @@ export function useDragHandle(
         window.removeEventListener('pointermove', onMove);
         window.removeEventListener('pointerup', onEnd);
         window.removeEventListener('pointercancel', onEnd);
+
+        if (isMobile) {
+          window.removeEventListener('contextmenu', cancelEvent, true);
+          window.removeEventListener('touchmove', cancelEvent);
+        }
       };
 
       window.addEventListener('pointermove', onMove);
