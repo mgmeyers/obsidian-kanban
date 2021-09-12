@@ -9,8 +9,9 @@ import { StateManager } from 'src/StateManager';
 
 import { KanbanContext, KanbanContextProps } from '../context';
 import { c, escapeRegExpStr, useIMEInputProps } from '../helpers';
+import { buildTimeArray } from '../Item/helpers';
 import { getDefaultLocale } from './datePickerLocale';
-import { buildTimeArray } from './helpers';
+import { replaceSelection } from './helpers';
 
 const tagRegex = /\B#([^\s]*)?$/;
 const linkRegex = /\B\[\[([^\]]*)?$/;
@@ -38,7 +39,7 @@ export function applyDate(
     ? `[[${formattedDate}]]`
     : `{${formattedDate}}`;
 
-  forceChangeEvent(inputRef.current, `${inputRef.current.value}${wrappedDate}`);
+  replaceSelection(inputRef.current, wrappedDate);
 
   inputRef.current.focus();
 }

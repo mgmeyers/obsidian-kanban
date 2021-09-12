@@ -4,7 +4,7 @@ import { StateManager } from 'src/StateManager';
 
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
-import { useAutocompleteInputProps } from '../Item/autocomplete';
+import { useAutocompleteInputProps } from './autocomplete';
 import {
   autoPairBracketsCommands,
   autoPairMarkdownCommands,

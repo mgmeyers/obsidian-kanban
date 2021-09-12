@@ -4,10 +4,10 @@ import { moment, setIcon } from 'obsidian';
 import { Path } from 'src/dnd/types';
 import { StateManager } from 'src/StateManager';
 
+import { getDefaultLocale } from '../Editor/datePickerLocale';
 import { c, escapeRegExpStr } from '../helpers';
 import { BoardModifiers } from '../helpers/boardModifiers';
 import { Item } from '../types';
-import { getDefaultLocale } from './datePickerLocale';
 
 export function constructDatePicker(
   coordinates: { x: number; y: number },
