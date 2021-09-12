@@ -355,7 +355,7 @@ export function useDragHandle(
           handle.setPointerCapture(e.pointerId);
           dndManager.dragManager.dragStart(initialEvent, droppable);
           isDragging = true;
-        }, 300);
+        }, 500);
       }
 
       const onMove = rafSchd((e: PointerEvent) => {
@@ -394,6 +394,7 @@ export function useDragHandle(
       });
 
       const onEnd = (e: PointerEvent) => {
+        clearTimeout(longPressTimeout);
         isDragging = false;
 
         handle.releasePointerCapture(e.pointerId);
