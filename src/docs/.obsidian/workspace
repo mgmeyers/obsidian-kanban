@@ -9,7 +9,7 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "index.md",
+            "file": "Settings/index.md",
             "mode": "source"
           }
         }
@@ -68,7 +68,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "index.md",
+                "file": "Settings/index.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -88,6 +88,7 @@
   },
   "active": "378dafdc9ffec34b",
   "lastOpenFiles": [
+    "Settings/index.md",
     "index.md",
     "How to/index.md.md",
     "Settings/index.md.md",
@@ -96,7 +97,6 @@
     "How to/Untitled.md",
     "Readme.md",
     "Settings/New line trigger.md",
-    "Settings/Note folder.md",
-    "Settings/Note template.md"
+    "Settings/Note folder.md"
   ]
 }

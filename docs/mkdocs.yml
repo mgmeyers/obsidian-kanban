@@ -4,7 +4,8 @@ edit_uri: edit/main/docs/docs/
 theme:
   name: material
   palette:
-    primary: blue
+    primary: white
+    accent: indigo
 nav:
   - Overview: 'index.md'
   - How tos: 'How to/index.md'
