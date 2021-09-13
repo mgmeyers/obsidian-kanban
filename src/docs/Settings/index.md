@@ -1,7 +1,7 @@
+![[Display card checkbox]]
+![[Lane width]]
+![[Maximum number of archived cards]]
 ![[New line trigger]]
-
-![[Prepend append new cards]]
-
 ![[Note folder]]
-
 ![[Note template]]
+![[Prepend append new cards]]

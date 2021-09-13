@@ -7,9 +7,21 @@
         "id": "9405953339c4c80e",
         "type": "leaf",
         "state": {
-          "type": "kanban",
+          "type": "markdown",
           "state": {
-            "file": "! Documentation board.md"
+            "file": "index.md",
+            "mode": "source"
+          }
+        }
+      },
+      {
+        "id": "950c18172c0032db",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "How to/Creating new notes from Kanban cards.md",
+            "mode": "source"
           }
         }
       }
@@ -67,7 +79,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "! Documentation board.md",
+                "file": "index.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -87,15 +99,15 @@
   },
   "active": "9405953339c4c80e",
   "lastOpenFiles": [
+    "index.md",
+    "How to/Creating new notes from Kanban cards.md",
+    "Settings/Display card checkbox.md",
+    "Settings/index.md",
+    "How to/index.md",
     "! Documentation board.md",
     "How to/Viewing the archive.md",
-    "Settings/Display card checkbox.md",
     "Assets/Untitled.md",
     "Settings/Maximum number of archived cards.md",
-    "Settings/Viewing the archive.md",
-    "Settings/index.md",
-    "Settings/Lane width.md",
-    "Settings/Note template.md",
-    "Settings/Note folder.md"
+    "Settings/Viewing the archive.md"
   ]
 }
