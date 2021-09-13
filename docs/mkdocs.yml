@@ -11,4 +11,4 @@ nav:
   - Settings: 'Settings/index.md'
 plugins:
   - search
-  - ezlinks
+  - roamlinks
