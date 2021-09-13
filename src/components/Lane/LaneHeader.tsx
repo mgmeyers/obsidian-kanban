@@ -50,12 +50,12 @@ export const LaneHeader = React.memo(
             setIsEditing={setIsEditing}
             itemCount={lane.children.length}
             title={lane.data.title}
-            onChange={(e) =>
+            onChange={(e) => {
               boardModifiers.updateLane(
                 lanePath,
                 update(lane, { data: { title: { $set: e.target.value } } })
-              )
-            }
+              );
+            }}
           />
 
           <div className={c('lane-settings-button-wrapper')}>

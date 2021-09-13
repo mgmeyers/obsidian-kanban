@@ -257,7 +257,9 @@ export default class KanbanPlugin extends Plugin {
     const notifyFileChange = debounce(
       (file: TFile) => {
         this.stateManagers.forEach((manager) => {
-          manager.onFileMetadataChange(file);
+          if (manager.file !== file) {
+            manager.onFileMetadataChange(file);
+          }
         });
       },
       2000,

@@ -2,16 +2,12 @@
 
 kanban-plugin: basic
 new-note-folder: Settings
+new-note-template: Assets/Base Template.md
 
 ---
 
 ## Backlog
 
-- [ ] Maximum number of archived cards
-- [ ] Display card checkbox
-- [ ] Hide tags in card titles
-- [ ] Hide card display tags
-- [ ] Board Header Buttons
 - [ ] Date trigger
 - [ ] Time trigger
 - [ ] Date format
@@ -25,22 +21,32 @@ new-note-folder: Settings
 - [ ] Archive date/time separator
 - [ ] Archive date/time format
 - [ ] Linked Page Metadata
+- [ ] Creating a new Kanban board
+- [ ] Adding dates to cards
+- [ ] Adding times to cards
+- [ ] Searching cards
 
 
 ## Next up
 
-- [ ] Lane width
+- [ ] Hide tags in card titles
+- [ ] Hide card display tags
+- [ ] Board Header Buttons
 
 
 ## In progress
 
-- [ ] [[Note template]]
-- [ ] [[Note folder]]
 
 
 ## Complete
 
 **Complete**
+- [x] [[Display card checkbox]]
+- [x] [[Viewing the archive]]
+- [x] [[Maximum number of archived cards]]
+- [x] [[Lane width]]
+- [x] [[Note folder]]
+- [x] [[Note template]]
 - [x] [[Prepend append new cards]]
 - [x] [[New line trigger]]
 
