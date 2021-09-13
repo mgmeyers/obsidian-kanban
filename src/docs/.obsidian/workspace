@@ -9,7 +9,7 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "index.md",
+            "file": "Settings/Display card checkbox.md",
             "mode": "source"
           }
         }
@@ -79,7 +79,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "index.md",
+                "file": "Settings/Display card checkbox.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -99,15 +99,15 @@
   },
   "active": "9405953339c4c80e",
   "lastOpenFiles": [
+    "Settings/Display card checkbox.md",
+    "Settings/Lane width.md",
+    "Settings/New line trigger.md",
+    "Settings/Note folder.md",
+    "Settings/Note template.md",
+    "Settings/Prepend append new cards.md",
     "index.md",
     "How to/Creating new notes from Kanban cards.md",
-    "Settings/Display card checkbox.md",
     "Settings/index.md",
-    "How to/index.md",
-    "! Documentation board.md",
-    "How to/Viewing the archive.md",
-    "Assets/Untitled.md",
-    "Settings/Maximum number of archived cards.md",
-    "Settings/Viewing the archive.md"
+    "How to/index.md"
   ]
 }

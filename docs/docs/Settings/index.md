@@ -73,12 +73,12 @@ This setting changes where new cards are inserted into a list, and also where th
 
 #### Append
 
-![250](../Assets/Screen%20Shot%202021-09-13%20at%2012.22.08%20PM.png)
+![Screen Shot 2021-09-13 at 12.22.08 PM.png](../Assets/Screen%20Shot%202021-09-13%20at%2012.22.08%20PM.png)
 
 #### Prepend
 
-![250](../Assets/Screen%20Shot%202021-09-13%20at%2012.22.57%20PM.png)
+![Screen Shot 2021-09-13 at 12.22.57 PM.png](../Assets/Screen%20Shot%202021-09-13%20at%2012.22.57%20PM.png)
 
 #### Prepend (compact)
 
-![250](../Assets/Screen%20Shot%202021-09-13%20at%2012.23.35%20PM.png)
+![Screen Shot 2021-09-13 at 12.23.35 PM.png](../Assets/Screen%20Shot%202021-09-13%20at%2012.23.35%20PM.png)
