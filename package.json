@@ -11,7 +11,7 @@
     "sort-imports": "import-sort --write \"./src/**/*.{ts,tsx}\"",
     "prettier": "prettier --write \"./src/**/*.{ts,tsx}\"",
     "clean": "yarn sort-imports && yarn prettier && yarn lint:fix",
-    "docs": "rm -rf docs/docs && mkdir docs/docs && obsidian-export src/docs docs/docs && cp -R src/docs/stylesheets docs/docs/stylesheets"
+    "docs": "rm -rf docs/docs && mkdir docs/docs && obsidian-export src/docs docs/docs && cp -R src/docs/stylesheets docs/docs"
   },
   "keywords": [],
   "author": "",
