@@ -1,4 +1,4 @@
-site_name: Dataview
+site_name: Obsidian Kanban
 repo_url: https://github.com/mgmeyers/obsidian-kanban
 edit_uri: edit/main/docs/docs/
 theme:
@@ -9,3 +9,6 @@ nav:
   - Overview: 'index.md'
   - How tos: 'How to/index.md'
   - Settings: 'Settings/index.md'
+plugins:
+  - search
+  - ezlinks

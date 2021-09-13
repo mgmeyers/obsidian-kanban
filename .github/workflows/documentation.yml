@@ -12,6 +12,6 @@ jobs:
         with:
           python-version: 3.x
       - run: |
-          pip install mkdocs-material mkdocs-redirects
+          pip install mkdocs-material mkdocs-ezlinks-plugin
           cd docs
           mkdocs gh-deploy --force
