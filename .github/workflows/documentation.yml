@@ -12,6 +12,6 @@ jobs:
         with:
           python-version: 3.x
       - run: |
-          pip install mkdocs-material mkdocs-roamlinks-plugin
+          pip install mkdocs-material mkdocs-roamlinks-plugin mdx_truly_sane_lists
           cd docs
           mkdocs gh-deploy --force

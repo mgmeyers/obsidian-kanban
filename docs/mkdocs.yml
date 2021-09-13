@@ -1,6 +1,8 @@
 site_name: Obsidian Kanban
 repo_url: https://github.com/mgmeyers/obsidian-kanban
 edit_uri: edit/main/docs/docs/
+markdown_extensions:
+  - mdx_truly_sane_lists
 theme:
   name: material
   palette:
