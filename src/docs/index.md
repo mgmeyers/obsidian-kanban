@@ -1,13 +1,7 @@
-# Overview
-
-## How tos
-
-- [[Creating new notes from Kanban cards]]
-
-
-## Settings
-
-- [[New line trigger]]
-- [[Prepend append new cards]]
-- [[Note folder]]
-- [[Note template]]
+- [[How to/index|How tos]]
+	- [[Creating new notes from Kanban cards]]
+- [[Settings/index|Settings]]
+	- [[Prepend append new cards]]
+	- [[New line trigger]]
+	- [[Note folder]]
+	- [[Note template]]
