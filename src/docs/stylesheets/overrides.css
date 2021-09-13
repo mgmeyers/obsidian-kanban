@@ -1,0 +1,3 @@
+img[src^='Screen Shot'] {
+  transform: scale(0.5);
+}

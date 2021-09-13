@@ -4,17 +4,6 @@
     "type": "split",
     "children": [
       {
-        "id": "9405953339c4c80e",
-        "type": "leaf",
-        "state": {
-          "type": "markdown",
-          "state": {
-            "file": "Settings/Display card checkbox.md",
-            "mode": "source"
-          }
-        }
-      },
-      {
         "id": "950c18172c0032db",
         "type": "leaf",
         "state": {
@@ -79,7 +68,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Settings/Display card checkbox.md",
+                "file": "How to/Creating new notes from Kanban cards.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -97,17 +86,17 @@
     "width": 300,
     "collapsed": true
   },
-  "active": "9405953339c4c80e",
+  "active": "950c18172c0032db",
   "lastOpenFiles": [
+    "How to/Creating new notes from Kanban cards.md",
+    "Assets/Screen Shot 2021-09-13 at 12.22.08 PM.png",
+    "Assets/Screen Shot 2021-09-13 at 3.32.18 PM.png",
     "Settings/Display card checkbox.md",
     "Settings/Lane width.md",
     "Settings/New line trigger.md",
     "Settings/Note folder.md",
     "Settings/Note template.md",
     "Settings/Prepend append new cards.md",
-    "index.md",
-    "How to/Creating new notes from Kanban cards.md",
-    "Settings/index.md",
-    "How to/index.md"
+    "index.md"
   ]
 }
