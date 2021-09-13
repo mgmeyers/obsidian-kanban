@@ -39,31 +39,34 @@ export type KanbanFormats = 'basic';
 
 export interface KanbanSettings {
   [frontMatterKey]?: KanbanFormats;
+  'date-display-format'?: string;
+  'date-format'?: string;
+  'date-time-display-format'?: string;
+  'date-trigger'?: string;
+  'hide-date-display'?: boolean;
+  'hide-date-in-title'?: boolean;
+  'hide-tags-display'?: boolean;
+  'hide-tags-in-title'?: boolean;
+  'lane-width'?: number;
+  'link-date-to-daily-note'?: boolean;
+  'max-archive-size'?: number;
+  'metadata-keys'?: DataKey[];
+  'new-card-insertion-method'?: 'prepend' | 'prepend-compact' | 'append';
   'new-line-trigger'?: 'enter' | 'shift-enter';
-  'new-card-insertion-method'?: 'prepend' | 'append';
   'new-note-folder'?: string;
   'new-note-template'?: string;
-  'lane-width'?: number;
-  'show-checkboxes'?: boolean;
-  'date-format'?: string;
-  'date-display-format'?: string;
-  'date-time-display-format'?: string;
-  'hide-date-display'?: boolean;
-  'show-relative-date'?: boolean;
-  'date-trigger'?: string;
-  'time-trigger'?: string;
-  'link-date-to-daily-note'?: boolean;
-  'hide-date-in-title'?: boolean;
-  'max-archive-size'?: number;
-  'time-format'?: string;
   'prepend-archive-date'?: boolean;
-  'prepend-archive-separator'?: string;
   'prepend-archive-format'?: string;
+  'prepend-archive-separator'?: string;
+  'show-checkboxes'?: boolean;
+  'show-relative-date'?: boolean;
+  'time-format'?: string;
+  'time-trigger'?: string;
 
-  'hide-tags-in-title'?: boolean;
-  'hide-tags-display'?: boolean;
-
-  'metadata-keys'?: DataKey[];
+  'show-add-list'?: boolean;
+  'show-archive-all'?: boolean;
+  'show-view-as-markdown'?: boolean;
+  'show-board-settings'?: boolean;
 }
 
 export type SettingRetriever = <K extends keyof KanbanSettings>(
@@ -172,6 +175,7 @@ export class SettingsManager {
       )
       .addDropdown((dropdown) => {
         dropdown.addOption('prepend', t('Prepend'));
+        dropdown.addOption('prepend-compact', t('Prepend (compact)'));
         dropdown.addOption('append', t('Append'));
 
         const [value, globalValue] = this.getSetting(
@@ -443,6 +447,188 @@ export class SettingsManager {
               });
           });
       });
+
+    contentEl.createEl('h4', { text: t('Board Header Buttons') });
+
+    new Setting(contentEl).setName(t('Add a list')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting('show-add-list', local);
+
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'show-add-list': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('reset')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('show-add-list', local);
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['show-add-list'],
+              });
+            });
+        });
+    });
+
+    new Setting(contentEl)
+      .setName(t('Archive completed cards'))
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting(
+              'show-archive-all',
+              local
+            );
+
+            if (value !== undefined && value !== null) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined && globalValue !== null) {
+              toggle.setValue(globalValue as boolean);
+            } else {
+              // default
+              toggle.setValue(true);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'show-archive-all': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('reset')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting(
+                  'show-archive-all',
+                  local
+                );
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ['show-archive-all'],
+                });
+              });
+          });
+      });
+
+    new Setting(contentEl).setName(t('Open as markdown')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting(
+            'show-view-as-markdown',
+            local
+          );
+
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'show-view-as-markdown': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('reset')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting(
+                'show-view-as-markdown',
+                local
+              );
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['show-view-as-markdown'],
+              });
+            });
+        });
+    });
+
+    new Setting(contentEl).setName(t('Open board settings')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting(
+            'show-board-settings',
+            local
+          );
+
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'show-board-settings': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('reset')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting(
+                'show-board-settings',
+                local
+              );
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['show-board-settings'],
+              });
+            });
+        });
+    });
 
     contentEl.createEl('h4', { text: t('Date & Time') });
 

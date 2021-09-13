@@ -30,52 +30,12 @@ export class KanbanView extends TextFileView implements HoverParent {
   plugin: KanbanPlugin;
   hoverPopover: HoverPopover | null;
   emitter: Emitter<ViewEvents>;
+  actionButtons: Record<string, HTMLElement> = {};
 
   constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
     super(leaf);
     this.plugin = plugin;
     this.emitter = createEmitter();
-
-    this.addAction('gear', 'Board settings', () => {
-      const stateManager = this.plugin.stateManagers.get(this.file);
-      const board = stateManager.state;
-
-      new SettingsModal(
-        this,
-        {
-          onSettingsChange: (settings) => {
-            const updatedBoard = update(board, {
-              data: {
-                settings: {
-                  $set: settings,
-                },
-              },
-            });
-
-            // Save to disk, compute text of new board
-            stateManager.setState(updatedBoard);
-          },
-        },
-        board.data.settings
-      ).open();
-    });
-
-    this.addAction('document', 'View board as markdown', () => {
-      this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] =
-        'markdown';
-      this.plugin.setMarkdownView(this.leaf);
-    });
-
-    this.addAction('sheets-in-box', 'Archive all completed cards', () => {
-      const stateManager = this.plugin.stateManagers.get(this.file);
-      stateManager.archiveCompletedCards();
-    });
-
-    this.addAction('plus-with-circle', 'Add list', (e) => {
-      this.emitter.emit('showLaneForm', {
-        referenceRect: (e.target as HTMLElement).getBoundingClientRect(),
-      });
-    }).addClass(c('ignore-click-outside'));
   }
 
   get isPrimary(): boolean {
@@ -84,6 +44,113 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   get id(): string {
     return `${(this.leaf as any).id}:::${this.file?.path}`;
+  }
+
+  initHeaderButtons() {
+    const stateManager = this.plugin.getStateManager(this.file);
+
+    if (!stateManager) return;
+
+    if (
+      stateManager.getSetting('show-board-settings') &&
+      !this.actionButtons['show-board-settings']
+    ) {
+      this.actionButtons['show-board-settings'] = this.addAction(
+        'gear',
+        t('Open board settings'),
+        () => {
+          const stateManager = this.plugin.stateManagers.get(this.file);
+          const board = stateManager.state;
+
+          new SettingsModal(
+            this,
+            {
+              onSettingsChange: (settings) => {
+                const updatedBoard = update(board, {
+                  data: {
+                    settings: {
+                      $set: settings,
+                    },
+                  },
+                });
+
+                // Save to disk, compute text of new board
+                stateManager.setState(updatedBoard);
+              },
+            },
+            board.data.settings
+          ).open();
+        }
+      );
+    } else if (
+      !stateManager.getSetting('show-board-settings') &&
+      this.actionButtons['show-board-settings']
+    ) {
+      this.actionButtons['show-board-settings'].remove();
+      delete this.actionButtons['show-board-settings'];
+    }
+
+    if (
+      stateManager.getSetting('show-view-as-markdown') &&
+      !this.actionButtons['show-view-as-markdown']
+    ) {
+      this.actionButtons['show-view-as-markdown'] = this.addAction(
+        'document',
+        t('Open as markdown'),
+        () => {
+          this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] =
+            'markdown';
+          this.plugin.setMarkdownView(this.leaf);
+        }
+      );
+    } else if (
+      !stateManager.getSetting('show-view-as-markdown') &&
+      this.actionButtons['show-view-as-markdown']
+    ) {
+      this.actionButtons['show-view-as-markdown'].remove();
+      delete this.actionButtons['show-view-as-markdown'];
+    }
+
+    if (
+      stateManager.getSetting('show-archive-all') &&
+      !this.actionButtons['show-archive-all']
+    ) {
+      this.actionButtons['show-archive-all'] = this.addAction(
+        'sheets-in-box',
+        t('Archive completed cards'),
+        () => {
+          const stateManager = this.plugin.stateManagers.get(this.file);
+          stateManager.archiveCompletedCards();
+        }
+      );
+    } else if (
+      !stateManager.getSetting('show-archive-all') &&
+      this.actionButtons['show-archive-all']
+    ) {
+      this.actionButtons['show-archive-all'].remove();
+      delete this.actionButtons['show-archive-all'];
+    }
+
+    if (
+      stateManager.getSetting('show-add-list') &&
+      !this.actionButtons['show-add-list']
+    ) {
+      const btn = this.addAction('plus-with-circle', t('Add a list'), (e) => {
+        this.emitter.emit('showLaneForm', {
+          referenceRect: (e.target as HTMLElement).getBoundingClientRect(),
+        });
+      });
+
+      btn.addClass(c('ignore-click-outside'));
+
+      this.actionButtons['show-add-list'] = btn;
+    } else if (
+      !stateManager.getSetting('show-add-list') &&
+      this.actionButtons['show-add-list']
+    ) {
+      this.actionButtons['show-add-list'].remove();
+      delete this.actionButtons['show-add-list'];
+    }
   }
 
   setBoard(board: Board, shouldSave: boolean = true) {
@@ -111,6 +178,9 @@ export class KanbanView extends TextFileView implements HoverParent {
   async onClose() {
     // Remove draggables from render, as the DOM has already detached
     this.plugin.removeView(this);
+
+    Object.values(this.actionButtons).forEach((b) => b.remove());
+    this.actionButtons = {};
   }
 
   async onLoadFile(file: TFile) {
@@ -127,6 +197,10 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   async onUnloadFile(file: TFile) {
     this.plugin.removeView(this);
+
+    Object.values(this.actionButtons).forEach((b) => b.remove());
+    this.actionButtons = {};
+
     return await super.onUnloadFile(file);
   }
 

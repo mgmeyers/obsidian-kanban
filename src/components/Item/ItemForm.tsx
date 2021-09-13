@@ -119,10 +119,17 @@ function importLines(
 
 interface ItemFormProps {
   addItems: (items: Item[]) => void;
+  isInputVisible: boolean;
+  setIsInputVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  hideButton?: boolean;
 }
 
-export function ItemForm({ addItems }: ItemFormProps) {
-  const [isInputVisible, setIsInputVisible] = React.useState(false);
+export function ItemForm({
+  addItems,
+  isInputVisible,
+  setIsInputVisible,
+  hideButton,
+}: ItemFormProps) {
   const [itemTitle, setItemTitle] = React.useState('');
   const { stateManager, filePath } = React.useContext(KanbanContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
@@ -240,6 +247,8 @@ export function ItemForm({ addItems }: ItemFormProps) {
       </div>
     );
   }
+
+  if (hideButton) return null;
 
   return (
     <div className={c('item-button-wrapper')}>

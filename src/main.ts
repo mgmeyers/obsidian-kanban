@@ -82,9 +82,8 @@ export default class KanbanPlugin extends Plugin {
         await this.saveSettings();
 
         // Force a complete re-render when settings change
-        this.app.workspace.getLeavesOfType(kanbanViewType).forEach((leaf) => {
-          const view = leaf.view as KanbanView;
-          view.setViewData(view.data);
+        this.stateManagers.forEach((stateManager) => {
+          stateManager.forceRefresh();
         });
       },
     });

@@ -1,8 +1,7 @@
 import boxIntersect from 'box-intersect';
+import { Platform } from 'obsidian';
 import rafSchd from 'raf-schd';
 import React from 'react';
-
-import { KanbanContext } from 'src/components/context';
 
 import { DndManagerContext } from '../components/context';
 import { Coordinates, Entity, Hitbox, Side } from '../types';
@@ -323,7 +322,6 @@ export function useDragHandle(
   handleElement: React.MutableRefObject<HTMLElement | null>
 ) {
   const dndManager = React.useContext(DndManagerContext);
-  const { view } = React.useContext(KanbanContext);
 
   React.useEffect(() => {
     const droppable = droppableElement.current;
@@ -338,7 +336,13 @@ export function useDragHandle(
         return;
       }
 
-      const isMobile = view.app.isMobile;
+      // We only care about left mouse / touch contact
+      // https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#determining_button_states
+      if (e.button !== 0 && e.buttons !== 1) {
+        return;
+      }
+
+      const isMobile = Platform.isMobile;
 
       if (!isMobile) {
         e.stopPropagation();
@@ -434,5 +438,5 @@ export function useDragHandle(
       handle.removeEventListener('pointerdown', onPointerDown);
       handle.removeEventListener('touchstart', swallowTouchEvent);
     };
-  }, [droppableElement, handleElement, dndManager, view]);
+  }, [droppableElement, handleElement, dndManager]);
 }

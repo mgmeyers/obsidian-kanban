@@ -135,7 +135,11 @@ export class StateManager {
   async forceRefresh() {
     if (this.state) {
       this.state = await this.parser.refreshBoard(this.state);
+
+      this.compiledSettings = this.compileSettings();
       this.stateReceivers.forEach((receiver) => receiver(this.state));
+
+      this.views.forEach((view) => view.initHeaderButtons());
     }
   }
 
@@ -162,6 +166,7 @@ export class StateManager {
     }
 
     this.compiledSettings = this.compileSettings();
+    this.views.forEach((view) => view.initHeaderButtons());
 
     if (shouldSave) {
       this.saveToDisk();
@@ -268,6 +273,14 @@ export class StateManager {
       'prepend-archive-separator':
         this.getSettingRaw('prepend-archive-separator') || '',
       'prepend-archive-format': archiveDateFormat,
+      'show-add-list':
+        this.getSettingRaw('show-add-list', suppliedSettings) ?? true,
+      'show-archive-all':
+        this.getSettingRaw('show-archive-all', suppliedSettings) ?? true,
+      'show-view-as-markdown':
+        this.getSettingRaw('show-view-as-markdown', suppliedSettings) ?? true,
+      'show-board-settings':
+        this.getSettingRaw('show-board-settings', suppliedSettings) ?? true,
     };
   }
 

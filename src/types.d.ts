@@ -4,7 +4,6 @@ import { DataviewApi } from 'obsidian-dataview';
 
 declare module 'obsidian' {
   interface App {
-    isMobile: boolean;
     plugins: {
       enabledPlugins: Set<string>;
       plugins: {

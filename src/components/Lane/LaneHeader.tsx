@@ -17,10 +17,16 @@ interface LaneHeaderProps {
   lane: Lane;
   laneIndex: number;
   dragHandleRef: React.MutableRefObject<HTMLDivElement>;
+  setIsItemInputVisible?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const LaneHeader = React.memo(
-  ({ lane, laneIndex, dragHandleRef }: LaneHeaderProps) => {
+  ({
+    lane,
+    laneIndex,
+    dragHandleRef,
+    setIsItemInputVisible,
+  }: LaneHeaderProps) => {
     const { boardModifiers } = React.useContext(KanbanContext);
     const [isEditing, setIsEditing] = React.useState(false);
     const lanePath = useNestedEntityPath(laneIndex);
@@ -64,15 +70,28 @@ export const LaneHeader = React.memo(
                 <Icon name="cross" />
               </button>
             ) : (
-              <button
-                aria-label={t('More options')}
-                className={c('lane-settings-button')}
-                onClick={(e) => {
-                  settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
-                }}
-              >
-                <Icon name="vertical-three-dots" />
-              </button>
+              <>
+                {setIsItemInputVisible && (
+                  <button
+                    aria-label={t('Add a card')}
+                    className={c('lane-settings-button')}
+                    onClick={() => {
+                      setIsItemInputVisible(true);
+                    }}
+                  >
+                    <Icon name="plus-with-circle" />
+                  </button>
+                )}
+                <button
+                  aria-label={t('More options')}
+                  className={c('lane-settings-button')}
+                  onClick={(e) => {
+                    settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
+                  }}
+                >
+                  <Icon name="vertical-three-dots" />
+                </button>
+              </>
             )}
           </div>
         </div>

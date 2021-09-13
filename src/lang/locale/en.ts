@@ -51,6 +51,7 @@ export default {
   'This setting controls weather new cards are added to the beginning or end of the list.':
     'This setting controls weather new cards are added to the beginning or end of the list.',
   Prepend: 'Prepend',
+  'Prepend (compact)': 'Prepend (compact)',
   Append: 'Append',
   'These settings will take precedence over the default Kanban board settings.':
     'These settings will take precedence over the default Kanban board settings.',
@@ -120,6 +121,7 @@ export default {
   'Linked Page Metadata': 'Linked Page Metadata',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.',
+  'Board Header Buttons': 'Board Header Buttons',
 
   // MetadataSettings.tsx
   'Metadata key': 'Metadata key',

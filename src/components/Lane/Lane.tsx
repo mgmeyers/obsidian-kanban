@@ -24,11 +24,13 @@ export interface DraggableLaneProps {
   isStatic?: boolean;
 }
 
-export const DraggableLane = React.memo(function DraggableLane(
-  props: DraggableLaneProps
-) {
-  const { isStatic, lane, laneIndex } = props;
+export const DraggableLane = React.memo(function DraggableLane({
+  isStatic,
+  lane,
+  laneIndex,
+}: DraggableLaneProps) {
   const { stateManager, boardModifiers } = React.useContext(KanbanContext);
+  const [isItemInputVisible, setIsItemInputVisible] = React.useState(false);
 
   const path = useNestedEntityPath(laneIndex);
   const laneWidth = stateManager.useSetting('lane-width');
@@ -42,7 +44,8 @@ export const DraggableLane = React.memo(function DraggableLane(
   const dragHandleRef = React.useRef<HTMLDivElement>(null);
   const [isSorting, setIsSorting] = React.useState(false);
 
-  const shouldPrepend = insertionMethod === 'prepend';
+  const isCompactPrepend = insertionMethod === 'prepend-compact';
+  const shouldPrepend = isCompactPrepend || insertionMethod === 'prepend';
 
   useDragHandle(measureRef, dragHandleRef);
 
@@ -132,25 +135,41 @@ export const DraggableLane = React.memo(function DraggableLane(
           dragHandleRef={dragHandleRef}
           laneIndex={laneIndex}
           lane={lane}
+          setIsItemInputVisible={
+            isCompactPrepend ? setIsItemInputVisible : undefined
+          }
         />
 
-        {shouldPrepend && <ItemForm addItems={addItems} />}
+        {shouldPrepend && (
+          <ItemForm
+            addItems={addItems}
+            hideButton={isCompactPrepend}
+            isInputVisible={isItemInputVisible}
+            setIsInputVisible={setIsItemInputVisible}
+          />
+        )}
 
-        {props.isStatic ? (
+        {isStatic ? (
           laneBody
         ) : (
           <Droppable
             elementRef={elementRef}
             measureRef={measureRef}
-            id={props.lane.id}
-            index={props.laneIndex}
-            data={props.lane}
+            id={lane.id}
+            index={laneIndex}
+            data={lane}
           >
             {laneBody}
           </Droppable>
         )}
 
-        {!shouldPrepend && <ItemForm addItems={addItems} />}
+        {!shouldPrepend && (
+          <ItemForm
+            addItems={addItems}
+            isInputVisible={isItemInputVisible}
+            setIsInputVisible={setIsItemInputVisible}
+          />
+        )}
       </div>
     </div>
   );
