@@ -14,3 +14,5 @@ nav:
   - Settings: 'Settings/index.md'
 plugins:
   - search
+extra_css:
+  - stylesheets/overrides.css

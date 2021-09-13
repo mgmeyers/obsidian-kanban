@@ -1,0 +1,4 @@
+.md-typeset img,
+.md-typeset svg {
+  max-width: 50%;
+}
