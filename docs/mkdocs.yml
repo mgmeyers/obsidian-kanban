@@ -1,0 +1,11 @@
+site_name: Dataview
+repo_url: https://github.com/mgmeyers/obsidian-kanban
+edit_uri: edit/main/docs/docs/
+theme:
+  name: material
+  palette:
+    primary: blue
+nav:
+  - Overview: 'index.md'
+  - How tos: 'How to/index.md'
+  - Settings: 'Settings/index.md'

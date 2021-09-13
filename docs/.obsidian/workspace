@@ -4,14 +4,19 @@
     "type": "split",
     "children": [
       {
-        "id": "2617becb234b4072",
+        "id": "378dafdc9ffec34b",
         "type": "leaf",
         "state": {
-          "type": "markdown",
-          "state": {
-            "file": "Settings/Note template.md",
-            "mode": "source"
-          }
+          "type": "empty",
+          "state": {}
+        }
+      },
+      {
+        "id": "22d922f0ac1a658d",
+        "type": "leaf",
+        "state": {
+          "type": "empty",
+          "state": {}
         }
       }
     ],
@@ -68,7 +73,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Settings/Note template.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -86,17 +90,17 @@
     "width": 300,
     "collapsed": true
   },
-  "active": "2617becb234b4072",
+  "active": "22d922f0ac1a658d",
   "lastOpenFiles": [
-    "Settings/Note template.md",
+    "How to/index.md.md",
+    "Settings/index.md.md",
     "index.md",
-    "Settings/Note folder.md",
     "! Documentation board.md",
-    "Settings/Prepend append new cards.md",
-    "How to/Creating new notes from Kanban cards.md",
-    "Settings/New line trigger.md",
+    "Settings/Untitled.md",
     "How to/Untitled.md",
-    "! Documentation Progress.md",
-    "Settings/Prepend   append new cards.md"
+    "Readme.md",
+    "Settings/New line trigger.md",
+    "Settings/Note folder.md",
+    "Settings/Note template.md"
   ]
 }
