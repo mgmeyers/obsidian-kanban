@@ -174,6 +174,11 @@ async function getEmbeddedMarkdownString(
   }
 
   const content = await view.app.vault.cachedRead(file);
+
+  if (!normalizedPath.subpath) {
+    return content;
+  }
+
   const contentBoundary = getSubpathBoundary(fileCache, normalizedPath.subpath);
 
   if (contentBoundary) {
