@@ -7,16 +7,11 @@
         "id": "378dafdc9ffec34b",
         "type": "leaf",
         "state": {
-          "type": "empty",
-          "state": {}
-        }
-      },
-      {
-        "id": "22d922f0ac1a658d",
-        "type": "leaf",
-        "state": {
-          "type": "empty",
-          "state": {}
+          "type": "markdown",
+          "state": {
+            "file": "index.md",
+            "mode": "source"
+          }
         }
       }
     ],
@@ -73,6 +68,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "index.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -90,11 +86,11 @@
     "width": 300,
     "collapsed": true
   },
-  "active": "22d922f0ac1a658d",
+  "active": "378dafdc9ffec34b",
   "lastOpenFiles": [
+    "index.md",
     "How to/index.md.md",
     "Settings/index.md.md",
-    "index.md",
     "! Documentation board.md",
     "Settings/Untitled.md",
     "How to/Untitled.md",

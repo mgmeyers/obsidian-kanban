@@ -1,0 +1,1 @@
+![[Creating new notes from Kanban cards]]

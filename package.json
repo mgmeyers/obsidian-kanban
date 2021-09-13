@@ -5,12 +5,13 @@
   "main": "main.js",
   "scripts": {
     "dev": "cross-env BUILD=dev obsidian-plugin dev src/main.ts",
-    "build": "cross-env BUILD=production obsidian-plugin build src/main.ts",
+    "build": "cross-env BUILD=production obsidian-plugin build src/main.ts && yarn docs",
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
     "sort-imports": "import-sort --write \"./src/**/*.{ts,tsx}\"",
     "prettier": "prettier --write \"./src/**/*.{ts,tsx}\"",
-    "clean": "yarn sort-imports && yarn prettier && yarn lint:fix"
+    "clean": "yarn sort-imports && yarn prettier && yarn lint:fix",
+    "docs": "rm -rf docs/docs && mkdir docs/docs && obsidian-export src/docs docs/docs"
   },
   "keywords": [],
   "author": "",
