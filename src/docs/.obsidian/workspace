@@ -9,7 +9,7 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "index.md",
+            "file": "Settings/Board Header Buttons.md",
             "mode": "source"
           }
         }
@@ -68,7 +68,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "index.md",
+                "file": "Settings/Board Header Buttons.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -88,15 +88,15 @@
   },
   "active": "d867c7e0f8bacb24",
   "lastOpenFiles": [
-    "index.md",
-    "! Documentation board.md",
-    "Settings/Time format.md",
-    "Settings/Date format.md",
-    "Settings/Time trigger.md",
-    "Settings/Date trigger.md",
-    "Settings/__Settings.md",
     "Settings/Board Header Buttons.md",
+    "Settings/Date format.md",
+    "Settings/Date trigger.md",
+    "Settings/Display card checkbox.md",
+    "Settings/Hide card display tags.md",
     "Settings/Hide tags in card titles.md",
-    "Settings/Hide card display tags.md"
+    "Settings/index.md",
+    "Settings/Lane width.md",
+    "Settings/Maximum number of archived cards.md",
+    "Settings/New line trigger.md"
   ]
 }

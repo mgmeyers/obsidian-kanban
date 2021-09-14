@@ -89,9 +89,11 @@ This setting changes where new cards are inserted into a list, and also where th
 By default, tags will display in a card's main text. This setting allows you to visually remove tags from this text. Tags still remain, but are not displayed. This setting is meant to be used in conjunction with the [Hide card display tags](Hide%20card%20display%20tags.md) setting.
 
 Setting off:
+
 <img alt="Screen Shot 2021-09-14 at 11.44.32 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.44.32%20AM.png 2x">
 
 Setting on:
+
 <img alt="Screen Shot 2021-09-14 at 11.49.10 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.49.10%20AM.png 2x">
 
 
@@ -105,9 +107,11 @@ This setting will display any tags within a card's content at the bottom of the 
 These settings allow hiding buttons from a Kanban board's header.
 
 Default:
+
 <img alt="Screen Shot 2021-09-14 at 11.55.06 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.55.06%20AM.png 2x">
 
 With the "Add a list" button hidden:
+
 <img alt="Screen Shot 2021-09-14 at 11.56.01 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.56.01%20AM.png 2x">
 
 
@@ -130,9 +134,11 @@ When creating or editing a card, this character or sequence of characters—`@@`
 Allows specifying the output of the [calendar popup](Date%20trigger.md). Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
 
 `YYYY-MM-DD`:
+
 <img alt="Screen Shot 2021-09-14 at 12.08.25 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.08.25%20PM.png 2x">
 
 `ddd, MMM Do, YYYY`:
+
 <img alt="Screen Shot 2021-09-14 at 12.09.20 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.09.20%20PM.png 2x">
 
 
@@ -141,7 +147,9 @@ Allows specifying the output of the [calendar popup](Date%20trigger.md). Availab
 Allows specifying the output of the [time selection popup](Time%20trigger.md). Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
 
 `HH:mm`:
+
 <img alt="Screen Shot 2021-09-14 at 12.12.29 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.12.29%20PM.png 2x">
 
 `h:mm a`:
+
 <img alt="Screen Shot 2021-09-14 at 12.13.07 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.13.07%20PM.png 2x">
