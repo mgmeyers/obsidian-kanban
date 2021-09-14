@@ -1,4 +1,4 @@
-### Note template
+## Note template
 
 When [Creating new notes from Kanban cards](../How%20to/Creating%20new%20notes%20from%20Kanban%20cards.md), new notes will be pre-populated with the specified note template.
 
@@ -7,7 +7,7 @@ Supported template formats:
 * [Obsidian Templates](https://help.obsidian.md/Plugins/Templates)
 * [Templater](https://silentvoid13.github.io/Templater/)
 
-#### Example
+### Example
 
 With the Obsidian core template plugin active (`Settings > Core plugins > Templates`) create a new note called `Demo Template` in your vault containing:
 

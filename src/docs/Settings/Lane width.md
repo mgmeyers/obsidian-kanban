@@ -1,4 +1,4 @@
-### Lane width
+## Lane width
 
 This setting controls the width of a Kanban board's columns. By default, the columns are 272 pixels wide.
 

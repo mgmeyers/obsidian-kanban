@@ -9,7 +9,7 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "How to/Creating new notes from Kanban cards.md",
+            "file": "Assets/Base Template.md",
             "mode": "source"
           }
         }
@@ -68,7 +68,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "How to/Creating new notes from Kanban cards.md",
+                "file": "Assets/Base Template.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -88,15 +88,15 @@
   },
   "active": "950c18172c0032db",
   "lastOpenFiles": [
+    "Assets/Base Template.md",
+    "index.md",
+    "! Documentation board.md",
+    "How to/Viewing the archive.md",
     "How to/Creating new notes from Kanban cards.md",
-    "Assets/Screen Shot 2021-09-13 at 12.22.08 PM.png",
-    "Assets/Screen Shot 2021-09-13 at 3.32.18 PM.png",
-    "Settings/Display card checkbox.md",
-    "Settings/Lane width.md",
-    "Settings/New line trigger.md",
-    "Settings/Note folder.md",
-    "Settings/Note template.md",
+    "How to/index.md",
+    "Settings/index.md",
     "Settings/Prepend append new cards.md",
-    "index.md"
+    "Settings/Note template.md",
+    "Settings/Note folder.md"
   ]
 }

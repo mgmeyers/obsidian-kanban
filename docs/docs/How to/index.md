@@ -1,4 +1,4 @@
-### Creating new notes from Kanban cards
+## Creating new notes from Kanban cards
 
 Notes can be created from Kanban cards by right clicking on a card, or clicking on the three dots menu on the right side of a card, and selecting `New note from card`.
 
@@ -9,7 +9,7 @@ This will create a new note in the [Note folder](../Settings/Note%20folder.md) u
 ![250](../Assets/Screen%20Shot%202021-09-13%20at%2012.33.39%20PM.png)
 
 
-### Viewing the archive
+## Viewing the archive
 
 Currenly, a Kanban's archive can only be viewed by viewing the board as markdown.
 
