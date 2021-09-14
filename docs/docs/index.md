@@ -2,7 +2,6 @@
 
 * [Creating new notes from Kanban cards](How%20to/Creating%20new%20notes%20from%20Kanban%20cards.md)
 * [Viewing the archive](How%20to/Viewing%20the%20archive.md)
-* [index](How%20to/index.md)
 
 ## [Settings](Settings/index.md)
 
@@ -13,7 +12,6 @@
 * [Note folder](Settings/Note%20folder.md)
 * [Note template](Settings/Note%20template.md)
 * [Prepend append new cards](Settings/Prepend%20append%20new%20cards.md)
-* [index](Settings/index.md)
 * [Hide tags in card titles](Settings/Hide%20tags%20in%20card%20titles.md)
 * [Hide card display tags](Settings/Hide%20card%20display%20tags.md)
 * [Board Header Buttons](Settings/Board%20Header%20Buttons.md)

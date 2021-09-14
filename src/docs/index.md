@@ -2,7 +2,6 @@
 
 - [[How to/Creating new notes from Kanban cards|Creating new notes from Kanban cards]]
 - [[How to/Viewing the archive|Viewing the archive]]
-- [[How to/index|index]]
 
 ## [[Settings/index|Settings]]
 
@@ -13,7 +12,6 @@
 - [[Settings/Note folder|Note folder]]
 - [[Settings/Note template|Note template]]
 - [[Settings/Prepend append new cards|Prepend append new cards]]
-- [[Settings/index|index]]
 - [[Settings/Hide tags in card titles|Hide tags in card titles]]
 - [[Settings/Hide card display tags|Hide card display tags]]
 - [[Settings/Board Header Buttons|Board Header Buttons]]
