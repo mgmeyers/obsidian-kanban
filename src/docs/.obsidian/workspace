@@ -4,12 +4,12 @@
     "type": "split",
     "children": [
       {
-        "id": "950c18172c0032db",
+        "id": "d867c7e0f8bacb24",
         "type": "leaf",
         "state": {
           "type": "markdown",
           "state": {
-            "file": "Assets/Base Template.md",
+            "file": "index.md",
             "mode": "source"
           }
         }
@@ -39,7 +39,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "path:\"How to\" -index",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -68,7 +68,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Assets/Base Template.md",
+                "file": "index.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -86,17 +86,17 @@
     "width": 300,
     "collapsed": true
   },
-  "active": "950c18172c0032db",
+  "active": "d867c7e0f8bacb24",
   "lastOpenFiles": [
-    "Assets/Base Template.md",
     "index.md",
     "! Documentation board.md",
-    "How to/Viewing the archive.md",
-    "How to/Creating new notes from Kanban cards.md",
-    "How to/index.md",
-    "Settings/index.md",
-    "Settings/Prepend append new cards.md",
-    "Settings/Note template.md",
-    "Settings/Note folder.md"
+    "Settings/Time format.md",
+    "Settings/Date format.md",
+    "Settings/Time trigger.md",
+    "Settings/Date trigger.md",
+    "Settings/__Settings.md",
+    "Settings/Board Header Buttons.md",
+    "Settings/Hide tags in card titles.md",
+    "Settings/Hide card display tags.md"
   ]
 }

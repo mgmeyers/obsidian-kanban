@@ -3,20 +3,12 @@
 kanban-plugin: basic
 new-note-folder: Settings
 new-note-template: Assets/Base Template.md
+show-add-list: true
 
 ---
 
 ## Backlog
 
-- [ ] Date trigger
-- [ ] Time trigger
-- [ ] Date format
-- [ ] Time format
-- [ ] Date display format
-- [ ] Show relative date
-- [ ] Hide card display dates
-- [ ] Hide dates in card titles
-- [ ] Link dates to daily notes
 - [ ] Add date and time to archived cards
 - [ ] Archive date/time separator
 - [ ] Archive date/time format
@@ -25,13 +17,17 @@ new-note-template: Assets/Base Template.md
 - [ ] Adding dates to cards
 - [ ] Adding times to cards
 - [ ] Searching cards
+- [ ] What's allowed in frontmatter vs. dataview metadata fields
+- [ ] Frontmatter limitations & gotchas
 
 
 ## Next up
 
-- [ ] Hide tags in card titles
-- [ ] Hide card display tags
-- [ ] Board Header Buttons
+- [ ] Date display format
+- [ ] Show relative date
+- [ ] Hide card display dates
+- [ ] Hide dates in card titles
+- [ ] Link dates to daily notes
 
 
 ## In progress
@@ -41,6 +37,19 @@ new-note-template: Assets/Base Template.md
 ## Complete
 
 **Complete**
+- [x] [[Time format]]
+- [x] [[Date format]]
+
+
+***
+
+## Archive
+
+- [x] [[Time trigger]]
+- [x] [[Date trigger]]
+- [x] [[Board Header Buttons]]
+- [x] [[Hide card display tags]]
+- [x] [[Hide tags in card titles]]
 - [x] [[Display card checkbox]]
 - [x] [[Viewing the archive]]
 - [x] [[Maximum number of archived cards]]
@@ -49,5 +58,3 @@ new-note-template: Assets/Base Template.md
 - [x] [[Note template]]
 - [x] [[Prepend append new cards]]
 - [x] [[New line trigger]]
-
-
