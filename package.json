@@ -11,7 +11,10 @@
     "sort-imports": "import-sort --write \"./src/**/*.{ts,tsx}\"",
     "prettier": "prettier --write \"./src/**/*.{ts,tsx}\"",
     "clean": "yarn sort-imports && yarn prettier && yarn lint:fix",
-    "docs": "rm -rf docs/docs && mkdir docs/docs && obsidian-export src/docs docs/docs && cp -R src/docs/stylesheets docs/docs"
+    "docs:clean": "rm -rf docs/docs && mkdir docs/docs",
+    "docs:export": "obsidian-export src/docs docs/docs",
+    "docs:img": "replace '!\\[(Screen Shot[^\\]]+)\\]\\(([^)]+)\\)' '<img alt=\"$1\" srcset=\"$2 2x\">' ./docs -r --include=\"*.md\" --quiet",
+    "docs": "yarn docs:clean && yarn docs:export && yarn docs:img"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +34,7 @@
     "obsidian-dataview": "^0.4.5",
     "obsidian-plugin-cli": "^0.8.0",
     "prettier": "^2.3.2",
+    "replace": "^1.2.1",
     "tslib": "^2.2.0",
     "typescript": "^4.2.4"
   },

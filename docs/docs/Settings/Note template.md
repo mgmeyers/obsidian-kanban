@@ -19,8 +19,8 @@ This file was created on {{date}} {{time}}.
 
 Then select the template in your Kanban board's settings:
 
-![Screen Shot 2021-09-13 at 3.32.18 PM.png](../Assets/Screen%20Shot%202021-09-13%20at%203.32.18%20PM.png)
+<img alt="Screen Shot 2021-09-13 at 3.32.18 PM.png" srcset="../Assets/Screen%20Shot%202021-09-13%20at%203.32.18%20PM.png 2x">
 
-![Screen Shot 2021-09-13 at 3.35.03 PM.png](../Assets/Screen%20Shot%202021-09-13%20at%203.35.03%20PM.png)
+<img alt="Screen Shot 2021-09-13 at 3.35.03 PM.png" srcset="../Assets/Screen%20Shot%202021-09-13%20at%203.35.03%20PM.png 2x">
 
-![Screen Shot 2021-09-13 at 3.35.17 PM.png](../Assets/Screen%20Shot%202021-09-13%20at%203.35.17%20PM.png)
+<img alt="Screen Shot 2021-09-13 at 3.35.17 PM.png" srcset="../Assets/Screen%20Shot%202021-09-13%20at%203.35.17%20PM.png 2x">
