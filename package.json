@@ -13,7 +13,7 @@
     "clean": "yarn sort-imports && yarn prettier && yarn lint:fix",
     "docs:clean": "rm -rf docs/docs && mkdir docs/docs",
     "docs:export": "obsidian-export src/docs docs/docs",
-    "docs:img": "replace '!\\[(Screen Shot[^\\]]+)\\]\\(([^)]+)\\)' '<img alt=\"$1\" srcset=\"$2 2x\">' ./docs -r --include=\"*.md\" --quiet",
+    "docs:img": "replace '!\\[(Screen Shot[^\\]]+)\\]\\(.+Assets\\/([^)]+)\\)' '<img alt=\"$1\" srcset=\"/obsidian-kanban/Assets/$2 2x\">' ./docs -r --include=\"*.md\" --quiet",
     "docs": "yarn docs:clean && yarn docs:export && yarn docs:img"
   },
   "keywords": [],
