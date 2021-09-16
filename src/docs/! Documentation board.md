@@ -23,20 +23,20 @@ show-add-list: true
 
 ## Next up
 
-- [ ] Date display format
 - [ ] Show relative date
-- [ ] Hide card display dates
-- [ ] Hide dates in card titles
-- [ ] Link dates to daily notes
 
 
 ## In progress
 
+- [ ] [[Link dates to daily notes]]
 
 
 ## Complete
 
 **Complete**
+- [x] [[Hide dates in card titles]]
+- [x] [[Hide card display dates]]
+- [x] [[Date display format]]
 - [x] [[Time format]]
 - [x] [[Date format]]
 
@@ -47,7 +47,7 @@ show-add-list: true
 
 - [x] [[Time trigger]]
 - [x] [[Date trigger]]
-- [x] [[Board Header Buttons]]
+- [x] [[Board header buttons]]
 - [x] [[Hide card display tags]]
 - [x] [[Hide tags in card titles]]
 - [x] [[Display card checkbox]]

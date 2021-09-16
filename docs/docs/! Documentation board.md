@@ -20,18 +20,19 @@ show-add-list: true
 
 ## Next up
 
-* [ ] Date display format
 * [ ] Show relative date
-* [ ] Hide card display dates
-* [ ] Hide dates in card titles
-* [ ] Link dates to daily notes
 
 ## In progress
+
+* [ ] [Link dates to daily notes](Settings/Link%20dates%20to%20daily%20notes.md)
 
 ## Complete
 
 **Complete**
 
+* [x] [Hide dates in card titles](Settings/Hide%20dates%20in%20card%20titles.md)
+* [x] [Hide card display dates](Settings/Hide%20card%20display%20dates.md)
+* [x] [Date display format](Settings/Date%20display%20format.md)
 * [x] [Time format](Settings/Time%20format.md)
 * [x] [Date format](Settings/Date%20format.md)
 
@@ -41,7 +42,7 @@ show-add-list: true
 
 * [x] [Time trigger](Settings/Time%20trigger.md)
 * [x] [Date trigger](Settings/Date%20trigger.md)
-* [x] [Board Header Buttons](Settings/Board%20Header%20Buttons.md)
+* [x] [Board header buttons](Settings/Board%20header%20buttons.md)
 * [x] [Hide card display tags](Settings/Hide%20card%20display%20tags.md)
 * [x] [Hide tags in card titles](Settings/Hide%20tags%20in%20card%20titles.md)
 * [x] [Display card checkbox](Settings/Display%20card%20checkbox.md)

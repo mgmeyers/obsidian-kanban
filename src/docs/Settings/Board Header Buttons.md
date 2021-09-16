@@ -1,4 +1,4 @@
-## Board Header Buttons
+## Board header buttons
 
 These settings allow hiding buttons from a Kanban board's header.
 

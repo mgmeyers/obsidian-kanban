@@ -9,7 +9,18 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "Settings/Board Header Buttons.md",
+            "file": "Settings/__Settings.md",
+            "mode": "source"
+          }
+        }
+      },
+      {
+        "id": "6f0efc9b9f67d76e",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "Settings/Date display format.md",
             "mode": "source"
           }
         }
@@ -68,7 +79,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Settings/Board Header Buttons.md",
+                "file": "Settings/__Settings.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -88,15 +99,15 @@
   },
   "active": "d867c7e0f8bacb24",
   "lastOpenFiles": [
-    "Settings/Board Header Buttons.md",
-    "Settings/Date format.md",
-    "Settings/Date trigger.md",
-    "Settings/Display card checkbox.md",
-    "Settings/Hide card display tags.md",
-    "Settings/Hide tags in card titles.md",
+    "Settings/__Settings.md",
     "Settings/index.md",
-    "Settings/Lane width.md",
-    "Settings/Maximum number of archived cards.md",
-    "Settings/New line trigger.md"
+    "index.md",
+    "! Documentation board.md",
+    "Settings/Hide dates in card titles.md",
+    "Settings/Link dates to daily notes.md",
+    "Settings/Date display format.md",
+    "Settings/Hide tags in card titles.md",
+    "Settings/Hide card display dates.md",
+    "Settings/Board header buttons.md"
   ]
 }

@@ -1,3 +1,33 @@
+## Board header buttons
+
+These settings allow hiding buttons from a Kanban board's header.
+
+Default:
+
+<img alt="Screen Shot 2021-09-14 at 11.55.06 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.55.06%20AM.png 2x">
+
+With the "Add a list" button hidden:
+
+<img alt="Screen Shot 2021-09-14 at 11.56.01 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.56.01%20AM.png 2x">
+
+## Date format
+
+Allows specifying the output of the [calendar popup](Date%20trigger.md). Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
+
+`YYYY-MM-DD`:
+
+<img alt="Screen Shot 2021-09-14 at 12.08.25 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.08.25%20PM.png 2x">
+
+`ddd, MMM Do, YYYY`:
+
+<img alt="Screen Shot 2021-09-14 at 12.09.20 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.09.20%20PM.png 2x">
+
+## Date trigger
+
+When creating or editing a card, this character—`@` by default—or sequence of characters will trigger the calendar popup.
+
+<img alt="Screen Shot 2021-09-14 at 12.01.07 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.01.07%20PM.png 2x">
+
 ## Display card checkbox
 
 This setting enables or disables displaying checkboxes on cards. `Command` or `CTRL` clicking on the checkbox will [archive](../How%20to/Viewing%20the%20archive.md) the card.
@@ -10,6 +40,21 @@ With checkbox:
 
 <img alt="Screen Shot 2021-09-13 at 4.00.18 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%204.00.18%20PM.png 2x">
 
+## Hide card display tags
+
+This setting will display any tags within a card's content at the bottom of the card. It can be used in conjunction with [Hide tags in card titles](Hide%20tags%20in%20card%20titles.md) for improved organization and aesthetics.
+
+## Hide tags in card titles
+
+By default, tags will display in a card's main text. This setting allows you to visually remove tags from this text. Tags still remain, but are not displayed. This setting is meant to be used in conjunction with the [Hide card display tags](Hide%20card%20display%20tags.md) setting.
+
+Setting off:
+
+<img alt="Screen Shot 2021-09-14 at 11.44.32 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.44.32%20AM.png 2x">
+
+Setting on:
+
+<img alt="Screen Shot 2021-09-14 at 11.49.10 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.49.10%20AM.png 2x">
 
 ## Lane width
 
@@ -21,23 +66,19 @@ Changing this setting to 400 will result in:
 
 <img alt="Screen Shot 2021-09-13 at 3.48.15 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%203.48.15%20PM.png 2x">
 
-
 ## Maximum number of archived cards
 
 By default, a Kanban board's [archive](../How%20to/Viewing%20the%20archive.md) will grow infinitely. Setting the maximum number of archived cards will cap the archive at the specified number. 
 
 For example, if `Maximum number of archived cards` is set to `100`, the archive will never contain more than 100 cards. When the archive reaches its maximum, old cards will be deleted as new cards are added.
 
-
 ## New line trigger
 
 By default, `enter` creates a new card, and `shift + enter` creates a new line within a card. This can be changed so that `enter` creates new lines and `shift + enter` creates new cards.
 
-
 ## Note folder
 
 When [Creating new notes from Kanban cards](../How%20to/Creating%20new%20notes%20from%20Kanban%20cards.md), the `Note template` setting determines the folder in which new notes are created.
-
 
 ## Note template
 
@@ -66,7 +107,6 @@ Then select the template in your Kanban board's settings:
 
 <img alt="Screen Shot 2021-09-13 at 3.35.17 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%203.35.17%20PM.png 2x">
 
-
 ## Prepend / append new cards
 
 This setting changes where new cards are inserted into a list, and also where the `Add a card` button is placed. New cards are appended to the list by default.
@@ -83,65 +123,6 @@ This setting changes where new cards are inserted into a list, and also where th
 
 <img alt="Screen Shot 2021-09-13 at 12.23.35 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%2012.23.35%20PM.png 2x">
 
-
-## Hide tags in card titles
-
-By default, tags will display in a card's main text. This setting allows you to visually remove tags from this text. Tags still remain, but are not displayed. This setting is meant to be used in conjunction with the [Hide card display tags](Hide%20card%20display%20tags.md) setting.
-
-Setting off:
-
-<img alt="Screen Shot 2021-09-14 at 11.44.32 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.44.32%20AM.png 2x">
-
-Setting on:
-
-<img alt="Screen Shot 2021-09-14 at 11.49.10 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.49.10%20AM.png 2x">
-
-
-## Hide card display tags
-
-This setting will display any tags within a card's content at the bottom of the card. It can be used in conjunction with [Hide tags in card titles](Hide%20tags%20in%20card%20titles.md) for improved organization and aesthetics.
-
-
-## Board Header Buttons
-
-These settings allow hiding buttons from a Kanban board's header.
-
-Default:
-
-<img alt="Screen Shot 2021-09-14 at 11.55.06 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.55.06%20AM.png 2x">
-
-With the "Add a list" button hidden:
-
-<img alt="Screen Shot 2021-09-14 at 11.56.01 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.56.01%20AM.png 2x">
-
-
-## Date trigger
-
-When creating or editing a card, this character—`@` by default—or sequence of characters will trigger the calendar popup.
-
-<img alt="Screen Shot 2021-09-14 at 12.01.07 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.01.07%20PM.png 2x">
-
-
-## Time trigger
-
-When creating or editing a card, this character or sequence of characters—`@@` by default—will trigger the time selection popup.
-
-<img alt="Screen Shot 2021-09-14 at 12.03.06 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.03.06%20PM.png 2x">
-
-
-## Date format
-
-Allows specifying the output of the [calendar popup](Date%20trigger.md). Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
-
-`YYYY-MM-DD`:
-
-<img alt="Screen Shot 2021-09-14 at 12.08.25 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.08.25%20PM.png 2x">
-
-`ddd, MMM Do, YYYY`:
-
-<img alt="Screen Shot 2021-09-14 at 12.09.20 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.09.20%20PM.png 2x">
-
-
 ## Time format
 
 Allows specifying the output of the [time selection popup](Time%20trigger.md). Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
@@ -153,3 +134,51 @@ Allows specifying the output of the [time selection popup](Time%20trigger.md). A
 `h:mm a`:
 
 <img alt="Screen Shot 2021-09-14 at 12.13.07 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.13.07%20PM.png 2x">
+
+## Time trigger
+
+When creating or editing a card, this character or sequence of characters—`@@` by default—will trigger the time selection popup.
+
+<img alt="Screen Shot 2021-09-14 at 12.03.06 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.03.06%20PM.png 2x">
+
+## Date display format
+
+The date display format is similar to the [Date format](Date%20format.md) except that it controls the format of the date shown at the bottom of a card. This date can be hidden using the [Hide card display dates](Hide%20card%20display%20dates.md) setting.
+
+Setting the date display format:
+
+<img alt="Screen Shot 2021-09-15 at 5.46.58 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.46.58%20PM.png 2x">
+
+Creating a card with a date in the current [Date format](Date%20format.md):
+
+<img alt="Screen Shot 2021-09-15 at 5.48.37 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.48.37%20PM.png 2x">
+
+By default, the date is hidden from the card text (see: [Hide dates in card titles](Hide%20dates%20in%20card%20titles.md)) and displayed using the date display format below:
+
+<img alt="Screen Shot 2021-09-15 at 5.48.16 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.48.16%20PM.png 2x">
+
+## Hide card display dates
+
+This setting hides display dates (see: [Date display format](Date%20display%20format.md)). This setting is designed to be used in conjuction with [Hide dates in card titles](Hide%20dates%20in%20card%20titles.md).
+
+Off: 
+
+<img alt="Screen Shot 2021-09-15 at 5.48.16 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.48.16%20PM.png 2x">
+
+On:
+
+<img alt="Screen Shot 2021-09-15 at 5.51.36 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.51.36%20PM.png 2x">
+
+## Hide dates in card titles
+
+Hide dates from the main card text. This setting is designed to be used in conjunction with [Hide card display dates](Hide%20card%20display%20dates.md). It can also be used to show links to [daily notes](Link%20dates%20to%20daily%20notes.md) in the card's text.
+
+Off:
+
+<img alt="Screen Shot 2021-09-15 at 5.54.15 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.54.15%20PM.png 2x">
+
+On (default):
+
+<img alt="Screen Shot 2021-09-15 at 5.48.16 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.48.16%20PM.png 2x">
+
+## Link dates to daily notes
