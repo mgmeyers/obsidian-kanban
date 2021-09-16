@@ -4,3 +4,4 @@
 * [Search a Kanban board](Search%20a%20Kanban%20board.md)
 * [Add a date to a card](Add%20a%20date%20to%20a%20card.md)
 * [Add a time to a card](Add%20a%20time%20to%20a%20card.md)
+* [Add an image to a card](Add%20an%20image%20to%20a%20card)
