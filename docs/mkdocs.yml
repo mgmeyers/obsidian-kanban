@@ -24,5 +24,6 @@ nav:
   - Overview: 'index.md'
   - How do I: 'How do I/index.md'
   - Settings: 'Settings/index.md'
+  - FAQs: 'FAQs/index.md'
 plugins:
   - search
