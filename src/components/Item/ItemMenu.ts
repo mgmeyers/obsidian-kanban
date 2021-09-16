@@ -5,8 +5,8 @@ import { Path } from 'src/dnd/types';
 import { t } from 'src/lang/helpers';
 import { StateManager } from 'src/StateManager';
 
+import { BoardModifiers } from '../../helpers/boardModifiers';
 import { applyTemplate, escapeRegExpStr } from '../helpers';
-import { BoardModifiers } from '../helpers/boardModifiers';
 import { Item } from '../types';
 import {
   constructDatePicker,

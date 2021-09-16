@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 
 import { KanbanContext } from './components/context';
 import { c, maybeCompleteForMove } from './components/helpers';
-import { getBoardModifiers } from './components/helpers/boardModifiers';
 import { DraggableItem } from './components/Item/Item';
 import { DraggableLane } from './components/Lane/Lane';
 import { DataTypes, Item, Lane } from './components/types';
@@ -15,6 +14,7 @@ import {
   moveEntity,
   removeEntity,
 } from './dnd/util/data';
+import { getBoardModifiers } from './helpers/boardModifiers';
 import { KanbanView } from './KanbanView';
 import KanbanPlugin from './main';
 

@@ -6,8 +6,8 @@ import {
   getDefaultDateFormat,
   getDefaultTimeFormat,
 } from './components/helpers';
-import { renderMarkdown } from './components/helpers/renderMarkdown';
 import { Board, BoardTemplate, Item } from './components/types';
+import { renderMarkdown } from './helpers/renderMarkdown';
 import { KanbanView } from './KanbanView';
 import { KanbanParser } from './parsers/basic';
 import { defaultDateTrigger, defaultTimeTrigger } from './settingHelpers';
@@ -406,29 +406,19 @@ export class StateManager {
       return this.parser.updateItem(item, titleRaw);
     };
 
-    const lanes = await Promise.all(
-      board.children.map(async (lane) => {
-        return update(lane, {
-          children: {
-            $set: await Promise.all(
-              lane.children.filter(async (item) => {
-                if (lane.data.shouldMarkItemsComplete || item.data.isComplete) {
-                  archived.push(
-                    shouldAppendArchiveDate
-                      ? await appendArchiveDate(item)
-                      : item
-                  );
-                }
+    const lanes = board.children.map((lane) => {
+      return update(lane, {
+        children: {
+          $set: lane.children.filter((item) => {
+            if (lane.data.shouldMarkItemsComplete || item.data.isComplete) {
+              archived.push(item);
+            }
 
-                return (
-                  !item.data.isComplete && !lane.data.shouldMarkItemsComplete
-                );
-              })
-            ),
-          },
-        });
-      })
-    );
+            return !item.data.isComplete && !lane.data.shouldMarkItemsComplete;
+          }),
+        },
+      });
+    });
 
     this.app.workspace.trigger(
       'kanban:board-cards-archived',
@@ -443,7 +433,11 @@ export class StateManager {
         },
         data: {
           archive: {
-            $push: archived,
+            $push: shouldAppendArchiveDate
+              ? await Promise.all(
+                  archived.map(async (item) => await appendArchiveDate(item))
+                )
+              : archived,
           },
         },
       })

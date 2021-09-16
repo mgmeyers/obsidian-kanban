@@ -2,9 +2,9 @@ import classcat from 'classcat';
 import Mark from 'mark.js';
 import React from 'react';
 
+import { renderMarkdown } from '../helpers/renderMarkdown';
 import { KanbanContext } from './context';
 import { c } from './helpers';
-import { renderMarkdown } from './helpers/renderMarkdown';
 
 interface MarkdownRendererProps extends React.HTMLProps<HTMLDivElement> {
   className?: string;

@@ -5,19 +5,18 @@ new-note-template: Assets/Base Template.md
 show-add-list: true
 ---
 
-## In progress
+## Todo
+
+* [ ] Hidden CSS styling options
 
 ## In progress
-
-## In progress
-
-* [ ] [Linked page metadata](Settings/Linked%20page%20metadata.md)
-* [ ] [Frontmatter limitations & gotchas](FAQs/Frontmatter%20limitations%20&%20gotchas.md)
 
 ## Complete
 
 **Complete**
 
+* [x] [Frontmatter limitations & gotchas](FAQs/Frontmatter%20limitations%20&%20gotchas.md)
+* [x] [Linked page metadata](Settings/Linked%20page%20metadata.md)
 * [x] What's allowed in frontmatter vs. dataview metadata fields
 * [x] [Add a time to a card](How%20do%20I/Add%20a%20time%20to%20a%20card.md)
 * [x] [Add a date to a card](How%20do%20I/Add%20a%20date%20to%20a%20card.md)

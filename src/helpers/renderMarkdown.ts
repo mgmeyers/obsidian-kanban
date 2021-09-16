@@ -3,7 +3,7 @@ import { CachedMetadata, MarkdownRenderer, TFile } from 'obsidian';
 import { KanbanView } from 'src/KanbanView';
 import { t } from 'src/lang/helpers';
 
-import { c } from '../helpers';
+import { c } from '../components/helpers';
 
 const imageExt = ['bmp', 'png', 'jpg', 'jpeg', 'gif', 'svg'];
 const audioExt = ['mp3', 'wav', 'm4a', '3gp', 'flac', 'ogg', 'oga'];

@@ -2,8 +2,8 @@ import yaml from 'js-yaml';
 import { App, TFile, moment } from 'obsidian';
 
 import { escapeRegExpStr } from 'src/components/helpers';
-import { getNormalizedPath } from 'src/components/helpers/renderMarkdown';
 import { FileMetadata } from 'src/components/types';
+import { getNormalizedPath } from 'src/helpers/renderMarkdown';
 import { t } from 'src/lang/helpers';
 import { KanbanSettings } from 'src/Settings';
 

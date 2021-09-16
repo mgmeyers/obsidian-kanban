@@ -4,9 +4,9 @@ import { moment, setIcon } from 'obsidian';
 import { Path } from 'src/dnd/types';
 import { StateManager } from 'src/StateManager';
 
+import { BoardModifiers } from '../../helpers/boardModifiers';
 import { getDefaultLocale } from '../Editor/datePickerLocale';
 import { c, escapeRegExpStr } from '../helpers';
-import { BoardModifiers } from '../helpers/boardModifiers';
 import { Item } from '../types';
 
 export function constructDatePicker(

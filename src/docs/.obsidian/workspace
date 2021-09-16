@@ -7,10 +7,9 @@
         "id": "0bafdba9f9fff2bf",
         "type": "leaf",
         "state": {
-          "type": "markdown",
+          "type": "kanban",
           "state": {
-            "file": "index.md",
-            "mode": "source"
+            "file": "! Documentation board.md"
           }
         }
       }
@@ -68,7 +67,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "index.md",
+                "file": "! Documentation board.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -88,6 +87,7 @@
   },
   "active": "0bafdba9f9fff2bf",
   "lastOpenFiles": [
+    "! Documentation board.md",
     "index.md",
     "Settings/index.md",
     "Settings/__Settings.md",
@@ -96,7 +96,6 @@
     "How do I/index.md",
     "How do I/__How do I.md",
     "How do I/Install the plugin.md",
-    "Settings/Local vs. global settings.md",
-    "FAQs/Themes with enhanced Kanban support.md"
+    "Settings/Local vs. global settings.md"
   ]
 }

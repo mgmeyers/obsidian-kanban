@@ -6,9 +6,9 @@ import { useDragHandle } from 'src/dnd/managers/DragManager';
 import { Path } from 'src/dnd/types';
 import { StateManager } from 'src/StateManager';
 
+import { BoardModifiers } from '../../helpers/boardModifiers';
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
-import { BoardModifiers } from '../helpers/boardModifiers';
 import { Item } from '../types';
 import { getItemClassModifiers } from './helpers';
 import {

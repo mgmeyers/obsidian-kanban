@@ -13,8 +13,8 @@ import {
 } from 'src/dnd/util/data';
 import { StateManager } from 'src/StateManager';
 
-import { generateInstanceId } from '../helpers';
-import { Item, Lane } from '../types';
+import { generateInstanceId } from '../components/helpers';
+import { Item, Lane } from '../components/types';
 
 export interface BoardModifiers {
   appendItems: (path: Path, items: Item[]) => void;

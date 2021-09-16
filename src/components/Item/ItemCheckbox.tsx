@@ -4,8 +4,8 @@ import React from 'react';
 import { Path } from 'src/dnd/types';
 import { StateManager } from 'src/StateManager';
 
+import { BoardModifiers } from '../../helpers/boardModifiers';
 import { c } from '../helpers';
-import { BoardModifiers } from '../helpers/boardModifiers';
 import { Icon } from '../Icon/Icon';
 import { Item } from '../types';
 

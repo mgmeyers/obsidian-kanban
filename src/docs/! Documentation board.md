@@ -7,23 +7,20 @@ show-add-list: true
 
 ---
 
-## In progress
+## Todo
 
-
-
-## In progress
-
+- [ ] Hidden CSS styling options
 
 
 ## In progress
 
-- [ ] [[Linked page metadata]]
-- [ ] [[Frontmatter limitations & gotchas]]
 
 
 ## Complete
 
 **Complete**
+- [x] [[Frontmatter limitations & gotchas]]
+- [x] [[Linked page metadata]]
 - [x] What's allowed in frontmatter vs. dataview metadata fields
 - [x] [[Add a time to a card]]
 - [x] [[Add a date to a card]]
