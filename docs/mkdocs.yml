@@ -22,7 +22,7 @@ theme:
         name: Switch to light mode
 nav:
   - Overview: 'index.md'
-  - How tos: 'How to/index.md'
+  - How do I: 'How do I/index.md'
   - Settings: 'Settings/index.md'
 plugins:
   - search
