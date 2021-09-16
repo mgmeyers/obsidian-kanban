@@ -195,6 +195,19 @@ The metadata will then be displayed below the card.
 <img alt="Screen Shot 2021-09-16 at 10.10.47 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%2010.10.47%20AM.png 2x">
 
 
+## Local vs. global settings
+
+The settings for the Kanban plugin can be set globally, as well as on a per-board basis. Global settings can be found in `Settings > Kanban`.
+
+<img alt="Screen Shot 2021-09-16 at 1.04.58 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%201.04.58%20PM.png 2x">
+
+Global settings can be overridden on a per-board basis by modifying the board's settings, which can be accessed through the [Board header buttons](Board%20header%20buttons.md) or the `More options menu`.
+
+<img alt="Screen Shot 2021-09-16 at 1.06.02 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%201.06.02%20PM.png 2x">
+
+<img alt="Screen Shot 2021-09-16 at 1.06.27 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%201.06.27%20PM.png 2x">
+
+
 ## Maximum number of archived cards
 
 By default, a Kanban board's [archive](../How%20do%20I/View%20a%20Kanban's%20archive.md) will grow infinitely. Setting the maximum number of archived cards will cap the archive at the specified number. 
@@ -282,16 +295,3 @@ Allows specifying the output of the [time selection popup](Time%20trigger.md). A
 When creating or editing a card, this character or sequence of characters—`@@` by default—will trigger the time selection popup.
 
 <img alt="Screen Shot 2021-09-14 at 12.03.06 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.03.06%20PM.png 2x">
-
-
-## Local vs. global settings
-
-The settings for the Kanban plugin can be set globally, as well as on a per-board basis. Global settings can be found in `Settings > Kanban`.
-
-<img alt="Screen Shot 2021-09-16 at 1.04.58 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%201.04.58%20PM.png 2x">
-
-Global settings can be overridden on a per-board basis by modifying the board's settings, which can be accessed through the [Board header buttons](Board%20header%20buttons.md) or the `More options menu`.
-
-<img alt="Screen Shot 2021-09-16 at 1.06.02 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%201.06.02%20PM.png 2x">
-
-<img alt="Screen Shot 2021-09-16 at 1.06.27 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%201.06.27%20PM.png 2x">

@@ -3,6 +3,6 @@
 - [[How do I/Add an image to a card|Add an image to a card]]
 - [[How do I/Create a Kanban board|Create a Kanban board]]
 - [[How do I/Create notes from cards|Create notes from cards]]
+- [[How do I/Install the plugin|Install the plugin]]
 - [[How do I/Search a Kanban board|Search a Kanban board]]
 - [[How do I/View a Kanban's archive|View a Kanban's archive]]
-- [[How do I/Install the plugin|Install the plugin]]

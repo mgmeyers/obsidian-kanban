@@ -27,6 +27,7 @@ Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
 - [[Settings/Lane width|Lane width]]
 - [[Settings/Link dates to daily notes|Link dates to daily notes]]
 - [[Settings/Linked page metadata|Linked page metadata]]
+- [[Settings/Local vs. global settings|Local vs. global settings]]
 - [[Settings/Maximum number of archived cards|Maximum number of archived cards]]
 - [[Settings/New line trigger|New line trigger]]
 - [[Settings/Note folder|Note folder]]
@@ -35,13 +36,10 @@ Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
 - [[Settings/Show relative date|Show relative date]]
 - [[Settings/Time format|Time format]]
 - [[Settings/Time trigger|Time trigger]]
-- [[Settings/Local vs. global settings|Local vs. global settings]]
-
 
 ## [[FAQs/index|FAQs]]
 
 ![[FAQs/index]]
-
 
 ## Support
 

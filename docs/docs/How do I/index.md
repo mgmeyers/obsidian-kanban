@@ -3,6 +3,6 @@
 * [Add an image to a card](Add%20an%20image%20to%20a%20card.md)
 * [Create a Kanban board](Create%20a%20Kanban%20board.md)
 * [Create notes from cards](Create%20notes%20from%20cards.md)
+* [Install the plugin](Install%20the%20plugin.md)
 * [Search a Kanban board](Search%20a%20Kanban%20board.md)
 * [View a Kanban's archive](View%20a%20Kanban's%20archive.md)
-* [Install the plugin](Install%20the%20plugin.md)
