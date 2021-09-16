@@ -1,16 +1,14 @@
+# Obsidian Kanban Plugin
+
+Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
+
+![[Screen Shot 2021-09-16 at 12.58.22 PM.png]]
+
+![[Screen Shot 2021-09-16 at 1.10.38 PM.png]]
+
 ## [[How do I/index|How do I]]
 
-- [[How do I/Add a date to a card|Add a date to a card]]
-- [[How do I/Add a time to a card|Add a time to a card]]
-- [[How do I/Search a Kanban board|Search a Kanban board]]
-- [[How do I/View a Kanban's archive|View a Kanban's archive]]
-- [[How do I/Create a Kanban board|Create a Kanban board]]
-- [[How do I/Create notes from cards|Create notes from cards]]
-- [[How do I/Add an image to a card|Add an image to a card]]
-
-## [[FAQs/index]]
-
-- [[FAQs/Frontmatter limitations & gotchas|Frontmatter limitations & gotchas]]
+![[How do I/index]]
 
 ## [[Settings/index|Settings]]
 
@@ -28,6 +26,7 @@
 - [[Settings/Hide tags in card titles|Hide tags in card titles]]
 - [[Settings/Lane width|Lane width]]
 - [[Settings/Link dates to daily notes|Link dates to daily notes]]
+- [[Settings/Linked page metadata|Linked page metadata]]
 - [[Settings/Maximum number of archived cards|Maximum number of archived cards]]
 - [[Settings/New line trigger|New line trigger]]
 - [[Settings/Note folder|Note folder]]
@@ -36,4 +35,18 @@
 - [[Settings/Show relative date|Show relative date]]
 - [[Settings/Time format|Time format]]
 - [[Settings/Time trigger|Time trigger]]
-- [[Settings/Linked page metadata|Linked page metadata]]
+- [[Settings/Local vs. global settings|Local vs. global settings]]
+
+
+## [[FAQs/index|FAQs]]
+
+![[FAQs/index]]
+
+
+## Support
+
+If you find this plugin useful and would like to support its development, you can sponsor [me](https://github.com/mgmeyers) on Github, or buy me a coffee.
+
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/mgmeyers?label=Sponsor&logo=GitHub%20Sponsors&style=for-the-badge)](https://github.com/sponsors/mgmeyers)
+
+<a href="https://www.buymeacoffee.com/mgme"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=mgme&button_colour=5F7FFF&font_colour=ffffff&font_family=Lato&outline_colour=000000&coffee_colour=FFDD00"></a>

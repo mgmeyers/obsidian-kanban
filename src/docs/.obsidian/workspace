@@ -4,12 +4,12 @@
     "type": "split",
     "children": [
       {
-        "id": "d867c7e0f8bacb24",
+        "id": "0bafdba9f9fff2bf",
         "type": "leaf",
         "state": {
           "type": "markdown",
           "state": {
-            "file": "How do I/Add an image to a card.md",
+            "file": "index.md",
             "mode": "source"
           }
         }
@@ -68,7 +68,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "How do I/Add an image to a card.md",
+                "file": "index.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -86,17 +86,17 @@
     "width": 300,
     "collapsed": true
   },
-  "active": "d867c7e0f8bacb24",
+  "active": "0bafdba9f9fff2bf",
   "lastOpenFiles": [
-    "How do I/Add an image to a card.md",
-    "FAQs/Frontmatter limitations & gotchas.md",
-    "Settings/Linked page metadata.md",
-    "! Documentation board.md",
+    "index.md",
+    "Settings/index.md",
+    "Settings/__Settings.md",
+    "FAQs/index.md",
+    "FAQs/__FAQs.md",
     "How do I/index.md",
-    "Assets/Screen Shot How-to-add-metadata-to-card.png",
-    "Assets/Screen Shot 2021-09-13 at 3.32.18 PM.png",
-    "Assets/Screen Shot How-to-add-image-to-card.png",
-    "How do I/Search a Kanban board.md",
-    "How do I/Create notes from cards.md"
+    "How do I/__How do I.md",
+    "How do I/Install the plugin.md",
+    "Settings/Local vs. global settings.md",
+    "FAQs/Themes with enhanced Kanban support.md"
   ]
 }
