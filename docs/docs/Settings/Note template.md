@@ -1,6 +1,6 @@
 ## Note template
 
-When [Create new notes from Kanban cards](../How%20do%20I/Create%20new%20notes%20from%20Kanban%20cards.md), new notes will be pre-populated with the specified note template.
+When [Create notes from cards](../How%20do%20I/Create%20notes%20from%20cards.md), new notes will be pre-populated with the specified note template.
 
 Supported template formats:
 

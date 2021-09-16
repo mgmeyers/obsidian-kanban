@@ -5,24 +5,24 @@ new-note-template: Assets/Base Template.md
 show-add-list: true
 ---
 
-## Backlog
-
-* [ ] Linked Page Metadata
-* [ ] What's allowed in frontmatter vs. dataview metadata fields
-* [ ] Frontmatter limitations & gotchas
-
-## Next up
+## In progress
 
 ## In progress
+
+## In progress
+
+* [ ] [Linked page metadata](Settings/Linked%20page%20metadata.md)
+* [ ] [Frontmatter limitations & gotchas](FAQs/Frontmatter%20limitations%20&%20gotchas.md)
 
 ## Complete
 
 **Complete**
 
+* [x] What's allowed in frontmatter vs. dataview metadata fields
 * [x] [Add a time to a card](How%20do%20I/Add%20a%20time%20to%20a%20card.md)
 * [x] [Add a date to a card](How%20do%20I/Add%20a%20date%20to%20a%20card.md)
 * [x] [Search a Kanban board](How%20do%20I/Search%20a%20Kanban%20board.md)
-* [x] [Create a new Kanban board](How%20do%20I/Create%20a%20new%20Kanban%20board.md)
+* [x] [Create a Kanban board](How%20do%20I/Create%20a%20Kanban%20board.md)
 
 ---
 

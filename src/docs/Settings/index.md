@@ -1,3 +1,9 @@
+![[Settings/Add date and time to archived cards|Add date and time to archived cards]]
+
+![[Settings/Archive date time format|Archive date time format]]
+
+![[Settings/Archive date time separator|Archive date time separator]]
+
 ![[Settings/Board header buttons|Board header buttons]]
 
 ![[Settings/Date display format|Date display format]]
@@ -30,14 +36,10 @@
 
 ![[Settings/Prepend append new cards|Prepend append new cards]]
 
+![[Settings/Show relative date|Show relative date]]
+
 ![[Settings/Time format|Time format]]
 
 ![[Settings/Time trigger|Time trigger]]
 
-![[Settings/Show relative date|Show relative date]]
-
-![[Settings/Add date and time to archived cards|Add date and time to archived cards]]
-
-![[Settings/Archive date time separator|Archive date time separator]]
-
-![[Settings/Archive date time format|Archive date time format]]
+![[Settings/Linked page metadata|Linked page metadata]]

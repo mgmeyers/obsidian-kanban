@@ -2,5 +2,9 @@
   "attachmentFolderPath": "Assets",
   "useMarkdownLinks": false,
   "alwaysUpdateLinks": true,
-  "promptDelete": false
+  "promptDelete": false,
+  "spellcheckDictionary": [
+    "frontmatter",
+    "Frontmatter"
+  ]
 }

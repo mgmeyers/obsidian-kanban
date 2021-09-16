@@ -1,14 +1,22 @@
 ## [How do I](How%20do%20I/index.md)
 
-* [Create new notes from Kanban cards](How%20do%20I/Create%20new%20notes%20from%20Kanban%20cards.md)
-* [View a Kanban's archive](How%20do%20I/View%20a%20Kanban's%20archive.md)
-* [Create a new Kanban board](How%20do%20I/Create%20a%20new%20Kanban%20board.md)
-* [Search a Kanban board](How%20do%20I/Search%20a%20Kanban%20board.md)
 * [Add a date to a card](How%20do%20I/Add%20a%20date%20to%20a%20card.md)
 * [Add a time to a card](How%20do%20I/Add%20a%20time%20to%20a%20card.md)
+* [Search a Kanban board](How%20do%20I/Search%20a%20Kanban%20board.md)
+* [View a Kanban's archive](How%20do%20I/View%20a%20Kanban's%20archive.md)
+* [Create a Kanban board](How%20do%20I/Create%20a%20Kanban%20board.md)
+* [Create notes from cards](How%20do%20I/Create%20notes%20from%20cards.md)
+* [Add an image to a card](How%20do%20I/Add%20an%20image%20to%20a%20card.md)
+
+## [FAQs/index](FAQs/index.md)
+
+* [Frontmatter limitations & gotchas](FAQs/Frontmatter%20limitations%20&%20gotchas.md)
 
 ## [Settings](Settings/index.md)
 
+* [Add date and time to archived cards](Settings/Add%20date%20and%20time%20to%20archived%20cards.md)
+* [Archive date time format](Settings/Archive%20date%20time%20format.md)
+* [Archive date time separator](Settings/Archive%20date%20time%20separator.md)
 * [Board header buttons](Settings/Board%20header%20buttons.md)
 * [Date display format](Settings/Date%20display%20format.md)
 * [Date format](Settings/Date%20format.md)
@@ -25,9 +33,7 @@
 * [Note folder](Settings/Note%20folder.md)
 * [Note template](Settings/Note%20template.md)
 * [Prepend append new cards](Settings/Prepend%20append%20new%20cards.md)
+* [Show relative date](Settings/Show%20relative%20date.md)
 * [Time format](Settings/Time%20format.md)
 * [Time trigger](Settings/Time%20trigger.md)
-* [Show relative date](Settings/Show%20relative%20date.md)
-* [Add date and time to archived cards](Settings/Add%20date%20and%20time%20to%20archived%20cards.md)
-* [Archive date time separator](Settings/Archive%20date%20time%20separator.md)
-* [Archive date time format](Settings/Archive%20date%20time%20format.md)
+* [Linked page metadata](Settings/Linked%20page%20metadata.md)

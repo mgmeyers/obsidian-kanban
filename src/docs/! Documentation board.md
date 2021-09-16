@@ -7,14 +7,7 @@ show-add-list: true
 
 ---
 
-## Backlog
-
-- [ ] Linked Page Metadata
-- [ ] What's allowed in frontmatter vs. dataview metadata fields
-- [ ] Frontmatter limitations & gotchas
-
-
-## Next up
+## In progress
 
 
 
@@ -22,13 +15,20 @@ show-add-list: true
 
 
 
+## In progress
+
+- [ ] [[Linked page metadata]]
+- [ ] [[Frontmatter limitations & gotchas]]
+
+
 ## Complete
 
 **Complete**
+- [x] What's allowed in frontmatter vs. dataview metadata fields
 - [x] [[Add a time to a card]]
 - [x] [[Add a date to a card]]
 - [x] [[Search a Kanban board]]
-- [x] [[Create a new Kanban board]]
+- [x] [[Create a Kanban board]]
 
 
 ***

@@ -7,9 +7,10 @@
         "id": "d867c7e0f8bacb24",
         "type": "leaf",
         "state": {
-          "type": "kanban",
+          "type": "markdown",
           "state": {
-            "file": "! Documentation board.md"
+            "file": "How do I/Add an image to a card.md",
+            "mode": "source"
           }
         }
       }
@@ -67,7 +68,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "! Documentation board.md",
+                "file": "How do I/Add an image to a card.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -87,15 +88,15 @@
   },
   "active": "d867c7e0f8bacb24",
   "lastOpenFiles": [
+    "How do I/Add an image to a card.md",
+    "FAQs/Frontmatter limitations & gotchas.md",
+    "Settings/Linked page metadata.md",
     "! Documentation board.md",
-    "How do I/Add a time to a card.md",
-    "How do I/Add a date to a card.md",
+    "How do I/index.md",
+    "Assets/Screen Shot How-to-add-metadata-to-card.png",
+    "Assets/Screen Shot 2021-09-13 at 3.32.18 PM.png",
+    "Assets/Screen Shot How-to-add-image-to-card.png",
     "How do I/Search a Kanban board.md",
-    "How do I/Create a new Kanban board.md",
-    "How do I/View a Kanban's archive.md",
-    "How do I/Create new notes from Kanban cards.md",
-    "Settings/Archive date time separator.md",
-    "Settings/Archive date time format.md",
-    "Settings/Date display format.md"
+    "How do I/Create notes from cards.md"
   ]
 }

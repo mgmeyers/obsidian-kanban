@@ -1,14 +1,22 @@
 ## [[How do I/index|How do I]]
 
-- [[How do I/Create new notes from Kanban cards|Create new notes from Kanban cards]]
-- [[How do I/View a Kanban's archive|View a Kanban's archive]]
-- [[How do I/Create a new Kanban board|Create a new Kanban board]]
-- [[How do I/Search a Kanban board|Search a Kanban board]]
 - [[How do I/Add a date to a card|Add a date to a card]]
 - [[How do I/Add a time to a card|Add a time to a card]]
+- [[How do I/Search a Kanban board|Search a Kanban board]]
+- [[How do I/View a Kanban's archive|View a Kanban's archive]]
+- [[How do I/Create a Kanban board|Create a Kanban board]]
+- [[How do I/Create notes from cards|Create notes from cards]]
+- [[How do I/Add an image to a card|Add an image to a card]]
+
+## [[FAQs/index]]
+
+- [[FAQs/Frontmatter limitations & gotchas|Frontmatter limitations & gotchas]]
 
 ## [[Settings/index|Settings]]
 
+- [[Settings/Add date and time to archived cards|Add date and time to archived cards]]
+- [[Settings/Archive date time format|Archive date time format]]
+- [[Settings/Archive date time separator|Archive date time separator]]
 - [[Settings/Board header buttons|Board header buttons]]
 - [[Settings/Date display format|Date display format]]
 - [[Settings/Date format|Date format]]
@@ -25,9 +33,7 @@
 - [[Settings/Note folder|Note folder]]
 - [[Settings/Note template|Note template]]
 - [[Settings/Prepend append new cards|Prepend append new cards]]
+- [[Settings/Show relative date|Show relative date]]
 - [[Settings/Time format|Time format]]
 - [[Settings/Time trigger|Time trigger]]
-- [[Settings/Show relative date|Show relative date]]
-- [[Settings/Add date and time to archived cards|Add date and time to archived cards]]
-- [[Settings/Archive date time separator|Archive date time separator]]
-- [[Settings/Archive date time format|Archive date time format]]
+- [[Settings/Linked page metadata|Linked page metadata]]

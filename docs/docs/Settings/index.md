@@ -1,3 +1,29 @@
+## Add date and time to archived cards
+
+When active, a time stamp will be added to cards when they are archived. This will be added to the beginning of the card, and can be separated from the card's content using the [Archive date time separator](Archive%20date%20time%20separator.md) setting. The date format can be controlled with the [Archive date time format](Archive%20date%20time%20format.md) setting.
+
+<img alt="Screen Shot 2021-09-15 at 7.04.26 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.04.26%20PM.png 2x">
+
+## Archive date time format
+
+This will set the format of the [archive timestamp](Add%20date%20and%20time%20to%20archived%20cards.md). Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
+
+<img alt="Screen Shot 2021-09-15 at 7.08.08 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.08.08%20PM.png 2x">
+
+<img alt="Screen Shot 2021-09-15 at 7.09.08 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.09.08%20PM.png 2x">
+
+## Archive date time separator
+
+This will be used to separate the [archive timestamp](Add%20date%20and%20time%20to%20archived%20cards.md) from a card's content.
+
+Setting the separator:
+
+<img alt="Screen Shot 2021-09-15 at 7.06.15 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.06.15%20PM.png 2x">
+
+Resulting archived card:
+
+<img alt="Screen Shot 2021-09-15 at 7.06.48 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.06.48%20PM.png 2x">
+
 ## Board header buttons
 
 These settings allow hiding buttons from a Kanban board's header.
@@ -134,11 +160,11 @@ By default, `enter` creates a new card, and `shift + enter` creates a new line w
 
 ## Note folder
 
-When [Create new notes from Kanban cards](../How%20do%20I/Create%20new%20notes%20from%20Kanban%20cards.md), the `Note template` setting determines the folder in which new notes are created.
+When [Create notes from cards](../How%20do%20I/Create%20notes%20from%20cards.md), the `Note template` setting determines the folder in which new notes are created.
 
 ## Note template
 
-When [Create new notes from Kanban cards](../How%20do%20I/Create%20new%20notes%20from%20Kanban%20cards.md), new notes will be pre-populated with the specified note template.
+When [Create notes from cards](../How%20do%20I/Create%20notes%20from%20cards.md), new notes will be pre-populated with the specified note template.
 
 Supported template formats:
 
@@ -179,6 +205,12 @@ This setting changes where new cards are inserted into a list, and also where th
 
 <img alt="Screen Shot 2021-09-13 at 12.23.35 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%2012.23.35%20PM.png 2x">
 
+## Show relative date
+
+When this setting is active, cards will display the number of days between the current date and the date contained in a card. 
+
+<img alt="Screen Shot 2021-09-15 at 6.59.29 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%206.59.29%20PM.png 2x">
+
 ## Time format
 
 Allows specifying the output of the [time selection popup](Time%20trigger.md). Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
@@ -197,34 +229,34 @@ When creating or editing a card, this character or sequence of characters—`@@`
 
 <img alt="Screen Shot 2021-09-14 at 12.03.06 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.03.06%20PM.png 2x">
 
-## Show relative date
+## Linked Page Metadata
 
-When this setting is active, cards will display the number of days between the current date and the date contained in a card. 
+This setting allows displaying [frontmatter](https://help.obsidian.md/Advanced+topics/YAML+front+matter) and [Dataview](https://blacksmithgu.github.io/obsidian-dataview/data-annotation/) metadata of the first page linked within a card. Note, there are [Frontmatter limitations & gotchas](../FAQs/Frontmatter%20limitations%20&%20gotchas.md).
 
-<img alt="Screen Shot 2021-09-15 at 6.59.29 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%206.59.29%20PM.png 2x">
+For example, say you have this note in your vault:
 
-## Add date and time to archived cards
+````
+---
+demo-field: This is a demo frontmatter field
+---
 
-When active, a time stamp will be added to cards when they are archived. This will be added to the beginning of the card, and can be separated from the card's content using the [Archive date time separator](Archive%20date%20time%20separator.md) setting. The date format can be controlled with the [Archive date time format](Archive%20date%20time%20format.md) setting.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc eu posuere dolor. Proin ut tortor sagittis, auctor est non, varius nibh. Proin varius leo ac convallis dapibus.
 
-<img alt="Screen Shot 2021-09-15 at 7.04.26 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.04.26%20PM.png 2x">
+inline-field:: This is a demo inline Dataview field that **contains markdown**
 
-## Archive date time separator
+Nullam non efficitur ante. Donec convallis nibh ante, eu auctor felis aliquam id.
+````
 
-This will be used to separate the [archive timestamp](Add%20date%20and%20time%20to%20archived%20cards.md) from a card's content.
+The metadata keys `demo-field` and `inline-field` can then be added under `Linked Page Metadata`
 
-Setting the separator:
+<img alt="Screen Shot 2021-09-16 at 10.09.02 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%2010.09.02%20AM.png 2x">
 
-<img alt="Screen Shot 2021-09-15 at 7.06.15 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.06.15%20PM.png 2x">
+If the metadata field contains markdown, it must be specified by toggling `Field contains markdown`
 
-Resulting archived card:
+<img alt="Screen Shot 2021-09-16 at 10.09.50 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%2010.09.50%20AM.png 2x">
 
-<img alt="Screen Shot 2021-09-15 at 7.06.48 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.06.48%20PM.png 2x">
+<img alt="Screen Shot 2021-09-16 at 10.10.15 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%2010.10.15%20AM.png 2x">
 
-## Archive date time format
+The metadata will then be displayed below the card.
 
-This will set the format of the [archive timestamp](Add%20date%20and%20time%20to%20archived%20cards.md). Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
-
-<img alt="Screen Shot 2021-09-15 at 7.08.08 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.08.08%20PM.png 2x">
-
-<img alt="Screen Shot 2021-09-15 at 7.09.08 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.09.08%20PM.png 2x">
+<img alt="Screen Shot 2021-09-16 at 10.10.47 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%2010.10.47%20AM.png 2x">
