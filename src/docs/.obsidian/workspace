@@ -7,9 +7,10 @@
         "id": "d867c7e0f8bacb24",
         "type": "leaf",
         "state": {
-          "type": "kanban",
+          "type": "markdown",
           "state": {
-            "file": "! Documentation board.md"
+            "file": "Settings/Archive date time separator.md",
+            "mode": "source"
           }
         }
       }
@@ -51,7 +52,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 203
+    "width": 305
   },
   "right": {
     "id": "d3a692963577985f",
@@ -67,7 +68,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "! Documentation board.md",
+                "file": "Settings/Archive date time separator.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -87,15 +88,15 @@
   },
   "active": "d867c7e0f8bacb24",
   "lastOpenFiles": [
-    "! Documentation board.md",
-    "Settings/Archive date time format.md",
     "Settings/Archive date time separator.md",
+    "Settings/Archive date time format.md",
+    "Settings/Date display format.md",
+    "Settings/Date format.md",
+    "! Documentation board.md",
     "Settings/Add date and time to archived cards.md",
     "Settings/Show relative date.md",
     "Settings/Link dates to daily notes.md",
     "Settings/Hide card display tags.md",
-    "Settings/__Settings.md",
-    "Settings/index.md",
-    "index.md"
+    "Settings/__Settings.md"
   ]
 }

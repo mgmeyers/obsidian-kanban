@@ -12,7 +12,7 @@ With the "Add a list" button hidden:
 
 ## Date display format
 
-The date display format is similar to the [Date format](Date%20format.md) except that it controls the format of the date shown at the bottom of a card. This date can be hidden using the [Hide card display dates](Hide%20card%20display%20dates.md) setting.
+The date display format is similar to the [Date format](Date%20format.md) except that it controls the format of the date shown at the bottom of a card. This date can be hidden using the [Hide card display dates](Hide%20card%20display%20dates.md) setting. Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
 
 Setting the date display format:
 
@@ -223,7 +223,7 @@ Resulting archived card:
 
 ## Archive date time format
 
-This will set the format of the [archive timestamp](Add%20date%20and%20time%20to%20archived%20cards.md)
+This will set the format of the [archive timestamp](Add%20date%20and%20time%20to%20archived%20cards.md). Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
 
 <img alt="Screen Shot 2021-09-15 at 7.08.08 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.08.08%20PM.png 2x">
 

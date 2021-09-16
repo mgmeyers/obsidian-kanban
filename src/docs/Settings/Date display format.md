@@ -1,6 +1,6 @@
 ## Date display format
 
-The date display format is similar to the [[Date format]] except that it controls the format of the date shown at the bottom of a card. This date can be hidden using the [[Hide card display dates]] setting.
+The date display format is similar to the [[Date format]] except that it controls the format of the date shown at the bottom of a card. This date can be hidden using the [[Hide card display dates]] setting. Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
 
 Setting the date display format:
 
