@@ -1,7 +1,11 @@
-## [How tos](How%20to/index.md)
+## [How do I](How%20do%20I/index.md)
 
-* [Creating new notes from Kanban cards](How%20to/Creating%20new%20notes%20from%20Kanban%20cards.md)
-* [Viewing the archive](How%20to/Viewing%20the%20archive.md)
+* [Create new notes from Kanban cards](How%20do%20I/Create%20new%20notes%20from%20Kanban%20cards.md)
+* [View a Kanban's archive](How%20do%20I/View%20a%20Kanban's%20archive.md)
+* [Create a new Kanban board](How%20do%20I/Create%20a%20new%20Kanban%20board.md)
+* [Search a Kanban board](How%20do%20I/Search%20a%20Kanban%20board.md)
+* [Add a date to a card](How%20do%20I/Add%20a%20date%20to%20a%20card.md)
+* [Add a time to a card](How%20do%20I/Add%20a%20time%20to%20a%20card.md)
 
 ## [Settings](Settings/index.md)
 

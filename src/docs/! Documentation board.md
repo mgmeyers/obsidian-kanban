@@ -1,7 +1,7 @@
 ---
 
 kanban-plugin: basic
-new-note-folder: Settings
+new-note-folder: How do I
 new-note-template: Assets/Base Template.md
 show-add-list: true
 
@@ -10,10 +10,6 @@ show-add-list: true
 ## Backlog
 
 - [ ] Linked Page Metadata
-- [ ] Creating a new Kanban board
-- [ ] Adding dates to cards
-- [ ] Adding times to cards
-- [ ] Searching cards
 - [ ] What's allowed in frontmatter vs. dataview metadata fields
 - [ ] Frontmatter limitations & gotchas
 
@@ -29,6 +25,10 @@ show-add-list: true
 ## Complete
 
 **Complete**
+- [x] [[Add a time to a card]]
+- [x] [[Add a date to a card]]
+- [x] [[Search a Kanban board]]
+- [x] [[Create a new Kanban board]]
 
 
 ***
@@ -51,7 +51,7 @@ show-add-list: true
 - [x] [[Hide card display tags]]
 - [x] [[Hide tags in card titles]]
 - [x] [[Display card checkbox]]
-- [x] [[Viewing the archive]]
+- [x] [[View a Kanban's archive]]
 - [x] [[Maximum number of archived cards]]
 - [x] [[Lane width]]
 - [x] [[Note folder]]

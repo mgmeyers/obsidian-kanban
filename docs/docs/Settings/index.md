@@ -46,7 +46,7 @@ When creating or editing a card, this character—`@` by default—or sequence o
 
 ## Display card checkbox
 
-This setting enables or disables displaying checkboxes on cards. `Command` or `CTRL` clicking on the checkbox will [archive](../How%20to/Viewing%20the%20archive.md) the card.
+This setting enables or disables displaying checkboxes on cards. `Command` or `CTRL` clicking on the checkbox will [archive](../How%20do%20I/View%20a%20Kanban's%20archive.md) the card.
 
 No checkbox (default):
 
@@ -124,7 +124,7 @@ When this setting is active, dates and [display dates](Date%20display%20format.m
 
 ## Maximum number of archived cards
 
-By default, a Kanban board's [archive](../How%20to/Viewing%20the%20archive.md) will grow infinitely. Setting the maximum number of archived cards will cap the archive at the specified number. 
+By default, a Kanban board's [archive](../How%20do%20I/View%20a%20Kanban's%20archive.md) will grow infinitely. Setting the maximum number of archived cards will cap the archive at the specified number. 
 
 For example, if `Maximum number of archived cards` is set to `100`, the archive will never contain more than 100 cards. When the archive reaches its maximum, old cards will be deleted as new cards are added.
 
@@ -134,11 +134,11 @@ By default, `enter` creates a new card, and `shift + enter` creates a new line w
 
 ## Note folder
 
-When [Creating new notes from Kanban cards](../How%20to/Creating%20new%20notes%20from%20Kanban%20cards.md), the `Note template` setting determines the folder in which new notes are created.
+When [Create new notes from Kanban cards](../How%20do%20I/Create%20new%20notes%20from%20Kanban%20cards.md), the `Note template` setting determines the folder in which new notes are created.
 
 ## Note template
 
-When [Creating new notes from Kanban cards](../How%20to/Creating%20new%20notes%20from%20Kanban%20cards.md), new notes will be pre-populated with the specified note template.
+When [Create new notes from Kanban cards](../How%20do%20I/Create%20new%20notes%20from%20Kanban%20cards.md), new notes will be pre-populated with the specified note template.
 
 Supported template formats:
 

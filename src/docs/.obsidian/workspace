@@ -7,10 +7,9 @@
         "id": "d867c7e0f8bacb24",
         "type": "leaf",
         "state": {
-          "type": "markdown",
+          "type": "kanban",
           "state": {
-            "file": "Settings/Archive date time separator.md",
-            "mode": "source"
+            "file": "! Documentation board.md"
           }
         }
       }
@@ -68,7 +67,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Settings/Archive date time separator.md",
+                "file": "! Documentation board.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -88,15 +87,15 @@
   },
   "active": "d867c7e0f8bacb24",
   "lastOpenFiles": [
+    "! Documentation board.md",
+    "How do I/Add a time to a card.md",
+    "How do I/Add a date to a card.md",
+    "How do I/Search a Kanban board.md",
+    "How do I/Create a new Kanban board.md",
+    "How do I/View a Kanban's archive.md",
+    "How do I/Create new notes from Kanban cards.md",
     "Settings/Archive date time separator.md",
     "Settings/Archive date time format.md",
-    "Settings/Date display format.md",
-    "Settings/Date format.md",
-    "! Documentation board.md",
-    "Settings/Add date and time to archived cards.md",
-    "Settings/Show relative date.md",
-    "Settings/Link dates to daily notes.md",
-    "Settings/Hide card display tags.md",
-    "Settings/__Settings.md"
+    "Settings/Date display format.md"
   ]
 }

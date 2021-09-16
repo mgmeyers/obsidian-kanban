@@ -1,6 +1,6 @@
 ---
 kanban-plugin: basic
-new-note-folder: Settings
+new-note-folder: How do I
 new-note-template: Assets/Base Template.md
 show-add-list: true
 ---
@@ -8,10 +8,6 @@ show-add-list: true
 ## Backlog
 
 * [ ] Linked Page Metadata
-* [ ] Creating a new Kanban board
-* [ ] Adding dates to cards
-* [ ] Adding times to cards
-* [ ] Searching cards
 * [ ] What's allowed in frontmatter vs. dataview metadata fields
 * [ ] Frontmatter limitations & gotchas
 
@@ -22,6 +18,11 @@ show-add-list: true
 ## Complete
 
 **Complete**
+
+* [x] [Add a time to a card](How%20do%20I/Add%20a%20time%20to%20a%20card.md)
+* [x] [Add a date to a card](How%20do%20I/Add%20a%20date%20to%20a%20card.md)
+* [x] [Search a Kanban board](How%20do%20I/Search%20a%20Kanban%20board.md)
+* [x] [Create a new Kanban board](How%20do%20I/Create%20a%20new%20Kanban%20board.md)
 
 ---
 
@@ -43,7 +44,7 @@ show-add-list: true
 * [x] [Hide card display tags](Settings/Hide%20card%20display%20tags.md)
 * [x] [Hide tags in card titles](Settings/Hide%20tags%20in%20card%20titles.md)
 * [x] [Display card checkbox](Settings/Display%20card%20checkbox.md)
-* [x] [Viewing the archive](How%20to/Viewing%20the%20archive.md)
+* [x] [View a Kanban's archive](How%20do%20I/View%20a%20Kanban's%20archive.md)
 * [x] [Maximum number of archived cards](Settings/Maximum%20number%20of%20archived%20cards.md)
 * [x] [Lane width](Settings/Lane%20width.md)
 * [x] [Note folder](Settings/Note%20folder.md)

@@ -1,0 +1,6 @@
+* [Create new notes from Kanban cards](Create%20new%20notes%20from%20Kanban%20cards.md)
+* [View a Kanban's archive](View%20a%20Kanban's%20archive.md)
+* [Create a new Kanban board](Create%20a%20new%20Kanban%20board.md)
+* [Search a Kanban board](Search%20a%20Kanban%20board.md)
+* [Add a date to a card](Add%20a%20date%20to%20a%20card.md)
+* [Add a time to a card](Add%20a%20time%20to%20a%20card.md)

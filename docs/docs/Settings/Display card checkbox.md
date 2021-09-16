@@ -1,6 +1,6 @@
 ## Display card checkbox
 
-This setting enables or disables displaying checkboxes on cards. `Command` or `CTRL` clicking on the checkbox will [archive](../How%20to/Viewing%20the%20archive.md) the card.
+This setting enables or disables displaying checkboxes on cards. `Command` or `CTRL` clicking on the checkbox will [archive](../How%20do%20I/View%20a%20Kanban's%20archive.md) the card.
 
 No checkbox (default):
 

@@ -1,7 +1,11 @@
-## [[How to/index|How tos]]
+## [[How do I/index|How do I]]
 
-- [[How to/Creating new notes from Kanban cards|Creating new notes from Kanban cards]]
-- [[How to/Viewing the archive|Viewing the archive]]
+- [[How do I/Create new notes from Kanban cards|Create new notes from Kanban cards]]
+- [[How do I/View a Kanban's archive|View a Kanban's archive]]
+- [[How do I/Create a new Kanban board|Create a new Kanban board]]
+- [[How do I/Search a Kanban board|Search a Kanban board]]
+- [[How do I/Add a date to a card|Add a date to a card]]
+- [[How do I/Add a time to a card|Add a time to a card]]
 
 ## [[Settings/index|Settings]]
 
