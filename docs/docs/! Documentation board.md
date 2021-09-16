@@ -7,9 +7,6 @@ show-add-list: true
 
 ## Backlog
 
-* [ ] Add date and time to archived cards
-* [ ] Archive date/time separator
-* [ ] Archive date/time format
 * [ ] Linked Page Metadata
 * [ ] Creating a new Kanban board
 * [ ] Adding dates to cards
@@ -20,26 +17,26 @@ show-add-list: true
 
 ## Next up
 
-* [ ] Show relative date
-
 ## In progress
-
-* [ ] [Link dates to daily notes](Settings/Link%20dates%20to%20daily%20notes.md)
 
 ## Complete
 
 **Complete**
 
+---
+
+## Archive
+
+* [x] [Archive date time format](Settings/Archive%20date%20time%20format.md)
+* [x] [Archive date time separator](Settings/Archive%20date%20time%20separator.md)
+* [x] [Add date and time to archived cards](Settings/Add%20date%20and%20time%20to%20archived%20cards.md)
+* [x] [Show relative date](Settings/Show%20relative%20date.md)
+* [x] [Link dates to daily notes](Settings/Link%20dates%20to%20daily%20notes.md)
 * [x] [Hide dates in card titles](Settings/Hide%20dates%20in%20card%20titles.md)
 * [x] [Hide card display dates](Settings/Hide%20card%20display%20dates.md)
 * [x] [Date display format](Settings/Date%20display%20format.md)
 * [x] [Time format](Settings/Time%20format.md)
 * [x] [Date format](Settings/Date%20format.md)
-
----
-
-## Archive
-
 * [x] [Time trigger](Settings/Time%20trigger.md)
 * [x] [Date trigger](Settings/Date%20trigger.md)
 * [x] [Board header buttons](Settings/Board%20header%20buttons.md)

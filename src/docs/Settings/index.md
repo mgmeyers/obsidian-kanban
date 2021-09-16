@@ -1,16 +1,24 @@
 ![[Settings/Board header buttons|Board header buttons]]
 
+![[Settings/Date display format|Date display format]]
+
 ![[Settings/Date format|Date format]]
 
 ![[Settings/Date trigger|Date trigger]]
 
 ![[Settings/Display card checkbox|Display card checkbox]]
 
+![[Settings/Hide card display dates|Hide card display dates]]
+
 ![[Settings/Hide card display tags|Hide card display tags]]
+
+![[Settings/Hide dates in card titles|Hide dates in card titles]]
 
 ![[Settings/Hide tags in card titles|Hide tags in card titles]]
 
 ![[Settings/Lane width|Lane width]]
+
+![[Settings/Link dates to daily notes|Link dates to daily notes]]
 
 ![[Settings/Maximum number of archived cards|Maximum number of archived cards]]
 
@@ -26,10 +34,10 @@
 
 ![[Settings/Time trigger|Time trigger]]
 
-![[Settings/Date display format|Date display format]]
+![[Settings/Show relative date|Show relative date]]
 
-![[Settings/Hide card display dates|Hide card display dates]]
+![[Settings/Add date and time to archived cards|Add date and time to archived cards]]
 
-![[Settings/Hide dates in card titles|Hide dates in card titles]]
+![[Settings/Archive date time separator|Archive date time separator]]
 
-![[Settings/Link dates to daily notes|Link dates to daily notes]]
+![[Settings/Archive date time format|Archive date time format]]

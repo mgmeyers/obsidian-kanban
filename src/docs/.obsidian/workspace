@@ -7,21 +7,9 @@
         "id": "d867c7e0f8bacb24",
         "type": "leaf",
         "state": {
-          "type": "markdown",
+          "type": "kanban",
           "state": {
-            "file": "Settings/Hide card display tags.md",
-            "mode": "source"
-          }
-        }
-      },
-      {
-        "id": "6f0efc9b9f67d76e",
-        "type": "leaf",
-        "state": {
-          "type": "markdown",
-          "state": {
-            "file": "Settings/Date display format.md",
-            "mode": "source"
+            "file": "! Documentation board.md"
           }
         }
       }
@@ -79,7 +67,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Settings/Hide card display tags.md",
+                "file": "! Documentation board.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -99,15 +87,15 @@
   },
   "active": "d867c7e0f8bacb24",
   "lastOpenFiles": [
+    "! Documentation board.md",
+    "Settings/Archive date time format.md",
+    "Settings/Archive date time separator.md",
+    "Settings/Add date and time to archived cards.md",
+    "Settings/Show relative date.md",
+    "Settings/Link dates to daily notes.md",
     "Settings/Hide card display tags.md",
     "Settings/__Settings.md",
     "Settings/index.md",
-    "index.md",
-    "! Documentation board.md",
-    "Settings/Hide dates in card titles.md",
-    "Settings/Link dates to daily notes.md",
-    "Settings/Date display format.md",
-    "Settings/Hide tags in card titles.md",
-    "Settings/Hide card display dates.md"
+    "index.md"
   ]
 }
