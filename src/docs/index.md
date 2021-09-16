@@ -39,7 +39,8 @@ Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
 
 ## [[FAQs/index|FAQs]]
 
-![[FAQs/index]]
+- [[FAQs/Frontmatter limitations & gotchas|Frontmatter limitations & gotchas]]
+- [[FAQs/Themes with enhanced Kanban support|Themes with enhanced Kanban support]]
 
 ## Support
 
