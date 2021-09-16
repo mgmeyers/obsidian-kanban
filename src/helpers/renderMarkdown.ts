@@ -107,6 +107,21 @@ function applyCheckboxIndexes(dom: HTMLDivElement) {
   });
 }
 
+function findUnresolvedLinks(dom: HTMLDivElement, view: KanbanView) {
+  const links = dom.querySelectorAll('.internal-link');
+
+  links.forEach((link) => {
+    const dest = view.app.metadataCache.getFirstLinkpathDest(
+      link.getAttr('href'),
+      view.file.path
+    );
+
+    if (!dest) {
+      link.addClass('is-unresolved');
+    }
+  });
+}
+
 function handleImage(el: HTMLElement, file: TFile, view: KanbanView) {
   el.empty();
 
@@ -297,6 +312,7 @@ export async function renderMarkdown(
 
   await handleEmbeds(dom, view);
   applyCheckboxIndexes(dom);
+  findUnresolvedLinks(dom, view);
 
   return dom;
 }
