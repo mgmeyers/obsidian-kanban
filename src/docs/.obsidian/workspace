@@ -9,7 +9,7 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "Settings/__Settings.md",
+            "file": "Settings/Hide card display tags.md",
             "mode": "source"
           }
         }
@@ -79,7 +79,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Settings/__Settings.md",
+                "file": "Settings/Hide card display tags.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -99,6 +99,7 @@
   },
   "active": "d867c7e0f8bacb24",
   "lastOpenFiles": [
+    "Settings/Hide card display tags.md",
     "Settings/__Settings.md",
     "Settings/index.md",
     "index.md",
@@ -107,7 +108,6 @@
     "Settings/Link dates to daily notes.md",
     "Settings/Date display format.md",
     "Settings/Hide tags in card titles.md",
-    "Settings/Hide card display dates.md",
-    "Settings/Board header buttons.md"
+    "Settings/Hide card display dates.md"
   ]
 }
