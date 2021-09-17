@@ -19,30 +19,12 @@ show-add-list: true
 ## Complete
 
 **Complete**
-- [x] [[Frontmatter limitations & gotchas]]
-- [x] [[Linked page metadata]]
-- [x] What's allowed in frontmatter vs. dataview metadata fields
-- [x] [[Add a time to a card]]
-- [x] [[Add a date to a card]]
-- [x] [[Search a Kanban board]]
-- [x] [[Create a Kanban board]]
 
 
 ***
 
 ## Archive
 
-- [x] [[Archive date time format]]
-- [x] [[Archive date time separator]]
-- [x] [[Add date and time to archived cards]]
-- [x] [[Show relative date]]
-- [x] [[Link dates to daily notes]]
-- [x] [[Hide dates in card titles]]
-- [x] [[Hide card display dates]]
-- [x] [[Date display format]]
-- [x] [[Time format]]
-- [x] [[Date format]]
-- [x] [[Time trigger]]
 - [x] [[Date trigger]]
 - [x] [[Board header buttons]]
 - [x] [[Hide card display tags]]
@@ -55,3 +37,21 @@ show-add-list: true
 - [x] [[Note template]]
 - [x] [[Prepend append new cards]]
 - [x] [[New line trigger]]
+- [x] [[Frontmatter limitations & gotchas]]
+- [x] [[Linked page metadata]]
+- [x] What's allowed in frontmatter vs. dataview metadata fields
+- [x] [[Add a time to a card]]
+- [x] [[Add a date to a card]]
+- [x] [[Search a Kanban board]]
+- [x] [[Create a Kanban board]]
+- [x] [[Archive date time format]]
+- [x] [[Archive date time separator]]
+- [x] [[Add date and time to archived cards]]
+- [x] [[Show relative date]]
+- [x] [[Link dates to daily notes]]
+- [x] [[Hide dates in card titles]]
+- [x] [[Hide card display dates]]
+- [x] [[Date display format]]
+- [x] [[Time format]]
+- [x] [[Date format]]
+- [x] [[Time trigger]]

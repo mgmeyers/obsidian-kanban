@@ -1,4 +1,4 @@
-import { CachedMetadata, MarkdownRenderer, TFile } from 'obsidian';
+import { CachedMetadata, MarkdownRenderer, TFile, setIcon } from 'obsidian';
 
 import { KanbanView } from 'src/KanbanView';
 import { t } from 'src/lang/helpers';
@@ -243,9 +243,22 @@ async function handleMarkdown(
   if (!content) return;
 
   el.empty();
-  const dom = createDiv();
+  const dom = el.createDiv();
 
   dom.addClasses(['markdown-preview-view', c('markdown-preview-view')]);
+  dom.createDiv(c('embed-link-wrapper'), (wrapper) => {
+    wrapper.createEl(
+      'a',
+      {
+        href: file.basename,
+        cls: `internal-link ${c('embed-link')}`,
+      },
+      (link) => {
+        setIcon(link, 'link');
+        link.setAttr('aria-label', file.basename);
+      }
+    );
+  });
 
   await MarkdownRenderer.renderMarkdown(
     content,
@@ -254,7 +267,6 @@ async function handleMarkdown(
     view
   );
 
-  el.append(dom);
   el.addClass('is-loaded');
 
   if (content.startsWith(t('Unable to find'))) {

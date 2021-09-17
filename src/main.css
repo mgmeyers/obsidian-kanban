@@ -404,7 +404,8 @@ button.kanban-plugin__new-item-button {
   overflow-wrap: break-word;
 }
 
-.kanban-plugin__markdown-preview-view > div > *:first-child {
+.kanban-plugin__markdown-preview-view > div > *:first-child,
+.kanban-plugin__markdown-preview-view > div > .frontmatter-container + * {
   margin-top: 0;
 }
 
@@ -439,6 +440,16 @@ button.kanban-plugin__new-item-button {
 .kanban-plugin__markdown-preview-view.inline p,
 .kanban-plugin__markdown-preview-view.inline {
   display: inline-block;
+}
+
+.kanban-plugin__markdown-preview-view .frontmatter,
+.kanban-plugin__markdown-preview-view .frontmatter-container {
+  display: none;
+}
+
+.kanban-plugin__embed-link-wrapper {
+  padding: 2px;
+  float: right;
 }
 
 .kanban-plugin__item-metadata-wrapper:not(:empty) {
