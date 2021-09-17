@@ -61,6 +61,7 @@
     "js-yaml": "^4.1.0",
     "mark.js": "^8.11.1",
     "monkey-around": "^2.1.0",
+    "obsidian-daily-notes-interface": "^0.9.4",
     "preact": "^10",
     "raf-schd": "^4.0.3",
     "react": "npm:@preact/compat",

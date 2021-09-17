@@ -1,6 +1,11 @@
 import animateScrollTo from 'animated-scroll-to';
 import classcat from 'classcat';
 import update from 'immutability-helper';
+import { moment } from 'obsidian';
+import {
+  appHasDailyNotesPluginLoaded,
+  createDailyNote,
+} from 'obsidian-daily-notes-interface';
 import React from 'react';
 
 import { useIsAnythingDragging } from 'src/dnd/components/DragOverlay';
@@ -165,7 +170,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   );
 
   const onClick = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       const targetEl = e.target as HTMLElement;
 
       if (targetEl.tagName !== 'A') return;
@@ -173,11 +178,31 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       // Open an internal link in a new pane
       if (targetEl.hasClass('internal-link')) {
         e.preventDefault();
+        const destination = targetEl.getAttr('href');
+        const inNewLeaf = e.ctrlKey || e.metaKey;
+
+        if (
+          targetEl.hasClass('is-unresolved') &&
+          appHasDailyNotesPluginLoaded()
+        ) {
+          const dateFormat = stateManager.getSetting('date-format');
+          const parsed = moment(destination, dateFormat, true);
+
+          if (parsed.isValid()) {
+            const dailyNote = await createDailyNote(parsed);
+            const leaf = inNewLeaf
+              ? view.app.workspace.splitActiveLeaf()
+              : view.app.workspace.getUnpinnedLeaf();
+
+            await leaf.openFile(dailyNote, { active: true });
+            return;
+          }
+        }
 
         stateManager.app.workspace.openLinkText(
-          targetEl.getAttr('href'),
+          destination,
           filePath,
-          e.ctrlKey || e.metaKey
+          inNewLeaf
         );
 
         return;
