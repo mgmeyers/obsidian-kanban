@@ -141,7 +141,7 @@ export function extractFirstLinkedFile(
 
   const path = getNormalizedPath(match[1]);
   const file = app.metadataCache.getFirstLinkpathDest(
-    path.path,
+    path.root,
     sourceFile.path
   );
 

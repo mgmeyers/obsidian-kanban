@@ -10,6 +10,7 @@ show-add-list: true
 ## Todo
 
 - [ ] Hidden CSS styling options
+- [ ] Limitations of modifying raw markdown
 
 
 ## In progress

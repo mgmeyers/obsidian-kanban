@@ -16,13 +16,21 @@ function sanitize(e: string) {
   return e.replace(illigalChars, ' ').replace(/\s+/g, ' ').trim();
 }
 
-export function getNormalizedPath(path: string) {
+interface NormalizedPath {
+  root: string;
+  subpath: string;
+  alias: string;
+}
+
+export function getNormalizedPath(path: string): NormalizedPath {
   const stripped = path.replace(noBreakSpace, ' ').normalize('NFC');
   const root = stripped.split('#')[0];
+  const [subpath, alias] = stripped.substr(root.length).split('|')[0];
 
   return {
-    path: root,
-    subpath: stripped.substr(root.length),
+    root,
+    subpath,
+    alias: alias || '',
   };
 }
 
@@ -111,8 +119,9 @@ function findUnresolvedLinks(dom: HTMLDivElement, view: KanbanView) {
   const links = dom.querySelectorAll('.internal-link');
 
   links.forEach((link) => {
+    const path = getNormalizedPath(link.getAttr('href'));
     const dest = view.app.metadataCache.getFirstLinkpathDest(
-      link.getAttr('href'),
+      path.root,
       view.file.path
     );
 
@@ -179,7 +188,7 @@ function handleVideo(el: HTMLElement, file: TFile, view: KanbanView) {
 
 async function getEmbeddedMarkdownString(
   file: TFile,
-  normalizedPath: { path: string; subpath: string },
+  normalizedPath: NormalizedPath,
   view: KanbanView
 ) {
   const fileCache = view.app.metadataCache.getFileCache(file);
@@ -199,7 +208,7 @@ async function getEmbeddedMarkdownString(
   if (contentBoundary) {
     return content.substring(contentBoundary.start, contentBoundary.end);
   } else if (normalizedPath.subpath) {
-    return `${t('Unable to find')} ${normalizedPath.path}${
+    return `${t('Unable to find')} ${normalizedPath.root}${
       normalizedPath.subpath
     }`;
   }
@@ -207,7 +216,7 @@ async function getEmbeddedMarkdownString(
 
 function pollForCachedSubpath(
   file: TFile,
-  normalizedPath: { path: string; subpath: string },
+  normalizedPath: NormalizedPath,
   view: KanbanView,
   remainingCount: number
 ) {
@@ -235,7 +244,7 @@ function pollForCachedSubpath(
 async function handleMarkdown(
   el: HTMLElement,
   file: TFile,
-  normalizedPath: { path: string; subpath: string },
+  normalizedPath: NormalizedPath,
   view: KanbanView
 ) {
   const content = await getEmbeddedMarkdownString(file, normalizedPath, view);
@@ -282,7 +291,7 @@ function handleEmbeds(dom: HTMLDivElement, view: KanbanView) {
       const target =
         typeof src === 'string' &&
         view.app.metadataCache.getFirstLinkpathDest(
-          normalizedPath.path,
+          normalizedPath.root,
           view.file.path
         );
 
