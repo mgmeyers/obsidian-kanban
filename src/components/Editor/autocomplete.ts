@@ -15,7 +15,13 @@ import {
   toNextMonth,
   toPreviousMonth,
 } from './datepicker';
-import { LinkSuggestion, getFileSearchConfig } from './filepicker';
+import {
+  LinkSuggestion,
+  getBlockSearchConfig,
+  getFileSearchConfig,
+  getHeadingSearchConfig,
+} from './filepicker';
+import { replaceSelection } from './helpers';
 import { getTagSearchConfig } from './tagpicker';
 
 export interface ConstructAutocompleteParams {
@@ -61,6 +67,10 @@ export function constructAutocomplete({
 
   const configs: StrategyProps[] = [
     getTagSearchConfig(tags, tagSearch),
+    getBlockSearchConfig(filePath, stateManager, willAutoPairBrackets, false),
+    getBlockSearchConfig(filePath, stateManager, willAutoPairBrackets, true),
+    getHeadingSearchConfig(filePath, stateManager, willAutoPairBrackets, false),
+    getHeadingSearchConfig(filePath, stateManager, willAutoPairBrackets, true),
     getFileSearchConfig(
       linkSuggestions,
       fileSearch,
@@ -119,6 +129,18 @@ export function constructAutocomplete({
 
   if (!excludeDatePicker) {
     keydownHandler = (e: KeyboardEvent) => {
+      if (autocomplete.isShown && ['#', '^'].contains(e.key)) {
+        const activeItem = (autocomplete as any).dropdown.getActiveItem();
+        const searchResult = activeItem?.searchResult;
+
+        if (searchResult && searchResult.strategy.props.id === 'link') {
+          e.preventDefault();
+          editor.applySearchResult(searchResult);
+          replaceSelection(inputRef.current, e.key === '^' ? '#^' : '#');
+          return;
+        }
+      }
+
       if (!datePickerEl) {
         return;
       }

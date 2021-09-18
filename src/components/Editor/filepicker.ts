@@ -1,13 +1,19 @@
 import { StrategyProps } from '@textcomplete/core';
 import Fuse from 'fuse.js';
-import { TFile, setIcon } from 'obsidian';
+import { App, TFile, setIcon } from 'obsidian';
 
 import { StateManager } from 'src/StateManager';
 
-import { c } from '../helpers';
+import { c, generateInstanceId } from '../helpers';
 
-const linkRegex = /\B\[\[([^\]]*)?$/;
-const embedRegex = /\B!\[\[([^\]]*)?$/;
+const linkRegex = /\B\[\[([^\]]*)$/;
+const embedRegex = /\B!\[\[([^\]]*)$/;
+
+const linkHeadingRegex = /\B\[\[([^#\]]+)#([^\]]*)$/;
+const embedHeadingRegex = /\B!\[\[([^#\]]+)#([^\]]*)$/;
+
+const linkBlockRegex = /\B\[\[([^#\]]+)#?\^([^\]]*)$/;
+const embedBlockRegex = /\B!\[\[([^#\]]+)#?\^([^\]]*)$/;
 
 export interface LinkSuggestion {
   file: TFile;
@@ -88,21 +94,304 @@ export function getFileSearchConfig(
       }
 
       output.push(
-        `[[${stateManager.app.metadataCache.fileToLinktext(
+        '[[',
+        stateManager.app.metadataCache.fileToLinktext(
           result.item.file,
           filePath
-        )}`
+        )
       );
 
       if (result.item.alias) {
-        output.push(`|${result.item.alias}`);
+        output.push('|', result.item.alias);
       }
 
       if (!willAutoPairBrackets) {
         output.push(']] ');
       }
 
-      console.log('output', output);
+      return output.join('');
+    },
+  };
+}
+
+export interface HeadingSuggestion {
+  file: TFile;
+  heading: string;
+  alias: string;
+}
+
+function getHeadings(
+  app: App,
+  sourcePath: string,
+  filePath: string,
+  searchTerm: string
+): Fuse.FuseResult<HeadingSuggestion>[] {
+  if (!filePath) {
+    return [];
+  }
+
+  const aliasSplit = filePath.split('|');
+  const file = app.metadataCache.getFirstLinkpathDest(
+    aliasSplit[0],
+    sourcePath
+  );
+
+  if (!file) {
+    return [];
+  }
+
+  const fileCache = app.metadataCache.getFileCache(file);
+
+  if (!fileCache || !fileCache.headings?.length) {
+    return [];
+  }
+
+  const headings: HeadingSuggestion[] = fileCache.headings.map((heading) => {
+    return {
+      file,
+      heading: heading.heading,
+      alias: aliasSplit[1] || '',
+    };
+  });
+
+  if (!searchTerm) {
+    return headings.map((h, i) => ({ item: h, refIndex: i }));
+  }
+
+  return new Fuse(headings, {
+    keys: ['heading'],
+  }).search(searchTerm);
+}
+
+export function getHeadingSearchConfig(
+  filePath: string,
+  stateManager: StateManager,
+  willAutoPairBrackets: boolean,
+  isEmbed: boolean
+): StrategyProps<Fuse.FuseResult<HeadingSuggestion>> {
+  return {
+    id: 'heading',
+    match: isEmbed ? embedHeadingRegex : linkHeadingRegex,
+    index: 1,
+    template: (res: Fuse.FuseResult<HeadingSuggestion>) => {
+      return res.item.heading;
+    },
+    search: (
+      _: string,
+      callback: (results: Fuse.FuseResult<HeadingSuggestion>[]) => void,
+      marchArr
+    ) => {
+      callback(
+        getHeadings(stateManager.app, filePath, marchArr[1], marchArr[2])
+      );
+    },
+    replace: (result: Fuse.FuseResult<HeadingSuggestion>): string => {
+      const output: string[] = [];
+
+      if (isEmbed) {
+        output.push('!');
+      }
+
+      output.push(
+        '[[',
+        stateManager.app.metadataCache.fileToLinktext(
+          result.item.file,
+          filePath
+        )
+      );
+
+      output.push('#');
+      output.push(result.item.heading);
+
+      if (result.item.alias) {
+        output.push('|', result.item.alias);
+      }
+
+      if (!willAutoPairBrackets) {
+        output.push(']] ');
+      }
+
+      return output.join('');
+    },
+  };
+}
+
+export class MockRunnable {
+  running = false;
+  cancelled = false;
+
+  start() {
+    this.running = true;
+  }
+
+  stop() {
+    this.running = false;
+  }
+
+  cancel() {
+    this.stop();
+    this.cancelled = true;
+  }
+
+  isRunning() {
+    return this.running;
+  }
+
+  isCancelled() {
+    return this.cancelled;
+  }
+}
+
+export interface BlockSuggestion {
+  file: TFile;
+  block: {
+    id?: string;
+    type: string;
+    start: number;
+    end: number;
+  };
+  searchString: string;
+  alias: string;
+}
+
+async function getBlocks(
+  app: App,
+  sourcePath: string,
+  filePath: string,
+  searchTerm: string,
+  callback: (results: Fuse.FuseResult<BlockSuggestion>[]) => void
+) {
+  if (!filePath) {
+    return callback([]);
+  }
+
+  const aliasSplit = filePath.split('|');
+  const file = app.metadataCache.getFirstLinkpathDest(
+    aliasSplit[0],
+    sourcePath
+  );
+
+  if (!file) {
+    return callback([]);
+  }
+
+  const fileCache = app.metadataCache.getFileCache(file);
+
+  if (!fileCache || !fileCache.sections?.length) {
+    return callback([]);
+  }
+
+  try {
+    const blockCache = await (app.metadataCache as any).blockCache.getForFile(
+      new MockRunnable(),
+      file
+    );
+
+    if (!blockCache?.blocks) {
+      return callback([]);
+    }
+
+    const blockSuggestions = blockCache.blocks
+      .map((b: any, i: number) => {
+        if (b.node.type === 'heading') return null;
+
+        const section = fileCache.sections[i];
+
+        return {
+          file,
+          searchString: b.display,
+          block: {
+            id: section.id,
+            type: section.type,
+            start: section.position.start.offset,
+            end: section.position.end.offset,
+          },
+          alias: aliasSplit[1] || '',
+        } as BlockSuggestion;
+      })
+      .filter((b: BlockSuggestion) => b);
+
+    callback(
+      new Fuse(blockSuggestions, {
+        keys: ['searchString'],
+      }).search(searchTerm)
+    );
+  } catch (e) {
+    callback([]);
+  }
+}
+
+function shouldInsertAfter(blockType: string) {
+  return [
+    'blockquote',
+    'code',
+    'table',
+    'comment',
+    'footnoteDefinition',
+  ].includes(blockType);
+}
+
+export function getBlockSearchConfig(
+  filePath: string,
+  stateManager: StateManager,
+  willAutoPairBrackets: boolean,
+  isEmbed: boolean
+): StrategyProps<Fuse.FuseResult<BlockSuggestion>> {
+  return {
+    id: 'block',
+    match: isEmbed ? embedBlockRegex : linkBlockRegex,
+    index: 1,
+    template: (res: Fuse.FuseResult<BlockSuggestion>) => {
+      return res.item.searchString;
+    },
+    search: (
+      _: string,
+      callback: (results: Fuse.FuseResult<BlockSuggestion>[]) => void,
+      marchArr
+    ) => {
+      getBlocks(stateManager.app, filePath, marchArr[1], marchArr[2], callback);
+    },
+    replace: (result: Fuse.FuseResult<BlockSuggestion>): string => {
+      const output: string[] = [];
+
+      if (isEmbed) {
+        output.push('!');
+      }
+
+      output.push(
+        '[[',
+        stateManager.app.metadataCache.fileToLinktext(
+          result.item.file,
+          filePath
+        )
+      );
+
+      output.push('#^');
+
+      if (result.item.block.id) {
+        output.push(result.item.block.id);
+      } else {
+        const blockId = generateInstanceId();
+        const spacer = shouldInsertAfter(result.item.block.type) ? '\n\n' : ' ';
+
+        stateManager.app.vault.cachedRead(result.item.file).then((content) => {
+          const newContent = `${content.substring(
+            0,
+            result.item.block.end
+          )}${spacer}^${blockId}${content.substring(result.item.block.end)}`;
+          stateManager.app.vault.modify(result.item.file, newContent);
+        });
+
+        output.push(blockId);
+      }
+
+      if (result.item.alias) {
+        output.push('|', result.item.alias);
+      }
+
+      if (!willAutoPairBrackets) {
+        output.push(']] ');
+      }
 
       return output.join('');
     },

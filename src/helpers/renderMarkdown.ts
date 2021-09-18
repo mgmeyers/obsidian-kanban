@@ -24,13 +24,22 @@ interface NormalizedPath {
 
 export function getNormalizedPath(path: string): NormalizedPath {
   const stripped = path.replace(noBreakSpace, ' ').normalize('NFC');
-  const root = stripped.split('#')[0];
-  const [subpath, alias] = stripped.substr(root.length).split('|')[0];
+  const splitOnHash = stripped.split('#');
+
+  if (splitOnHash.length === 1) {
+    return {
+      root: splitOnHash[0],
+      subpath: '',
+      alias: '',
+    };
+  }
+
+  const splitOnAlias = splitOnHash[1].split('|');
 
   return {
-    root,
-    subpath,
-    alias: alias || '',
+    root: splitOnHash[0],
+    subpath: '#' + splitOnAlias[0],
+    alias: splitOnAlias[1] || '',
   };
 }
 
@@ -206,7 +215,10 @@ async function getEmbeddedMarkdownString(
   const contentBoundary = getSubpathBoundary(fileCache, normalizedPath.subpath);
 
   if (contentBoundary) {
-    return content.substring(contentBoundary.start, contentBoundary.end);
+    return content.substring(
+      contentBoundary.start,
+      contentBoundary.end === null ? undefined : contentBoundary.end
+    );
   } else if (normalizedPath.subpath) {
     return `${t('Unable to find')} ${normalizedPath.root}${
       normalizedPath.subpath
@@ -235,7 +247,7 @@ function pollForCachedSubpath(
           manager.onFileMetadataChange(file);
         });
       } else if (remainingCount > 0) {
-        pollForCachedSubpath(file, normalizedPath, view, remainingCount--);
+        pollForCachedSubpath(file, normalizedPath, view, --remainingCount);
       }
     }
   }, 2000);
@@ -278,7 +290,11 @@ async function handleMarkdown(
 
   el.addClass('is-loaded');
 
-  if (content.startsWith(t('Unable to find'))) {
+  if (
+    content.startsWith(t('Unable to find')) &&
+    normalizedPath.subpath &&
+    normalizedPath.subpath !== '#'
+  ) {
     pollForCachedSubpath(file, normalizedPath, view, 4);
   }
 }
