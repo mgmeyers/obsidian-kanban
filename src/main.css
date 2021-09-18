@@ -835,6 +835,29 @@ button.kanban-plugin__cancel-action-button {
   background-color: var(--interactive-accent-hover);
 }
 
+.kanban-plugin__file-suggestion-wrapper {
+  display: flex;
+  line-height: 1.2;
+}
+
+.kanban-plugin__file-suggestion-icon {
+  flex-shrink: 0;
+  flex-grow: 0;
+  padding-right: 4px;
+}
+
+.kanban-plugin__file-suggestion-subtitle {
+  font-size: 0.875em;
+  color: var(--text-muted);
+}
+
+.kanban-plugin__autocomplete-item:hover
+  .kanban-plugin__file-suggestion-subtitle,
+.kanban-plugin__autocomplete-item-active
+  .kanban-plugin__file-suggestion-subtitle {
+  color: var(--text-on-accent);
+}
+
 .modal.kanban-plugin__board-settings-modal {
   max-height: 90vh;
   padding: 0;

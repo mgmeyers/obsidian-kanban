@@ -1,217 +1,22 @@
-import { CursorOffset, StrategyProps, Textcomplete } from '@textcomplete/core';
+import { StrategyProps, Textcomplete } from '@textcomplete/core';
 import { TextareaEditor } from '@textcomplete/textarea';
 import flatpickr from 'flatpickr';
 import Fuse from 'fuse.js';
-import { TFile, moment } from 'obsidian';
+import { moment } from 'obsidian';
 import React from 'react';
-
-import { StateManager } from 'src/StateManager';
 
 import { KanbanContext, KanbanContextProps } from '../context';
 import { c, escapeRegExpStr, useIMEInputProps } from '../helpers';
-import { buildTimeArray } from '../Item/helpers';
-import { getDefaultLocale } from './datePickerLocale';
-import { replaceSelection } from './helpers';
-
-const tagRegex = /\B#([^\s]*)?$/;
-const linkRegex = /\B\[\[([^\]]*)?$/;
-const embedRegex = /\B!\[\[([^\]]*)?$/;
-
-export function forceChangeEvent(input: HTMLTextAreaElement, value: string) {
-  Object.getOwnPropertyDescriptor(
-    HTMLTextAreaElement.prototype,
-    'value'
-  ).set.call(input, value);
-
-  input.dispatchEvent(new Event('input', { bubbles: true }));
-}
-
-export function applyDate(
-  date: Date,
-  inputRef: React.MutableRefObject<HTMLTextAreaElement>,
-  stateManager: StateManager
-) {
-  const dateFormat = stateManager.getSetting('date-format');
-  const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
-
-  const formattedDate = moment(date).format(dateFormat);
-  const wrappedDate = shouldLinkDates
-    ? `[[${formattedDate}]]`
-    : `{${formattedDate}}`;
-
-  replaceSelection(inputRef.current, wrappedDate);
-
-  inputRef.current.focus();
-}
-
-interface ConstructDatePickerParams {
-  div: HTMLElement;
-  inputRef: React.MutableRefObject<HTMLTextAreaElement>;
-  cb: (picker: flatpickr.Instance) => void;
-  stateManager: StateManager;
-}
-
-function constructDatePicker({
-  div,
-  inputRef,
-  cb,
-  stateManager,
-}: ConstructDatePickerParams) {
-  div.createEl('input', { type: 'text' }, (input) => {
-    setTimeout(() =>
-      cb(
-        flatpickr(input, {
-          locale: getDefaultLocale(),
-          inline: true,
-          onChange: (dates) => {
-            applyDate(dates[0], inputRef, stateManager);
-          },
-        })
-      )
-    );
-  });
-}
-
-export function ensureDatePickerIsOnScreen(
-  position: CursorOffset,
-  div: HTMLElement
-) {
-  const height = div.clientHeight;
-  const width = div.clientWidth;
-
-  if (position.top + height > window.innerHeight) {
-    div.style.top = `${(position.clientTop || 0) - height}px`;
-  }
-
-  if (position.left + width > window.innerWidth) {
-    div.style.left = `${(position.left || 0) - width}px`;
-  }
-}
-
-function getTimePickerConfig(
-  stateManager: StateManager
-): StrategyProps<string> {
-  const timeTrigger = stateManager.getSetting('time-trigger');
-  const timeTriggerRegex = new RegExp(
-    `\\B${escapeRegExpStr(timeTrigger as string)}{?([^}]*)$`
-  );
-  const times = buildTimeArray(stateManager);
-
-  return {
-    id: 'time',
-    match: timeTriggerRegex,
-    index: 1,
-    search: (term: string, callback: (results: string[]) => void) => {
-      if (!term) {
-        callback(times);
-      } else {
-        callback(times.filter((t) => t.startsWith(term)));
-      }
-    },
-    template: (result: string) => {
-      return result;
-    },
-    replace: (result: string): string => {
-      return `${timeTrigger}{${result}} `;
-    },
-  };
-}
-
-function getTagSearchConfig(
-  tags: string[],
-  tagSearch: Fuse<string>
-): StrategyProps<Fuse.FuseResult<string>> {
-  return {
-    id: 'tag',
-    match: tagRegex,
-    index: 1,
-    search: (
-      term: string,
-      callback: (results: Fuse.FuseResult<string>[]) => void
-    ) => {
-      if (!term) {
-        callback(
-          tags.slice(0, 10).map((tag, i) => ({ item: tag, refIndex: i }))
-        );
-      } else {
-        callback(tagSearch.search(term));
-      }
-    },
-    template: (result: Fuse.FuseResult<string>) => {
-      return result.item;
-    },
-    replace: (result: Fuse.FuseResult<string>): string => `${result.item} `,
-  };
-}
-
-function getFileSearchConfig(
-  files: TFile[],
-  fileSearch: Fuse<TFile>,
-  filePath: string,
-  stateManager: StateManager,
-  willAutoPairBrackets: boolean,
-  isEmbed: boolean
-): StrategyProps<Fuse.FuseResult<TFile>> {
-  return {
-    id: 'link',
-    match: isEmbed ? embedRegex : linkRegex,
-    index: 1,
-    template: (res: Fuse.FuseResult<TFile>) => {
-      return stateManager.app.metadataCache.fileToLinktext(res.item, filePath);
-    },
-    search: (
-      term: string,
-      callback: (results: Fuse.FuseResult<TFile>[]) => void
-    ) => {
-      if (!term) {
-        callback(
-          files.slice(0, 10).map((file, i) => ({ item: file, refIndex: i }))
-        );
-      } else {
-        callback(fileSearch.search(term));
-      }
-    },
-    replace: (result: Fuse.FuseResult<TFile>): string =>
-      `${isEmbed ? '!' : ''}[[${stateManager.app.metadataCache.fileToLinktext(
-        result.item,
-        filePath
-      )}${willAutoPairBrackets ? '' : ']] '}`,
-  };
-}
-
-function toPreviousMonth(date: moment.Moment) {
-  const initialMonth = date.month();
-  const first = date.clone().startOf('month').weekday(0);
-  const diff = date.diff(first, 'week');
-
-  date.subtract(1, 'month').startOf('month').weekday(6).add(diff, 'week');
-
-  let nextMonth = date.month();
-
-  while (initialMonth === nextMonth) {
-    date.subtract(1, 'week');
-    nextMonth = date.month();
-  }
-
-  return date;
-}
-
-function toNextMonth(date: moment.Moment) {
-  const initialMonth = date.month();
-  const first = date.clone().startOf('month').weekday(6);
-  const diff = date.diff(first, 'week');
-
-  date.add(1, 'month').startOf('month').weekday(0).add(diff, 'week');
-
-  let nextMonth = date.month();
-
-  while (initialMonth === nextMonth) {
-    date.add(1, 'week');
-    nextMonth = date.month();
-  }
-
-  return date;
-}
+import {
+  applyDate,
+  constructDatePicker,
+  ensureDatePickerIsOnScreen,
+  getTimePickerConfig,
+  toNextMonth,
+  toPreviousMonth,
+} from './datepicker';
+import { LinkSuggestion, getFileSearchConfig } from './filepicker';
+import { getTagSearchConfig } from './tagpicker';
 
 export interface ConstructAutocompleteParams {
   inputRef: React.MutableRefObject<HTMLTextAreaElement>;
@@ -241,9 +46,13 @@ export function constructAutocomplete({
   ).sort();
   const tagSearch = new Fuse(tags);
 
-  const files = stateManager.app.vault.getFiles();
-  const fileSearch = new Fuse(files, {
-    keys: ['name'],
+  const linkSuggestions = (stateManager.app.metadataCache as any)
+    .getLinkSuggestions()
+    .filter(
+      (suggestion: LinkSuggestion) => !!suggestion.file
+    ) as Array<LinkSuggestion>;
+  const fileSearch = new Fuse(linkSuggestions, {
+    keys: ['path', 'alias'],
   });
 
   const willAutoPairBrackets = (view.app.vault as any).getConfig(
@@ -253,7 +62,7 @@ export function constructAutocomplete({
   const configs: StrategyProps[] = [
     getTagSearchConfig(tags, tagSearch),
     getFileSearchConfig(
-      files,
+      linkSuggestions,
       fileSearch,
       filePath,
       stateManager,
@@ -261,7 +70,7 @@ export function constructAutocomplete({
       false
     ),
     getFileSearchConfig(
-      files,
+      linkSuggestions,
       fileSearch,
       filePath,
       stateManager,
