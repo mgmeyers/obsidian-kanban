@@ -8,78 +8,139 @@ import { c } from '../helpers';
 import { MarkdownDomRenderer } from '../MarkdownRenderer';
 import { Item } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
+import {
+  constructDatePicker,
+  constructMenuDatePickerOnChange,
+  constructMenuTimePickerOnChange,
+  constructTimePicker,
+} from './helpers';
+
+function useDatePickers(item: Item) {
+  const { stateManager, boardModifiers } = React.useContext(KanbanContext);
+  const path = useNestedEntityPath();
+
+  return React.useMemo(() => {
+    const onEditDate: React.MouseEventHandler = (e) => {
+      constructDatePicker(
+        { x: e.clientX, y: e.clientY },
+        constructMenuDatePickerOnChange({
+          stateManager,
+          boardModifiers,
+          item,
+          hasDate: true,
+          path,
+        }),
+        item.data.metadata.date?.toDate()
+      );
+    };
+
+    const onEditTime: React.MouseEventHandler = (e) => {
+      constructTimePicker(
+        stateManager,
+        { x: e.clientX, y: e.clientY },
+        constructMenuTimePickerOnChange({
+          stateManager,
+          boardModifiers,
+          item,
+          hasTime: true,
+          path,
+        }),
+        item.data.metadata.time
+      );
+    };
+
+    return {
+      onEditDate,
+      onEditTime,
+    };
+  }, [boardModifiers, path, item, stateManager]);
+}
 
 export interface ItemContentProps {
   item: Item;
-  isSettingsVisible: boolean;
-  setIsSettingsVisible?: React.Dispatch<boolean>;
+  isEditing: boolean;
+  setIsEditing: React.Dispatch<boolean>;
   searchQuery?: string;
-  onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
-  onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>;
-  onEditDate?: React.MouseEventHandler;
-  onEditTime?: React.MouseEventHandler;
+}
+
+function checkCheckbox(title: string, checkboxIndex: number) {
+  let count = 0;
+
+  return title.replace(
+    /^(\s*[-+*]\s+?\[)([^\]])(\]\s+)/gm,
+    (sub, before, check, after) => {
+      let match = sub;
+
+      if (count === checkboxIndex) {
+        if (check === ' ') {
+          match = `${before}x${after}`;
+        } else {
+          match = `${before} ${after}`;
+        }
+      }
+
+      count++;
+
+      return match;
+    }
+  );
 }
 
 export const ItemContent = React.memo(function ItemContent({
   item,
-  isSettingsVisible,
-  setIsSettingsVisible,
+  isEditing,
+  setIsEditing,
   searchQuery,
-  onChange,
-  onEditDate,
-  onEditTime,
 }: ItemContentProps) {
+  const [editState, setEditState] = React.useState(item.data.titleRaw);
   const { stateManager, filePath, boardModifiers } =
     React.useContext(KanbanContext);
+
+  const hideTagsDisplay = stateManager.useSetting('hide-tags-display');
   const path = useNestedEntityPath();
+
+  const { onEditDate, onEditTime } = useDatePickers(item);
+
+  React.useEffect(() => {
+    if (isEditing) {
+      setEditState(item.data.titleRaw);
+    }
+  }, [isEditing]);
 
   const onEnter = React.useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (!allowNewLine(e, stateManager)) {
         e.preventDefault();
-        setIsSettingsVisible(false);
+
+        stateManager.parser
+          .updateItem(item, editState)
+          .then((item) => {
+            boardModifiers.updateItem(path, item);
+          })
+          .catch((e) => console.error(e));
+
+        setIsEditing(false);
         return true;
       }
     },
-    [stateManager]
+    [stateManager, editState]
   );
-  const onEscape = React.useCallback(() => {
-    setIsSettingsVisible(false);
-    return true;
-  }, []);
 
-  const hideTagsDisplay = stateManager.useSetting('hide-tags-display');
+  const onEscape = React.useCallback(() => {
+    setIsEditing(false);
+    setEditState(item.data.titleRaw);
+    return true;
+  }, [item]);
 
   const onCheckboxContainerClick = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const target = e.target as HTMLElement;
 
       if (target.hasClass('task-list-item-checkbox')) {
-        const index = parseInt(target.dataset.checkboxIndex, 10);
-
-        let count = 0;
-
-        const checked = item.data.titleRaw.replace(
-          /^(\s*[-+*]\s+?\[)([^\]])(\]\s+)/gm,
-          (sub, before, check, after) => {
-            let match = sub;
-
-            if (count === index) {
-              if (check === ' ') {
-                match = `${before}x${after}`;
-              } else {
-                match = `${before} ${after}`;
-              }
-            }
-
-            count++;
-
-            return match;
-          }
-        );
+        const checkboxIndex = parseInt(target.dataset.checkboxIndex, 10);
 
         stateManager.parser
-          .updateItem(item, checked)
+          .updateItem(item, checkCheckbox(item.data.titleRaw, checkboxIndex))
           .then((item) => {
             boardModifiers.updateItem(path, item);
           })
@@ -89,14 +150,14 @@ export const ItemContent = React.memo(function ItemContent({
     [path, boardModifiers, stateManager, item]
   );
 
-  if (isSettingsVisible) {
+  if (isEditing) {
     return (
       <MarkdownEditor
         className={c('item-input')}
-        onChange={onChange}
+        onChange={(e) => setEditState((e.target as HTMLTextAreaElement).value)}
         onEnter={onEnter}
         onEscape={onEscape}
-        value={item.data.titleRaw}
+        value={editState}
       />
     );
   }

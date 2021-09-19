@@ -6,6 +6,8 @@ import { StateManager } from 'src/StateManager';
 
 import { c, generateInstanceId } from '../helpers';
 
+// TODO: allow searching block keys
+
 const linkRegex = /\B\[\[([^\]]*)$/;
 const embedRegex = /\B!\[\[([^\]]*)$/;
 
@@ -244,8 +246,8 @@ export class MockRunnable {
 
 export interface BlockSuggestion {
   file: TFile;
+  blockId?: string;
   block: {
-    id?: string;
     type: string;
     start: number;
     end: number;
@@ -291,7 +293,7 @@ async function getBlocks(
       return callback([]);
     }
 
-    const blockSuggestions = blockCache.blocks
+    const blockSuggestions: BlockSuggestion[] = blockCache.blocks
       .map((b: any, i: number) => {
         if (b.node.type === 'heading') return null;
 
@@ -300,8 +302,8 @@ async function getBlocks(
         return {
           file,
           searchString: b.display,
+          blockId: section.id,
           block: {
-            id: section.id,
             type: section.type,
             start: section.position.start.offset,
             end: section.position.end.offset,
@@ -311,11 +313,17 @@ async function getBlocks(
       })
       .filter((b: BlockSuggestion) => b);
 
-    callback(
-      new Fuse(blockSuggestions, {
-        keys: ['searchString'],
-      }).search(searchTerm)
-    );
+    if (searchTerm) {
+      callback(
+        new Fuse(blockSuggestions, {
+          keys: ['searchString', 'blockId'],
+        }).search(searchTerm)
+      );
+    } else {
+      callback(
+        blockSuggestions.map((block, i) => ({ item: block, refIndex: i }))
+      );
+    }
   } catch (e) {
     callback([]);
   }
@@ -342,6 +350,16 @@ export function getBlockSearchConfig(
     match: isEmbed ? embedBlockRegex : linkBlockRegex,
     index: 1,
     template: (res: Fuse.FuseResult<BlockSuggestion>) => {
+      if (res.item.blockId) {
+        return `<div class="${c(
+          'file-suggestion-wrapper'
+        )}"><div><div class="${c('file-suggestion-title')}">${
+          res.item.searchString
+        }</div><div class="${c('file-suggestion-subtitle')}">${
+          res.item.blockId
+        }</div><div></div>`;
+      }
+
       return res.item.searchString;
     },
     search: (
@@ -368,8 +386,8 @@ export function getBlockSearchConfig(
 
       output.push('#^');
 
-      if (result.item.block.id) {
-        output.push(result.item.block.id);
+      if (result.item.blockId) {
+        output.push(result.item.blockId);
       } else {
         const blockId = generateInstanceId();
         const spacer = shouldInsertAfter(result.item.block.type) ? '\n\n' : ' ';

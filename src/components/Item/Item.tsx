@@ -3,87 +3,16 @@ import React from 'react';
 
 import { Droppable, useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { useDragHandle } from 'src/dnd/managers/DragManager';
-import { Path } from 'src/dnd/types';
-import { StateManager } from 'src/StateManager';
 
-import { BoardModifiers } from '../../helpers/boardModifiers';
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
 import { Item } from '../types';
 import { getItemClassModifiers } from './helpers';
-import {
-  constructDatePicker,
-  constructMenuDatePickerOnChange,
-  constructMenuTimePickerOnChange,
-  constructTimePicker,
-} from './helpers';
 import { ItemCheckbox } from './ItemCheckbox';
 import { ItemContent } from './ItemContent';
 import { useItemMenu } from './ItemMenu';
 import { ItemMenuButton } from './ItemMenuButton';
 import { ItemMetadata } from './MetadataTable';
-
-interface UseItemContentEventsParams {
-  stateManager: StateManager;
-  boardModifiers: BoardModifiers;
-  path: Path;
-  item: Item;
-}
-
-function useItemContentEvents({
-  boardModifiers,
-  path,
-  item,
-  stateManager,
-}: UseItemContentEventsParams) {
-  return React.useMemo(() => {
-    const onContentChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
-      e
-    ) => {
-      stateManager.parser
-        .updateItem(item, e.target.value)
-        .then((item) => {
-          boardModifiers.updateItem(path, item);
-        })
-        .catch((e) => console.error(e));
-    };
-
-    const onEditDate: React.MouseEventHandler = (e) => {
-      constructDatePicker(
-        { x: e.clientX, y: e.clientY },
-        constructMenuDatePickerOnChange({
-          stateManager,
-          boardModifiers,
-          item,
-          hasDate: true,
-          path,
-        }),
-        item.data.metadata.date?.toDate()
-      );
-    };
-
-    const onEditTime: React.MouseEventHandler = (e) => {
-      constructTimePicker(
-        stateManager,
-        { x: e.clientX, y: e.clientY },
-        constructMenuTimePickerOnChange({
-          stateManager,
-          boardModifiers,
-          item,
-          hasTime: true,
-          path,
-        }),
-        item.data.metadata.time
-      );
-    };
-
-    return {
-      onContentChange,
-      onEditDate,
-      onEditTime,
-    };
-  }, [boardModifiers, path, item, stateManager]);
-}
 
 export interface DraggableItemProps {
   item: Item;
@@ -117,13 +46,6 @@ const ItemInner = React.memo(function ItemInner({
     setIsEditing,
     stateManager,
     path,
-  });
-
-  const contentEvents = useItemContentEvents({
-    boardModifiers,
-    item,
-    path,
-    stateManager,
   });
 
   const onContextMenu: React.MouseEventHandler = React.useCallback(
@@ -172,13 +94,10 @@ const ItemInner = React.memo(function ItemInner({
           stateManager={stateManager}
         />
         <ItemContent
-          isSettingsVisible={isEditing}
+          isEditing={isEditing}
           item={item}
-          onChange={contentEvents.onContentChange}
-          onEditDate={contentEvents.onEditDate}
-          onEditTime={contentEvents.onEditTime}
           searchQuery={isMatch ? searchQuery : undefined}
-          setIsSettingsVisible={setIsEditing}
+          setIsEditing={setIsEditing}
         />
         <ItemMenuButton
           isEditing={isEditing}

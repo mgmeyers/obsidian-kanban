@@ -14,6 +14,7 @@ import {
   BoardTemplate,
   FileMetadata,
   Item,
+  ItemData,
   ItemTemplate,
   Lane,
   LaneTemplate,
@@ -163,7 +164,10 @@ export class KanbanParser {
     );
   }
 
-  private async processTitle(title: string) {
+  private async processTitle(
+    title: string,
+    isComplete?: boolean
+  ): Promise<ItemData> {
     const date = extractDates(title, this.settings);
     const tags = extractItemTags(date.processed, this.settings);
     const file = extractFirstLinkedFile(
@@ -185,6 +189,7 @@ export class KanbanParser {
     const dom = await this.renderMarkdown(tags.processed);
 
     return {
+      titleRaw: title,
       title: tags.processed.trim(),
       titleSearch: getSearchValue(dom, tags.tags, fileMetadata),
       metadata: {
@@ -195,6 +200,7 @@ export class KanbanParser {
         fileMetadata,
       },
       dom,
+      isComplete,
     };
   }
 
@@ -223,19 +229,15 @@ export class KanbanParser {
           // Generaate a new item, but with the old ID
           const [, marker, title] = itemMatch;
           const titleRaw = title.replace(/<br(\s+\/)?>/g, '\n');
-          const processed = await this.processTitle(titleRaw);
+          const processed = await this.processTitle(
+            titleRaw,
+            marker && marker !== ' '
+          );
           const line = newLine.value;
           const item: Item = {
             ...ItemTemplate,
             id: oldItem.id,
-            data: {
-              title: processed.title,
-              titleSearch: processed.titleSearch,
-              titleRaw,
-              isComplete: marker && marker !== ' ',
-              metadata: processed.metadata,
-              dom: processed.dom,
-            },
+            data: processed,
           };
           // Save it in the cache for reuse, and update whatever (cached) lane it's in
           // (Theoretically we could just issue an update to the baord itself here, and skip
@@ -393,7 +395,7 @@ export class KanbanParser {
     // Try to recognize single-line item edits, and try to keep the same ID
     // (So the item will be refreshed, but not re-created)
     if (this.previousBody && this.previousBody !== body) {
-      this.diffBody(body);
+      await this.diffBody(body);
     }
 
     const lines = body.split(newLineRegex);
@@ -402,11 +404,12 @@ export class KanbanParser {
     const thisItems: Map<string, Item[]> = new Map();
     const thisLanes: Map<string, Lane> = new Map();
     const lastLanes = this.previousLanes;
+    const invalidatedFiles: Set<TFile> = new Set();
 
     let haveSeenArchiveMarker = false;
     let currentLane: Lane | null = null;
 
-    const pushLane = () => {
+    const pushLane = (wasChildModified: boolean) => {
       // Don't replace lanes and items more than necessary
       const laneKey = `${
         currentLane.data.shouldMarkItemsComplete
@@ -415,21 +418,26 @@ export class KanbanParser {
       const oldLane = lastLanes.get(laneKey);
 
       if (oldLane) {
+        currentLane.id = oldLane.id;
+
         if (oldLane.data.title === currentLane.data.title) {
-          // Title is the only thing that isn't in the key
-          currentLane = oldLane;
-        } else {
-          // At least save the items and other props
-          currentLane.children = oldLane.children;
           currentLane.data = oldLane.data;
-          currentLane.id = oldLane.id;
+        }
+
+        if (!wasChildModified) {
+          currentLane.children = oldLane.children;
         }
       }
+
       thisLanes.set(laneKey, currentLane);
       lanes.push(currentLane);
     };
 
+    let wasExistingLaneItemModified = false;
+
     for (const line of lines) {
+      if (!line) continue;
+
       const itemMatch = line.match(listItemRegex);
       let item: Item;
 
@@ -439,19 +447,12 @@ export class KanbanParser {
         if (!item) {
           const [, marker, title] = itemMatch;
           const titleRaw = title.replace(/<br(\s+\/)?>/g, '\n');
-          const processed = await this.processTitle(titleRaw);
+          const processed = await this.processTitle(titleRaw, marker !== ' ');
 
           item = {
             ...ItemTemplate,
             id: generateInstanceId(),
-            data: {
-              title: processed.title,
-              titleSearch: processed.titleSearch,
-              titleRaw,
-              isComplete: marker !== ' ',
-              metadata: processed.metadata,
-              dom: processed.dom,
-            },
+            data: processed,
           };
         } else {
           // Using a cached item; verify its metadata and maybe fetch it again
@@ -468,7 +469,13 @@ export class KanbanParser {
                   this.app
                 );
 
+            if (!haveFileCache) {
+              invalidatedFiles.add(file);
+            }
+
             this.fileCache.set(file, fileMetadata);
+
+            const isFileInvalid = !haveFileCache || invalidatedFiles.has(file);
 
             if (
               item.data.metadata.fileMetadata &&
@@ -476,27 +483,26 @@ export class KanbanParser {
             ) {
               // Make a new item with updated metadata
               item = update(item, {
-                id: { $set: generateInstanceId() },
+                // id: { $set: generateInstanceId() },
                 data: {
                   metadata: { fileMetadata: { $set: fileMetadata } },
                 },
               });
-            } else if (!item.data.metadata.fileMetadata && !haveFileCache) {
+              wasExistingLaneItemModified = true;
+            } else if (isFileInvalid) {
               // Make a new item to refresh embeds
-              const processed = await this.processTitle(item.data.titleRaw);
+              const processed = await this.processTitle(
+                item.data.titleRaw,
+                item.data.isComplete
+              );
 
-              item = {
-                ...ItemTemplate,
-                id: generateInstanceId(),
+              item = update(item, {
+                // id: { $set: generateInstanceId() },
                 data: {
-                  title: processed.title,
-                  titleSearch: processed.titleSearch,
-                  titleRaw: item.data.titleRaw,
-                  isComplete: item.data.isComplete,
-                  metadata: processed.metadata,
-                  dom: processed.dom,
+                  $set: processed,
                 },
-              };
+              });
+              wasExistingLaneItemModified = true;
             }
           }
         }
@@ -527,7 +533,8 @@ export class KanbanParser {
 
       // New lane
       if (!haveSeenArchiveMarker && anyHeadingRegex.test(line)) {
-        if (currentLane !== null) pushLane();
+        if (currentLane !== null) pushLane(wasExistingLaneItemModified);
+        wasExistingLaneItemModified = false;
 
         const match = line.match(anyHeadingRegex);
 
@@ -566,7 +573,7 @@ export class KanbanParser {
     }
 
     // Push the last lane
-    if (currentLane !== null) pushLane();
+    if (currentLane !== null) pushLane(wasExistingLaneItemModified);
 
     this.previousBody = body;
     this.previousItems = thisItems;
