@@ -109,7 +109,7 @@ export default {
   'Shift + Enter': 'Umschalttaste + Enter',
   Enter: 'Enter',
   'Prepend / append new cards': 'Neue Karten voranfügen / anhängen',
-  'This setting controls weather new cards are added to the beginning or end of the list.':
+  'This setting controls whether new cards are added to the beginning or end of the list.':
     'Diese Einstellung gibt an ob neue Karten am Anfang oder am Ende einer Liste hinzugefügt werden.',
   Prepend: 'Voranfügen',
   Append: 'Anhängen',

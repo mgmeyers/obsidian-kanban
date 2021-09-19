@@ -48,8 +48,8 @@ export default {
   'Shift + Enter': 'Shift + Enter',
   Enter: 'Enter',
   'Prepend / append new cards': 'Prepend / append new cards',
-  'This setting controls weather new cards are added to the beginning or end of the list.':
-    'This setting controls weather new cards are added to the beginning or end of the list.',
+  'This setting controls whether new cards are added to the beginning or end of the list.':
+    'This setting controls whether new cards are added to the beginning or end of the list.',
   Prepend: 'Prepend',
   'Prepend (compact)': 'Prepend (compact)',
   Append: 'Append',

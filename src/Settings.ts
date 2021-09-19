@@ -170,7 +170,7 @@ export class SettingsManager {
       .setName(t('Prepend / append new cards'))
       .setDesc(
         t(
-          'This setting controls weather new cards are added to the beginning or end of the list.'
+          'This setting controls whether new cards are added to the beginning or end of the list.'
         )
       )
       .addDropdown((dropdown) => {
