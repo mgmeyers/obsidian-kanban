@@ -1,6 +1,7 @@
 import {
   MarkdownSourceView,
   TFile,
+  TFolder,
   htmlToMarkdown,
   parseLinktext,
 } from 'obsidian';
@@ -54,9 +55,10 @@ function fixLinks(text: string) {
 
 function dropAction(stateManager: StateManager, transfer: DataTransfer) {
   // Return a 'copy' or 'link' action according to the content types, or undefined if no recognized type
+  console.log((stateManager.app as any).dragManager.draggable);
   if (transfer.types.includes('text/uri-list')) return 'link';
   if (
-    ['file', 'files', 'link'].includes(
+    ['file', 'files', 'link', 'folder'].includes(
       (stateManager.app as any).dragManager.draggable?.type
     )
   )
@@ -86,6 +88,17 @@ function handleDragOrPaste(
       return draggable.files.map((f: TFile) =>
         linkTo(stateManager, f, filePath)
       );
+    case 'folder': {
+      return draggable.file.children
+        .map((f: TFile | TFolder) => {
+          if (f instanceof TFolder) {
+            return null;
+          }
+
+          return linkTo(stateManager, f, filePath);
+        })
+        .filter((link: string | null) => link);
+    }
     case 'link': {
       let link = draggable.file
         ? linkTo(
