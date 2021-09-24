@@ -55,7 +55,6 @@ function fixLinks(text: string) {
 
 function dropAction(stateManager: StateManager, transfer: DataTransfer) {
   // Return a 'copy' or 'link' action according to the content types, or undefined if no recognized type
-  console.log((stateManager.app as any).dragManager.draggable);
   if (transfer.types.includes('text/uri-list')) return 'link';
   if (
     ['file', 'files', 'link', 'folder'].includes(

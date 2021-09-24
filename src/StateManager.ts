@@ -63,6 +63,7 @@ export class StateManager {
     if (!this.views.has(view.id)) {
       this.ids.push(view.id);
       this.views.set(view.id, view);
+      view.initHeaderButtons();
     }
 
     if (shouldParseData) {
