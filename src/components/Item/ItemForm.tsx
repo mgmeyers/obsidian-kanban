@@ -43,16 +43,13 @@ function getMarkdown(
   return (MarkdownSourceView.prototype as any).handleDataTransfer.call(
     { app: stateManager.app },
     transfer
-  );
+  ) as string;
 }
 
-function fixBulletsAndLinks(text: string) {
+function fixLinks(text: string) {
   // Internal links from e.g. dataview plugin incorrectly begin with `app://obsidian.md/`, and
   // we also want to remove bullet points and task markers from text and markdown
-  return text
-    .replace(/^\s*[-+*]\s+(\[.]\s+)?/, '')
-    .trim()
-    .replace(/^\[(.*)\]\(app:\/\/obsidian.md\/(.*)\)$/, '[$1]($2)');
+  return text.replace(/^\[(.*)\]\(app:\/\/obsidian.md\/(.*)\)$/, '[$1]($2)');
 }
 
 function dropAction(stateManager: StateManager, transfer: DataTransfer) {
@@ -71,7 +68,7 @@ function dropAction(stateManager: StateManager, transfer: DataTransfer) {
     return 'copy';
 }
 
-function importLines(
+function handleDragOrPaste(
   stateManager: StateManager,
   filePath: string,
   transfer: DataTransfer,
@@ -108,11 +105,8 @@ function importLines(
       const text = forcePlaintext
         ? plain || html
         : getMarkdown(stateManager, transfer, html);
-      // Split lines and strip leading bullets/task indicators
-      const lines: string[] = (text || uris || plain || html || '')
-        .split(/\r\n?|\n/)
-        .map(fixBulletsAndLinks);
-      return lines.filter((line) => line);
+
+      return [fixLinks(text || uris || plain || html || '')];
     }
   }
 }
@@ -202,17 +196,23 @@ export function ItemForm({
             onDrop={(e) => {
               // shift key to force plain text, the same way Obsidian does it
               addItemsFromStrings(
-                importLines(stateManager, filePath, e.dataTransfer, e.shiftKey)
+                handleDragOrPaste(
+                  stateManager,
+                  filePath,
+                  e.dataTransfer,
+                  e.shiftKey
+                )
               );
               if (!itemTitle) setIsInputVisible(false);
             }}
             onPaste={(e) => {
               const html = e.clipboardData.getData('text/html');
-              const pasteLines = importLines(
+              const pasteLines = handleDragOrPaste(
                 stateManager,
                 filePath,
                 e.clipboardData
               );
+
               if (pasteLines.length > 1) {
                 addItemsFromStrings(pasteLines);
                 e.preventDefault();
