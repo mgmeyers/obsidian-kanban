@@ -128,6 +128,7 @@ export const DraggableLane = React.memo(function DraggableLane({
       style={laneStyles}
     >
       <div
+        data-count={lane.children.length}
         ref={elementRef}
         className={classcat([c('lane'), { 'will-prepend': shouldPrepend }])}
       >

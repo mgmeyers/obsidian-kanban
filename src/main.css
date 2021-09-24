@@ -267,6 +267,13 @@ button.kanban-plugin__lane-settings-button
   flex-grow: 1;
 }
 
+.kanban-plugin__lane-items > .kanban-plugin__placeholder:only-child {
+  height: 2.55em;
+  border: 3px dashed rgba(var(--text-muted-rgb), 0.1);
+  margin-bottom: 4px;
+  border-radius: 6px;
+}
+
 .kanban-plugin__lane-items > div {
   margin-top: 4px;
 }
