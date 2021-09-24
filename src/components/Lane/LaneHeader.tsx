@@ -5,6 +5,7 @@ import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { t } from 'src/lang/helpers';
 
 import { KanbanContext } from '../context';
+import { getDropAction } from '../Editor/helpers';
 import { c } from '../helpers';
 import { GripIcon } from '../Icon/GripIcon';
 import { Icon } from '../Icon/Icon';
@@ -27,7 +28,7 @@ export const LaneHeader = React.memo(
     dragHandleRef,
     setIsItemInputVisible,
   }: LaneHeaderProps) => {
-    const { boardModifiers } = React.useContext(KanbanContext);
+    const { boardModifiers, stateManager } = React.useContext(KanbanContext);
     const [isEditing, setIsEditing] = React.useState(false);
     const lanePath = useNestedEntityPath(laneIndex);
 
@@ -77,6 +78,11 @@ export const LaneHeader = React.memo(
                     className={c('lane-settings-button')}
                     onClick={() => {
                       setIsItemInputVisible(true);
+                    }}
+                    onDragOver={(e) => {
+                      if (getDropAction(stateManager, e.dataTransfer)) {
+                        setIsItemInputVisible(true);
+                      }
                     }}
                   >
                     <Icon name="plus-with-circle" />

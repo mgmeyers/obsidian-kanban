@@ -12,6 +12,7 @@ import { t } from 'src/lang/helpers';
 import { StateManager } from 'src/StateManager';
 
 import { KanbanContext } from '../context';
+import { getDropAction } from '../Editor/helpers';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { Item } from '../types';
@@ -51,22 +52,6 @@ function fixLinks(text: string) {
   // Internal links from e.g. dataview plugin incorrectly begin with `app://obsidian.md/`, and
   // we also want to remove bullet points and task markers from text and markdown
   return text.replace(/^\[(.*)\]\(app:\/\/obsidian.md\/(.*)\)$/, '[$1]($2)');
-}
-
-function dropAction(stateManager: StateManager, transfer: DataTransfer) {
-  // Return a 'copy' or 'link' action according to the content types, or undefined if no recognized type
-  if (transfer.types.includes('text/uri-list')) return 'link';
-  if (
-    ['file', 'files', 'link', 'folder'].includes(
-      (stateManager.app as any).dragManager.draggable?.type
-    )
-  )
-    return 'link';
-  if (
-    transfer.types.includes('text/html') ||
-    transfer.types.includes('text/plain')
-  )
-    return 'copy';
 }
 
 function handleDragOrPaste(
@@ -194,7 +179,7 @@ export function ItemForm({
               setItemTitle((e.target as HTMLTextAreaElement).value);
             }}
             onDragOver={(e) => {
-              const action = dropAction(stateManager, e.dataTransfer);
+              const action = getDropAction(stateManager, e.dataTransfer);
 
               if (action) {
                 e.dataTransfer.dropEffect = action;
@@ -268,7 +253,7 @@ export function ItemForm({
         className={c('new-item-button')}
         onClick={() => setIsInputVisible(true)}
         onDragOver={(e) => {
-          if (dropAction(stateManager, e.dataTransfer)) {
+          if (getDropAction(stateManager, e.dataTransfer)) {
             setIsInputVisible(true);
           }
         }}
