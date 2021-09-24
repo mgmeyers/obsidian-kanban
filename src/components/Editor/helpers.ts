@@ -249,6 +249,15 @@ export function applyWrappingFormatting(
     return false;
   }
 
+  // Prevent wrapping in the middle of typing a word. Eg. Prevent: don't'
+  if (
+    state.selection.end === state.selection.start &&
+    state.selection.start > 0 &&
+    textarea.value[state.selection.start - 1] !== ' '
+  ) {
+    return false;
+  }
+
   if (state.selection.end === state.selection.start) {
     const formattedState = replaceSelection(textarea, `${after}`);
     setSelectionRange(textarea, {
