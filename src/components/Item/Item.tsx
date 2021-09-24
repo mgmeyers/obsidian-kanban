@@ -50,6 +50,10 @@ const ItemInner = React.memo(function ItemInner({
 
   const onContextMenu: React.MouseEventHandler = React.useCallback(
     (e) => {
+      if (e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
       e.preventDefault();
       e.stopPropagation();
 
