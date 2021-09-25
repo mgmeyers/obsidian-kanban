@@ -106,7 +106,9 @@ export function getFileSearchConfig(
         stateManager.app.vault as any
       ).getConfig('useMarkdownLinks');
 
-      if (!willAutoPairBrackets && !shouldUseMarkdownLinks) {
+      if (willAutoPairBrackets && !shouldUseMarkdownLinks) {
+        output[output.length - 1] = output[output.length - 1].slice(0, -2);
+      } else if (!willAutoPairBrackets && !shouldUseMarkdownLinks) {
         output.push(']] ');
       }
 
@@ -206,7 +208,9 @@ export function getHeadingSearchConfig(
         stateManager.app.vault as any
       ).getConfig('useMarkdownLinks');
 
-      if (!willAutoPairBrackets && !shouldUseMarkdownLinks) {
+      if (willAutoPairBrackets && !shouldUseMarkdownLinks) {
+        output[output.length - 1] = output[output.length - 1].slice(0, -2);
+      } else if (!willAutoPairBrackets && !shouldUseMarkdownLinks) {
         output.push(']] ');
       }
 
@@ -389,7 +393,7 @@ export function getBlockSearchConfig(
           stateManager.app.vault.modify(result.item.file, newContent);
         });
 
-        subpath += result.item.blockId;
+        subpath += blockId;
       }
 
       output.push(
@@ -405,7 +409,9 @@ export function getBlockSearchConfig(
         stateManager.app.vault as any
       ).getConfig('useMarkdownLinks');
 
-      if (!willAutoPairBrackets && !shouldUseMarkdownLinks) {
+      if (willAutoPairBrackets && !shouldUseMarkdownLinks) {
+        output[output.length - 1] = output[output.length - 1].slice(0, -2);
+      } else if (!willAutoPairBrackets && !shouldUseMarkdownLinks) {
         output.push(']] ');
       }
 

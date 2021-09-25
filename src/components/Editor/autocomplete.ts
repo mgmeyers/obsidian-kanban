@@ -133,7 +133,7 @@ export function constructAutocomplete({
         const activeItem = (autocomplete as any).dropdown.getActiveItem();
         const searchResult = activeItem?.searchResult;
 
-        if (searchResult && searchResult.strategy.props.id === 'link') {
+        if (searchResult && searchResult.strategy.props.id.startsWith('link')) {
           e.preventDefault();
           editor.applySearchResult(searchResult);
           replaceSelection(inputRef.current, e.key === '^' ? '#^' : '#');

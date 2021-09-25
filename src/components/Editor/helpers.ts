@@ -243,7 +243,8 @@ export function applyWrappingFormatting(
   textarea: HTMLTextAreaElement,
   before: string,
   after: string,
-  requireSelection?: boolean
+  requireSelection?: boolean,
+  allowInMiddle?: boolean
 ) {
   const state = getStateFromTextarea(textarea);
 
@@ -253,6 +254,7 @@ export function applyWrappingFormatting(
 
   // Prevent wrapping in the middle of typing a word. Eg. Prevent: don't'
   if (
+    !allowInMiddle &&
     state.selection.end === state.selection.start &&
     state.selection.start > 0 &&
     textarea.value[state.selection.start - 1] !== ' '

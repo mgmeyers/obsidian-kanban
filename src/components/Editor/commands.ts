@@ -340,11 +340,11 @@ export const autoPairBracketsCommands: Record<
   string,
   (ta: HTMLTextAreaElement) => boolean
 > = {
-  '(': (textarea) => applyWrappingFormatting(textarea, '(', ')'),
-  '[': (textarea) => applyWrappingFormatting(textarea, '[', ']'),
-  '{': (textarea) => applyWrappingFormatting(textarea, '{', '}'),
-  "'": (textarea) => applyWrappingFormatting(textarea, "'", "'"),
-  '"': (textarea) => applyWrappingFormatting(textarea, '"', '"'),
+  '(': (textarea) => applyWrappingFormatting(textarea, '(', ')', false),
+  '[': (textarea) => applyWrappingFormatting(textarea, '[', ']', false, true),
+  '{': (textarea) => applyWrappingFormatting(textarea, '{', '}', false),
+  "'": (textarea) => applyWrappingFormatting(textarea, "'", "'", false),
+  '"': (textarea) => applyWrappingFormatting(textarea, '"', '"', false),
 };
 
 export const autoPairMarkdownCommands: Record<
