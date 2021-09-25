@@ -2,6 +2,7 @@ import flatpickr from 'flatpickr';
 import { moment, setIcon } from 'obsidian';
 
 import { Path } from 'src/dnd/types';
+import { buildLinkToDailyNote } from 'src/helpers';
 import { StateManager } from 'src/StateManager';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
@@ -95,7 +96,14 @@ export function constructMenuDatePickerOnChange({
   const dateFormat = stateManager.getSetting('date-format');
   const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
   const dateTrigger = stateManager.getSetting('date-trigger');
-  const contentMatch = shouldLinkDates ? '\\[\\[([^}]+)\\]\\]' : '{([^}]+)}';
+  const shouldUseMarkdownLinks = !!(stateManager.app.vault as any).getConfig(
+    'useMarkdownLinks'
+  );
+  const contentMatch = shouldLinkDates
+    ? shouldUseMarkdownLinks
+      ? '\\[[^\\]]+\\]\\([^)]+\\)'
+      : '\\[\\[[^\\]]+\\]\\]'
+    : '{[^}]+}';
   const dateRegEx = new RegExp(
     `(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`
   );
@@ -104,7 +112,7 @@ export function constructMenuDatePickerOnChange({
     const date = dates[0];
     const formattedDate = moment(date).format(dateFormat);
     const wrappedDate = shouldLinkDates
-      ? `[[${formattedDate}]]`
+      ? buildLinkToDailyNote(stateManager.app, formattedDate)
       : `{${formattedDate}}`;
 
     let titleRaw = item.data.titleRaw;

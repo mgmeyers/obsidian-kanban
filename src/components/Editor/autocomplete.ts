@@ -67,18 +67,10 @@ export function constructAutocomplete({
 
   const configs: StrategyProps[] = [
     getTagSearchConfig(tags, tagSearch),
-    getBlockSearchConfig(filePath, stateManager, willAutoPairBrackets, false),
     getBlockSearchConfig(filePath, stateManager, willAutoPairBrackets, true),
-    getHeadingSearchConfig(filePath, stateManager, willAutoPairBrackets, false),
+    getBlockSearchConfig(filePath, stateManager, willAutoPairBrackets, false),
     getHeadingSearchConfig(filePath, stateManager, willAutoPairBrackets, true),
-    getFileSearchConfig(
-      linkSuggestions,
-      fileSearch,
-      filePath,
-      stateManager,
-      willAutoPairBrackets,
-      false
-    ),
+    getHeadingSearchConfig(filePath, stateManager, willAutoPairBrackets, false),
     getFileSearchConfig(
       linkSuggestions,
       fileSearch,
@@ -86,6 +78,14 @@ export function constructAutocomplete({
       stateManager,
       willAutoPairBrackets,
       true
+    ),
+    getFileSearchConfig(
+      linkSuggestions,
+      fileSearch,
+      filePath,
+      stateManager,
+      willAutoPairBrackets,
+      false
     ),
   ];
 

@@ -283,7 +283,14 @@ export class KanbanParser {
       'link-date-to-daily-note',
       suppliedSettings
     );
-    const contentMatch = shouldLinkDate ? '\\[\\[([^}]+)\\]\\]' : '{([^}]+)}';
+    const shouldUseMarkdownLinks = !!(this.app.vault as any).getConfig(
+      'useMarkdownLinks'
+    );
+    const contentMatch = shouldLinkDate
+      ? shouldUseMarkdownLinks
+        ? '\\[([^\\]]+)\\]\\([^)]+\\)'
+        : '\\[\\[([^\\]]+)\\]\\]'
+      : '{([^}]+)}';
 
     this.settings = {
       dateFormat:

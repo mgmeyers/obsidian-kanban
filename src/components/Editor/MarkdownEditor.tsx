@@ -55,6 +55,10 @@ export const MarkdownEditor = React.forwardRef(function MarkdownEditor(
     return (view.app.vault as any).getConfig('tabSize');
   }, [view]);
 
+  const shouldUseMarkdownLinks = !!(view.app.vault as any).getConfig(
+    'useMarkdownLinks'
+  );
+
   const autocompleteProps = useAutocompleteInputProps({
     isInputVisible: true,
     onEnter,
@@ -98,6 +102,10 @@ export const MarkdownEditor = React.forwardRef(function MarkdownEditor(
       }
 
       if (shouldAutoPairBrackets) {
+        if (shouldUseMarkdownLinks && e.key === '[') {
+          return false;
+        }
+
         const command = autoPairBracketsCommands[e.key];
         if (command) {
           const handled = command(e.target as HTMLTextAreaElement);

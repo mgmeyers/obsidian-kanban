@@ -3,6 +3,7 @@ import flatpickr from 'flatpickr';
 import { moment } from 'obsidian';
 import React from 'react';
 
+import { buildLinkToDailyNote } from 'src/helpers';
 import { StateManager } from 'src/StateManager';
 
 import { escapeRegExpStr } from '../helpers';
@@ -20,7 +21,7 @@ export function applyDate(
 
   const formattedDate = moment(date).format(dateFormat);
   const wrappedDate = shouldLinkDates
-    ? `[[${formattedDate}]]`
+    ? buildLinkToDailyNote(stateManager.app, formattedDate)
     : `{${formattedDate}}`;
 
   replaceSelection(inputRef.current, wrappedDate);

@@ -92,7 +92,10 @@ export function useItemMenu({
 
                 const newTitleRaw = item.data.titleRaw.replace(
                   prevTitle,
-                  `[[${sanitizedTitle}]]`
+                  stateManager.app.fileManager.generateMarkdownLink(
+                    newFile,
+                    stateManager.file.path
+                  )
                 );
 
                 stateManager.parser
@@ -147,8 +150,13 @@ export function useItemMenu({
                   'link-date-to-daily-note'
                 );
                 const dateTrigger = stateManager.getSetting('date-trigger');
+                const shouldUseMarkdownLinks = !!(
+                  stateManager.app.vault as any
+                ).getConfig('useMarkdownLinks');
                 const contentMatch = shouldLinkDates
-                  ? '\\[\\[[^}]+\\]\\]'
+                  ? shouldUseMarkdownLinks
+                    ? '\\[[^\\]]+\\]\\([^\\)]+\\)'
+                    : '\\[\\[[^\\]]+\\]\\]'
                   : '{[^}]+}';
                 const dateRegEx = new RegExp(
                   `(^|\\s)${escapeRegExpStr(

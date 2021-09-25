@@ -6,8 +6,6 @@ import { StateManager } from 'src/StateManager';
 
 import { c, generateInstanceId } from '../helpers';
 
-// TODO: allow searching block keys
-
 const linkRegex = /\B\[\[([^\]]*)$/;
 const embedRegex = /\B!\[\[([^\]]*)$/;
 
@@ -63,7 +61,7 @@ export function getFileSearchConfig(
   isEmbed: boolean
 ): StrategyProps<Fuse.FuseResult<LinkSuggestion>> {
   return {
-    id: 'link',
+    id: `link-${isEmbed ? 'embed' : 'normal'}`,
     match: isEmbed ? embedRegex : linkRegex,
     index: 1,
     template: (res: Fuse.FuseResult<LinkSuggestion>) => {
@@ -91,23 +89,24 @@ export function getFileSearchConfig(
     replace: (result: Fuse.FuseResult<LinkSuggestion>): string => {
       const output: string[] = [];
 
-      if (isEmbed) {
+      if (isEmbed && result.item.file.extension === 'md') {
         output.push('!');
       }
 
       output.push(
-        '[[',
-        stateManager.app.metadataCache.fileToLinktext(
+        stateManager.app.fileManager.generateMarkdownLink(
           result.item.file,
-          filePath
+          stateManager.file.path,
+          undefined,
+          result.item.alias
         )
       );
 
-      if (result.item.alias) {
-        output.push('|', result.item.alias);
-      }
+      const shouldUseMarkdownLinks = !!(
+        stateManager.app.vault as any
+      ).getConfig('useMarkdownLinks');
 
-      if (!willAutoPairBrackets) {
+      if (!willAutoPairBrackets && !shouldUseMarkdownLinks) {
         output.push(']] ');
       }
 
@@ -172,7 +171,7 @@ export function getHeadingSearchConfig(
   isEmbed: boolean
 ): StrategyProps<Fuse.FuseResult<HeadingSuggestion>> {
   return {
-    id: 'heading',
+    id: `heading-${isEmbed ? 'embed' : 'normal'}`,
     match: isEmbed ? embedHeadingRegex : linkHeadingRegex,
     index: 1,
     template: (res: Fuse.FuseResult<HeadingSuggestion>) => {
@@ -190,26 +189,24 @@ export function getHeadingSearchConfig(
     replace: (result: Fuse.FuseResult<HeadingSuggestion>): string => {
       const output: string[] = [];
 
-      if (isEmbed) {
+      if (isEmbed && result.item.file.extension === 'md') {
         output.push('!');
       }
 
       output.push(
-        '[[',
-        stateManager.app.metadataCache.fileToLinktext(
+        stateManager.app.fileManager.generateMarkdownLink(
           result.item.file,
-          filePath
+          stateManager.file.path,
+          '#' + result.item.heading,
+          result.item.alias
         )
       );
 
-      output.push('#');
-      output.push(result.item.heading);
+      const shouldUseMarkdownLinks = !!(
+        stateManager.app.vault as any
+      ).getConfig('useMarkdownLinks');
 
-      if (result.item.alias) {
-        output.push('|', result.item.alias);
-      }
-
-      if (!willAutoPairBrackets) {
+      if (!willAutoPairBrackets && !shouldUseMarkdownLinks) {
         output.push(']] ');
       }
 
@@ -346,7 +343,7 @@ export function getBlockSearchConfig(
   isEmbed: boolean
 ): StrategyProps<Fuse.FuseResult<BlockSuggestion>> {
   return {
-    id: 'block',
+    id: `block-${isEmbed ? 'embed' : 'normal'}`,
     match: isEmbed ? embedBlockRegex : linkBlockRegex,
     index: 1,
     template: (res: Fuse.FuseResult<BlockSuggestion>) => {
@@ -372,22 +369,14 @@ export function getBlockSearchConfig(
     replace: (result: Fuse.FuseResult<BlockSuggestion>): string => {
       const output: string[] = [];
 
-      if (isEmbed) {
+      if (isEmbed && result.item.file.extension === 'md') {
         output.push('!');
       }
 
-      output.push(
-        '[[',
-        stateManager.app.metadataCache.fileToLinktext(
-          result.item.file,
-          filePath
-        )
-      );
-
-      output.push('#^');
+      let subpath = '#^';
 
       if (result.item.blockId) {
-        output.push(result.item.blockId);
+        subpath += result.item.blockId;
       } else {
         const blockId = generateInstanceId();
         const spacer = shouldInsertAfter(result.item.block.type) ? '\n\n' : ' ';
@@ -400,14 +389,23 @@ export function getBlockSearchConfig(
           stateManager.app.vault.modify(result.item.file, newContent);
         });
 
-        output.push(blockId);
+        subpath += result.item.blockId;
       }
 
-      if (result.item.alias) {
-        output.push('|', result.item.alias);
-      }
+      output.push(
+        stateManager.app.fileManager.generateMarkdownLink(
+          result.item.file,
+          stateManager.file.path,
+          subpath,
+          result.item.alias
+        )
+      );
 
-      if (!willAutoPairBrackets) {
+      const shouldUseMarkdownLinks = !!(
+        stateManager.app.vault as any
+      ).getConfig('useMarkdownLinks');
+
+      if (!willAutoPairBrackets && !shouldUseMarkdownLinks) {
         output.push(']] ');
       }
 
