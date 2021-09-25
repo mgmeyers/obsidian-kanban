@@ -369,6 +369,20 @@ export default class KanbanPlugin extends Plugin {
         }
       },
     });
+
+    this.addCommand({
+      id: 'add-kanban-lane',
+      name: t('Add a list'),
+      checkCallback: (checking) => {
+        const activeLeaf = this.app.workspace.activeLeaf;
+
+        if (checking) {
+          return activeLeaf.view instanceof KanbanView;
+        }
+
+        (activeLeaf.view as KanbanView).emitter.emit('showLaneForm', undefined);
+      },
+    });
   }
 
   registerMonkeyPatches() {

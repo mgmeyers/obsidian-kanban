@@ -21,7 +21,7 @@ export const kanbanViewType = 'kanban';
 export const kanbanIcon = 'blocks';
 
 interface ViewEvents {
-  showLaneForm: (data: { referenceRect: DOMRect }) => void;
+  showLaneForm: () => void;
   toggleSearch: () => void;
   hotkey: (commandId: string) => void;
 }
@@ -135,10 +135,8 @@ export class KanbanView extends TextFileView implements HoverParent {
       stateManager.getSetting('show-add-list') &&
       !this.actionButtons['show-add-list']
     ) {
-      const btn = this.addAction('plus-with-circle', t('Add a list'), (e) => {
-        this.emitter.emit('showLaneForm', {
-          referenceRect: (e.target as HTMLElement).getBoundingClientRect(),
-        });
+      const btn = this.addAction('plus-with-circle', t('Add a list'), () => {
+        this.emitter.emit('showLaneForm', undefined);
       });
 
       btn.addClass(c('ignore-click-outside'));
