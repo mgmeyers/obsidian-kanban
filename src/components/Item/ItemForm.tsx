@@ -1,112 +1,14 @@
-import {
-  MarkdownSourceView,
-  TFile,
-  TFolder,
-  htmlToMarkdown,
-  parseLinktext,
-} from 'obsidian';
 import React from 'react';
 import useOnclickOutside from 'react-cool-onclickoutside';
 
 import { t } from 'src/lang/helpers';
-import { StateManager } from 'src/StateManager';
 
 import { KanbanContext } from '../context';
 import { getDropAction } from '../Editor/helpers';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { Item } from '../types';
-
-function linkTo(
-  stateManager: StateManager,
-  file: TFile,
-  sourcePath: string,
-  subpath?: string
-) {
-  // Generate a link relative to this Kanban board, respecting user link type preferences
-  return stateManager.app.fileManager.generateMarkdownLink(
-    file,
-    sourcePath,
-    subpath
-  );
-}
-
-function getMarkdown(
-  stateManager: StateManager,
-  transfer: DataTransfer,
-  html: string
-) {
-  // 0.12.5 -- remove handleDataTransfer below when this version is more widely supported
-  if (htmlToMarkdown) {
-    return htmlToMarkdown(html);
-  }
-
-  // crude hack to use Obsidian's html-to-markdown converter (replace when Obsidian exposes it in API):
-  return (MarkdownSourceView.prototype as any).handleDataTransfer.call(
-    { app: stateManager.app },
-    transfer
-  ) as string;
-}
-
-function fixLinks(text: string) {
-  // Internal links from e.g. dataview plugin incorrectly begin with `app://obsidian.md/`, and
-  // we also want to remove bullet points and task markers from text and markdown
-  return text.replace(/^\[(.*)\]\(app:\/\/obsidian.md\/(.*)\)$/, '[$1]($2)');
-}
-
-function handleDragOrPaste(
-  stateManager: StateManager,
-  filePath: string,
-  transfer: DataTransfer,
-  forcePlaintext: boolean = false
-): string[] {
-  const draggable = (stateManager.app as any).dragManager.draggable;
-  const html = transfer.getData('text/html');
-  const plain = transfer.getData('text/plain');
-  const uris = transfer.getData('text/uri-list');
-
-  switch (draggable?.type) {
-    case 'file':
-      return [linkTo(stateManager, draggable.file, filePath)];
-    case 'files':
-      return draggable.files.map((f: TFile) =>
-        linkTo(stateManager, f, filePath)
-      );
-    case 'folder': {
-      return draggable.file.children
-        .map((f: TFile | TFolder) => {
-          if (f instanceof TFolder) {
-            return null;
-          }
-
-          return linkTo(stateManager, f, filePath);
-        })
-        .filter((link: string | null) => link);
-    }
-    case 'link': {
-      let link = draggable.file
-        ? linkTo(
-            stateManager,
-            draggable.file,
-            parseLinktext(draggable.linktext).subpath
-          )
-        : `[[${draggable.linktext}]]`;
-      const alias = new DOMParser().parseFromString(html, 'text/html')
-        .documentElement.textContent; // Get raw text
-      link = link
-        .replace(/]]$/, `|${alias}]]`)
-        .replace(/^\[[^\]].+]\(/, `[${alias}](`);
-      return [link];
-    }
-    default: {
-      const text = forcePlaintext
-        ? plain || html
-        : getMarkdown(stateManager, transfer, html);
-
-      return [fixLinks(text || uris || plain || html || '')];
-    }
-  }
-}
+import { handleDragOrPaste } from './helpers';
 
 interface ItemFormProps {
   addItems: (items: Item[]) => void;
@@ -141,6 +43,16 @@ export function ItemForm({
     setIsInputVisible(false);
   }, []);
 
+  const addItemsFromStrings = async (titles: string[]) => {
+    addItems(
+      await Promise.all(
+        titles.map(async (title) => {
+          return await stateManager.parser.newItem(title);
+        })
+      )
+    );
+  };
+
   const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (!allowNewLine(e, stateManager)) {
       e.preventDefault();
@@ -152,16 +64,6 @@ export function ItemForm({
         setItemTitle('');
       }
     }
-  };
-
-  const addItemsFromStrings = async (titles: string[]) => {
-    addItems(
-      await Promise.all(
-        titles.map(async (title) => {
-          return await stateManager.parser.newItem(title);
-        })
-      )
-    );
   };
 
   if (isInputVisible) {

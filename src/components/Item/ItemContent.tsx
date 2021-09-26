@@ -3,6 +3,7 @@ import React from 'react';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 
 import { KanbanContext } from '../context';
+import { getDropAction } from '../Editor/helpers';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { MarkdownDomRenderer } from '../MarkdownRenderer';
@@ -13,6 +14,7 @@ import {
   constructMenuDatePickerOnChange,
   constructMenuTimePickerOnChange,
   constructTimePicker,
+  handleDragOrPaste,
 } from './helpers';
 
 function useDatePickers(item: Item) {
@@ -159,6 +161,27 @@ export const ItemContent = React.memo(function ItemContent({
         onEnter={onEnter}
         onEscape={onEscape}
         value={editState}
+        onDragOver={(e) => {
+          const action = getDropAction(stateManager, e.dataTransfer);
+
+          if (action) {
+            e.dataTransfer.dropEffect = action;
+            e.preventDefault();
+            return false;
+          }
+        }}
+        onDrop={(e) => {
+          setEditState(
+            (state) =>
+              state +
+              handleDragOrPaste(
+                stateManager,
+                filePath,
+                e.dataTransfer,
+                e.shiftKey
+              ).join('\n')
+          );
+        }}
       />
     );
   }

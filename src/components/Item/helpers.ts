@@ -1,5 +1,13 @@
 import flatpickr from 'flatpickr';
-import { moment, setIcon } from 'obsidian';
+import {
+  MarkdownSourceView,
+  TFile,
+  TFolder,
+  htmlToMarkdown,
+  moment,
+  parseLinktext,
+  setIcon,
+} from 'obsidian';
 
 import { Path } from 'src/dnd/types';
 import { buildLinkToDailyNote } from 'src/helpers';
@@ -327,4 +335,95 @@ export function getItemClassModifiers(item: Item) {
   }
 
   return classModifiers;
+}
+
+export function linkTo(
+  stateManager: StateManager,
+  file: TFile,
+  sourcePath: string,
+  subpath?: string
+) {
+  // Generate a link relative to this Kanban board, respecting user link type preferences
+  return stateManager.app.fileManager.generateMarkdownLink(
+    file,
+    sourcePath,
+    subpath
+  );
+}
+
+export function getMarkdown(
+  stateManager: StateManager,
+  transfer: DataTransfer,
+  html: string
+) {
+  // 0.12.5 -- remove handleDataTransfer below when this version is more widely supported
+  if (htmlToMarkdown) {
+    return htmlToMarkdown(html);
+  }
+
+  // crude hack to use Obsidian's html-to-markdown converter (replace when Obsidian exposes it in API):
+  return (MarkdownSourceView.prototype as any).handleDataTransfer.call(
+    { app: stateManager.app },
+    transfer
+  ) as string;
+}
+
+export function fixLinks(text: string) {
+  // Internal links from e.g. dataview plugin incorrectly begin with `app://obsidian.md/`, and
+  // we also want to remove bullet points and task markers from text and markdown
+  return text.replace(/^\[(.*)\]\(app:\/\/obsidian.md\/(.*)\)$/, '[$1]($2)');
+}
+
+export function handleDragOrPaste(
+  stateManager: StateManager,
+  filePath: string,
+  transfer: DataTransfer,
+  forcePlaintext: boolean = false
+): string[] {
+  const draggable = (stateManager.app as any).dragManager.draggable;
+  const html = transfer.getData('text/html');
+  const plain = transfer.getData('text/plain');
+  const uris = transfer.getData('text/uri-list');
+
+  switch (draggable?.type) {
+    case 'file':
+      return [linkTo(stateManager, draggable.file, filePath)];
+    case 'files':
+      return draggable.files.map((f: TFile) =>
+        linkTo(stateManager, f, filePath)
+      );
+    case 'folder': {
+      return draggable.file.children
+        .map((f: TFile | TFolder) => {
+          if (f instanceof TFolder) {
+            return null;
+          }
+
+          return linkTo(stateManager, f, filePath);
+        })
+        .filter((link: string | null) => link);
+    }
+    case 'link': {
+      let link = draggable.file
+        ? linkTo(
+            stateManager,
+            draggable.file,
+            parseLinktext(draggable.linktext).subpath
+          )
+        : `[[${draggable.linktext}]]`;
+      const alias = new DOMParser().parseFromString(html, 'text/html')
+        .documentElement.textContent; // Get raw text
+      link = link
+        .replace(/]]$/, `|${alias}]]`)
+        .replace(/^\[[^\]].+]\(/, `[${alias}](`);
+      return [link];
+    }
+    default: {
+      const text = forcePlaintext
+        ? plain || html
+        : getMarkdown(stateManager, transfer, html);
+
+      return [fixLinks(text || uris || plain || html || '')];
+    }
+  }
 }
