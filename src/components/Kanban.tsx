@@ -180,11 +180,9 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
         e.preventDefault();
         const destination = targetEl.getAttr('href');
         const inNewLeaf = e.ctrlKey || e.metaKey;
+        const isUnresolved = targetEl.hasClass('is-unresolved');
 
-        if (
-          targetEl.hasClass('is-unresolved') &&
-          appHasDailyNotesPluginLoaded()
-        ) {
+        if (isUnresolved && appHasDailyNotesPluginLoaded()) {
           const dateFormat = stateManager.getSetting('date-format');
           const parsed = moment(destination, dateFormat, true);
 

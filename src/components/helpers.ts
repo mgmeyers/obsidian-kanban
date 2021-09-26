@@ -108,7 +108,9 @@ export async function applyTemplate(
     // If both plugins are enabled, attempt to detect templater first
     if (templatesEnabled && templaterEnabled) {
       if (templaterDetectRegex.test(templateContent)) {
-        return await templaterPlugin.append_template(templateFile);
+        return await templaterPlugin.append_template_to_active_file(
+          templateFile
+        );
       }
 
       return await templatesPlugin.instance.insertTemplate(templateFile);
@@ -119,7 +121,7 @@ export async function applyTemplate(
     }
 
     if (templaterEnabled) {
-      return await templaterPlugin.append_template(templateFile);
+      return await templaterPlugin.append_template_to_active_file(templateFile);
     }
 
     // No template plugins enabled so we can just append the template to the doc
