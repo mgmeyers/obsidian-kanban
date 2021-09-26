@@ -282,6 +282,8 @@ export class StateManager {
         this.getSettingRaw('show-view-as-markdown', suppliedSettings) ?? true,
       'show-board-settings':
         this.getSettingRaw('show-board-settings', suppliedSettings) ?? true,
+      'show-search':
+        this.getSettingRaw('show-search', suppliedSettings) ?? true,
     };
   }
 

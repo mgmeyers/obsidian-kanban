@@ -68,6 +68,7 @@ export interface KanbanSettings {
   'show-archive-all'?: boolean;
   'show-view-as-markdown'?: boolean;
   'show-board-settings'?: boolean;
+  'show-search'?: boolean;
 }
 
 export type SettingRetriever = <K extends keyof KanbanSettings>(
@@ -626,6 +627,46 @@ export class SettingsManager {
 
               this.applySettingsUpdate({
                 $unset: ['show-board-settings'],
+              });
+            });
+        });
+    });
+
+    new Setting(contentEl).setName(t('Search...')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting('show-search', local);
+
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'show-search': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('reset')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('show-search', local);
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['show-search'],
               });
             });
         });

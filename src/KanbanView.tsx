@@ -22,7 +22,6 @@ export const kanbanIcon = 'blocks';
 
 interface ViewEvents {
   showLaneForm: () => void;
-  toggleSearch: () => void;
   hotkey: (commandId: string) => void;
 }
 
@@ -88,6 +87,25 @@ export class KanbanView extends TextFileView implements HoverParent {
     ) {
       this.actionButtons['show-board-settings'].remove();
       delete this.actionButtons['show-board-settings'];
+    }
+
+    if (
+      stateManager.getSetting('show-search') &&
+      !this.actionButtons['show-search']
+    ) {
+      this.actionButtons['show-search'] = this.addAction(
+        'search',
+        t('Search...'),
+        () => {
+          this.emitter.emit('hotkey', 'editor:open-search');
+        }
+      );
+    } else if (
+      !stateManager.getSetting('show-search') &&
+      this.actionButtons['show-search']
+    ) {
+      this.actionButtons['show-search'].remove();
+      delete this.actionButtons['show-search'];
     }
 
     if (
