@@ -11,6 +11,7 @@ import { c, escapeRegExpStr } from '../helpers';
 import { Item } from '../types';
 
 export function constructDatePicker(
+  stateManager: StateManager,
   coordinates: { x: number; y: number },
   onChange: (dates: Date[]) => void,
   date?: Date
@@ -48,7 +49,7 @@ export function constructDatePicker(
           };
 
           picker = flatpickr(input, {
-            locale: getDefaultLocale(),
+            locale: getDefaultLocale(stateManager),
             defaultDate: date,
             inline: true,
             onChange: (dates) => {

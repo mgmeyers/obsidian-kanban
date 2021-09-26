@@ -46,7 +46,7 @@ export function constructDatePicker({
     setTimeout(() =>
       cb(
         flatpickr(input, {
-          locale: getDefaultLocale(),
+          locale: getDefaultLocale(stateManager),
           inline: true,
           onChange: (dates) => {
             applyDate(dates[0], inputRef, stateManager);

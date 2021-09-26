@@ -2,6 +2,8 @@ import l10n from 'flatpickr/dist/l10n';
 import { CustomLocale } from 'flatpickr/dist/types/locale';
 import { moment } from 'obsidian';
 
+import { StateManager } from 'src/StateManager';
+
 const localeMap: { [k: string]: CustomLocale } = {
   ar: l10n.ar,
   cs: l10n.cs,
@@ -30,6 +32,16 @@ const localeMap: { [k: string]: CustomLocale } = {
 
 const locale = localeMap[moment.locale()];
 
-export function getDefaultLocale() {
-  return locale || localeMap.en;
+export function getDefaultLocale(stateManager?: StateManager) {
+  const firstDayOfWeek = stateManager?.getSetting('date-picker-week-start');
+  const curLocale = locale || localeMap.en;
+
+  if (firstDayOfWeek) {
+    return {
+      ...curLocale,
+      firstDayOfWeek,
+    };
+  }
+
+  return curLocale;
 }

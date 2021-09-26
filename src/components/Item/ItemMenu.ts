@@ -128,6 +128,7 @@ export function useItemMenu({
               .setTitle(hasDate ? t('Edit date') : t('Add date'))
               .onClick(() => {
                 constructDatePicker(
+                  stateManager,
                   coordinates,
                   constructMenuDatePickerOnChange({
                     stateManager,

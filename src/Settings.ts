@@ -41,6 +41,7 @@ export interface KanbanSettings {
   [frontMatterKey]?: KanbanFormats;
   'date-display-format'?: string;
   'date-format'?: string;
+  'date-picker-week-start'?: number;
   'date-time-display-format'?: string;
   'date-trigger'?: string;
   'hide-date-display'?: boolean;
@@ -1188,6 +1189,40 @@ export class SettingsManager {
               });
             }
           });
+        });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Calendar: first day of week'))
+      .setDesc(t('Override which day is used as the start of the week'))
+      .addDropdown((dropdown) => {
+        dropdown.addOption('', t('default'));
+        dropdown.addOption('0', t('Sunday'));
+        dropdown.addOption('1', t('Monday'));
+        dropdown.addOption('2', t('Tuesday'));
+        dropdown.addOption('3', t('Wednesday'));
+        dropdown.addOption('4', t('Thursday'));
+        dropdown.addOption('5', t('Friday'));
+        dropdown.addOption('6', t('Saturday'));
+
+        const [value, globalValue] = this.getSetting(
+          'date-picker-week-start',
+          local
+        );
+
+        dropdown.setValue(value?.toString() || globalValue?.toString() || '');
+        dropdown.onChange((value) => {
+          if (value) {
+            this.applySettingsUpdate({
+              'date-picker-week-start': {
+                $set: Number(value),
+              },
+            });
+          } else {
+            this.applySettingsUpdate({
+              $unset: ['date-picker-week-start'],
+            });
+          }
         });
       });
 

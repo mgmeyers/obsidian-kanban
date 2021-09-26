@@ -22,6 +22,7 @@ function useDatePickers(item: Item) {
   return React.useMemo(() => {
     const onEditDate: React.MouseEventHandler = (e) => {
       constructDatePicker(
+        stateManager,
         { x: e.clientX, y: e.clientY },
         constructMenuDatePickerOnChange({
           stateManager,

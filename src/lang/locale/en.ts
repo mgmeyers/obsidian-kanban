@@ -122,6 +122,16 @@ export default {
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.',
   'Board Header Buttons': 'Board Header Buttons',
+  'Calendar: first day of week': 'Calendar: first day of week',
+  'Override which day is used as the start of the week':
+    'Override which day is used as the start of the week',
+  Sunday: 'Sunday',
+  Monday: 'Monday',
+  Tuesday: 'Tuesday',
+  Wednesday: 'Wednesday',
+  Thursday: 'Thursday',
+  Friday: 'Friday',
+  Saturday: 'Saturday',
 
   // MetadataSettings.tsx
   'Metadata key': 'Metadata key',
