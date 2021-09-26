@@ -96,6 +96,7 @@ export function constructAutocomplete({
   const editor = new TextareaEditor(inputRef.current);
   const autocomplete = new Textcomplete(editor, configs, {
     dropdown: {
+      maxCount: 50,
       className: `${c('autocomplete')} ${c('ignore-click-outside')}`,
       rotate: true,
       item: {

@@ -17,10 +17,10 @@ export function getTagSearchConfig(
     ) => {
       if (!term) {
         callback(
-          tags.slice(0, 10).map((tag, i) => ({ item: tag, refIndex: i }))
+          tags.slice(0, 50).map((tag, i) => ({ item: tag, refIndex: i }))
         );
       } else {
-        callback(tagSearch.search(term));
+        callback(tagSearch.search(term, { limit: 50 }));
       }
     },
     template: (result: Fuse.FuseResult<string>) => {
