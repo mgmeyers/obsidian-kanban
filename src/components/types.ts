@@ -32,6 +32,7 @@ export interface ItemMetaData {
 }
 
 export interface ItemData {
+  blockId?: string;
   isComplete?: boolean;
   title: string;
   titleRaw: string;

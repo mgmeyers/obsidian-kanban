@@ -172,6 +172,7 @@ export default {
   'Remove time': 'Remove time',
   'Duplicate card': 'Duplicate card',
   'Split card': 'Split card',
+  'Copy link to card': 'Copy link to card',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Enter list title...',

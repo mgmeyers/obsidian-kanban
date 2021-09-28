@@ -37,6 +37,7 @@ export const archiveString = '***';
 export const archiveMarkerRegex = /^\*\*\*$/;
 export const tagRegex = /(^|\s)(#[^#\s]+)/g;
 export const linkRegex = /(?:\[\[([^|\]]+)(?:\||\]\])|\[([^\]]+)\]\(([^)]+)\))/;
+export const blockIdRegex = /\s+\^([^\s]+)$/;
 
 export function settingsToFrontmatter(settings: KanbanSettings): string {
   return ['---', '', yaml.dump(settings), '---', '', ''].join('\n');
@@ -89,6 +90,22 @@ export function extractItemTags(content: string, settings: ParserSettings) {
   return {
     processed: processedContent,
     tags,
+  };
+}
+
+export function extractItemBlockId(content: string) {
+  let id: string | null = null;
+  let processedContent = content;
+  const match = content.match(blockIdRegex);
+
+  if (match) {
+    id = match[1];
+    processedContent = processedContent.replace(blockIdRegex, '');
+  }
+
+  return {
+    processed: processedContent,
+    id,
   };
 }
 

@@ -31,6 +31,7 @@ import {
   completeString,
   extractDates,
   extractFirstLinkedFile,
+  extractItemBlockId,
   extractItemTags,
   getLinkedPageMetadata,
   getSearchValue,
@@ -53,7 +54,7 @@ function itemToMd(item: Item) {
   return `- [${item.data.isComplete ? 'x' : ' '}] ${item.data.titleRaw.replace(
     /(\r\n|\n)/g,
     '<br>'
-  )}`;
+  )}${item.data.blockId ? ` ^${item.data.blockId}` : ''}`;
 }
 
 function laneToMd(lane: Lane) {
@@ -168,7 +169,8 @@ export class KanbanParser {
     title: string,
     isComplete?: boolean
   ): Promise<ItemData> {
-    const date = extractDates(title, this.settings);
+    const blockId = extractItemBlockId(title);
+    const date = extractDates(blockId.processed, this.settings);
     const tags = extractItemTags(date.processed, this.settings);
     const file = extractFirstLinkedFile(
       this.app,
@@ -189,7 +191,8 @@ export class KanbanParser {
     const dom = await this.renderMarkdown(tags.processed);
 
     return {
-      titleRaw: title,
+      blockId: blockId.id || undefined,
+      titleRaw: blockId.processed,
       title: tags.processed.trim(),
       titleSearch: getSearchValue(dom, tags.tags, fileMetadata),
       metadata: {

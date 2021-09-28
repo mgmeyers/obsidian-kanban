@@ -106,6 +106,38 @@ export function useItemMenu({
                   .catch((e) => console.error(e));
               });
           })
+          .addItem((i) => {
+            i.setIcon('links-coming-in')
+              .setTitle(t('Copy link to card'))
+              .onClick(() => {
+                if (item.data.blockId) {
+                  navigator.clipboard.writeText(
+                    `${this.app.fileManager.generateMarkdownLink(
+                      stateManager.file,
+                      '',
+                      '#^' + item.data.blockId
+                    )}`
+                  );
+                } else {
+                  const id = Math.random().toString(36).substr(2, 6);
+
+                  navigator.clipboard.writeText(
+                    `${this.app.fileManager.generateMarkdownLink(
+                      stateManager.file,
+                      '',
+                      '#^' + id
+                    )}`
+                  );
+
+                  stateManager.parser
+                    .updateItem(item, `${item.data.titleRaw} ^${id}`)
+                    .then((item) => {
+                      boardModifiers.updateItem(path, item);
+                    })
+                    .catch((e) => console.error(e));
+                }
+              });
+          })
           .addSeparator();
 
         if (/\n/.test(item.data.titleRaw)) {
