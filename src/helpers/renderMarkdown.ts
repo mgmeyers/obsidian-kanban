@@ -257,7 +257,8 @@ async function handleMarkdown(
   el: HTMLElement,
   file: TFile,
   normalizedPath: NormalizedPath,
-  view: KanbanView
+  view: KanbanView,
+  depth: number
 ) {
   const content = await getEmbeddedMarkdownString(file, normalizedPath, view);
 
@@ -297,9 +298,13 @@ async function handleMarkdown(
   ) {
     pollForCachedSubpath(file, normalizedPath, view, 4);
   }
+
+  if (depth > 0) {
+    await handleEmbeds(dom, view, --depth);
+  }
 }
 
-function handleEmbeds(dom: HTMLDivElement, view: KanbanView) {
+function handleEmbeds(dom: HTMLDivElement, view: KanbanView, depth: number) {
   return Promise.all(
     dom.findAll('.internal-embed').map(async (el) => {
       const src = el.getAttribute('src');
@@ -328,7 +333,7 @@ function handleEmbeds(dom: HTMLDivElement, view: KanbanView) {
       }
 
       if (target.extension === 'md') {
-        return await handleMarkdown(el, target, normalizedPath, view);
+        return await handleMarkdown(el, target, normalizedPath, view, depth);
       }
     })
   );
@@ -347,7 +352,7 @@ export async function renderMarkdown(
     view
   );
 
-  await handleEmbeds(dom, view);
+  await handleEmbeds(dom, view, 5);
   applyCheckboxIndexes(dom);
   findUnresolvedLinks(dom, view);
 
