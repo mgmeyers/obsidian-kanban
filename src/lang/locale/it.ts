@@ -103,7 +103,7 @@ export default {
   'Change time': 'Modifica ora',
 
   // components/Item/ItemForm.tsx
-  'Item title...': 'Titolo elemento...',
+  'Card title...': 'Titolo elemento...',
   'Add card': 'Aggiungi elemento',
   'Add a card': "Aggiungi un'altra scheda",
 

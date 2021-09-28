@@ -154,7 +154,7 @@ export default {
   'Change time': 'Change time',
 
   // components/Item/ItemForm.tsx
-  'Item title...': 'Item title...',
+  'Card title...': 'Card title...',
   'Add card': 'Add card',
   'Add a card': 'Add a card',
 

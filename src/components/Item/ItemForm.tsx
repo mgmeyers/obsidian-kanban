@@ -73,7 +73,7 @@ export function ItemForm({
           <MarkdownEditor
             ref={inputRef}
             className={c('item-input')}
-            placeholder={t('Item title...')}
+            placeholder={t('Card title...')}
             onEnter={onEnter}
             onEscape={clear}
             value={itemTitle}

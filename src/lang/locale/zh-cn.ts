@@ -117,7 +117,7 @@ export default {
   'Change time': '更改时间',
 
   // components/Item/ItemForm.tsx
-  'Item title...': '卡片标题',
+  'Card title...': '卡片标题',
   'Add card': '添加',
   'Add a card': '添加卡片',
 

@@ -124,7 +124,7 @@ export default {
   'Change time': 'Mudar hora',
 
   // components/Item/ItemForm.tsx
-  'Item title...': 'Título do item...',
+  'Card title...': 'Título do item...',
   'Add card': 'Adicionar Item',
   'Add a card': 'Adicione um cartão',
 

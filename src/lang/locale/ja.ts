@@ -132,7 +132,7 @@ export default {
   'Change time': '時間を変更',
 
   // components/Item/ItemForm.tsx
-  'Item title...': 'アイテムタイトル…',
+  'Card title...': 'アイテムタイトル…',
   'Add card': 'アイテムを追加',
   'Add a card': 'カードを追加',
 

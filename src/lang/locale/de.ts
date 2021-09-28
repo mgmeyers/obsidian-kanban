@@ -144,7 +144,7 @@ export default {
   'Change time': 'Verändere Uhrzeit',
 
   // components/Item/ItemForm.tsx
-  'Item title...': 'Karten Titel...',
+  'Card title...': 'Karten Titel...',
   'Add card': 'Karte hinzufügen',
   'Add a card': 'Füge eine Karte hinzu',
 
