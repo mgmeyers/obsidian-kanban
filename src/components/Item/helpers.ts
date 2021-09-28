@@ -105,13 +105,8 @@ export function constructMenuDatePickerOnChange({
   const dateFormat = stateManager.getSetting('date-format');
   const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
   const dateTrigger = stateManager.getSetting('date-trigger');
-  const shouldUseMarkdownLinks = !!(stateManager.app.vault as any).getConfig(
-    'useMarkdownLinks'
-  );
   const contentMatch = shouldLinkDates
-    ? shouldUseMarkdownLinks
-      ? '\\[[^\\]]+\\]\\([^)]+\\)'
-      : '\\[\\[[^\\]]+\\]\\]'
+    ? '(?:\\[[^\\]]+\\]\\([^)]+\\)|\\[\\[[^\\]]+\\]\\])'
     : '{[^}]+}';
   const dateRegEx = new RegExp(
     `(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`

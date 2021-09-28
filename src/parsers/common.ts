@@ -36,8 +36,7 @@ export const completeRegex = new RegExp(
 export const archiveString = '***';
 export const archiveMarkerRegex = /^\*\*\*$/;
 export const tagRegex = /(^|\s)(#[^#\s]+)/g;
-export const markdownLinkRegex = /\[[^\]]+\]\(([^)]+)\)/;
-export const wikiLinkRegex = /\[\[([^|\]]+)(?:\||\]\])/;
+export const linkRegex = /(?:\[\[([^|\]]+)(?:\||\]\])|\[([^\]]+)\]\(([^)]+)\))/;
 
 export function settingsToFrontmatter(settings: KanbanSettings): string {
   return ['---', '', yaml.dump(settings), '---', '', ''].join('\n');
@@ -102,7 +101,7 @@ export function extractDates(content: string, settings: ParserSettings) {
   const timeMatch = settings.timeRegEx.exec(content);
 
   if (dateMatch) {
-    date = moment(dateMatch[1], settings.dateFormat as string);
+    date = moment(dateMatch[1] || dateMatch[2], settings.dateFormat as string);
   }
 
   if (timeMatch) {
@@ -134,19 +133,14 @@ export function extractFirstLinkedFile(
   sourceFile: TFile,
   content: string
 ) {
-  const shouldUseMarkdownLinks = !!(app.vault as any).getConfig(
-    'useMarkdownLinks'
-  );
-  const match = content.match(
-    shouldUseMarkdownLinks ? markdownLinkRegex : wikiLinkRegex
-  );
+  const match = content.match(linkRegex);
 
   if (!match) {
     return null;
   }
 
   const path = getNormalizedPath(
-    shouldUseMarkdownLinks ? decodeURIComponent(match[1]) : match[1]
+    match[2] ? decodeURIComponent(match[2]) : match[1]
   );
   const file = app.metadataCache.getFirstLinkpathDest(
     path.root,

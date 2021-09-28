@@ -283,13 +283,8 @@ export class KanbanParser {
       'link-date-to-daily-note',
       suppliedSettings
     );
-    const shouldUseMarkdownLinks = !!(this.app.vault as any).getConfig(
-      'useMarkdownLinks'
-    );
     const contentMatch = shouldLinkDate
-      ? shouldUseMarkdownLinks
-        ? '\\[([^\\]]+)\\]\\([^)]+\\)'
-        : '\\[\\[([^\\]]+)\\]\\]'
+      ? '(?:\\[([^\\]]+)\\]\\([^)]+\\)|\\[\\[([^\\]]+)\\]\\])'
       : '{([^}]+)}';
 
     this.settings = {
@@ -315,7 +310,7 @@ export class KanbanParser {
         `(?:^|\\s)${escapeRegExpStr(dateTrigger)}${contentMatch}`
       ),
       timeRegEx: new RegExp(
-        `(?:^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
+        `(?:^|\\s)${escapeRegExpStr(timeTrigger)}{([^}]+)}`
       ),
     };
   }
