@@ -171,6 +171,7 @@ export default {
   'Add time': 'Add time',
   'Remove time': 'Remove time',
   'Duplicate card': 'Duplicate card',
+  'Split card': 'Split card',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Enter list title...',

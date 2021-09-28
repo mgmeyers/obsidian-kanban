@@ -56,13 +56,17 @@ export function buildRemoveMutation(path: Path) {
 
 export function buildInsertMutation(
   destination: Path,
-  entity: Nestable,
+  entities: Nestable[],
   destinationModifier: number = 0
 ) {
   return buildUpdateParentMutation(destination, {
     children: {
       $splice: [
-        [destination[destination.length - 1] + destinationModifier, 0, entity],
+        [
+          destination[destination.length - 1] + destinationModifier,
+          0,
+          ...entities,
+        ],
       ],
     },
   });
@@ -101,7 +105,7 @@ export function moveEntity(
   const removeMutation = buildRemoveMutation(source);
   const insertMutation = buildInsertMutation(
     destination,
-    entity,
+    [entity],
     destinationModifier
   );
 
@@ -123,9 +127,9 @@ export function removeEntity(root: Nestable, target: Path) {
 export function insertEntity(
   root: Nestable,
   destination: Path,
-  entity: Nestable
+  entities: Nestable[]
 ) {
-  return update(root, buildInsertMutation(destination, entity));
+  return update(root, buildInsertMutation(destination, entities));
 }
 
 export function appendEntities(

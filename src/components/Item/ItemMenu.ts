@@ -106,7 +106,28 @@ export function useItemMenu({
                   .catch((e) => console.error(e));
               });
           })
-          .addSeparator()
+          .addSeparator();
+
+        if (/\n/.test(item.data.titleRaw)) {
+          menu.addItem((i) => {
+            i.setIcon('split')
+              .setTitle(t('Split card'))
+              .onClick(async () => {
+                const titles = item.data.titleRaw
+                  .split(/[\r\n]+/g)
+                  .map((t) => t.trim());
+                const newItems = await Promise.all(
+                  titles.map(async (title) => {
+                    return await stateManager.parser.newItem(title);
+                  })
+                );
+
+                boardModifiers.splitItem(path, newItems);
+              });
+          });
+        }
+
+        menu
           .addItem((i) => {
             i.setIcon('documents')
               .setTitle(t('Duplicate card'))

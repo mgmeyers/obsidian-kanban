@@ -19,6 +19,8 @@ import { Item, Lane } from '../components/types';
 export interface BoardModifiers {
   appendItems: (path: Path, items: Item[]) => void;
   prependItems: (path: Path, items: Item[]) => void;
+  insertItems: (path: Path, items: Item[]) => void;
+  splitItem: (path: Path, items: Item[]) => void;
   addLane: (lane: Lane) => void;
   updateLane: (path: Path, lane: Lane) => void;
   archiveLane: (path: Path) => void;
@@ -72,6 +74,34 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
       stateManager.setState((boardData) =>
         prependEntities(boardData, path, items)
       );
+    },
+
+    insertItems: (path: Path, items: Item[]) => {
+      items.forEach((item) =>
+        stateManager.app.workspace.trigger(
+          'kanban:card-added',
+          stateManager.file,
+          item
+        )
+      );
+
+      stateManager.setState((boardData) =>
+        insertEntity(boardData, path, items)
+      );
+    },
+
+    splitItem: (path: Path, items: Item[]) => {
+      items.forEach((item) =>
+        stateManager.app.workspace.trigger(
+          'kanban:card-added',
+          stateManager.file,
+          item
+        )
+      );
+
+      stateManager.setState((boardData) => {
+        return insertEntity(removeEntity(boardData, path), path, items);
+      });
     },
 
     addLane: (lane: Lane) => {
@@ -234,7 +264,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
           },
         });
 
-        return insertEntity(boardData, path, entityWithNewID);
+        return insertEntity(boardData, path, [entityWithNewID]);
       });
     },
   };
