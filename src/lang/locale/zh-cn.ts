@@ -106,7 +106,6 @@ export default {
   'Add key': '添加参数名',
 
   // components/Item/Item.tsx
-  'Archive item': '归档卡片',
   'More options': '更多选项',
   Cancel: '取消',
 
@@ -119,7 +118,7 @@ export default {
 
   // components/Item/ItemForm.tsx
   'Item title...': '卡片标题',
-  'Add item': '添加',
+  'Add card': '添加',
   'Add a card': '添加卡片',
 
   // components/Item/ItemMenu.ts
@@ -137,7 +136,7 @@ export default {
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': '输入新的列标题',
-  'Mark items in this list as complete': '将该列设置为完成列',
+  'Mark cards in this list as complete': '将该列设置为完成列',
   'Add list': '添加',
   'Add a list': '添加列',
 

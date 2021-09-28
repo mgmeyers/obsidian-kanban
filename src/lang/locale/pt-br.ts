@@ -113,7 +113,6 @@ export default {
   'Add key': 'Adicionar metadado',
 
   // components/Item/Item.tsx
-  'Archive item': 'Arquivar item',
   'More options': 'Mais opções',
   Cancel: 'Cancelar',
 
@@ -126,7 +125,7 @@ export default {
 
   // components/Item/ItemForm.tsx
   'Item title...': 'Título do item...',
-  'Add item': 'Adicionar Item',
+  'Add card': 'Adicionar Item',
   'Add a card': 'Adicione um cartão',
 
   // components/Item/ItemMenu.ts
@@ -144,7 +143,7 @@ export default {
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Insira o título da lista...',
-  'Mark items in this list as complete':
+  'Mark cards in this list as complete':
     'Marcar os itens nesta lista como concluídos',
   'Add list': 'Adicionar lista',
   'Add a list': 'Adicionar uma lista',

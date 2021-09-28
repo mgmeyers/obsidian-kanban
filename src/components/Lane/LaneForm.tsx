@@ -70,7 +70,7 @@ export function LaneForm({
       </div>
       <div className={c('checkbox-wrapper')}>
         <div className={c('checkbox-label')}>
-          {t('Mark items in this list as complete')}
+          {t('Mark cards in this list as complete')}
         </div>
         <div
           onClick={() => setShouldMarkAsComplete(!shouldMarkAsComplete)}

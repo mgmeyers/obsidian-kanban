@@ -143,7 +143,6 @@ export default {
   'Field contains markdown': 'Field contains markdown',
 
   // components/Item/Item.tsx
-  'Archive item': 'Archive item',
   'More options': 'More options',
   Cancel: 'Cancel',
 
@@ -156,7 +155,7 @@ export default {
 
   // components/Item/ItemForm.tsx
   'Item title...': 'Item title...',
-  'Add item': 'Add item',
+  'Add card': 'Add card',
   'Add a card': 'Add a card',
 
   // components/Item/ItemMenu.ts
@@ -176,7 +175,7 @@ export default {
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Enter list title...',
-  'Mark items in this list as complete': 'Mark items in this list as complete',
+  'Mark cards in this list as complete': 'Mark cards in this list as complete',
   'Add list': 'Add list',
   'Add a list': 'Add a list',
 

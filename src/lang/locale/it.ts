@@ -92,7 +92,6 @@ export default {
   'Kanban Plugin': 'Plugin Kanban',
 
   // components/Item/Item.tsx
-  'Archive item': 'Archivia elemento',
   'More options': 'Altre opzioni',
   Cancel: 'Annulla',
 
@@ -105,7 +104,7 @@ export default {
 
   // components/Item/ItemForm.tsx
   'Item title...': 'Titolo elemento...',
-  'Add item': 'Aggiungi elemento',
+  'Add card': 'Aggiungi elemento',
   'Add a card': "Aggiungi un'altra scheda",
 
   // components/Item/ItemMenu.ts
@@ -122,7 +121,7 @@ export default {
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Inserisci titolo lista...',
-  'Mark items in this list as complete':
+  'Mark cards in this list as complete':
     'Segna elementi della lista come completati',
   'Add list': 'Aggiungi lista',
   'Add a list': "Aggiungi un'altra lista",

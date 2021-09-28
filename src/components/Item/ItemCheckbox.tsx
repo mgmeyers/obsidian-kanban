@@ -96,7 +96,7 @@ export const ItemCheckbox = React.memo(function ItemCheckbox({
             boardModifiers.archiveItem(path);
           }}
           className={c('item-prefix-button')}
-          aria-label={isCtrlHoveringCheckbox ? undefined : 'Archive item'}
+          aria-label={isCtrlHoveringCheckbox ? undefined : 'Archive card'}
         >
           <Icon name="sheets-in-box" />
         </button>

@@ -20,7 +20,7 @@ export function LaneSettings({ lane, lanePath }: LaneSettingsProps) {
     <div className={c('lane-setting-wrapper')}>
       <div className={c('checkbox-wrapper')}>
         <div className={c('checkbox-label')}>
-          {t('Mark items in this list as complete')}
+          {t('Mark cards in this list as complete')}
         </div>
         <div
           onClick={() =>

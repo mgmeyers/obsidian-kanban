@@ -121,7 +121,6 @@ export default {
   'Field contains markdown': 'フィールドにマークダウンを含みます',
 
   // components/Item/Item.tsx
-  'Archive item': 'アイテムをアーカイブ',
   'More options': '他のオプション',
   Cancel: 'キャンセル',
 
@@ -134,7 +133,7 @@ export default {
 
   // components/Item/ItemForm.tsx
   'Item title...': 'アイテムタイトル…',
-  'Add item': 'アイテムを追加',
+  'Add card': 'アイテムを追加',
   'Add a card': 'カードを追加',
 
   // components/Item/ItemMenu.ts
@@ -152,7 +151,7 @@ export default {
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'リストタイトルを編集…',
-  'Mark items in this list as complete':
+  'Mark cards in this list as complete':
     'このリストに含まれるアイテムを完了としてマークする',
   'Add list': 'リストを追加',
   'Add a list': 'リストを追加',
