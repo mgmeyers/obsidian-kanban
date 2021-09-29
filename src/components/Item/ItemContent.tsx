@@ -170,17 +170,10 @@ export const ItemContent = React.memo(function ItemContent({
             return false;
           }
         }}
-        onDrop={(e) => {
-          setEditState(
-            (state) =>
-              state +
-              handleDragOrPaste(
-                stateManager,
-                filePath,
-                e.dataTransfer,
-                e.shiftKey
-              ).join('\n')
-          );
+        onDrop={async (e) => {
+          const lines = await handleDragOrPaste(stateManager, e.nativeEvent);
+
+          setEditState((state) => state + lines.join('\n'));
         }}
       />
     );

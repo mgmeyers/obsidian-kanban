@@ -1,3 +1,4 @@
+import update from 'immutability-helper';
 import React from 'react';
 import { createPortal } from 'react-dom';
 
@@ -8,6 +9,7 @@ import { DraggableLane } from './components/Lane/Lane';
 import { DataTypes, Item, Lane } from './components/types';
 import { DndContext } from './dnd/components/DndContext';
 import { DragOverlay } from './dnd/components/DragOverlay';
+import { Entity } from './dnd/types';
 import {
   getEntityFromPath,
   insertEntity,
@@ -33,7 +35,49 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
   ));
 
   const handleDrop = React.useCallback(
-    (dragEntity, dropEntity) => {
+    (dragEntity: Entity, dropEntity: Entity) => {
+      if (!dragEntity || !dropEntity) {
+        return;
+      }
+
+      if (dragEntity.scopeId === 'htmldnd') {
+        const data = dragEntity.getData();
+        const stateManager = plugin.getStateManagerFromViewID(data.viewId);
+        const dropPath = dropEntity.getPath();
+        const destinationParent = getEntityFromPath(
+          stateManager.state,
+          dropPath.slice(0, -1)
+        );
+
+        const parseItems = async (titles: string[]) => {
+          return await Promise.all(
+            titles.map(async (title) => {
+              return await stateManager.parser.newItem(title);
+            })
+          );
+        };
+
+        parseItems(data.content)
+          .then((items) => {
+            const processed = items.map((item) =>
+              update(item, {
+                data: {
+                  isComplete: {
+                    $set: !!destinationParent?.data?.shouldMarkItemsComplete,
+                  },
+                },
+              })
+            );
+
+            stateManager.setState((board) =>
+              insertEntity(board, dropPath, processed)
+            );
+          })
+          .catch((e) => console.error(e));
+
+        return;
+      }
+
       const dragPath = dragEntity.getPath();
       const dropPath = dropEntity.getPath();
 
@@ -92,7 +136,7 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
                   entity
                 )
               : entity;
-          return insertEntity(destinationBoard, dropPath, toInsert);
+          return insertEntity(destinationBoard, dropPath, [toInsert]);
         });
 
         return removeEntity(sourceBoard, dragPath);
@@ -108,6 +152,10 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
         <DragOverlay>
           {(entity, styles) => {
             const [data, context] = React.useMemo(() => {
+              if (entity.scopeId === 'htmldnd') {
+                return [null, null];
+              }
+
               const view = plugin.getKanbanView(entity.scopeId);
               const stateManager = plugin.stateManagers.get(view.file);
               const data = getEntityFromPath(
@@ -128,7 +176,7 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
               ];
             }, [entity]);
 
-            if (data.type === DataTypes.Lane) {
+            if (data?.type === DataTypes.Lane) {
               return (
                 <KanbanContext.Provider value={context}>
                   <div className={c('drag-container')} style={styles}>
@@ -142,7 +190,7 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
               );
             }
 
-            if (data.type === DataTypes.Item) {
+            if (data?.type === DataTypes.Item) {
               return (
                 <KanbanContext.Provider value={context}>
                   <div className={c('drag-container')} style={styles}>

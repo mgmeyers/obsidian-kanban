@@ -12,6 +12,7 @@ import { useIsAnythingDragging } from 'src/dnd/components/DragOverlay';
 import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
 import { Sortable } from 'src/dnd/components/Sortable';
 import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
+import { createHTMLDndHandlers } from 'src/dnd/managers/DragManager';
 import { KanbanView } from 'src/KanbanView';
 import { t } from 'src/lang/helpers';
 import { StateManager } from 'src/StateManager';
@@ -38,8 +39,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const boardData = stateManager.useState();
   const isAnythingDragging = useIsAnythingDragging();
 
-  const rootRef = React.useRef<HTMLDivElement>();
-  const searchRef = React.useRef<HTMLInputElement>();
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const searchRef = React.useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = React.useState<string>('');
   const [isSearching, setIsSearching] = React.useState<boolean>(false);
   const [debouncedSearchQuery, setDebouncedSearchQuery] =
@@ -234,6 +235,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     };
   }, [view, stateManager, boardModifiers, filePath]);
 
+  const html5DragHandlers = createHTMLDndHandlers(stateManager);
+
   if (boardData === null || boardData === undefined)
     return (
       <div className={c('loading')}>
@@ -277,6 +280,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
             ])}
             onMouseOver={onMouseOver}
             onClick={onClick}
+            {...html5DragHandlers}
           >
             {(isLaneFormVisible || boardData.children.length === 0) && (
               <LaneForm onNewLane={onNewLane} closeLaneForm={closeLaneForm} />

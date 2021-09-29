@@ -24,7 +24,7 @@ export function ItemForm({
   hideButton,
 }: ItemFormProps) {
   const [itemTitle, setItemTitle] = React.useState('');
-  const { stateManager, filePath } = React.useContext(KanbanContext);
+  const { stateManager } = React.useContext(KanbanContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
   const selectionStart = React.useRef<number>(null);
   const selectionEnd = React.useRef<number>(null);
@@ -80,36 +80,11 @@ export function ItemForm({
             onChange={(e) => {
               setItemTitle((e.target as HTMLTextAreaElement).value);
             }}
-            onDragOver={(e) => {
-              const action = getDropAction(stateManager, e.dataTransfer);
-
-              if (action) {
-                e.dataTransfer.dropEffect = action;
-                e.preventDefault();
-                return false;
-              }
-            }}
-            onDragLeave={() => {
-              if (!itemTitle) setIsInputVisible(false);
-            }}
-            onDrop={(e) => {
-              // shift key to force plain text, the same way Obsidian does it
-              addItemsFromStrings(
-                handleDragOrPaste(
-                  stateManager,
-                  filePath,
-                  e.dataTransfer,
-                  e.shiftKey
-                )
-              );
-              if (!itemTitle) setIsInputVisible(false);
-            }}
-            onPaste={(e) => {
+            onPaste={async (e) => {
               const html = e.clipboardData.getData('text/html');
-              const pasteLines = handleDragOrPaste(
+              const pasteLines = await handleDragOrPaste(
                 stateManager,
-                filePath,
-                e.clipboardData
+                e.nativeEvent
               );
 
               if (pasteLines.length > 1) {

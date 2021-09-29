@@ -1,3 +1,4 @@
+import { FileWithPath, fromEvent } from 'file-selector';
 import flatpickr from 'flatpickr';
 import {
   MarkdownSourceView,
@@ -369,23 +370,80 @@ export function fixLinks(text: string) {
   return text.replace(/^\[(.*)\]\(app:\/\/obsidian.md\/(.*)\)$/, '[$1]($2)');
 }
 
-export function handleDragOrPaste(
+function handleFiles(stateManager: StateManager, files: FileWithPath[]) {
+  return Promise.all(
+    files.map((file) => {
+      const splitFileName = (file as FileWithPath).name.split('.');
+
+      const ext = splitFileName.pop();
+      const fileName = splitFileName.join('.');
+
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const path = (await (
+              stateManager.app.vault as any
+            ).getAvailablePathForAttachments(
+              fileName,
+              ext,
+              stateManager.file.path
+            )) as string;
+            const newFile = await stateManager.app.vault.createBinary(
+              path,
+              e.target.result as ArrayBuffer
+            );
+
+            resolve(linkTo(stateManager, newFile, stateManager.file.path));
+          } catch (e) {
+            console.error(e);
+            reject(e);
+          }
+        };
+        reader.readAsArrayBuffer(file as FileWithPath);
+      });
+    })
+  );
+}
+
+async function handleNullDraggable(
   stateManager: StateManager,
-  filePath: string,
-  transfer: DataTransfer,
-  forcePlaintext: boolean = false
-): string[] {
-  const draggable = (stateManager.app as any).dragManager.draggable;
+  e: DragEvent | ClipboardEvent
+) {
+  const forcePlaintext = e instanceof DragEvent ? e.shiftKey : false;
+  const transfer = e instanceof DragEvent ? e.dataTransfer : e.clipboardData;
+
+  if (e instanceof DragEvent) {
+    const files = await fromEvent(e);
+    if (files.length) {
+      return await handleFiles(stateManager, files as FileWithPath[]);
+    }
+  }
+
   const html = transfer.getData('text/html');
   const plain = transfer.getData('text/plain');
   const uris = transfer.getData('text/uri-list');
 
+  const text = forcePlaintext
+    ? plain || html
+    : getMarkdown(stateManager, transfer, html);
+
+  return [fixLinks(text || uris || plain || html || '')];
+}
+
+export async function handleDragOrPaste(
+  stateManager: StateManager,
+  e: DragEvent | ClipboardEvent
+): Promise<string[]> {
+  const draggable = (stateManager.app as any).dragManager.draggable;
+  const transfer = e instanceof DragEvent ? e.dataTransfer : e.clipboardData;
+
   switch (draggable?.type) {
     case 'file':
-      return [linkTo(stateManager, draggable.file, filePath)];
+      return [linkTo(stateManager, draggable.file, stateManager.file.path)];
     case 'files':
       return draggable.files.map((f: TFile) =>
-        linkTo(stateManager, f, filePath)
+        linkTo(stateManager, f, stateManager.file.path)
       );
     case 'folder': {
       return draggable.file.children
@@ -394,7 +452,7 @@ export function handleDragOrPaste(
             return null;
           }
 
-          return linkTo(stateManager, f, filePath);
+          return linkTo(stateManager, f, stateManager.file.path);
         })
         .filter((link: string | null) => link);
     }
@@ -406,19 +464,17 @@ export function handleDragOrPaste(
             parseLinktext(draggable.linktext).subpath
           )
         : `[[${draggable.linktext}]]`;
-      const alias = new DOMParser().parseFromString(html, 'text/html')
-        .documentElement.textContent; // Get raw text
+      const alias = new DOMParser().parseFromString(
+        transfer.getData('text/html'),
+        'text/html'
+      ).documentElement.textContent; // Get raw text
       link = link
         .replace(/]]$/, `|${alias}]]`)
         .replace(/^\[[^\]].+]\(/, `[${alias}](`);
       return [link];
     }
     default: {
-      const text = forcePlaintext
-        ? plain || html
-        : getMarkdown(stateManager, transfer, html);
-
-      return [fixLinks(text || uris || plain || html || '')];
+      return await handleNullDraggable(stateManager, e);
     }
   }
 }

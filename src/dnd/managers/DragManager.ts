@@ -3,6 +3,9 @@ import { Platform } from 'obsidian';
 import rafSchd from 'raf-schd';
 import React from 'react';
 
+import { handleDragOrPaste } from 'src/components/Item/helpers';
+import { StateManager } from 'src/StateManager';
+
 import { DndManagerContext } from '../components/context';
 import { Coordinates, Entity, Hitbox, Side } from '../types';
 import { Emitter } from '../util/emitter';
@@ -12,6 +15,7 @@ import {
   getBestIntersect,
   getScrollIntersection,
 } from '../util/hitbox';
+import { createHTMLDndEntity } from './createHTMLDndEntity';
 
 export interface DragEventData {
   dragEntity?: Entity;
@@ -56,6 +60,9 @@ export class DragManager {
 
   primaryIntersection?: Entity;
   scrollIntersection?: [Entity, number];
+
+  isHTMLDragging: boolean = false;
+  dragOverTimeout: number = 0;
 
   constructor(
     emitter: Emitter,
@@ -106,7 +113,27 @@ export class DragManager {
     this.emitter.emit('dragStart', this.getDragEventData());
   }
 
+  dragStartHTML(e: DragEvent, viewId: string) {
+    this.isHTMLDragging = true;
+    const entity = createHTMLDndEntity(e.pageX, e.pageY, [], viewId);
+
+    this.dragEntityId = entity.entityId;
+    this.dragOrigin = { x: e.pageX, y: e.pageY };
+    this.dragPosition = { x: e.pageX, y: e.pageY };
+    this.dragEntity = entity;
+    this.dragOriginHitbox = entity.getHitbox();
+    this.dragEntityMargin = [0, 0, 0, 0];
+
+    this.emitter.emit('dragStart', this.getDragEventData());
+  }
+
   dragMove(e: PointerEvent) {
+    this.dragPosition = { x: e.pageX, y: e.pageY };
+    this.emitter.emit('dragMove', this.getDragEventData());
+    this.calculateDragIntersect();
+  }
+
+  dragMoveHTML(e: DragEvent) {
     this.dragPosition = { x: e.pageX, y: e.pageY };
     this.emitter.emit('dragMove', this.getDragEventData());
     this.calculateDragIntersect();
@@ -123,6 +150,37 @@ export class DragManager {
     this.dragPosition = undefined;
     this.scrollIntersection = undefined;
     this.primaryIntersection = undefined;
+  }
+
+  dragEndHTML(
+    e: DragEvent,
+    viewId: string,
+    content: string[],
+    isLeave?: boolean
+  ) {
+    this.isHTMLDragging = false;
+    if (!isLeave) {
+      this.dragEntity = createHTMLDndEntity(e.pageX, e.pageY, content, viewId);
+      this.emitter.emit('dragEnd', this.getDragEventData());
+    }
+
+    this.dragEntityMargin = undefined;
+    this.dragEntity = undefined;
+    this.dragEntityId = undefined;
+    this.dragOrigin = undefined;
+    this.dragOriginHitbox = undefined;
+    this.dragPosition = undefined;
+    this.scrollIntersection = undefined;
+    this.primaryIntersection = undefined;
+
+    if (isLeave) {
+      this.emitter.emit('dragEnd', this.getDragEventData());
+    }
+  }
+
+  onHTMLDragLeave(callback: () => void) {
+    clearTimeout(this.dragOverTimeout);
+    this.dragOverTimeout = window.setTimeout(callback, 100);
   }
 
   calculateDragIntersect() {
@@ -439,4 +497,48 @@ export function useDragHandle(
       handle.removeEventListener('touchstart', swallowTouchEvent);
     };
   }, [droppableElement, handleElement, dndManager]);
+}
+
+export function createHTMLDndHandlers(stateManager: StateManager) {
+  const dndManager = React.useContext(DndManagerContext);
+  const onDragOver = React.useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      if (dndManager.dragManager.isHTMLDragging) {
+        e.preventDefault();
+        dndManager.dragManager.dragMoveHTML(e.nativeEvent);
+      } else {
+        dndManager.dragManager.dragStartHTML(
+          e.nativeEvent,
+          stateManager.getAView().id
+        );
+      }
+
+      dndManager.dragManager.onHTMLDragLeave(() => {
+        dndManager.dragManager.dragEndHTML(
+          e.nativeEvent,
+          stateManager.getAView().id,
+          [],
+          true
+        );
+      });
+    },
+    [dndManager]
+  );
+
+  const onDrop = React.useCallback(
+    async (e: React.DragEvent<HTMLDivElement>) => {
+      dndManager.dragManager.dragEndHTML(
+        e.nativeEvent,
+        stateManager.getAView().id,
+        await handleDragOrPaste(stateManager, e.nativeEvent),
+        false
+      );
+    },
+    [dndManager, stateManager]
+  );
+
+  return {
+    onDragOver,
+    onDrop,
+  };
 }

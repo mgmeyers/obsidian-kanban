@@ -219,13 +219,16 @@ export class SortManager {
     clearTimeout(this.dragEndTimeout);
 
     const dropHitbox = primaryIntersection?.getHitbox() || dragOriginHitbox;
-    const dropDuration = getDropDuration({
-      position: dragPosition,
-      destination: {
-        x: dropHitbox[0],
-        y: dropHitbox[1],
-      },
-    });
+    const dropDuration =
+      dragEntity.scopeId === 'htmldnd'
+        ? 0
+        : getDropDuration({
+            position: dragPosition,
+            destination: {
+              x: dropHitbox[0],
+              y: dropHitbox[1],
+            },
+          });
 
     this.dragEndTimeout = window.setTimeout(() => {
       const dragEntityId = dragEntity.entityId.split(':::').pop();
