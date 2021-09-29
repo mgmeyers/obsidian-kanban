@@ -13,6 +13,7 @@ import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
 import { Sortable } from 'src/dnd/components/Sortable';
 import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
 import { createHTMLDndHandlers } from 'src/dnd/managers/DragManager';
+import { getNormalizedPath } from 'src/helpers/renderMarkdown';
 import { KanbanView } from 'src/KanbanView';
 import { t } from 'src/lang/helpers';
 import { StateManager } from 'src/StateManager';
@@ -173,6 +174,24 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const onClick = React.useCallback(
     async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       const targetEl = e.target as HTMLElement;
+
+      if (targetEl.hasClass('file-link')) {
+        e.preventDefault();
+        const href = targetEl.getAttribute('href');
+        const normalizedPath = getNormalizedPath(href);
+        const target =
+          typeof href === 'string' &&
+          view.app.metadataCache.getFirstLinkpathDest(
+            normalizedPath.root,
+            view.file.path
+          );
+
+        if (!target) return;
+
+        (stateManager.app as any).openWithDefaultApp(target.path);
+
+        return;
+      }
 
       if (targetEl.tagName !== 'A') return;
 

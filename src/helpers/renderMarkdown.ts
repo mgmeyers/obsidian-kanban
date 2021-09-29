@@ -304,6 +304,23 @@ async function handleMarkdown(
   }
 }
 
+function handleUnknownFile(el: HTMLElement, file: TFile) {
+  el.addClass('is-loaded');
+  el.empty();
+  el.createEl(
+    'a',
+    {
+      cls: 'file-link',
+      href: el.getAttribute('src'),
+      text: file.name,
+    },
+    (a) => {
+      a.setAttribute('aria-label', t('Open in default app'));
+      a.createSpan({}, (span) => setIcon(span, 'open-elsewhere-glyph'));
+    }
+  );
+}
+
 function handleEmbeds(dom: HTMLDivElement, view: KanbanView, depth: number) {
   return Promise.all(
     dom.findAll('.internal-embed').map(async (el) => {
@@ -335,6 +352,8 @@ function handleEmbeds(dom: HTMLDivElement, view: KanbanView, depth: number) {
       if (target.extension === 'md') {
         return await handleMarkdown(el, target, normalizedPath, view, depth);
       }
+
+      return handleUnknownFile(el, target);
     })
   );
 }

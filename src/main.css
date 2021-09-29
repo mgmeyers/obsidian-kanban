@@ -454,6 +454,16 @@ button.kanban-plugin__new-item-button {
   display: none;
 }
 
+.kanban-plugin__markdown-preview-view .file-link span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+  margin-left: 2px;
+  position: relative;
+  top: 3px;
+}
+
 .kanban-plugin__embed-link-wrapper {
   padding: 2px;
   float: right;
