@@ -1,6 +1,9 @@
 import insertText from 'insert-text-at-cursor';
+import React from 'react';
 
 import { StateManager } from 'src/StateManager';
+
+import { handleDragOrPaste } from '../Item/helpers';
 
 export interface TextRange {
   start: number;
@@ -327,4 +330,24 @@ export function getDropAction(
     transfer.types.includes('text/plain')
   )
     return 'copy';
+}
+
+export async function handlePaste(
+  e: React.ClipboardEvent,
+  stateManager: StateManager
+) {
+  const html = e.clipboardData.getData('text/html');
+
+  if (html) {
+    e.preventDefault();
+  }
+
+  const pasteLines = await handleDragOrPaste(stateManager, e.nativeEvent);
+
+  if (html) {
+    const input = e.target as HTMLTextAreaElement;
+    const paste = pasteLines.join('');
+
+    replaceSelection(input, paste);
+  }
 }

@@ -4,11 +4,10 @@ import useOnclickOutside from 'react-cool-onclickoutside';
 import { t } from 'src/lang/helpers';
 
 import { KanbanContext } from '../context';
-import { getDropAction } from '../Editor/helpers';
+import { getDropAction, handlePaste } from '../Editor/helpers';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { Item } from '../types';
-import { handleDragOrPaste } from './helpers';
 
 interface ItemFormProps {
   addItems: (items: Item[]) => void;
@@ -26,8 +25,6 @@ export function ItemForm({
   const [itemTitle, setItemTitle] = React.useState('');
   const { stateManager } = React.useContext(KanbanContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
-  const selectionStart = React.useRef<number>(null);
-  const selectionEnd = React.useRef<number>(null);
 
   const clickOutsideRef = useOnclickOutside(
     () => {
@@ -80,41 +77,8 @@ export function ItemForm({
             onChange={(e) => {
               setItemTitle((e.target as HTMLTextAreaElement).value);
             }}
-            onPaste={async (e) => {
-              const html = e.clipboardData.getData('text/html');
-              const pasteLines = await handleDragOrPaste(
-                stateManager,
-                e.nativeEvent
-              );
-
-              if (pasteLines.length > 1) {
-                addItemsFromStrings(pasteLines);
-                e.preventDefault();
-                return false;
-              } else if (html) {
-                // We want to use the markdown instead of the HTML, but you can't intercept paste
-                // So we have to simulate a paste event the hard way
-                const input = e.target as HTMLTextAreaElement;
-                const paste = pasteLines.join('');
-
-                selectionStart.current = input.selectionStart;
-                selectionEnd.current = input.selectionEnd;
-
-                const replace =
-                  itemTitle.substr(0, selectionStart.current) +
-                  paste +
-                  itemTitle.substr(selectionEnd.current);
-
-                selectionStart.current = selectionEnd.current =
-                  selectionStart.current + paste.length;
-
-                setItemTitle(replace);
-
-                // And then cancel the default event
-                e.preventDefault();
-                return false;
-              }
-              // plain text/other, fall through to standard cut/paste
+            onPaste={(e) => {
+              handlePaste(e, stateManager);
             }}
           />
         </div>
