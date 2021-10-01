@@ -23,6 +23,8 @@ export default {
   'Something went wrong': 'エラーが発生しました',
   'You may wish to open as markdown and inspect or edit the file.':
     'マークダウンとしてファイルを開いて調査するか編集することをおすすめします。',
+  'Are you sure you want to archive all completed cards on this board?':
+    'このボードに含まれるすべての完了したカードをアーカイブしますか？',
 
   // parser.ts
   Complete: '完了',
@@ -40,6 +42,17 @@ export default {
   'Search...': '検索…',
 
   // Settings.ts
+  'New line trigger': '改行トリガー',
+  'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lanes.':
+    '改行に使うキーとしてEnterかShift+Enterのどちらを使うか選択してください。選択しなかった方のキーはカードとレーンの作成と編集完了のトリガーとなります。',
+  'Shift + Enter': 'Shift + Enter',
+  Enter: 'Enter',
+  'Prepend / append new cards': '先頭または末尾に新規カードを追加する',
+  'This setting controls whether new cards are added to the beginning or end of the list.':
+    'この設定によって新規カードをリストの先頭または末尾に追加するかを決めます。',
+  Prepend: '先頭に追加',
+  'Prepend (compact)': '先頭に追加(コンパクト)',
+  Append: '末尾に追加',
   'These settings will take precedence over the default Kanban board settings.':
     'これらの設定はデフォルトのカンバン設定より優先されます。',
   'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.':
@@ -110,6 +123,17 @@ export default {
   'Linked Page Metadata': 'リンクされたページのメタデータ',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     'カード内でリンクされている最初のノートのメタデータを表示します。下に表示するメタデータのキーを指定してください。オプションとしてラベルの付与が可能であり、ラベルは完全に非表示にすることができます。',
+  'Board Header Buttons': 'ボードのヘッダーボタン',
+  'Calendar: first day of week': 'カレンダー: 週の始まり',
+  'Override which day is used as the start of the week':
+    '週の始まりとして使用する曜日を変更します。',
+  Sunday: '日曜日',
+  Monday: '月曜日',
+  Tuesday: '火曜日',
+  Wednesday: '水曜日',
+  Thursday: '木曜日',
+  Friday: '金曜日',
+  Saturday: '土曜日',
 
   // MetadataSettings.tsx
   'Metadata key': 'メタデータのキー',
@@ -132,8 +156,8 @@ export default {
   'Change time': '時間を変更',
 
   // components/Item/ItemForm.tsx
-  'Card title...': 'アイテムタイトル…',
-  'Add card': 'アイテムを追加',
+  'Card title...': 'カードタイトル…',
+  'Add card': 'カードを追加',
   'Add a card': 'カードを追加',
 
   // components/Item/ItemMenu.ts
@@ -148,11 +172,13 @@ export default {
   'Add time': '時間を追加',
   'Remove time': '時間を削除',
   'Duplicate card': 'カードを複製',
+  'Split card': 'カードを分割',
+  'Copy link to card': 'カードへのリンクをコピー',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'リストタイトルを編集…',
   'Mark cards in this list as complete':
-    'このリストに含まれるアイテムを完了としてマークする',
+    'このリストに含まれるカードを完了としてマークする',
   'Add list': 'リストを追加',
   'Add a list': 'リストを追加',
 
@@ -174,4 +200,8 @@ export default {
   'Archive cards': 'カードをアーカイブ',
   'Archive list': 'リストをアーカイブ',
   'Delete list': 'リストを削除',
+
+  // components/helpers/renderMarkdown.ts
+  'Unable to find': '見つかりません',
+  'Open in default app': 'デフォルトアプリで開く',
 };
