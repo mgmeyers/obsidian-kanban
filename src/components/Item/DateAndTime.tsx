@@ -1,51 +1,55 @@
-import { getLinkpath, moment } from "obsidian";
-import React from "react";
+import { getLinkpath, moment } from 'obsidian';
+import React from 'react';
 
-import { Item } from "../types";
-import { c, getDefaultDateFormat, getDefaultTimeFormat } from "../helpers";
-import { KanbanView } from "src/KanbanView";
-import { t } from "src/lang/helpers";
+import { t } from 'src/lang/helpers';
+import { StateManager } from 'src/StateManager';
+
+import { c } from '../helpers';
+import { Item } from '../types';
 
 export function getRelativeDate(date: moment.Moment, time: moment.Moment) {
-    if (time) {
-      return time.from(moment());
-    }
-  
-    const today = moment().startOf("day");
-  
-    if (today.isSame(date, "day")) {
-      return t("today");
-    }
-  
-    const diff = date.diff(today, "day");
-  
-    if (diff === -1) {
-      return t("yesterday");
-    }
-  
-    if (diff === 1) {
-      return t("tomorrow");
-    }
-  
-    return date.from(today);
+  if (time) {
+    return time.from(moment());
   }
+
+  const today = moment().startOf('day');
+
+  if (today.isSame(date, 'day')) {
+    return t('today');
+  }
+
+  const diff = date.diff(today, 'day');
+
+  if (diff === -1) {
+    return t('yesterday');
+  }
+
+  if (diff === 1) {
+    return t('tomorrow');
+  }
+
+  return date.from(today);
+}
 
 interface DateProps {
   item: Item;
-  view: KanbanView;
+  stateManager: StateManager;
 }
 
-export function RelativeDate({ item, view }: DateProps) {
-  const shouldShowRelativeDate = view.getSetting("show-relative-date");
+export function RelativeDate({ item, stateManager }: DateProps) {
+  const shouldShowRelativeDate = stateManager.useSetting('show-relative-date');
 
-  if (!shouldShowRelativeDate || !item.metadata.date) {
+  if (!shouldShowRelativeDate || !item.data.metadata.date) {
     return null;
   }
 
-  const relativeDate = getRelativeDate(item.metadata.date, item.metadata.time);
+  const relativeDate = getRelativeDate(
+    item.data.metadata.date,
+    item.data.metadata.time
+  );
 
   return (
-    <span className={c("item-metadata-date-relative")}>{relativeDate}</span>
+    <span className={c('item-metadata-date-relative')}>{relativeDate}</span>
   );
 }
 
@@ -57,43 +61,39 @@ interface DateAndTimeProps {
 
 export function DateAndTime({
   item,
-  view,
+  stateManager,
   filePath,
   onEditDate,
   onEditTime,
 }: DateProps & DateAndTimeProps) {
-  const hideDateDisplay = view.getSetting("hide-date-display");
+  const hideDateDisplay = stateManager.useSetting('hide-date-display');
+  const dateFormat = stateManager.useSetting('date-format');
+  const timeFormat = stateManager.useSetting('time-format');
+  const dateDisplayFormat = stateManager.useSetting('date-display-format');
+  const shouldLinkDate = stateManager.useSetting('link-date-to-daily-note');
 
-  if (hideDateDisplay || !item.metadata.date) return null;
+  if (hideDateDisplay || !item.data.metadata.date) return null;
 
-  const dateFormat =
-    view.getSetting("date-format") || getDefaultDateFormat(view.app);
-  const timeFormat =
-    view.getSetting("time-format") || getDefaultTimeFormat(view.app);
-  const dateDisplayFormat =
-    view.getSetting("date-display-format") || dateFormat;
-  const shouldLinkDate = view.getSetting("link-date-to-daily-note");
-
-  const dateStr = item.metadata.date.format(dateFormat);
+  const dateStr = item.data.metadata.date.format(dateFormat);
 
   if (!dateStr) return null;
 
-  const hasTime = !!item.metadata.time;
-  const dateDisplayStr = item.metadata.date.format(dateDisplayFormat);
+  const hasTime = !!item.data.metadata.time;
+  const dateDisplayStr = item.data.metadata.date.format(dateDisplayFormat);
   const timeDisplayStr = !hasTime
     ? null
-    : item.metadata.time.format(timeFormat);
+    : item.data.metadata.time.format(timeFormat);
 
   const datePath = dateStr ? getLinkpath(dateStr) : null;
   const isResolved = dateStr
-    ? view.app.metadataCache.getFirstLinkpathDest(datePath, filePath)
+    ? stateManager.app.metadataCache.getFirstLinkpathDest(datePath, filePath)
     : null;
   const date =
     datePath && shouldLinkDate ? (
       <a
         href={datePath}
         data-href={datePath}
-        className={`internal-link ${isResolved ? "" : "is-unresolved"}`}
+        className={`internal-link ${isResolved ? '' : 'is-unresolved'}`}
         target="blank"
         rel="noopener"
       >
@@ -106,25 +106,25 @@ export function DateAndTime({
   const dateProps: React.HTMLAttributes<HTMLSpanElement> = {};
 
   if (!shouldLinkDate) {
-    dateProps["aria-label"] = t("Change date");
+    dateProps['aria-label'] = t('Change date');
     dateProps.onClick = onEditDate;
   }
 
   return (
-    <span className={c("item-metadata-date-wrapper")}>
+    <span className={c('item-metadata-date-wrapper')}>
       <span
         {...dateProps}
-        className={`${c("item-metadata-date")} ${
-          !shouldLinkDate ? "is-button" : ""
+        className={`${c('item-metadata-date')} ${
+          !shouldLinkDate ? 'is-button' : ''
         }`}
       >
         {date}
-      </span>{" "}
+      </span>{' '}
       {hasTime && (
         <span
           onClick={onEditTime}
-          className={`${c("item-metadata-time")} is-button`}
-          aria-label={t("Change time")}
+          className={`${c('item-metadata-time')} is-button`}
+          aria-label={t('Change time')}
         >
           {timeDisplayStr}
         </span>

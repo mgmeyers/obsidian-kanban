@@ -1,9 +1,10 @@
-import { getLinkpath } from "obsidian";
-import React from "react";
-import { t } from "src/lang/helpers";
-import { KanbanContext } from "../context";
-import { c } from "../helpers";
-import { useAutocompleteInputProps } from "../Item/autocomplete";
+import { getLinkpath } from 'obsidian';
+import React from 'react';
+
+import { KanbanContext } from '../context';
+import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
+import { c } from '../helpers';
+import { MarkdownRenderer } from '../MarkdownRenderer';
 
 export interface LaneTitleProps {
   itemCount: number;
@@ -20,17 +21,19 @@ export function LaneTitle({
   title,
   onChange,
 }: LaneTitleProps) {
-  const { view, filePath } = React.useContext(KanbanContext);
+  const { stateManager } = React.useContext(KanbanContext);
   const inputRef = React.useRef<HTMLTextAreaElement>();
 
-  const onAction = () => isEditing && setIsEditing(false);
+  const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!allowNewLine(e, stateManager)) {
+      e.preventDefault();
+      isEditing && setIsEditing(false);
+    }
+  };
 
-  const autocompleteProps = useAutocompleteInputProps({
-    isInputVisible: isEditing,
-    onEnter: onAction,
-    onEscape: onAction,
-    excludeDatePicker: true,
-  });
+  const onEscape = () => {
+    isEditing && setIsEditing(false);
+  };
 
   React.useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -41,53 +44,43 @@ export function LaneTitle({
     }
   }, [isEditing]);
 
-  const markdownContent = React.useMemo(() => {
-    const tempEl = view.renderMarkdown(title);
-    return {
-      innerHTML: { __html: tempEl.innerHTML.toString() },
-    };
-  }, [title, filePath, view]);
-
   return (
-    <div className={c("lane-title")}>
+    <div className={c('lane-title')}>
       {isEditing ? (
-        <div data-replicated-value={title} className={c("grow-wrap")}>
-          <textarea
-            ref={inputRef}
-            rows={1}
-            value={title}
-            className={c("lane-input")}
-            placeholder={t("Enter list title...")}
-            onChange={onChange}
-            {...autocompleteProps}
-          />
-        </div>
+        <MarkdownEditor
+          ref={inputRef}
+          className={c('lane-input')}
+          onChange={onChange}
+          onEnter={onEnter}
+          onEscape={onEscape}
+          value={title}
+        />
       ) : (
         <>
-          <span
-            className={`markdown-preview-view ${c("markdown-preview-view")} ${c("lane-title-text")}`}
+          <div
+            className={c('lane-title-text')}
             onContextMenu={(e) => {
               e.preventDefault();
               e.stopPropagation();
 
               const internalLinkPath =
                 e.target instanceof HTMLAnchorElement &&
-                e.target.hasClass("internal-link")
+                e.target.hasClass('internal-link')
                   ? e.target.dataset.href
                   : undefined;
 
               if (internalLinkPath) {
-                // @ts-ignore
-                view.app.workspace.onLinkContextMenu(
+                (stateManager.app.workspace as any).onLinkContextMenu(
                   e,
                   getLinkpath(internalLinkPath),
-                  view.file.path
+                  stateManager.file.path
                 );
               }
             }}
-            dangerouslySetInnerHTML={markdownContent.innerHTML}
-          ></span>
-          <span className={c("lane-title-count")}>{itemCount}</span>
+          >
+            <MarkdownRenderer markdownString={title} />
+          </div>
+          <div className={c('lane-title-count')}>{itemCount}</div>
         </>
       )}
     </div>

@@ -1,13 +1,13 @@
-import update from "immutability-helper";
-import Choices, { Choices as IChoices } from "choices.js";
-import { App, Setting, TFile, TFolder, Vault } from "obsidian";
-import KanbanPlugin from "./main";
-import { KanbanSettings, SettingsManager } from "./Settings";
-import { t } from "./lang/helpers";
-import { getTemplatePlugins } from "./components/helpers";
+import Choices, { Choices as IChoices } from 'choices.js';
+import update from 'immutability-helper';
+import { App, Setting, TFile, TFolder, Vault } from 'obsidian';
 
-export const defaultDateTrigger = "@";
-export const defaultTimeTrigger = "@@";
+import { getTemplatePlugins } from './components/helpers';
+import { t } from './lang/helpers';
+import { KanbanSettings, SettingsManager } from './Settings';
+
+export const defaultDateTrigger = '@';
+export const defaultTimeTrigger = '@@';
 
 export function getFolderChoices(app: App) {
   const folderList: IChoices.Choice[] = [];
@@ -49,17 +49,17 @@ export function getTemplateChoices(app: App, folderStr?: string) {
   return fileList;
 }
 
-export function getListOptions(app: App, plugin: KanbanPlugin) {
+export function getListOptions(app: App) {
   const { templateFolder, templatesEnabled, templaterPlugin } =
     getTemplatePlugins(app);
 
   const templateFiles = getTemplateChoices(app, templateFolder);
   const vaultFolders = getFolderChoices(app);
 
-  let templateWarning = "";
+  let templateWarning = '';
 
   if (!templatesEnabled && !templaterPlugin) {
-    templateWarning = t("Note: No template plugins are currently enabled.");
+    templateWarning = t('Note: No template plugins are currently enabled.');
   }
 
   return {
@@ -87,7 +87,7 @@ export function createSearchSelect({
   manager,
 }: CreateSearchSelectParams) {
   return (setting: Setting) => {
-    setting.controlEl.createEl("select", {}, (el) => {
+    setting.controlEl.createEl('select', {}, (el) => {
       // el must be in the dom, so we setTimeout
       setTimeout(() => {
         let list = choices;
@@ -106,10 +106,10 @@ export function createSearchSelect({
                   $set: true,
                 },
                 value: {
-                  $set: "",
+                  $set: '',
                 },
                 label: {
-                  $apply: (v) => `${v} (${t("default")})`,
+                  $apply: (v) => `${v} (${t('default')})`,
                 },
               }),
             ],
@@ -119,7 +119,7 @@ export function createSearchSelect({
             $unshift: [
               {
                 placeholder: true,
-                value: "",
+                value: '',
                 label: placeHolderStr,
                 selected: false,
                 disabled: false,
@@ -130,13 +130,13 @@ export function createSearchSelect({
 
         const c = new Choices(el, {
           placeholder: true,
-          position: "bottom" as "auto",
-          searchPlaceholderValue: t("Search..."),
+          position: 'bottom' as 'auto',
+          searchPlaceholderValue: t('Search...'),
           searchEnabled: list.length > 10,
           choices: list,
-        }).setChoiceByValue("");
+        }).setChoiceByValue('');
 
-        if (value && typeof value === "string") {
+        if (value && typeof value === 'string') {
           c.setChoiceByValue(value);
         }
 
@@ -156,17 +156,17 @@ export function createSearchSelect({
           }
         };
 
-        el.addEventListener("change", onChange);
+        el.addEventListener('change', onChange);
 
         manager.cleanupFns.push(() => {
           c.destroy();
-          el.removeEventListener("change", onChange);
+          el.removeEventListener('change', onChange);
         });
       });
 
       if (warningText) {
         setting.descEl.createDiv({}, (div) => {
-          div.createEl("strong", { text: warningText });
+          div.createEl('strong', { text: warningText });
         });
       }
     });

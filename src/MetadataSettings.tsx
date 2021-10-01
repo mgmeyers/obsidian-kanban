@@ -1,25 +1,34 @@
-import ReactDOM from "react-dom";
-import React from "react";
-import update from "immutability-helper";
-import { Icon } from "./components/Icon/Icon";
-import { c, generateInstanceId, useIMEInputProps } from "./components/helpers";
+import update from 'immutability-helper';
+import React from 'react';
+import ReactDOM from 'react-dom';
+
 import {
-  DragDropContext,
-  Draggable,
-  DraggableProvided,
-  Droppable,
-  DroppableProvided,
-  DropResult,
-} from "react-beautiful-dnd";
-import { t } from "./lang/helpers";
-import { DataKey } from "./components/types";
+  c,
+  generateInstanceId,
+  noop,
+  useIMEInputProps,
+} from './components/helpers';
+import { Icon } from './components/Icon/Icon';
+import {
+  DataTypes,
+  MetadataSetting,
+  MetadataSettingTemplate,
+} from './components/types';
+import { DndManagerContext } from './dnd/components/context';
+import { DndContext } from './dnd/components/DndContext';
+import { DragOverlay } from './dnd/components/DragOverlay';
+import { Droppable } from './dnd/components/Droppable';
+import { DndScope } from './dnd/components/Scope';
+import { Sortable } from './dnd/components/Sortable';
+import { SortPlaceholder } from './dnd/components/SortPlaceholder';
+import { useDragHandle } from './dnd/managers/DragManager';
+import { Entity } from './dnd/types';
+import { t } from './lang/helpers';
 
 interface ItemProps {
-  metadataKey: string;
-  label: string;
-  shouldHideLabel: boolean;
-  containsMarkdown: boolean;
-  draggableProvided: DraggableProvided;
+  itemIndex: number;
+  isStatic?: boolean;
+  item: MetadataSetting;
   deleteKey: () => void;
   toggleShouldHideLabel: () => void;
   toggleContainsMarkdown: () => void;
@@ -28,77 +37,95 @@ interface ItemProps {
 }
 
 function Item({
-  draggableProvided,
-  metadataKey,
-  label,
-  shouldHideLabel,
-  containsMarkdown,
+  isStatic,
+  itemIndex,
+  item,
   toggleShouldHideLabel,
   toggleContainsMarkdown,
   deleteKey,
   updateKey,
   updateLabel,
 }: ItemProps) {
-  return (
-    <div
-      ref={draggableProvided.innerRef}
-      {...draggableProvided.draggableProps}
-      className={c("setting-item")}
-    >
-      <div className={c("setting-controls-wrapper")}>
-        <div className={c("setting-input-wrapper")}>
-          <div>
-            <div className={c("setting-item-label")}>{t("Metadata key")}</div>
-            <input
-              type="text"
-              value={metadataKey}
-              onChange={(e) => updateKey(e.target.value)}
-            />
-          </div>
-          <div>
-            <div className={c("setting-item-label")}>{t("Display label")}</div>
-            <input
-              type="text"
-              value={label}
-              onChange={(e) => updateLabel(e.target.value)}
-            />
-          </div>
+  const elementRef = React.useRef<HTMLDivElement>(null);
+  const measureRef = React.useRef<HTMLDivElement>(null);
+  const dragHandleRef = React.useRef<HTMLDivElement>(null);
+
+  useDragHandle(measureRef, dragHandleRef);
+
+  const body = (
+    <div className={c('setting-controls-wrapper')}>
+      <div className={c('setting-input-wrapper')}>
+        <div>
+          <div className={c('setting-item-label')}>{t('Metadata key')}</div>
+          <input
+            type="text"
+            value={item.data.metadataKey}
+            onChange={(e) => updateKey(e.target.value)}
+          />
         </div>
-        <div className={c("setting-toggle-wrapper")}>
-          <div>
-            <div
-              className={`checkbox-container ${
-                shouldHideLabel ? "is-enabled" : ""
-              }`}
-              onClick={toggleShouldHideLabel}
-              aria-label={t("Hide label")}
-            />
-            <div className={c("setting-item-label")}>{t("Hide label")}</div>
-          </div>
-          <div>
-            <div
-              className={`checkbox-container ${
-                containsMarkdown ? "is-enabled" : ""
-              }`}
-              onClick={toggleContainsMarkdown}
-              aria-label={t("Field contains markdown")}
-            />
-            <div className={c("setting-item-label")}>
-              {t("Field contains markdown")}
-            </div>
+        <div>
+          <div className={c('setting-item-label')}>{t('Display label')}</div>
+          <input
+            type="text"
+            value={item.data.label}
+            onChange={(e) => updateLabel(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className={c('setting-toggle-wrapper')}>
+        <div>
+          <div
+            className={`checkbox-container ${
+              item.data.shouldHideLabel ? 'is-enabled' : ''
+            }`}
+            onClick={toggleShouldHideLabel}
+            aria-label={t('Hide label')}
+          />
+          <div className={c('setting-item-label')}>{t('Hide label')}</div>
+        </div>
+        <div>
+          <div
+            className={`checkbox-container ${
+              item.data.containsMarkdown ? 'is-enabled' : ''
+            }`}
+            onClick={toggleContainsMarkdown}
+            aria-label={t('Field contains markdown')}
+          />
+          <div className={c('setting-item-label')}>
+            {t('Field contains markdown')}
           </div>
         </div>
       </div>
-      <div className={c("setting-button-wrapper")}>
-        <div onClick={deleteKey} aria-label={t("Delete")}>
-          <Icon name="cross" />
-        </div>
-        <div
-          className="mobile-option-setting-drag-icon"
-          aria-label={t("Drag to rearrange")}
-          {...draggableProvided.dragHandleProps}
-        >
-          <Icon name="three-horizontal-bars" />
+    </div>
+  );
+
+  return (
+    <div ref={measureRef} className={c('setting-item-wrapper')}>
+      <div ref={elementRef} className={c('setting-item')}>
+        {isStatic ? (
+          body
+        ) : (
+          <Droppable
+            elementRef={elementRef}
+            measureRef={measureRef}
+            id={item.id}
+            index={itemIndex}
+            data={item}
+          >
+            {body}
+          </Droppable>
+        )}
+        <div className={c('setting-button-wrapper')}>
+          <div onClick={deleteKey} aria-label={t('Delete')}>
+            <Icon name="cross" />
+          </div>
+          <div
+            className="mobile-option-setting-drag-icon"
+            aria-label={t('Drag to rearrange')}
+            ref={dragHandleRef}
+          >
+            <Icon name="three-horizontal-bars" />
+          </div>
         </div>
       </div>
     </div>
@@ -106,15 +133,16 @@ function Item({
 }
 
 interface MetadataSettingsProps {
-  dataKeys: DataKey[];
-  onChange(keys: DataKey[]): void;
+  dataKeys: MetadataSetting[];
+  scrollEl: HTMLElement;
+  onChange(keys: MetadataSetting[]): void;
 }
 
 interface UseKeyModifiersParams {
-  onChange(keys: DataKey[]): void;
+  onChange(keys: MetadataSetting[]): void;
   inputValue: string;
-  keys: DataKey[];
-  setKeys: React.Dispatch<React.SetStateAction<DataKey[]>>;
+  keys: MetadataSetting[];
+  setKeys: React.Dispatch<React.SetStateAction<MetadataSetting[]>>;
 }
 
 function useKeyModifiers({
@@ -123,7 +151,7 @@ function useKeyModifiers({
   keys,
   setKeys,
 }: UseKeyModifiersParams) {
-  const updateKeys = (keys: DataKey[]) => {
+  const updateKeys = (keys: MetadataSetting[]) => {
     onChange(keys);
     setKeys(keys);
   };
@@ -133,8 +161,10 @@ function useKeyModifiers({
       updateKeys(
         update(keys, {
           [i]: {
-            metadataKey: {
-              $set: value,
+            data: {
+              metadataKey: {
+                $set: value,
+              },
             },
           },
         })
@@ -145,8 +175,10 @@ function useKeyModifiers({
       updateKeys(
         update(keys, {
           [i]: {
-            label: {
-              $set: value,
+            data: {
+              label: {
+                $set: value,
+              },
             },
           },
         })
@@ -157,7 +189,9 @@ function useKeyModifiers({
       updateKeys(
         update(keys, {
           [i]: {
-            $toggle: ["shouldHideLabel"],
+            data: {
+              $toggle: ['shouldHideLabel'],
+            },
           },
         })
       );
@@ -167,7 +201,9 @@ function useKeyModifiers({
       updateKeys(
         update(keys, {
           [i]: {
-            $toggle: ["containsMarkdown"],
+            data: {
+              $toggle: ['containsMarkdown'],
+            },
           },
         })
       );
@@ -186,38 +222,101 @@ function useKeyModifiers({
         update(keys, {
           $push: [
             {
+              ...MetadataSettingTemplate,
               id: generateInstanceId(),
-              metadataKey: inputValue,
-              label: "",
-              shouldHideLabel: false,
-              containsMarkdown: false,
+              data: {
+                metadataKey: inputValue,
+                label: '',
+                shouldHideLabel: false,
+                containsMarkdown: false,
+              },
             },
           ],
         })
       );
     },
 
-    moveKey: (result: DropResult) => {
-      if (!result.destination) {
-        return;
-      }
+    moveKey: (drag: Entity, drop: Entity) => {
+      const dragPath = drag.getPath();
+      const dropPath = drop.getPath();
 
-      if (result.destination.index === result.source.index) {
+      const dragIndex = dragPath[dragPath.length - 1];
+      const dropIndex = dropPath[dropPath.length - 1];
+
+      if (dragIndex === dropIndex) {
         return;
       }
 
       const clone = keys.slice();
-      const [removed] = clone.splice(result.source.index, 1);
-      clone.splice(result.destination.index, 0, removed);
+      const [removed] = clone.splice(dragIndex, 1);
+      clone.splice(dropIndex, 0, removed);
 
       updateKeys(clone);
     },
   };
 }
 
+const accepts = [DataTypes.MetadataSetting];
+
+function Overlay({ keys }: { keys: MetadataSetting[] }) {
+  return ReactDOM.createPortal(
+    <DragOverlay>
+      {(entity, styles) => {
+        const path = entity.getPath();
+        const index = path[0];
+        const item = keys[index];
+
+        return (
+          <div className={c('drag-container')} style={styles}>
+            <Item
+              item={item}
+              itemIndex={index}
+              updateKey={noop}
+              updateLabel={noop}
+              toggleShouldHideLabel={noop}
+              toggleContainsMarkdown={noop}
+              deleteKey={noop}
+              isStatic={true}
+            />
+          </div>
+        );
+      }}
+    </DragOverlay>,
+    document.body
+  );
+}
+
+function RespondToScroll({ scrollEl }: { scrollEl: HTMLElement }): JSX.Element {
+  const dndManager = React.useContext(DndManagerContext);
+
+  React.useEffect(() => {
+    let debounce = 0;
+
+    const onScroll = () => {
+      clearTimeout(debounce);
+      debounce = window.setTimeout(() => {
+        dndManager.hitboxEntities.forEach((entity) => {
+          entity.recalcInitial();
+        });
+      }, 100);
+    };
+
+    scrollEl.addEventListener('scroll', onScroll, {
+      passive: true,
+      capture: false,
+    });
+
+    return () => {
+      scrollEl.removeEventListener('scroll', onScroll);
+    };
+  }, [scrollEl, dndManager]);
+
+  return null;
+}
+
 function MetadataSettings(props: MetadataSettingsProps) {
   const [keys, setKeys] = React.useState(props.dataKeys);
-  const [inputValue, setInputValue] = React.useState("");
+  const [inputValue, setInputValue] = React.useState('');
   const { getShouldIMEBlockAction, ...inputProps } = useIMEInputProps();
 
   const {
@@ -237,67 +336,41 @@ function MetadataSettings(props: MetadataSettingsProps) {
 
   return (
     <>
-      <DragDropContext onDragEnd={moveKey}>
-        <Droppable
-          droppableId="keys"
-          renderClone={(draggableProvided, _, rubric) => {
-            const i = rubric.source.index;
-            const k = keys[i];
-            return (
-              <Item
-                draggableProvided={draggableProvided}
-                metadataKey={k.metadataKey}
-                label={k.label}
-                shouldHideLabel={k.shouldHideLabel}
-                containsMarkdown={k.containsMarkdown}
-                updateKey={updateKey(i)}
-                updateLabel={updateLabel(i)}
-                toggleShouldHideLabel={toggleShouldHideLabel(i)}
-                toggleContainsMarkdown={toggleContainsMarkdown(i)}
-                deleteKey={deleteKey(i)}
-              />
-            );
-          }}
-        >
-          {(dropProvided: DroppableProvided) => (
-            <div ref={dropProvided.innerRef} {...dropProvided.droppableProps}>
-              {keys.map((k, i) => {
-                return (
-                  <Draggable draggableId={k.id} index={i} key={k.id}>
-                    {(draggableProvided: DraggableProvided) => (
-                      <Item
-                        draggableProvided={draggableProvided}
-                        metadataKey={k.metadataKey}
-                        label={k.label}
-                        shouldHideLabel={k.shouldHideLabel}
-                        containsMarkdown={k.containsMarkdown}
-                        updateKey={updateKey(i)}
-                        updateLabel={updateLabel(i)}
-                        toggleShouldHideLabel={toggleShouldHideLabel(i)}
-                        toggleContainsMarkdown={toggleContainsMarkdown(i)}
-                        deleteKey={deleteKey(i)}
-                      />
-                    )}
-                  </Draggable>
-                );
-              })}
-              {dropProvided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-      <div className={c("setting-key-input-wrapper")}>
+      <DndContext onDrop={moveKey}>
+        <RespondToScroll scrollEl={props.scrollEl} />
+        <DndScope>
+          <Sortable axis="vertical">
+            {keys.map((k, i) => {
+              return (
+                <Item
+                  key={k.id}
+                  item={k}
+                  itemIndex={i}
+                  updateKey={updateKey(i)}
+                  updateLabel={updateLabel(i)}
+                  toggleShouldHideLabel={toggleShouldHideLabel(i)}
+                  toggleContainsMarkdown={toggleContainsMarkdown(i)}
+                  deleteKey={deleteKey(i)}
+                />
+              );
+            })}
+            <SortPlaceholder accepts={accepts} index={keys.length} />
+          </Sortable>
+        </DndScope>
+        <Overlay keys={keys} />
+      </DndContext>
+      <div className={c('setting-key-input-wrapper')}>
         <input
-          placeholder={t("Metadata key")}
+          placeholder={t('Metadata key')}
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={(e) => {
             if (getShouldIMEBlockAction()) return;
 
-            if (e.key === "Enter") {
+            if (e.key === 'Enter') {
               newKey();
-              setInputValue("");
+              setInputValue('');
               const target = e.target as HTMLInputElement;
 
               setTimeout(() => {
@@ -306,8 +379,8 @@ function MetadataSettings(props: MetadataSettingsProps) {
               return;
             }
 
-            if (e.key === "Escape") {
-              setInputValue("");
+            if (e.key === 'Escape') {
+              setInputValue('');
               (e.target as HTMLInputElement).blur();
             }
           }}
@@ -316,7 +389,7 @@ function MetadataSettings(props: MetadataSettingsProps) {
         <button
           onClick={(e) => {
             newKey();
-            setInputValue("");
+            setInputValue('');
             const target = e.target as HTMLElement;
 
             setTimeout(() => {
@@ -325,7 +398,7 @@ function MetadataSettings(props: MetadataSettingsProps) {
             return;
           }}
         >
-          {t("Add key")}
+          {t('Add key')}
         </button>
       </div>
     </>
@@ -334,11 +407,16 @@ function MetadataSettings(props: MetadataSettingsProps) {
 
 export function renderMetadataSettings(
   containerEl: HTMLElement,
-  keys: DataKey[],
-  onChange: (key: DataKey[]) => void
+  scrollEl: HTMLElement,
+  keys: MetadataSetting[],
+  onChange: (key: MetadataSetting[]) => void
 ) {
   ReactDOM.render(
-    <MetadataSettings dataKeys={keys} onChange={onChange} />,
+    <MetadataSettings
+      dataKeys={keys}
+      scrollEl={scrollEl}
+      onChange={onChange}
+    />,
     containerEl
   );
 }

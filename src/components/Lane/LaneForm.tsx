@@ -1,111 +1,92 @@
-import React from "react";
-import { Lane } from "../types";
-import { c, generateInstanceId, useIMEInputProps } from "../helpers";
-import { KanbanContext } from "../context";
-import useOnclickOutside from "react-cool-onclickoutside";
-import { t } from "src/lang/helpers";
+import React from 'react';
+import useOnclickOutside from 'react-cool-onclickoutside';
 
-export function LaneForm() {
-  const { boardModifiers } = React.useContext(KanbanContext);
-  const [isInputVisible, setIsInputVisible] = React.useState(false);
+import { t } from 'src/lang/helpers';
+
+import { KanbanContext } from '../context';
+import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
+import { c, generateInstanceId } from '../helpers';
+import { LaneTemplate } from '../types';
+
+export function LaneForm({
+  onNewLane,
+  closeLaneForm,
+}: {
+  onNewLane: () => void;
+  closeLaneForm: () => void;
+}) {
+  const { boardModifiers, stateManager } = React.useContext(KanbanContext);
   const [shouldMarkAsComplete, setShouldMarkAsComplete] = React.useState(false);
-  const [laneTitle, setLaneTitle] = React.useState("");
+  const [laneTitle, setLaneTitle] = React.useState('');
 
   const inputRef = React.useRef<HTMLTextAreaElement>();
   const clickOutsideRef = useOnclickOutside(
     () => {
-      setIsInputVisible(false);
+      closeLaneForm();
     },
     {
-      ignoreClass: c("ignore-click-outside"),
+      ignoreClass: c('ignore-click-outside'),
     }
   );
 
-  const { getShouldIMEBlockAction, ...inputProps } = useIMEInputProps();
-
-  React.useEffect(() => {
-    if (isInputVisible) {
-      inputRef.current?.focus();
-    }
-  }, [isInputVisible]);
-
-  const clear = () => {
-    setLaneTitle("");
-    setShouldMarkAsComplete(false);
-    setIsInputVisible(false);
-  };
+  React.useLayoutEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   const createLane = () => {
-    const newLane: Lane = {
+    boardModifiers.addLane({
+      ...LaneTemplate,
       id: generateInstanceId(),
-      title: laneTitle,
-      items: [],
+      children: [],
       data: {
+        title: laneTitle,
         shouldMarkItemsComplete: shouldMarkAsComplete,
       },
-    };
+    });
 
-    boardModifiers.addLane(newLane);
-    clear();
+    setLaneTitle('');
+    setShouldMarkAsComplete(false);
+    onNewLane();
   };
 
-  if (isInputVisible) {
-    return (
-      <div ref={clickOutsideRef} className={c("lane")}>
-        <div className={c("lane-input-wrapper")}>
-          <div data-replicated-value={laneTitle} className={c("grow-wrap")}>
-            <textarea
-              rows={1}
-              value={laneTitle}
-              ref={inputRef}
-              className={c("lane-input")}
-              placeholder={t("Enter list title...")}
-              onChange={(e) => setLaneTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (getShouldIMEBlockAction()) return;
-
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  createLane();
-                } else if (e.key === "Escape") {
-                  clear();
-                }
-              }}
-              {...inputProps}
-            />
-          </div>
-        </div>
-        <div className={c("checkbox-wrapper")}>
-          <div className={c("checkbox-label")}>
-            {t("Mark items in this list as complete")}
-          </div>
-          <div
-            onClick={() => setShouldMarkAsComplete(!shouldMarkAsComplete)}
-            className={`checkbox-container ${
-              shouldMarkAsComplete ? "is-enabled" : ""
-            }`}
-          />
-        </div>
-        <div className={c("lane-input-actions")}>
-          <button className={c("lane-action-add")} onClick={createLane}>
-            {t("Add list")}
-          </button>
-          <button className={c("lane-action-cancel")} onClick={clear}>
-            {t("Cancel")}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className={c("new-lane-button-wrapper")}>
-      <button
-        className={c("new-lane-button")}
-        onClick={() => setIsInputVisible(true)}
-      >
-        <span className={c("new-lane-button-plus")}>+</span> {t("Add a list")}
-      </button>
+    <div ref={clickOutsideRef} className={c('lane-form-wrapper')}>
+      <div className={c('lane-input-wrapper')}>
+        <MarkdownEditor
+          ref={inputRef}
+          className={c('lane-input')}
+          onChange={(e) =>
+            setLaneTitle((e.target as HTMLTextAreaElement).value)
+          }
+          onEnter={(e) => {
+            if (!allowNewLine(e, stateManager)) {
+              e.preventDefault();
+              createLane();
+            }
+          }}
+          onEscape={closeLaneForm}
+          value={laneTitle}
+        />
+      </div>
+      <div className={c('checkbox-wrapper')}>
+        <div className={c('checkbox-label')}>
+          {t('Mark cards in this list as complete')}
+        </div>
+        <div
+          onClick={() => setShouldMarkAsComplete(!shouldMarkAsComplete)}
+          className={`checkbox-container ${
+            shouldMarkAsComplete ? 'is-enabled' : ''
+          }`}
+        />
+      </div>
+      <div className={c('lane-input-actions')}>
+        <button className={c('lane-action-add')} onClick={createLane}>
+          {t('Add list')}
+        </button>
+        <button className={c('lane-action-cancel')} onClick={closeLaneForm}>
+          {t('Cancel')}
+        </button>
+      </div>
     </div>
   );
 }

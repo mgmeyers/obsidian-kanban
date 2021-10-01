@@ -1,8 +1,9 @@
-import React from "react";
+import { Link } from 'obsidian-dataview';
+import React from 'react';
 
-import { Item, PageData } from "../types";
-import { c } from "../helpers";
-import { MarkdownRenderer } from "../MarkdownRenderer";
+import { c } from '../helpers';
+import { MarkdownRenderer } from '../MarkdownRenderer';
+import { Item, PageData } from '../types';
 
 export interface ItemMetadataProps {
   item: Item;
@@ -15,12 +16,12 @@ export function ItemMetadata({
   isSettingsVisible,
   searchQuery,
 }: ItemMetadataProps) {
-  if (isSettingsVisible || !item.metadata.fileMetadata) return null;
+  if (isSettingsVisible || !item.data.metadata.fileMetadata) return null;
 
   return (
-    <div className={c("item-metadata-wrapper")}>
+    <div className={c('item-metadata-wrapper')}>
       <MetadataTable
-        metadata={item.metadata.fileMetadata}
+        metadata={item.data.metadata.fileMetadata}
         searchQuery={searchQuery}
       />
     </div>
@@ -32,21 +33,27 @@ interface MetadataValueProps {
   searchQuery: string;
 }
 
+function getLinkFromObj(v: Link) {
+  return `${v.embed ? '!' : ''}[[${v.path}${
+    v.display ? `|${v.display}` : ''
+  }]]`;
+}
+
 function MetadataValue({ data, searchQuery }: MetadataValueProps) {
   if (Array.isArray(data.value)) {
     return (
-      <span className={c("meta-value")}>
+      <span className={c('meta-value')}>
         {data.value.map((v, i, arr) => {
           const str = `${v}`;
-          const linkPath = typeof v === "object" && (v as any).path;
+          const link = typeof v === 'object' && getLinkFromObj(v as Link);
           const isMatch = str.toLocaleLowerCase().contains(searchQuery);
 
           return (
             <>
-              {linkPath || data.containsMarkdown ? (
+              {link || data.containsMarkdown ? (
                 <MarkdownRenderer
                   className="inline"
-                  markdownString={linkPath ? `[[${linkPath}]]` : str}
+                  markdownString={link ? link : str}
                   searchQuery={searchQuery}
                 />
               ) : isMatch ? (
@@ -54,7 +61,7 @@ function MetadataValue({ data, searchQuery }: MetadataValueProps) {
               ) : (
                 str
               )}
-              {i < arr.length - 1 ? <span>{", "}</span> : ""}
+              {i < arr.length - 1 ? <span>{', '}</span> : ''}
             </>
           );
         })}
@@ -64,17 +71,18 @@ function MetadataValue({ data, searchQuery }: MetadataValueProps) {
 
   const str = `${data.value}`;
   const isMatch = str.toLocaleLowerCase().contains(searchQuery);
-  const linkPath = typeof data.value === "object" && (data.value as any).path;
+  const link =
+    typeof data.value === 'object' && getLinkFromObj(data.value as Link);
 
   return (
     <span
-      className={`${c("meta-value")} ${
-        isMatch && !data.containsMarkdown ? "is-search-match" : ""
+      className={`${c('meta-value')} ${
+        isMatch && !data.containsMarkdown ? 'is-search-match' : ''
       }`}
     >
-      {data.containsMarkdown || !!linkPath ? (
+      {data.containsMarkdown || !!link ? (
         <MarkdownRenderer
-          markdownString={linkPath ? `[[${linkPath}]]` : str}
+          markdownString={link ? link : str}
           searchQuery={searchQuery}
         />
       ) : (
@@ -96,18 +104,18 @@ export const MetadataTable = React.memo(function MetadataTable({
   if (!metadata) return null;
 
   return (
-    <table className={c("meta-table")}>
+    <table className={c('meta-table')}>
       <tbody>
         {Object.keys(metadata).map((k) => {
           const data = metadata[k];
           return (
-            <tr key={k} className={c("meta-row")}>
+            <tr key={k} className={c('meta-row')}>
               {!data.shouldHideLabel && (
                 <td
-                  className={`${c("meta-key")} ${
+                  className={`${c('meta-key')} ${
                     (data.label || k).toLocaleLowerCase().contains(searchQuery)
-                      ? "is-search-match"
-                      : ""
+                      ? 'is-search-match'
+                      : ''
                   }`}
                   data-key={k}
                 >
@@ -116,23 +124,23 @@ export const MetadataTable = React.memo(function MetadataTable({
               )}
               <td
                 colSpan={data.shouldHideLabel ? 2 : 1}
-                className={c("meta-value-wrapper")}
+                className={c('meta-value-wrapper')}
                 data-value={
                   Array.isArray(data.value)
-                    ? data.value.join(", ")
+                    ? data.value.join(', ')
                     : `${data.value}`
                 }
               >
-                {k === "tags" ? (
+                {k === 'tags' ? (
                   (data.value as string[]).map((tag, i) => {
                     return (
                       <a
                         href={tag}
                         key={i}
-                        className={`tag ${c("item-tag")} ${
+                        className={`tag ${c('item-tag')} ${
                           tag.toLocaleLowerCase().contains(searchQuery)
-                            ? "is-search-match"
-                            : ""
+                            ? 'is-search-match'
+                            : ''
                         }`}
                       >
                         <span>{tag[0]}</span>

@@ -1,0 +1,29 @@
+name: Feature Request
+description: Suggest a Feature
+labels: ['enhancement']
+title: '[Feature]: '
+body:
+  - type: markdown
+    attributes:
+      value: Before getting started, please check the [GitHub Issues](https://github.com/mgmeyers/obsidian-kanban/issues) (open or closed) for similar issues.
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Goal or desired outcome of this feature
+      description: Before describing your requested feature, please describe more generally the problem, pain-point, or use case you'd like to solve for.
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Describe the feature
+      description: Please describe the desired feature in as much detail as you are able.
+  - type: textarea
+    attributes:
+      label: Can you think of any alternatives or work-arounds?
+      description: Some features may take time to develop, it may be helpful for you and others to have alternative options or workarounds, and may help clarify the feature itself.
+  - type: textarea
+    attributes:
+      label: Screenshots, mockups, or videos
+      description: |
+        If applicable, add screenshots, mockups, or videos to help demonstrate your feature request.

@@ -1,181 +1,65 @@
-import React from "react";
-import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
+import classcat from 'classcat';
+import React from 'react';
 
-import { Item } from "../types";
-import { c, noop } from "../helpers";
-import { getItemClassModifiers } from "./helpers";
-import { KanbanContext, SearchContext } from "../context";
-import { ItemContent } from "./ItemContent";
-import { useItemMenu } from "./ItemMenu";
-import { ItemMetadata } from "./MetadataTable";
-import {
-  constructDatePicker,
-  constructMenuDatePickerOnChange,
-  constructMenuTimePickerOnChange,
-  constructTimePicker,
-} from "./helpers";
-import { ItemCheckbox } from "./ItemCheckbox";
-import { ItemMenuButton } from "./ItemMenuButton";
-import { KanbanView } from "src/KanbanView";
-import { BoardModifiers } from "../helpers/boardModifiers";
+import { Droppable, useNestedEntityPath } from 'src/dnd/components/Droppable';
+import { useDragHandle } from 'src/dnd/managers/DragManager';
 
-interface UseItemContentEventsParams {
-  view: KanbanView;
-  boardModifiers: BoardModifiers;
-  laneIndex: number;
-  itemIndex: number;
-  item: Item;
-}
-
-function useItemContentEvents({
-  boardModifiers,
-  laneIndex,
-  itemIndex,
-  item,
-  view,
-}: UseItemContentEventsParams) {
-  return React.useMemo(() => {
-    const onContentChange: React.ChangeEventHandler<HTMLTextAreaElement> = (
-      e
-    ) => {
-      const titleRaw = e.target.value.replace(/[\r\n]+/g, " ");
-      boardModifiers.updateItem(
-        laneIndex,
-        itemIndex,
-        view.parser.updateItem(item, titleRaw)
-      );
-    };
-
-    const onEditDate: React.MouseEventHandler = (e) => {
-      constructDatePicker(
-        { x: e.clientX, y: e.clientY },
-        constructMenuDatePickerOnChange({
-          view,
-          boardModifiers,
-          item,
-          hasDate: true,
-          laneIndex,
-          itemIndex,
-        }),
-        item.metadata.date?.toDate()
-      );
-    };
-
-    const onEditTime: React.MouseEventHandler = (e) => {
-      constructTimePicker(
-        view,
-        { x: e.clientX, y: e.clientY },
-        constructMenuTimePickerOnChange({
-          view,
-          boardModifiers,
-          item,
-          hasTime: true,
-          laneIndex,
-          itemIndex,
-        }),
-        item.metadata.time
-      );
-    };
-
-    return {
-      onContentChange,
-      onEditDate,
-      onEditTime,
-    };
-  }, [boardModifiers, laneIndex, itemIndex, item, view]);
-}
+import { KanbanContext, SearchContext } from '../context';
+import { c } from '../helpers';
+import { Item } from '../types';
+import { getItemClassModifiers } from './helpers';
+import { ItemCheckbox } from './ItemCheckbox';
+import { ItemContent } from './ItemContent';
+import { useItemMenu } from './ItemMenu';
+import { ItemMenuButton } from './ItemMenuButton';
+import { ItemMetadata } from './MetadataTable';
 
 export interface DraggableItemProps {
   item: Item;
   itemIndex: number;
-  shouldMarkItemsComplete: boolean;
-  laneIndex: number;
-  provided: DraggableProvided;
-  snapshot: DraggableStateSnapshot;
+  isStatic?: boolean;
+  shouldMarkItemsComplete?: boolean;
 }
 
-interface GhostItemProps {
-  shouldMarkItemsComplete: boolean;
+export interface ItemInnerProps {
   item: Item;
+  isStatic?: boolean;
+  shouldMarkItemsComplete?: boolean;
+  isMatch?: boolean;
+  searchQuery?: string;
 }
 
-export function GhostItem({ item, shouldMarkItemsComplete }: GhostItemProps) {
-  const classModifiers = getItemClassModifiers(item);
-  const { view, boardModifiers } = React.useContext(KanbanContext);
-
-  return (
-    <div className={`${c("item")} ${classModifiers.join(" ")}`}>
-      <div className={c("item-content-wrapper")}>
-        <div className={c("item-title-wrapper")}>
-          <ItemCheckbox
-            item={item}
-            shouldMarkItemsComplete={shouldMarkItemsComplete}
-            boardModifiers={boardModifiers}
-            view={view}
-          />
-          <ItemContent isSettingsVisible={false} item={item} />
-          <ItemMenuButton
-            isEditing={false}
-            setIsEditing={noop}
-            showMenu={noop}
-          />
-        </div>
-        <ItemMetadata isSettingsVisible={false} item={item} />
-      </div>
-    </div>
-  );
-}
-
-export const DraggableItem = React.memo(function DraggableItem({
+const ItemInner = React.memo(function ItemInner({
   item,
-  itemIndex,
-  laneIndex,
   shouldMarkItemsComplete,
-  snapshot,
-  provided,
-}: DraggableItemProps) {
-  const { view, boardModifiers } = React.useContext(KanbanContext);
-  const searchQuery = React.useContext(SearchContext);
+  isMatch,
+  searchQuery,
+}: ItemInnerProps) {
+  const { stateManager, boardModifiers } = React.useContext(KanbanContext);
   const [isEditing, setIsEditing] = React.useState(false);
 
-  const isMatch = searchQuery ? item.titleSearch.contains(searchQuery) : false;
-  const classModifiers: string[] = getItemClassModifiers(item);
-
-  if (snapshot.isDragging) classModifiers.push("is-dragging");
-
-  if (searchQuery) {
-    if (isMatch) {
-      classModifiers.push("is-search-hit");
-    } else {
-      classModifiers.push("is-search-miss");
-    }
-  }
+  const path = useNestedEntityPath();
 
   const showItemMenu = useItemMenu({
     boardModifiers,
     item,
-    itemIndex,
-    laneIndex,
     setIsEditing,
-    view,
-  });
-
-  const contentEvents = useItemContentEvents({
-    boardModifiers,
-    item,
-    itemIndex,
-    laneIndex,
-    view,
+    stateManager,
+    path,
   });
 
   const onContextMenu: React.MouseEventHandler = React.useCallback(
     (e) => {
+      if (e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
       e.preventDefault();
       e.stopPropagation();
 
       const internalLinkPath =
         e.target instanceof HTMLAnchorElement &&
-        e.target.hasClass("internal-link")
+        e.target.hasClass('internal-link')
           ? e.target.dataset.href
           : undefined;
 
@@ -188,46 +72,133 @@ export const DraggableItem = React.memo(function DraggableItem({
     setIsEditing(true);
   }, [setIsEditing]);
 
+  const ignoreAttr = React.useMemo(() => {
+    if (isEditing) {
+      return {
+        'data-ignore-drag': true,
+      };
+    }
+
+    return {};
+  }, [isEditing]);
+
   return (
     <div
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
-      className={`${c("item")} ${classModifiers.join(" ")}`}
-      ref={provided.innerRef}
-      {...provided.draggableProps}
-      {...provided.dragHandleProps}
+      className={c('item-content-wrapper')}
+      {...ignoreAttr}
     >
-      <div className={c("item-content-wrapper")}>
-        <div className={c("item-title-wrapper")}>
-          <ItemCheckbox
-            boardModifiers={boardModifiers}
-            item={item}
-            itemIndex={itemIndex}
-            laneIndex={laneIndex}
-            shouldMarkItemsComplete={shouldMarkItemsComplete}
-            view={view}
-          />
-          <ItemContent
-            isSettingsVisible={isEditing}
-            item={item}
-            onChange={contentEvents.onContentChange}
-            onEditDate={contentEvents.onEditDate}
-            onEditTime={contentEvents.onEditTime}
-            searchQuery={isMatch ? searchQuery : undefined}
-            setIsSettingsVisible={setIsEditing}
-          />
-          <ItemMenuButton
-            isEditing={isEditing}
-            setIsEditing={setIsEditing}
-            showMenu={showItemMenu}
-          />
-        </div>
-        <ItemMetadata
-          searchQuery={isMatch ? searchQuery : undefined}
-          isSettingsVisible={isEditing}
+      <div className={c('item-title-wrapper')} {...ignoreAttr}>
+        <ItemCheckbox
+          boardModifiers={boardModifiers}
           item={item}
+          path={path}
+          shouldMarkItemsComplete={shouldMarkItemsComplete}
+          stateManager={stateManager}
+        />
+        <ItemContent
+          isEditing={isEditing}
+          item={item}
+          searchQuery={isMatch ? searchQuery : undefined}
+          setIsEditing={setIsEditing}
+        />
+        <ItemMenuButton
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+          showMenu={showItemMenu}
         />
       </div>
+      <ItemMetadata
+        searchQuery={isMatch ? searchQuery : undefined}
+        isSettingsVisible={isEditing}
+        item={item}
+      />
     </div>
+  );
+});
+
+export const DraggableItem = React.memo(function DraggableItem(
+  props: DraggableItemProps
+) {
+  const elementRef = React.useRef<HTMLDivElement>(null);
+  const measureRef = React.useRef<HTMLDivElement>(null);
+  const searchQuery = React.useContext(SearchContext);
+
+  const { itemIndex, ...innerProps } = props;
+
+  useDragHandle(measureRef, measureRef);
+
+  const isMatch = searchQuery
+    ? innerProps.item.data.titleSearch.contains(searchQuery)
+    : false;
+
+  const classModifiers: string[] = getItemClassModifiers(innerProps.item);
+
+  if (searchQuery) {
+    if (isMatch) {
+      classModifiers.push('is-search-hit');
+    } else {
+      classModifiers.push('is-search-miss');
+    }
+  }
+
+  return (
+    <div ref={measureRef} className={c('item-wrapper')}>
+      <div
+        ref={elementRef}
+        className={classcat([c('item'), ...classModifiers])}
+      >
+        {props.isStatic ? (
+          <ItemInner
+            {...innerProps}
+            isMatch={isMatch}
+            searchQuery={searchQuery}
+          />
+        ) : (
+          <Droppable
+            elementRef={elementRef}
+            measureRef={measureRef}
+            id={props.item.id}
+            index={itemIndex}
+            data={props.item}
+          >
+            <ItemInner
+              {...innerProps}
+              isMatch={isMatch}
+              searchQuery={searchQuery}
+            />
+          </Droppable>
+        )}
+      </div>
+    </div>
+  );
+});
+
+interface ItemsProps {
+  isStatic?: boolean;
+  items: Item[];
+  shouldMarkItemsComplete: boolean;
+}
+
+export const Items = React.memo(function Items({
+  isStatic,
+  items,
+  shouldMarkItemsComplete,
+}: ItemsProps) {
+  return (
+    <>
+      {items.map((item, i) => {
+        return (
+          <DraggableItem
+            key={item.id}
+            item={item}
+            itemIndex={i}
+            shouldMarkItemsComplete={shouldMarkItemsComplete}
+            isStatic={isStatic}
+          />
+        );
+      })}
+    </>
   );
 });

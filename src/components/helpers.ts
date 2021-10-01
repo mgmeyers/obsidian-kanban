@@ -1,10 +1,14 @@
-import React from "react";
-import update from "immutability-helper";
-import { Board, Item, Lane } from "./types";
-import { KanbanView } from "src/KanbanView";
-import { App, MarkdownView, TFile } from "obsidian";
+import update from 'immutability-helper';
+import { App, MarkdownView, TFile } from 'obsidian';
+import React from 'react';
 
-export const baseClassName = "kanban-plugin";
+import { Path } from 'src/dnd/types';
+import { getEntityFromPath } from 'src/dnd/util/data';
+import { StateManager } from 'src/StateManager';
+
+import { Board, Item } from './types';
+
+export const baseClassName = 'kanban-plugin';
 
 export function noop() {}
 
@@ -16,112 +20,21 @@ export function generateInstanceId(): string {
   return Math.random().toString(36).substr(2, 9);
 }
 
-interface ReorderListParams<T> {
-  list: T[];
-  startIndex: number;
-  endIndex: number;
-}
-
-export function reorderList<T>({
-  list,
-  startIndex,
-  endIndex,
-}: ReorderListParams<T>) {
-  const clone = list.slice();
-  const [removed] = clone.splice(startIndex, 1);
-  clone.splice(endIndex, 0, removed);
-
-  return clone;
-}
-
-// Callback to update() a board
-export type BoardMutator = (board: Board) => Board;
-
-export function swapLanes(srcIndex: number, dstIndex: number): BoardMutator {
-  return srcIndex === dstIndex
-    ? null
-    : (boardData: Board) =>
-        update(boardData, {
-          lanes: (lanes) =>
-            reorderList<Lane>({
-              list: lanes,
-              startIndex: srcIndex,
-              endIndex: dstIndex,
-            }),
-        });
-}
-
-export function swapItems(
-  laneIndex: number,
-  srcIndex: number,
-  dstIndex: number
-): BoardMutator {
-  return srcIndex === dstIndex
-    ? null
-    : (boardData: Board) =>
-        update(boardData, {
-          lanes: {
-            [laneIndex]: {
-              items: (items) =>
-                reorderList<Item>({
-                  list: items,
-                  startIndex: srcIndex,
-                  endIndex: dstIndex,
-                }),
-            },
-          },
-        });
-}
-
-export function deleteLane(srcLane: number): BoardMutator {
-  return (boardData: Board) =>
-    update(boardData, {
-      lanes: { $splice: [[srcLane, 1]] },
-    });
-}
-
-export function insertLane(dstLane: number, lane: Lane): BoardMutator {
-  return (boardData: Board) =>
-    update(boardData, {
-      lanes: { $splice: [[dstLane, 0, lane]] },
-    });
-}
-
-export function deleteItem(srcLane: number, srcIndex: number): BoardMutator {
-  return (boardData: Board) =>
-    update(boardData, {
-      lanes: {
-        [srcLane]: {
-          items: { $splice: [[srcIndex, 1]] },
-        },
-      },
-    });
-}
-
-export function insertItem(
-  dstLane: number,
-  dstIndex: number,
-  item: Item
-): BoardMutator {
-  return (boardData: Board) =>
-    update(boardData, {
-      lanes: {
-        [dstLane]: {
-          items: {
-            $splice: [[dstIndex, 0, item]],
-          },
-        },
-      },
-    });
-}
-
 export function maybeCompleteForMove(
-  item: Item,
-  fromLane: Lane,
-  toLane: Lane
+  sourceBoard: Board,
+  sourcePath: Path,
+  destinationBoard: Board,
+  destinationPath: Path,
+  item: Item
 ): Item {
-  const oldShouldComplete = fromLane.data.shouldMarkItemsComplete;
-  const newShouldComplete = toLane.data.shouldMarkItemsComplete;
+  const sourceParent = getEntityFromPath(sourceBoard, sourcePath.slice(0, -1));
+  const destinationParent = getEntityFromPath(
+    destinationBoard,
+    destinationPath.slice(0, -1)
+  );
+
+  const oldShouldComplete = sourceParent?.data?.shouldMarkItemsComplete;
+  const newShouldComplete = destinationParent?.data?.shouldMarkItemsComplete;
 
   // If neither the old or new lane set it complete, leave it alone
   if (!oldShouldComplete && !newShouldComplete) return item;
@@ -137,38 +50,6 @@ export function maybeCompleteForMove(
       },
     },
   });
-}
-
-export function moveItem(
-  srcLane: number,
-  srcIndex: number,
-  dstLane: number,
-  dstIndex: number
-): BoardMutator {
-  return srcLane === dstLane && srcIndex === dstIndex
-    ? null
-    : (boardData: Board) => {
-        let item = boardData.lanes[srcLane].items[srcIndex];
-        item = maybeCompleteForMove(
-          item,
-          boardData.lanes[srcLane],
-          boardData.lanes[dstLane]
-        );
-        return update(boardData, {
-          lanes: {
-            [srcLane]: {
-              items: {
-                $splice: [[srcIndex, 1]],
-              },
-            },
-            [dstLane]: {
-              items: {
-                $splice: [[dstIndex, 0, item]],
-              },
-            },
-          },
-        });
-      };
 }
 
 export function useIMEInputProps() {
@@ -191,22 +72,25 @@ export function useIMEInputProps() {
 
 export const templaterDetectRegex = /<%/;
 
-export async function applyTemplate(view: KanbanView, templatePath?: string) {
+export async function applyTemplate(
+  stateManager: StateManager,
+  templatePath?: string
+) {
   const templateFile = templatePath
-    ? view.app.vault.getAbstractFileByPath(templatePath)
+    ? stateManager.app.vault.getAbstractFileByPath(templatePath)
     : null;
 
   if (templateFile && templateFile instanceof TFile) {
-    const activeView = view.app.workspace.activeLeaf.view;
+    const activeView = stateManager.app.workspace.activeLeaf.view;
     // Force the view to source mode, if needed
     if (
       activeView instanceof MarkdownView &&
-      activeView.getMode() !== "source"
+      activeView.getMode() !== 'source'
     ) {
       await activeView.setState(
         {
           ...activeView.getState(),
-          mode: "source",
+          mode: 'source',
         },
         {}
       );
@@ -217,14 +101,16 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
       templaterEnabled,
       templatesPlugin,
       templaterPlugin,
-    } = getTemplatePlugins(view.app);
+    } = getTemplatePlugins(stateManager.app);
 
-    const templateContent = await view.app.vault.read(templateFile);
+    const templateContent = await stateManager.app.vault.read(templateFile);
 
     // If both plugins are enabled, attempt to detect templater first
     if (templatesEnabled && templaterEnabled) {
       if (templaterDetectRegex.test(templateContent)) {
-        return await templaterPlugin.append_template(templateFile);
+        return await templaterPlugin.append_template_to_active_file(
+          templateFile
+        );
       }
 
       return await templatesPlugin.instance.insertTemplate(templateFile);
@@ -235,12 +121,12 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
     }
 
     if (templaterEnabled) {
-      return await templaterPlugin.append_template(templateFile);
+      return await templaterPlugin.append_template_to_active_file(templateFile);
     }
 
     // No template plugins enabled so we can just append the template to the doc
-    await view.app.vault.modify(
-      view.app.workspace.getActiveFile(),
+    await stateManager.app.vault.modify(
+      stateManager.app.workspace.getActiveFile(),
       templateContent
     );
   }
@@ -248,10 +134,10 @@ export async function applyTemplate(view: KanbanView, templatePath?: string) {
 
 export function getDefaultDateFormat(app: App) {
   const internalPlugins = (app as any).internalPlugins.plugins;
-  const dailyNotesEnabled = internalPlugins["daily-notes"]?.enabled;
+  const dailyNotesEnabled = internalPlugins['daily-notes']?.enabled;
   const dailyNotesValue =
-    internalPlugins["daily-notes"]?.instance.options.format;
-  const nlDatesValue = (app as any).plugins.plugins["nldates-obsidian"]
+    internalPlugins['daily-notes']?.instance.options.format;
+  const nlDatesValue = (app as any).plugins.plugins['nldates-obsidian']
     ?.settings.format;
   const templatesEnabled = internalPlugins.templates?.enabled;
   const templatesValue = internalPlugins.templates?.instance.options.dateFormat;
@@ -260,18 +146,18 @@ export function getDefaultDateFormat(app: App) {
     (dailyNotesEnabled && dailyNotesValue) ||
     nlDatesValue ||
     (templatesEnabled && templatesValue) ||
-    "YYYY-MM-DD"
+    'YYYY-MM-DD'
   );
 }
 
 export function getDefaultTimeFormat(app: App) {
   const internalPlugins = (app as any).internalPlugins.plugins;
-  const nlDatesValue = (app as any).plugins.plugins["nldates-obsidian"]
+  const nlDatesValue = (app as any).plugins.plugins['nldates-obsidian']
     ?.settings.timeFormat;
   const templatesEnabled = internalPlugins.templates?.enabled;
   const templatesValue = internalPlugins.templates?.instance.options.timeFormat;
 
-  return nlDatesValue || (templatesEnabled && templatesValue) || "HH:mm";
+  return nlDatesValue || (templatesEnabled && templatesValue) || 'HH:mm';
 }
 
 const reRegExChar = /[\\^$.*+?()[\]{}|]/g;
@@ -279,20 +165,20 @@ const reHasRegExChar = RegExp(reRegExChar.source);
 
 export function escapeRegExpStr(str: string) {
   return str && reHasRegExChar.test(str)
-    ? str.replace(reRegExChar, "\\$&")
-    : str || "";
+    ? str.replace(reRegExChar, '\\$&')
+    : str || '';
 }
 
 export function getTemplatePlugins(app: App) {
   const templatesPlugin = (app as any).internalPlugins.plugins.templates;
   const templatesEnabled = templatesPlugin.enabled;
-  const templaterPlugin = (app as any).plugins.plugins["templater-obsidian"];
+  const templaterPlugin = (app as any).plugins.plugins['templater-obsidian'];
   const templaterEnabled = (app as any).plugins.enabledPlugins.has(
-    "templater-obsidian"
+    'templater-obsidian'
   );
   const templaterEmptyFileTemplate =
     templaterPlugin &&
-    (this.app as any).plugins.plugins["templater-obsidian"].settings
+    (this.app as any).plugins.plugins['templater-obsidian'].settings
       ?.empty_file_template;
 
   const templateFolder = templatesEnabled

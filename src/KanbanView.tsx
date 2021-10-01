@@ -1,57 +1,183 @@
-import update from "immutability-helper";
-import React from "react";
+import update from 'immutability-helper';
 import {
   HoverParent,
   HoverPopover,
   Menu,
+  TFile,
   TextFileView,
   WorkspaceLeaf,
-  moment,
-  TFile,
-  MarkdownRenderer,
-} from "obsidian";
+} from 'obsidian';
+import React from 'react';
 
-import { KanbanParser } from "./parser";
-import { Kanban } from "./components/Kanban";
-import { DataBridge } from "./DataBridge";
-import { Board, Item } from "./components/types";
-import KanbanPlugin from "./main";
-import { KanbanSettings, SettingsModal } from "./Settings";
-import {
-  getDefaultDateFormat,
-  getDefaultTimeFormat,
-} from "./components/helpers";
-import { t } from "./lang/helpers";
+import { c } from './components/helpers';
+import { Kanban } from './components/Kanban';
+import { Board } from './components/types';
+import { Emitter, createEmitter } from './dnd/util/emitter';
+import { t } from './lang/helpers';
+import KanbanPlugin from './main';
+import { SettingsModal } from './Settings';
 
-export const kanbanViewType = "kanban";
-export const kanbanIcon = "blocks";
+export const kanbanViewType = 'kanban';
+export const kanbanIcon = 'blocks';
+
+interface ViewEvents {
+  showLaneForm: () => void;
+  hotkey: (commandId: string) => void;
+}
 
 export class KanbanView extends TextFileView implements HoverParent {
   plugin: KanbanPlugin;
-  parser: KanbanParser = new KanbanParser(this);
-
-  dataBridge: DataBridge<Board> = new DataBridge(null);
-  setBoard(board: Board) {
-    this.dataBridge.setExternal(board);
-  }
-  getBoard(): Board {
-    return this.dataBridge.getData();
-  }
-
-  errorBridge: DataBridge<ErrorHandlerState> = new DataBridge({
-    errorMessage: "",
-  });
-  setError(err?: Error) {
-    this.errorBridge.setExternal(
-      err ? ErrorHandler.getDerivedStateFromError(err) : { errorMessage: "" }
-    );
-  }
-  getError() {
-    return this.errorBridge.getData();
-  }
-
   hoverPopover: HoverPopover | null;
-  id: string = (this.leaf as any).id;
+  emitter: Emitter<ViewEvents>;
+  actionButtons: Record<string, HTMLElement> = {};
+
+  constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
+    super(leaf);
+    this.plugin = plugin;
+    this.emitter = createEmitter();
+  }
+
+  get isPrimary(): boolean {
+    return this.plugin.getStateManager(this.file).getAView() === this;
+  }
+
+  get id(): string {
+    return `${(this.leaf as any).id}:::${this.file?.path}`;
+  }
+
+  initHeaderButtons() {
+    const stateManager = this.plugin.getStateManager(this.file);
+
+    if (!stateManager) return;
+
+    if (
+      stateManager.getSetting('show-board-settings') &&
+      !this.actionButtons['show-board-settings']
+    ) {
+      this.actionButtons['show-board-settings'] = this.addAction(
+        'gear',
+        t('Open board settings'),
+        () => {
+          const stateManager = this.plugin.stateManagers.get(this.file);
+          const board = stateManager.state;
+
+          new SettingsModal(
+            this,
+            {
+              onSettingsChange: (settings) => {
+                const updatedBoard = update(board, {
+                  data: {
+                    settings: {
+                      $set: settings,
+                    },
+                  },
+                });
+
+                // Save to disk, compute text of new board
+                stateManager.setState(updatedBoard);
+              },
+            },
+            board.data.settings
+          ).open();
+        }
+      );
+    } else if (
+      !stateManager.getSetting('show-board-settings') &&
+      this.actionButtons['show-board-settings']
+    ) {
+      this.actionButtons['show-board-settings'].remove();
+      delete this.actionButtons['show-board-settings'];
+    }
+
+    if (
+      stateManager.getSetting('show-search') &&
+      !this.actionButtons['show-search']
+    ) {
+      this.actionButtons['show-search'] = this.addAction(
+        'search',
+        t('Search...'),
+        () => {
+          this.emitter.emit('hotkey', 'editor:open-search');
+        }
+      );
+    } else if (
+      !stateManager.getSetting('show-search') &&
+      this.actionButtons['show-search']
+    ) {
+      this.actionButtons['show-search'].remove();
+      delete this.actionButtons['show-search'];
+    }
+
+    if (
+      stateManager.getSetting('show-view-as-markdown') &&
+      !this.actionButtons['show-view-as-markdown']
+    ) {
+      this.actionButtons['show-view-as-markdown'] = this.addAction(
+        'document',
+        t('Open as markdown'),
+        () => {
+          this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] =
+            'markdown';
+          this.plugin.setMarkdownView(this.leaf);
+        }
+      );
+    } else if (
+      !stateManager.getSetting('show-view-as-markdown') &&
+      this.actionButtons['show-view-as-markdown']
+    ) {
+      this.actionButtons['show-view-as-markdown'].remove();
+      delete this.actionButtons['show-view-as-markdown'];
+    }
+
+    if (
+      stateManager.getSetting('show-archive-all') &&
+      !this.actionButtons['show-archive-all']
+    ) {
+      this.actionButtons['show-archive-all'] = this.addAction(
+        'sheets-in-box',
+        t('Archive completed cards'),
+        () => {
+          const stateManager = this.plugin.stateManagers.get(this.file);
+          stateManager.archiveCompletedCards();
+        }
+      );
+    } else if (
+      !stateManager.getSetting('show-archive-all') &&
+      this.actionButtons['show-archive-all']
+    ) {
+      this.actionButtons['show-archive-all'].remove();
+      delete this.actionButtons['show-archive-all'];
+    }
+
+    if (
+      stateManager.getSetting('show-add-list') &&
+      !this.actionButtons['show-add-list']
+    ) {
+      const btn = this.addAction('plus-with-circle', t('Add a list'), () => {
+        this.emitter.emit('showLaneForm', undefined);
+      });
+
+      btn.addClass(c('ignore-click-outside'));
+
+      this.actionButtons['show-add-list'] = btn;
+    } else if (
+      !stateManager.getSetting('show-add-list') &&
+      this.actionButtons['show-add-list']
+    ) {
+      this.actionButtons['show-add-list'].remove();
+      delete this.actionButtons['show-add-list'];
+    }
+  }
+
+  setBoard(board: Board, shouldSave: boolean = true) {
+    const stateManager = this.plugin.stateManagers.get(this.file);
+    stateManager.setState(board, shouldSave);
+  }
+
+  getBoard(): Board {
+    const stateManager = this.plugin.stateManagers.get(this.file);
+    return stateManager.state;
+  }
 
   getViewType() {
     return kanbanViewType;
@@ -62,89 +188,69 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   getDisplayText() {
-    return this.file?.basename || "Kanban";
-  }
-
-  constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
-    super(leaf);
-    this.plugin = plugin;
-    // When the board has been updated by react, update Obsidian
-    this.dataBridge.onInternalSet(this.requestUpdate);
+    return this.file?.basename || 'Kanban';
   }
 
   async onClose() {
     // Remove draggables from render, as the DOM has already detached
     this.plugin.removeView(this);
+
+    Object.values(this.actionButtons).forEach((b) => b.remove());
+    this.actionButtons = {};
   }
 
-  getSetting<K extends keyof KanbanSettings>(
-    key: K,
-    suppliedLocalSettings?: KanbanSettings
-  ): KanbanSettings[K] {
-    const localSetting = suppliedLocalSettings
-      ? suppliedLocalSettings[key]
-      : this.dataBridge.getData()?.settings[key];
+  async onLoadFile(file: TFile) {
+    try {
+      return await super.onLoadFile(file);
+    } catch (e) {
+      const stateManager = this.plugin.stateManagers.get(this.file);
 
-    if (localSetting !== undefined) return localSetting;
+      stateManager.setError(e);
 
-    const globalSetting = this.plugin?.settings[key];
-
-    if (globalSetting !== undefined) return globalSetting;
-
-    return null;
-  }
-
-  getGlobalSetting<K extends keyof KanbanSettings>(key: K): KanbanSettings[K] {
-    const globalSetting = this.plugin?.settings[key];
-
-    if (globalSetting !== undefined) return globalSetting;
-
-    return null;
-  }
-
-  onFileMetadataChange(file: TFile) {
-    // Invalidate the metadata caching and reparse the file if needed,
-    // recreating all items that referenced the changed file
-    if (this.parser.invalidateFile(file)) {
-      const board = this.getParsedBoard(this.data);
-      const oldBoard = this.getBoard();
-
-      let lanesChanged = false;
-
-      const newLanes = oldBoard.lanes.map((lane, laneIndex) => {
-        let match = false;
-
-        const newItems = lane.items.map((item, itemIndex) => {
-          if (item.metadata.file === file) {
-            lanesChanged = true;
-            match = true;
-            return board.lanes[laneIndex].items[itemIndex];
-          }
-
-          return item;
-        });
-
-        if (match) {
-          return update(lane, {
-            items: {
-              $set: newItems,
-            },
-          });
-        }
-
-        return lane;
-      });
-
-      if (lanesChanged) {
-        this.setBoard(
-          update(this.getBoard(), {
-            lanes: {
-              $set: newLanes,
-            },
-          })
-        );
-      }
+      throw e;
     }
+  }
+
+  async onUnloadFile(file: TFile) {
+    this.plugin.removeView(this);
+
+    Object.values(this.actionButtons).forEach((b) => b.remove());
+    this.actionButtons = {};
+
+    return await super.onUnloadFile(file);
+  }
+
+  handleRename(newPath: string, oldPath: string) {
+    if (this.file.path === newPath && this.isPrimary) {
+      this.plugin.handleViewFileRename(this, oldPath);
+    }
+  }
+
+  requestSaveToDisk(data: string) {
+    if (this.data !== data && this.isPrimary) {
+      this.data = data;
+      this.requestSave();
+    } else {
+      this.data = data;
+    }
+  }
+
+  getViewData() {
+    // In theory, we could unparse the board here.  In practice, the board can be
+    // in an error state, so we return the last good data here.  (In addition,
+    // unparsing is slow, and getViewData() can be called more often than the
+    // data actually changes.)
+    return this.data;
+  }
+
+  setViewData(data: string, clear?: boolean) {
+    this.plugin.addView(this, data, !clear && this.isPrimary);
+  }
+
+  getPortal() {
+    const stateManager = this.plugin.stateManagers.get(this.file);
+
+    return <Kanban stateManager={stateManager} view={this} />;
   }
 
   onMoreOptionsMenu(menu: Menu) {
@@ -152,45 +258,50 @@ export class KanbanView extends TextFileView implements HoverParent {
     menu
       .addItem((item) => {
         item
-          .setTitle(t("Open as markdown"))
-          .setIcon("document")
+          .setTitle(t('Open as markdown'))
+          .setIcon('document')
           .onClick(() => {
-            this.plugin.kanbanFileModes[this.id || this.file.path] = "markdown";
+            this.plugin.kanbanFileModes[
+              (this.leaf as any).id || this.file.path
+            ] = 'markdown';
             this.plugin.setMarkdownView(this.leaf);
           });
       })
       .addItem((item) => {
         item
-          .setTitle(t("Open board settings"))
-          .setIcon("gear")
+          .setTitle(t('Open board settings'))
+          .setIcon('gear')
           .onClick(() => {
-            const board = this.dataBridge.getData();
+            const stateManager = this.plugin.stateManagers.get(this.file);
+            const board = stateManager.state;
 
             new SettingsModal(
               this,
               {
                 onSettingsChange: (settings) => {
                   const updatedBoard = update(board, {
-                    settings: {
-                      $set: settings,
+                    data: {
+                      settings: {
+                        $set: settings,
+                      },
                     },
                   });
+
                   // Save to disk, compute text of new board
-                  this.requestUpdate(updatedBoard);
-                  // Take the text and parse it back in with the new settings
-                  this.setViewData(this.data);
+                  stateManager.setState(updatedBoard);
                 },
               },
-              board.settings
+              board.data.settings
             ).open();
           });
       })
       .addItem((item) => {
         item
-          .setTitle(t("Archive completed cards"))
-          .setIcon("sheets-in-box")
+          .setTitle(t('Archive completed cards'))
+          .setIcon('sheets-in-box')
           .onClick(() => {
-            this.archiveCompletedCards();
+            const stateManager = this.plugin.stateManagers.get(this.file);
+            stateManager.archiveCompletedCards();
           });
       })
       .addSeparator();
@@ -217,246 +328,5 @@ export class KanbanView extends TextFileView implements HoverParent {
       there's nothing to do in this method.  (We can't omit it, since it's
       abstract.)
     */
-  }
-
-  onload() {
-    super.onload();
-    this.registerEvent(
-      this.app.workspace.on("quick-preview", this.onQuickPreview, this)
-    );
-  }
-
-  onQuickPreview(file: TFile, data: string) {
-    // File was edited in another window (but not yet saved)
-    if (file === this.file && data !== this.data) {
-      this.data = data;
-      this.setViewData(data);
-    }
-  }
-
-  async onLoadFile(file: TFile) {
-    try {
-      return await super.onLoadFile(file);
-    } catch (e) {
-      // Update to display details of the problem
-      this.setBoard(null);
-      this.setError(e);
-      throw e;
-    }
-  }
-
-  requestUpdate = (data: Board) => {
-    if (data === null || this.getError().errorMessage) return; // don't save corrupt data
-    const newData = this.parser.boardToMd(data);
-    if (this.data !== newData) {
-      this.data = newData;
-      this.requestSave();
-      // Tell other boards and editors we've changed
-      this.app.workspace.trigger("quick-preview", this.file, this.data);
-    }
-  };
-
-  toggleSearch() {
-    this.dataBridge.setExternal(
-      update(this.dataBridge.data, {
-        $toggle: ["isSearching"],
-      })
-    );
-  }
-
-  getViewData() {
-    // In theory, we could unparse the board here.  In practice, the board can be
-    // in an error state, so we return the last good data here.  (In addition,
-    // unparsing is slow, and getViewData() can be called more often than the
-    // data actually changes.)
-    return this.data;
-  }
-
-  getParsedBoard(data: string) {
-    const trimmedContent = data.trim();
-    let board: Board = null;
-    try {
-      board = {
-        lanes: [],
-        archive: [],
-        settings: { "kanban-plugin": "basic" },
-        isSearching: false,
-      };
-      if (trimmedContent)
-        board = this.parser.mdToBoard(trimmedContent, this.file?.path);
-      this.setError();
-    } catch (e) {
-      console.error(e);
-      this.setError(e);
-      board = null;
-    }
-
-    return board;
-  }
-
-  setViewData(data: string) {
-    // Tell react we have a new board
-    this.setBoard(this.getParsedBoard(data));
-
-    // And make sure we're visible (no-op if we already are)
-    this.plugin.addView(this);
-  }
-
-  archiveCompletedCards() {
-    const archived: Item[] = [];
-    const board = this.dataBridge.data;
-    const shouldAppendArchiveDate = !!this.getSetting("prepend-archive-date");
-    const dateFmt =
-      this.getSetting("date-format") || getDefaultDateFormat(this.app);
-    const timeFmt =
-      this.getSetting("time-format") || getDefaultTimeFormat(this.app);
-    const archiveDateSeparator =
-      (this.getSetting("prepend-archive-separator") as string) || "";
-    const archiveDateFormat =
-      (this.getSetting("prepend-archive-format") as string) ||
-      `${dateFmt} ${timeFmt}`;
-
-    const appendArchiveDate = (item: Item) => {
-      const newTitle = [moment().format(archiveDateFormat)];
-
-      if (archiveDateSeparator) newTitle.push(archiveDateSeparator);
-
-      newTitle.push(item.titleRaw);
-
-      const titleRaw = newTitle.join(" ");
-      return this.parser.updateItem(item, titleRaw);
-    };
-
-    const lanes = board.lanes.map((lane) => {
-      return update(lane, {
-        items: {
-          $set: lane.items.filter((item) => {
-            if (item.data.isComplete) {
-              archived.push(
-                shouldAppendArchiveDate ? appendArchiveDate(item) : item
-              );
-            }
-
-            return !item.data.isComplete;
-          }),
-        },
-      });
-    });
-
-    this.app.workspace.trigger(
-      "kanban:board-cards-archived",
-      this.file,
-      archived
-    );
-
-    this.dataBridge.setExternal(
-      update(board, {
-        lanes: {
-          $set: lanes,
-        },
-        archive: {
-          $push: archived,
-        },
-      })
-    );
-  }
-
-  getPortal() {
-    return (
-      <ErrorHandler view={this} key={this.id}>
-        <Kanban dataBridge={this.dataBridge} view={this} />
-      </ErrorHandler>
-    );
-  }
-
-  renderMarkdown(markdownString: string): HTMLDivElement {
-    const tempEl = createDiv();
-    MarkdownRenderer.renderMarkdown(
-      markdownString,
-      tempEl,
-      this.file?.path,
-      this
-    );
-    tempEl.findAll(".internal-embed").forEach((el) => {
-      const src = el.getAttribute("src");
-      const target =
-        typeof src === "string" &&
-        this.app.metadataCache.getFirstLinkpathDest(src, this.file?.path);
-      if (target instanceof TFile && target.extension !== "md") {
-        el.innerText = "";
-        el.createEl(
-          "img",
-          { attr: { src: this.app.vault.getResourcePath(target) } },
-          (img) => {
-            if (el.hasAttribute("width"))
-              img.setAttribute("width", el.getAttribute("width"));
-            if (el.hasAttribute("alt"))
-              img.setAttribute("alt", el.getAttribute("alt"));
-          }
-        );
-        el.addClasses(["image-embed", "is-loaded"]);
-      }
-    });
-    return tempEl;
-  }
-}
-
-// Catch internal errors or display parsing errors
-
-interface ErrorHandlerState {
-  errorMessage: string;
-  stack?: string;
-}
-
-class ErrorHandler extends React.Component<{ view: KanbanView }> {
-  state: ErrorHandlerState;
-  remove?: () => void;
-
-  constructor(props: { view: KanbanView }) {
-    super(props);
-    this.state = this.props.view.errorBridge.getData();
-  }
-
-  stateSetter = (state: ErrorHandlerState) => this.setState(state);
-
-  componentWillMount() {
-    // Send error state outward; save unsubs function for unmount
-    this.remove = this.props.view.errorBridge.onExternalSet(this.stateSetter);
-  }
-
-  componentWillUnmount() {
-    // Unsubscribe from the databridge
-    this.remove?.();
-  }
-
-  static getDerivedStateFromError(error: Error): ErrorHandlerState {
-    // Update state so the next render will show the fallback UI.
-    return { errorMessage: error.toString(), stack: error.stack };
-  }
-
-  componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
-    console.error(errorInfo.componentStack, error);
-  }
-
-  render() {
-    const error = this.state.errorMessage;
-    const stack = this.state.stack;
-
-    if (error) {
-      return (
-        <div style={{ margin: "2em" }}>
-          <h1>{t("Something went wrong")}</h1>
-          <p>{error}</p>
-          <p>
-            {t(
-              "You may wish to open as markdown and inspect or edit the file."
-            )}
-          </p>
-          {stack && <pre>{stack}</pre>}
-        </div>
-      );
-    }
-
-    return this.props.children;
   }
 }

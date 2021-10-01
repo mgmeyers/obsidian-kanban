@@ -1,0 +1,29 @@
+site_name: Obsidian Kanban
+repo_url: https://github.com/mgmeyers/obsidian-kanban
+edit_uri: edit/main/src/docs/
+markdown_extensions:
+  - mdx_truly_sane_lists
+theme:
+  name: material
+  palette:
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      primary: white
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+nav:
+  - Overview: 'index.md'
+  - How do I: 'How do I/index.md'
+  - Settings: 'Settings/index.md'
+  - FAQs: 'FAQs/index.md'
+plugins:
+  - search

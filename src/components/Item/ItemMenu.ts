@@ -1,214 +1,270 @@
-import { getLinkpath, Menu, TFolder } from "obsidian";
-import React from "react";
+import { Menu, TFolder, getLinkpath } from 'obsidian';
+import React from 'react';
 
-import { Item } from "../types";
-import { applyTemplate, escapeRegExpStr } from "../helpers";
-import { defaultDateTrigger, defaultTimeTrigger } from "src/settingHelpers";
+import { Path } from 'src/dnd/types';
+import { t } from 'src/lang/helpers';
+import { StateManager } from 'src/StateManager';
+
+import { BoardModifiers } from '../../helpers/boardModifiers';
+import { applyTemplate, escapeRegExpStr } from '../helpers';
+import { Item } from '../types';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
   constructMenuTimePickerOnChange,
   constructTimePicker,
-} from "./helpers";
-import { t } from "src/lang/helpers";
-import { KanbanView } from "src/KanbanView";
-import { BoardModifiers } from "../helpers/boardModifiers";
+} from './helpers';
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
 
 interface UseItemMenuParams {
   setIsEditing: React.Dispatch<boolean>;
   item: Item;
-  laneIndex: number;
-  itemIndex: number;
+  path: Path;
   boardModifiers: BoardModifiers;
-  view: KanbanView;
+  stateManager: StateManager;
 }
 
 export function useItemMenu({
   setIsEditing,
   item,
-  laneIndex,
-  itemIndex,
+  path,
   boardModifiers,
-  view,
+  stateManager,
 }: UseItemMenuParams) {
   return React.useCallback(
     (e: MouseEvent, internalLinkPath?: string) => {
       if (internalLinkPath) {
-        // @ts-ignore
-        view.app.workspace.onLinkContextMenu(
+        (stateManager.app.workspace as any).onLinkContextMenu(
           e,
           getLinkpath(internalLinkPath),
-          view.file.path
+          stateManager.file.path
         );
       } else {
         const coordinates = { x: e.clientX, y: e.clientY };
-        const hasDate = !!item.metadata.date;
-        const hasTime = !!item.metadata.time;
+        const hasDate = !!item.data.metadata.date;
+        const hasTime = !!item.data.metadata.time;
 
-        const menu = new Menu(view.app).addItem((i) => {
-          i.setIcon("pencil")
-            .setTitle(t("Edit card"))
+        const menu = new Menu(stateManager.app).addItem((i) => {
+          i.setIcon('pencil')
+            .setTitle(t('Edit card'))
             .onClick(() => setIsEditing(true));
         });
 
         menu
           .addItem((i) => {
-            i.setIcon("create-new")
-              .setTitle(t("New note from card"))
+            i.setIcon('create-new')
+              .setTitle(t('New note from card'))
               .onClick(async () => {
-                const prevTitle = item.title;
-                const sanitizedTitle = item.title.replace(
+                const prevTitle = item.data.title;
+                const sanitizedTitle = item.data.title.replace(
                   illegalCharsRegEx,
-                  " "
+                  ' '
                 );
 
-                const newNoteFolder = view.getSetting("new-note-folder");
+                const newNoteFolder =
+                  stateManager.getSetting('new-note-folder');
                 const newNoteTemplatePath =
-                  view.getSetting("new-note-template");
+                  stateManager.getSetting('new-note-template');
 
                 const targetFolder = newNoteFolder
-                  ? (view.app.vault.getAbstractFileByPath(
+                  ? (stateManager.app.vault.getAbstractFileByPath(
                       newNoteFolder as string
                     ) as TFolder)
-                  : view.app.fileManager.getNewFileParent(view.file.path);
+                  : stateManager.app.fileManager.getNewFileParent(
+                      stateManager.file.path
+                    );
 
-                const newFile =
-                  // @ts-ignore
-                  await view.app.fileManager.createNewMarkdownFile(
-                    targetFolder,
-                    sanitizedTitle
-                  );
+                const newFile = await (
+                  stateManager.app.fileManager as any
+                ).createNewMarkdownFile(targetFolder, sanitizedTitle);
 
-                const newLeaf = view.app.workspace.splitActiveLeaf();
+                const newLeaf = stateManager.app.workspace.splitActiveLeaf();
 
                 await newLeaf.openFile(newFile);
 
-                view.app.workspace.setActiveLeaf(newLeaf, false, true);
+                stateManager.app.workspace.setActiveLeaf(newLeaf, false, true);
 
                 await applyTemplate(
-                  view,
+                  stateManager,
                   newNoteTemplatePath as string | undefined
                 );
 
-                const newTitleRaw = item.titleRaw.replace(
+                const newTitleRaw = item.data.titleRaw.replace(
                   prevTitle,
-                  `[[${sanitizedTitle}]]`
+                  stateManager.app.fileManager.generateMarkdownLink(
+                    newFile,
+                    stateManager.file.path
+                  )
                 );
 
-                boardModifiers.updateItem(
-                  laneIndex,
-                  itemIndex,
-                  view.parser.updateItem(item, newTitleRaw)
-                );
+                stateManager.parser
+                  .updateItem(item, newTitleRaw)
+                  .then((item) => {
+                    boardModifiers.updateItem(path, item);
+                  })
+                  .catch((e) => console.error(e));
               });
           })
+          .addItem((i) => {
+            i.setIcon('links-coming-in')
+              .setTitle(t('Copy link to card'))
+              .onClick(() => {
+                if (item.data.blockId) {
+                  navigator.clipboard.writeText(
+                    `${this.app.fileManager.generateMarkdownLink(
+                      stateManager.file,
+                      '',
+                      '#^' + item.data.blockId
+                    )}`
+                  );
+                } else {
+                  const id = Math.random().toString(36).substr(2, 6);
+
+                  navigator.clipboard.writeText(
+                    `${this.app.fileManager.generateMarkdownLink(
+                      stateManager.file,
+                      '',
+                      '#^' + id
+                    )}`
+                  );
+
+                  stateManager.parser
+                    .updateItem(item, `${item.data.titleRaw} ^${id}`)
+                    .then((item) => {
+                      boardModifiers.updateItem(path, item);
+                    })
+                    .catch((e) => console.error(e));
+                }
+              });
+          })
+          .addSeparator();
+
+        if (/\n/.test(item.data.titleRaw)) {
+          menu.addItem((i) => {
+            i.setIcon('split')
+              .setTitle(t('Split card'))
+              .onClick(async () => {
+                const titles = item.data.titleRaw
+                  .split(/[\r\n]+/g)
+                  .map((t) => t.trim());
+                const newItems = await Promise.all(
+                  titles.map(async (title) => {
+                    return await stateManager.parser.newItem(title);
+                  })
+                );
+
+                boardModifiers.splitItem(path, newItems);
+              });
+          });
+        }
+
+        menu
+          .addItem((i) => {
+            i.setIcon('documents')
+              .setTitle(t('Duplicate card'))
+              .onClick(() => boardModifiers.duplicateEntity(path));
+          })
+          .addItem((i) => {
+            i.setIcon('sheets-in-box')
+              .setTitle(t('Archive card'))
+              .onClick(() => boardModifiers.archiveItem(path));
+          })
+          .addItem((i) => {
+            i.setIcon('trash')
+              .setTitle(t('Delete card'))
+              .onClick(() => boardModifiers.deleteEntity(path));
+          })
           .addSeparator()
           .addItem((i) => {
-            i.setIcon("documents")
-              .setTitle(t("Duplicate card"))
-              .onClick(() =>
-                boardModifiers.duplicateItem(laneIndex, itemIndex)
-              );
-          })
-          .addItem((i) => {
-            i.setIcon("sheets-in-box")
-              .setTitle(t("Archive card"))
-              .onClick(() =>
-                boardModifiers.archiveItem(laneIndex, itemIndex, item)
-              );
-          })
-          .addItem((i) => {
-            i.setIcon("trash")
-              .setTitle(t("Delete card"))
-              .onClick(() => boardModifiers.deleteItem(laneIndex, itemIndex));
-          })
-          .addSeparator()
-          .addItem((i) => {
-            i.setIcon("calendar-with-checkmark")
-              .setTitle(hasDate ? t("Edit date") : t("Add date"))
+            i.setIcon('calendar-with-checkmark')
+              .setTitle(hasDate ? t('Edit date') : t('Add date'))
               .onClick(() => {
                 constructDatePicker(
+                  stateManager,
                   coordinates,
                   constructMenuDatePickerOnChange({
-                    view,
+                    stateManager,
                     boardModifiers,
                     item,
                     hasDate,
-                    laneIndex,
-                    itemIndex,
+                    path,
                   }),
-                  item.metadata.date?.toDate()
+                  item.data.metadata.date?.toDate()
                 );
               });
           });
 
         if (hasDate) {
           menu.addItem((i) => {
-            i.setIcon("cross")
-              .setTitle(t("Remove date"))
+            i.setIcon('cross')
+              .setTitle(t('Remove date'))
               .onClick(() => {
-                const shouldLinkDates = view.getSetting(
-                  "link-date-to-daily-note"
+                const shouldLinkDates = stateManager.getSetting(
+                  'link-date-to-daily-note'
                 );
-                const dateTrigger =
-                  view.getSetting("date-trigger") || defaultDateTrigger;
+                const dateTrigger = stateManager.getSetting('date-trigger');
                 const contentMatch = shouldLinkDates
-                  ? "\\[\\[[^}]+\\]\\]"
-                  : "{[^}]+}";
+                  ? '(?:\\[[^\\]]+\\]\\([^\\)]+\\)|\\[\\[[^\\]]+\\]\\])'
+                  : '{[^}]+}';
                 const dateRegEx = new RegExp(
                   `(^|\\s)${escapeRegExpStr(
                     dateTrigger as string
                   )}${contentMatch}`
                 );
 
-                const titleRaw = item.titleRaw.replace(dateRegEx, "").trim();
-                boardModifiers.updateItem(
-                  laneIndex,
-                  itemIndex,
-                  view.parser.updateItem(item, titleRaw)
-                );
+                const titleRaw = item.data.titleRaw
+                  .replace(dateRegEx, '')
+                  .trim();
+
+                stateManager.parser
+                  .updateItem(item, titleRaw)
+                  .then((item) => {
+                    boardModifiers.updateItem(path, item);
+                  })
+                  .catch((e) => console.error(e));
               });
           });
 
           menu.addItem((i) => {
-            i.setIcon("clock")
-              .setTitle(hasTime ? t("Edit time") : t("Add time"))
+            i.setIcon('clock')
+              .setTitle(hasTime ? t('Edit time') : t('Add time'))
               .onClick(() => {
                 constructTimePicker(
-                  view,
+                  stateManager,
                   coordinates,
                   constructMenuTimePickerOnChange({
-                    view,
+                    stateManager,
                     boardModifiers,
                     item,
                     hasTime,
-                    laneIndex,
-                    itemIndex,
+                    path,
                   }),
-                  item.metadata.time
+                  item.data.metadata.time
                 );
               });
           });
 
           if (hasTime) {
             menu.addItem((i) => {
-              i.setIcon("cross")
-                .setTitle(t("Remove time"))
+              i.setIcon('cross')
+                .setTitle(t('Remove time'))
                 .onClick(() => {
-                  const timeTrigger =
-                    view.getSetting("time-trigger") || defaultTimeTrigger;
+                  const timeTrigger = stateManager.getSetting('time-trigger');
                   const timeRegEx = new RegExp(
                     `(^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
                   );
 
-                  const titleRaw = item.titleRaw.replace(timeRegEx, "").trim();
-                  boardModifiers.updateItem(
-                    laneIndex,
-                    itemIndex,
-                    view.parser.updateItem(item, titleRaw)
-                  );
+                  const titleRaw = item.data.titleRaw
+                    .replace(timeRegEx, '')
+                    .trim();
+
+                  stateManager.parser
+                    .updateItem(item, titleRaw)
+                    .then((item) => {
+                      boardModifiers.updateItem(path, item);
+                    })
+                    .catch((e) => console.error(e));
                 });
             });
           }
@@ -217,6 +273,6 @@ export function useItemMenu({
         menu.showAtPosition(coordinates);
       }
     },
-    [setIsEditing, item, laneIndex, itemIndex, boardModifiers, view]
+    [setIsEditing, item, path, boardModifiers, stateManager]
   );
 }

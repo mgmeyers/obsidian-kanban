@@ -1,0 +1,46 @@
+name: Bug Report
+description: File a bug report
+labels: ['bug']
+title: '[Bug]: '
+body:
+  - type: markdown
+    attributes:
+      value: '**Please make sure you are on the latest version.**'
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Describe the bug
+      description: What's happening and when does it happen?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What SHOULD happen?
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: The more detail you provide, the easier it will be to narrow down and fix the bug
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant errors (if available)
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks. Open Obsidian's Developer Console by pressing CTRL + SHIFT + I or Command + Option + I in MacOS
+      render: shell
+  - type: dropdown
+    id: version
+    attributes:
+      label: Operating system
+      description: Which OS are you using?
+      options:
+        - Windows
+        - Linux
+        - macOS
+        - iOS
+        - Android
+    validations:
+      required: true

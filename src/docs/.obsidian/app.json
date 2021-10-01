@@ -1,0 +1,10 @@
+{
+  "attachmentFolderPath": "Assets",
+  "useMarkdownLinks": false,
+  "alwaysUpdateLinks": true,
+  "promptDelete": false,
+  "spellcheckDictionary": [
+    "frontmatter",
+    "Frontmatter"
+  ]
+}

@@ -1,158 +1,191 @@
-import update from "immutability-helper";
-import React from "react";
-import {
-  Droppable,
-  DroppableProvided,
-  Draggable,
-  DraggableProvided,
-  DraggableStateSnapshot,
-  DraggableRubric,
-  DroppableStateSnapshot,
-} from "react-beautiful-dnd";
-import { Item, Lane } from "../types";
-import { c } from "../helpers";
-import { DraggableItem, GhostItem } from "../Item/Item";
-import { ItemForm } from "../Item/ItemForm";
-import { LaneHeader } from "./LaneHeader";
-import { KanbanContext } from "../context";
+import animateScrollTo from 'animated-scroll-to';
+import classcat from 'classcat';
+import update from 'immutability-helper';
+import React from 'react';
+
+import { Droppable, useNestedEntityPath } from 'src/dnd/components/Droppable';
+import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
+import { Sortable } from 'src/dnd/components/Sortable';
+import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
+import { useDragHandle } from 'src/dnd/managers/DragManager';
+
+import { KanbanContext } from '../context';
+import { c } from '../helpers';
+import { Items } from '../Item/Item';
+import { ItemForm } from '../Item/ItemForm';
+import { DataTypes, Item, Lane } from '../types';
+import { LaneHeader } from './LaneHeader';
+
+const laneAccepts = [DataTypes.Item];
 
 export interface DraggableLaneProps {
   lane: Lane;
   laneIndex: number;
-  isGhost?: boolean;
-  provided: DraggableProvided;
-  snapshot: DraggableStateSnapshot;
+  isStatic?: boolean;
 }
 
-interface LaneItemsProps {
-  isGhost?: boolean;
-  items: Item[];
-  laneId: string;
-  laneIndex: number;
-  shouldMarkItemsComplete: boolean;
-}
-
-function LaneItems({
-  isGhost,
-  items,
-  laneId,
+export const DraggableLane = React.memo(function DraggableLane({
+  isStatic,
+  lane,
   laneIndex,
-  shouldMarkItemsComplete,
-}: LaneItemsProps) {
+}: DraggableLaneProps) {
+  const { stateManager, boardModifiers } = React.useContext(KanbanContext);
+  const [isItemInputVisible, setIsItemInputVisible] = React.useState(false);
 
-  const renderItem = React.useCallback((
-    provided: DraggableProvided,
-    snapshot: DraggableStateSnapshot,
-    rubric: DraggableRubric
-  ) => (
-    <DraggableItem
-      item={items[rubric.source.index]}
-      itemIndex={rubric.source.index}
-      laneIndex={laneIndex}
-      shouldMarkItemsComplete={shouldMarkItemsComplete}
-      provided={provided} snapshot={snapshot}
-    />
-  ), [laneIndex, items, shouldMarkItemsComplete]);
+  const path = useNestedEntityPath(laneIndex);
+  const laneWidth = stateManager.useSetting('lane-width');
+  const insertionMethod = stateManager.useSetting('new-card-insertion-method');
+  const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
 
-  if (isGhost) {
-    return (
-      <div className={c("lane-items")}>
-        {items.map((item, i) => {
-          return (
-            <GhostItem
-              item={item}
-              key={item.id}
-              shouldMarkItemsComplete={shouldMarkItemsComplete}
-            />
-          );
-        })}
-      </div>
+  const laneStyles = laneWidth ? { width: `${laneWidth}px` } : undefined;
+
+  const elementRef = React.useRef<HTMLDivElement>(null);
+  const measureRef = React.useRef<HTMLDivElement>(null);
+  const dragHandleRef = React.useRef<HTMLDivElement>(null);
+  const [isSorting, setIsSorting] = React.useState(false);
+
+  const isCompactPrepend = insertionMethod === 'prepend-compact';
+  const shouldPrepend = isCompactPrepend || insertionMethod === 'prepend';
+
+  useDragHandle(measureRef, dragHandleRef);
+
+  const addItems = (items: Item[]) => {
+    boardModifiers[shouldPrepend ? 'prependItems' : 'appendItems'](
+      [...path, lane.children.length - 1],
+      items.map((item) =>
+        update(item, {
+          data: {
+            isComplete: {
+              // Mark the item complete if we're moving into a completed lane
+              $set: shouldMarkItemsComplete,
+            },
+          },
+        })
+      )
     );
-  }
+
+    // TODO: can we find a less brute force way to do this?
+    setTimeout(() => {
+      const laneItems = elementRef.current?.getElementsByClassName(
+        c('lane-items')
+      );
+
+      if (laneItems.length) {
+        animateScrollTo([0, shouldPrepend ? 0 : laneItems[0].scrollHeight], {
+          elementToScroll: laneItems[0],
+          speed: 200,
+          minDuration: 150,
+          easing: (x: number) => {
+            return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+          },
+        });
+      }
+    });
+  };
+
+  const laneContent = (
+    <>
+      <Items
+        items={lane.children}
+        isStatic={isStatic}
+        shouldMarkItemsComplete={shouldMarkItemsComplete}
+      />
+      <SortPlaceholder
+        accepts={laneAccepts}
+        index={lane.children.length}
+        isStatic={isStatic}
+      />
+    </>
+  );
+
+  const laneBody = (
+    <ScrollContainer
+      id={lane.id}
+      index={laneIndex}
+      className={classcat([c('lane-items'), c('vertical')])}
+      triggerTypes={laneAccepts}
+      isStatic={isStatic}
+    >
+      {isStatic ? (
+        laneContent
+      ) : (
+        <Sortable onSortChange={setIsSorting} axis="vertical">
+          {laneContent}
+        </Sortable>
+      )}
+    </ScrollContainer>
+  );
 
   return (
-    <Droppable droppableId={laneId} type="ITEM" renderClone={renderItem}>
-      {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
-        <div
-          className={`${c("lane-items")} ${
-            snapshot.isDraggingOver ? "is-dragging-over" : ""
-          }`}
-          ref={provided.innerRef}
-          {...provided.droppableProps}
-        >
-          {items.map((item, i) => {
-            return (
-              <Draggable draggableId={item.id} key={item.id} index={i}>
-                {renderItem}
-              </Draggable>
-            );
-          })}
-          {provided.placeholder}
-        </div>
-      )}
-    </Droppable>
-  );
-}
-
-export class DraggableLane extends React.PureComponent<DraggableLaneProps>{
-
-  static contextType = KanbanContext;
-
-  render() {
-    const {lane, laneIndex, isGhost, provided, snapshot} = this.props;
-    const { view, boardModifiers } = this.context;
-    const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
-    const laneWidth = view.getSetting("lane-width");
-
-    const settingStyles = laneWidth ? { width: `${laneWidth}px` } : undefined;
-    const style = {
-      ...provided.draggableProps.style,
-      ...settingStyles,
-    };
-
-    const classList = [c("lane")];
-
-    if (snapshot.isDragging) {
-      classList.push("is-dragging");
-    }
-
-    return (
+    <div
+      ref={measureRef}
+      className={classcat([
+        c('lane-wrapper'),
+        {
+          'is-sorting': isSorting,
+        },
+      ])}
+      style={laneStyles}
+    >
       <div
-        className={classList.join(" ")}
-        ref={provided.innerRef}
-        {...provided.draggableProps}
-        style={style}
+        data-count={lane.children.length}
+        ref={elementRef}
+        className={classcat([c('lane'), { 'will-prepend': shouldPrepend }])}
       >
         <LaneHeader
-          dragHandleProps={provided.dragHandleProps}
+          dragHandleRef={dragHandleRef}
           laneIndex={laneIndex}
           lane={lane}
+          setIsItemInputVisible={
+            isCompactPrepend ? setIsItemInputVisible : undefined
+          }
         />
-        <LaneItems
-          laneId={lane.id}
-          items={lane.items}
-          laneIndex={laneIndex}
-          isGhost={isGhost}
-          shouldMarkItemsComplete={shouldMarkItemsComplete}
-        />
-        <ItemForm
-          addItems={(items: Item[]) => {
-            boardModifiers.addItemsToLane(
-              laneIndex,
-              items.map((item) =>
-                update(item, {
-                  data: {
-                    isComplete: {
-                      // Mark the item complete if we're moving into a completed lane
-                      $set: !!lane.data.shouldMarkItemsComplete,
-                    },
-                  },
-                })
-              )
-            );
-          }}
-        />
+
+        {shouldPrepend && (
+          <ItemForm
+            addItems={addItems}
+            hideButton={isCompactPrepend}
+            isInputVisible={isItemInputVisible}
+            setIsInputVisible={setIsItemInputVisible}
+          />
+        )}
+
+        {isStatic ? (
+          laneBody
+        ) : (
+          <Droppable
+            elementRef={elementRef}
+            measureRef={measureRef}
+            id={lane.id}
+            index={laneIndex}
+            data={lane}
+          >
+            {laneBody}
+          </Droppable>
+        )}
+
+        {!shouldPrepend && (
+          <ItemForm
+            addItems={addItems}
+            isInputVisible={isItemInputVisible}
+            setIsInputVisible={setIsItemInputVisible}
+          />
+        )}
       </div>
-    );
-  }
+    </div>
+  );
+});
+
+export interface Lanes {
+  lanes: Lane[];
 }
+
+export const Lanes = React.memo(function Lanes({ lanes }: Lanes) {
+  return (
+    <>
+      {lanes.map((lane, i) => {
+        return <DraggableLane lane={lane} laneIndex={i} key={lane.id} />;
+      })}
+    </>
+  );
+});

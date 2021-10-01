@@ -10,3 +10,4 @@ package-lock.json
 .DS_Store
 *.js.map
 .env
+yarn*

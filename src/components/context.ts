@@ -1,11 +1,15 @@
-import React from "react";
-import { KanbanView } from "src/KanbanView";
-import { BoardModifiers } from "./types";
+import React from 'react';
+
+import { KanbanView } from 'src/KanbanView';
+import { StateManager } from 'src/StateManager';
+
+import { BoardModifiers } from '../helpers/boardModifiers';
 
 export interface KanbanContextProps {
   filePath?: string;
-  view?: KanbanView;
-  boardModifiers:  BoardModifiers;
+  stateManager: StateManager;
+  boardModifiers: BoardModifiers;
+  view: KanbanView;
 }
 
 export const KanbanContext = React.createContext<KanbanContextProps>(null);
