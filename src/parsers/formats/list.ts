@@ -20,8 +20,9 @@ import { StateManager } from 'src/StateManager';
 
 import {
   archiveString,
+  basicFrontmatter,
   completeString,
-  settingsToFrontmatter,
+  settingsToCodeblock,
 } from '../common';
 import { DateNode, FileNode, TimeNode, ValueNode } from '../extensions/types';
 import {
@@ -303,8 +304,17 @@ export async function newItem(
   return newItem;
 }
 
-export async function reparseBoard(stateManager: StateManager, board: Board) {
+export async function reparseBoard(
+  stateManager: StateManager,
+  board: Board,
+  settings: KanbanSettings
+) {
   return update(board, {
+    data: {
+      settings: {
+        $set: settings,
+      },
+    },
     children: {
       $set: await Promise.all(
         board.children.map(async (lane) => {
@@ -375,8 +385,9 @@ export function boardToMd(board: Board) {
   }, '');
 
   return (
-    settingsToFrontmatter(board.data.settings) +
+    basicFrontmatter +
     lanes +
-    archiveToMd(board.data.archive)
+    archiveToMd(board.data.archive) +
+    settingsToCodeblock(board.data.settings)
   );
 }

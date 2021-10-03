@@ -62,7 +62,6 @@
     "immutable-json-patch": "^1.1.2",
     "insert-text-at-cursor": "^0.3.0",
     "is-plain-object": "^5.0.0",
-    "js-yaml": "^4.1.0",
     "mark.js": "^8.11.1",
     "mdast": "^3.0.0",
     "mdast-util-from-markdown": "^1.0.2",

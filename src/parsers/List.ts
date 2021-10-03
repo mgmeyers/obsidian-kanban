@@ -2,6 +2,7 @@ import { compare } from 'fast-json-patch';
 import { JSONPatchDocument, immutableJSONPatch } from 'immutable-json-patch';
 
 import { Board, Item } from 'src/components/types';
+import { KanbanSettings } from 'src/Settings';
 import { StateManager } from 'src/StateManager';
 
 import { BaseFormat } from './common';
@@ -58,7 +59,11 @@ export class ListFormat implements BaseFormat {
     return hydrateBoard(this.stateManager, newBoard);
   }
 
-  reparseBoard() {
-    return reparseBoard(this.stateManager, this.stateManager.state);
+  reparseBoard(settings?: KanbanSettings) {
+    return reparseBoard(
+      this.stateManager,
+      this.stateManager.state,
+      settings ? settings : this.stateManager.state.data.settings
+    );
   }
 }

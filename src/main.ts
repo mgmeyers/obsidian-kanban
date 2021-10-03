@@ -20,19 +20,9 @@ import ReactDOM from 'react-dom';
 import { createApp } from './DragDropApp';
 import { KanbanView, kanbanIcon, kanbanViewType } from './KanbanView';
 import { t } from './lang/helpers';
-import { frontMatterKey } from './parsers/common';
+import { basicFrontmatter, frontMatterKey } from './parsers/common';
 import { KanbanSettings, KanbanSettingsTab } from './Settings';
 import { StateManager } from './StateManager';
-
-const basicFrontmatter = [
-  '---',
-  '',
-  `${frontMatterKey}: basic`,
-  '',
-  '---',
-  '',
-  '',
-].join('\n');
 
 export default class KanbanPlugin extends Plugin {
   settingsTab: KanbanSettingsTab;

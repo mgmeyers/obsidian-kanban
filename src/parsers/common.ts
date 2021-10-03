@@ -1,4 +1,3 @@
-import yaml from 'js-yaml';
 import { App, TFile } from 'obsidian';
 
 import { Board, FileMetadata, Item } from 'src/components/types';
@@ -17,14 +16,29 @@ export interface BaseFormat {
   updateItemContent(item: Item, content: string): Promise<Item>;
   boardToMd(board: Board): string;
   mdToBoard(md: string): Promise<Board>;
-  reparseBoard(): Promise<Board>;
+  reparseBoard(settings?: KanbanSettings): Promise<Board>;
 }
 
 export const completeString = `**${t('Complete')}**`;
 export const archiveString = '***';
+export const basicFrontmatter = [
+  '---',
+  '',
+  `${frontMatterKey}: basic`,
+  '',
+  '---',
+  '',
+  '',
+].join('\n');
 
-export function settingsToFrontmatter(settings: KanbanSettings): string {
-  return ['---', '', yaml.dump(settings), '---', '', ''].join('\n');
+export function settingsToCodeblock(settings: KanbanSettings): string {
+  return [
+    '%% kanban:settings',
+    '```',
+    JSON.stringify(settings),
+    '```',
+    '%%',
+  ].join('\n');
 }
 
 export function getSearchValue(

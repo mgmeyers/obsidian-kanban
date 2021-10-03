@@ -155,13 +155,12 @@ export class StateManager {
       newSettings &&
       shouldRefreshBoard(oldSettings, newSettings)
     ) {
-      this.compileSettings(newState.data.settings);
-      this.state = await this.parser.reparseBoard();
+      this.state = await this.parser.reparseBoard(newSettings);
     } else {
       this.state = newState;
-      this.compileSettings();
     }
 
+    this.compileSettings();
     this.views.forEach((view) => view.initHeaderButtons());
 
     if (shouldSave) {
