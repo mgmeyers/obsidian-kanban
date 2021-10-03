@@ -52,7 +52,7 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
         const parseItems = async (titles: string[]) => {
           return await Promise.all(
             titles.map(async (title) => {
-              return await stateManager.parser.newItem(title);
+              return await stateManager.getNewItem(title);
             })
           );
         };

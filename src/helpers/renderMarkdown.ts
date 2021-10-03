@@ -27,10 +27,12 @@ export function getNormalizedPath(path: string): NormalizedPath {
   const splitOnHash = stripped.split('#');
 
   if (splitOnHash.length === 1) {
+    const splitOnAlias = splitOnHash[0].split('|');
+
     return {
-      root: splitOnHash[0],
+      root: splitOnAlias[0],
       subpath: '',
-      alias: '',
+      alias: splitOnAlias[1] || '',
     };
   }
 
@@ -244,7 +246,7 @@ function pollForCachedSubpath(
 
       if (!string.startsWith(t('Unable to find'))) {
         view.plugin.stateManagers.forEach((manager) => {
-          manager.onFileMetadataChange(file);
+          manager.onFileMetadataChange();
         });
       } else if (remainingCount > 0) {
         pollForCachedSubpath(file, normalizedPath, view, --remainingCount);

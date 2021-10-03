@@ -1,43 +1,27 @@
 import yaml from 'js-yaml';
-import { App, TFile, moment } from 'obsidian';
+import { App, TFile } from 'obsidian';
 
-import { escapeRegExpStr } from 'src/components/helpers';
-import { FileMetadata } from 'src/components/types';
-import { getNormalizedPath } from 'src/helpers/renderMarkdown';
+import { Board, FileMetadata, Item } from 'src/components/types';
 import { t } from 'src/lang/helpers';
 import { KanbanSettings } from 'src/Settings';
+import { StateManager } from 'src/StateManager';
 
 export const frontMatterKey = 'kanban-plugin';
 
-export type ParserSettings = {
-  dateFormat: KanbanSettings['date-format'];
-  timeFormat: KanbanSettings['time-format'];
-  dateTrigger: KanbanSettings['date-trigger'];
-  timeTrigger: KanbanSettings['time-trigger'];
-  shouldLinkDate: KanbanSettings['link-date-to-daily-note'];
-  shouldHideDate: KanbanSettings['hide-date-in-title'];
-  shouldHideTags: KanbanSettings['hide-tags-in-title'];
-  metaKeys: KanbanSettings['metadata-keys'];
-  dateRegEx: RegExp;
-  timeRegEx: RegExp;
-};
-
 export enum ParserFormats {
-  Basic,
+  List,
 }
 
-export const newLineRegex = /[\r\n]+/g;
-export const anyHeadingRegex = /^#+\s+(.*)$/;
+export interface BaseFormat {
+  newItem(content: string, isComplete?: boolean): Promise<Item>;
+  updateItemContent(item: Item, content: string): Promise<Item>;
+  boardToMd(board: Board): string;
+  mdToBoard(md: string): Promise<Board>;
+  reparseBoard(): Promise<Board>;
+}
+
 export const completeString = `**${t('Complete')}**`;
-export const completeRegex = new RegExp(
-  `^${escapeRegExpStr(completeString)}$`,
-  'i'
-);
 export const archiveString = '***';
-export const archiveMarkerRegex = /^\*\*\*$/;
-export const tagRegex = /(^|\s)(#[^#\s]+)/g;
-export const linkRegex = /(?:\[\[([^|\]]+)(?:\||\]\])|\[([^\]]+)\]\(([^)]+)\))/;
-export const blockIdRegex = /\s+\^([^\s]+)$/;
 
 export function settingsToFrontmatter(settings: KanbanSettings): string {
   return ['---', '', yaml.dump(settings), '---', '', ''].join('\n');
@@ -72,105 +56,6 @@ export function getSearchValue(
   return searchValue.toLocaleLowerCase();
 }
 
-export function extractItemTags(content: string, settings: ParserSettings) {
-  const tags: string[] = [];
-
-  let processedContent = content;
-  let match = tagRegex.exec(content);
-
-  while (match != null) {
-    tags.push(match[2]);
-    match = tagRegex.exec(content);
-  }
-
-  if (settings.shouldHideTags) {
-    processedContent = processedContent.replace(tagRegex, '$1');
-  }
-
-  return {
-    processed: processedContent,
-    tags,
-  };
-}
-
-export function extractItemBlockId(content: string) {
-  let id: string | null = null;
-  let processedContent = content;
-  const match = content.match(blockIdRegex);
-
-  if (match) {
-    id = match[1];
-    processedContent = processedContent.replace(blockIdRegex, '');
-  }
-
-  return {
-    processed: processedContent,
-    id,
-  };
-}
-
-export function extractDates(content: string, settings: ParserSettings) {
-  let date: undefined | moment.Moment = undefined;
-  let time: undefined | moment.Moment = undefined;
-  let processedContent = content;
-
-  const dateMatch = settings.dateRegEx.exec(content);
-  const timeMatch = settings.timeRegEx.exec(content);
-
-  if (dateMatch) {
-    date = moment(dateMatch[1] || dateMatch[2], settings.dateFormat as string);
-  }
-
-  if (timeMatch) {
-    time = moment(timeMatch[1], settings.timeFormat as string);
-
-    if (date) {
-      date.hour(time.hour());
-      date.minute(time.minute());
-
-      time = date.clone();
-    }
-  }
-
-  if (settings.shouldHideDate) {
-    processedContent = processedContent
-      .replace(settings.dateRegEx, '')
-      .replace(settings.timeRegEx, '');
-  }
-
-  return {
-    date,
-    time,
-    processed: processedContent,
-  };
-}
-
-export function extractFirstLinkedFile(
-  app: App,
-  sourceFile: TFile,
-  content: string
-) {
-  const match = content.match(linkRegex);
-
-  if (!match) {
-    return null;
-  }
-
-  const path = getNormalizedPath(
-    match[2] ? decodeURIComponent(match[2]) : match[1]
-  );
-  const file = app.metadataCache.getFirstLinkpathDest(
-    path.root,
-    sourceFile.path
-  );
-
-  if (!file) {
-    return null;
-  }
-
-  return file;
-}
-
 export function getDataViewCache(
   app: App,
   linkedFile: TFile,
@@ -188,12 +73,12 @@ export function getDataViewCache(
 }
 
 export function getLinkedPageMetadata(
-  linkedFile: TFile | null | undefined,
-  sourceFile: TFile,
-  settings: ParserSettings,
-  app: App
+  stateManager: StateManager,
+  linkedFile: TFile | null | undefined
 ): FileMetadata | undefined {
-  if (!settings.metaKeys.length) {
+  const metaKeys = stateManager.getSetting('metadata-keys');
+
+  if (!metaKeys.length) {
     return;
   }
 
@@ -201,8 +86,12 @@ export function getLinkedPageMetadata(
     return;
   }
 
-  const cache = app.metadataCache.getFileCache(linkedFile);
-  const dataviewCache = getDataViewCache(app, linkedFile, sourceFile);
+  const cache = stateManager.app.metadataCache.getFileCache(linkedFile);
+  const dataviewCache = getDataViewCache(
+    stateManager.app,
+    linkedFile,
+    stateManager.file
+  );
 
   if (!cache && !dataviewCache) {
     return;
@@ -214,7 +103,7 @@ export function getLinkedPageMetadata(
 
   let haveData = false;
 
-  settings.metaKeys.forEach((k) => {
+  metaKeys.forEach((k) => {
     if (seenKey[k.metadataKey]) return;
 
     seenKey[k.metadataKey] = true;
@@ -265,4 +154,28 @@ export function getLinkedPageMetadata(
   });
 
   return haveData ? metadata : undefined;
+}
+
+export function shouldRefreshBoard(
+  oldSettings: KanbanSettings,
+  newSettings: KanbanSettings
+) {
+  if (!oldSettings && newSettings) {
+    return true;
+  }
+
+  const toCompare: Array<keyof KanbanSettings> = [
+    'metadata-keys',
+    'date-trigger',
+    'time-trigger',
+    'link-date-to-daily-note',
+    'date-format',
+    'time-format',
+    'hide-date-in-title',
+    'hide-tags-in-title',
+  ];
+
+  return !toCompare.every((k) => {
+    return oldSettings[k] === newSettings[k];
+  });
 }

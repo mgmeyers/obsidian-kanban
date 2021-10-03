@@ -44,7 +44,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     newTitle.push(item.data.titleRaw);
 
     const titleRaw = newTitle.join(' ');
-    return stateManager.parser.updateItem(item, titleRaw);
+    return stateManager.updateItemContent(item, titleRaw);
   };
 
   return {

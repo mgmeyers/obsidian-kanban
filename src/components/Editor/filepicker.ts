@@ -295,19 +295,17 @@ async function getBlocks(
     }
 
     const blockSuggestions: BlockSuggestion[] = blockCache.blocks
-      .map((b: any, i: number) => {
+      .map((b: any) => {
         if (b.node.type === 'heading') return null;
-
-        const section = fileCache.sections[i];
 
         return {
           file,
           searchString: b.display,
-          blockId: section.id,
+          blockId: b.node.id,
           block: {
-            type: section.type,
-            start: section.position.start.offset,
-            end: section.position.end.offset,
+            type: b.node.type,
+            start: b.node.position.start.offset,
+            end: b.node.position.end.offset,
           },
           alias: aliasSplit[1] || '',
         } as BlockSuggestion;

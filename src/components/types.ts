@@ -1,11 +1,13 @@
 import { TFile } from 'obsidian';
 
 import { Nestable } from 'src/dnd/types';
+import { FileAccessor } from 'src/parsers/helpers/parser';
 import { KanbanSettings } from 'src/Settings';
 
 export interface LaneData {
   shouldMarkItemsComplete?: boolean;
   title: string;
+  dom?: HTMLDivElement;
 }
 
 export interface DataKey {
@@ -24,9 +26,12 @@ export interface FileMetadata {
 }
 
 export interface ItemMetaData {
+  dateStr?: string;
   date?: moment.Moment;
+  timeStr?: string;
   time?: moment.Moment;
   tags?: string[];
+  fileAccessor?: FileAccessor;
   file?: TFile | null;
   fileMetadata?: FileMetadata;
 }
@@ -36,9 +41,9 @@ export interface ItemData {
   isComplete?: boolean;
   title: string;
   titleRaw: string;
-  titleSearch: string;
+  titleSearch?: string;
   metadata: ItemMetaData;
-  dom: HTMLDivElement;
+  dom?: HTMLDivElement;
 }
 
 export interface ErrorReport {

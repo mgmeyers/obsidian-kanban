@@ -97,9 +97,8 @@ export function useItemMenu({
                     stateManager.file.path
                   )
                 );
-
-                stateManager.parser
-                  .updateItem(item, newTitleRaw)
+                stateManager
+                  .updateItemContent(item, newTitleRaw)
                   .then((item) => {
                     boardModifiers.updateItem(path, item);
                   })
@@ -129,8 +128,8 @@ export function useItemMenu({
                     )}`
                   );
 
-                  stateManager.parser
-                    .updateItem(item, `${item.data.titleRaw} ^${id}`)
+                  stateManager
+                    .updateItemContent(item, `${item.data.titleRaw} ^${id}`)
                     .then((item) => {
                       boardModifiers.updateItem(path, item);
                     })
@@ -150,7 +149,7 @@ export function useItemMenu({
                   .map((t) => t.trim());
                 const newItems = await Promise.all(
                   titles.map(async (title) => {
-                    return await stateManager.parser.newItem(title);
+                    return await stateManager.getNewItem(title);
                   })
                 );
 
@@ -217,8 +216,8 @@ export function useItemMenu({
                   .replace(dateRegEx, '')
                   .trim();
 
-                stateManager.parser
-                  .updateItem(item, titleRaw)
+                stateManager
+                  .updateItemContent(item, titleRaw)
                   .then((item) => {
                     boardModifiers.updateItem(path, item);
                   })
@@ -259,8 +258,8 @@ export function useItemMenu({
                     .replace(timeRegEx, '')
                     .trim();
 
-                  stateManager.parser
-                    .updateItem(item, titleRaw)
+                  stateManager
+                    .updateItemContent(item, titleRaw)
                     .then((item) => {
                       boardModifiers.updateItem(path, item);
                     })

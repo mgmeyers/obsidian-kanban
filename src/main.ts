@@ -258,7 +258,7 @@ export default class KanbanPlugin extends Plugin {
       (file: TFile) => {
         this.stateManagers.forEach((manager) => {
           if (manager.file !== file) {
-            manager.onFileMetadataChange(file);
+            manager.onFileMetadataChange();
           }
         });
       },

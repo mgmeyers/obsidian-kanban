@@ -44,7 +44,7 @@ export function ItemForm({
     addItems(
       await Promise.all(
         titles.map(async (title) => {
-          return await stateManager.parser.newItem(title);
+          return await stateManager.getNewItem(title);
         })
       )
     );

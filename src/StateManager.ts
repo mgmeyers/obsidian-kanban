@@ -9,7 +9,8 @@ import {
 import { Board, BoardTemplate, Item } from './components/types';
 import { renderMarkdown } from './helpers/renderMarkdown';
 import { KanbanView } from './KanbanView';
-import { KanbanParser } from './parsers/basic';
+import { BaseFormat, shouldRefreshBoard } from './parsers/common';
+import { ListFormat } from './parsers/List';
 import { defaultDateTrigger, defaultTimeTrigger } from './settingHelpers';
 import { KanbanSettings, SettingRetrievers } from './Settings';
 
@@ -25,11 +26,11 @@ export class StateManager {
   private ids: string[] = [];
   private compiledSettings: KanbanSettings = {};
 
-  public parser: KanbanParser;
-
   public app: App;
   public state: Board;
   public file: TFile;
+
+  private parser: BaseFormat;
 
   constructor(
     app: App,
@@ -42,13 +43,7 @@ export class StateManager {
     this.file = initialView.file;
     this.onEmpty = onEmpty;
     this.getGlobalSettings = getGlobalSettings;
-
-    this.parser = new KanbanParser(
-      app,
-      initialView.file,
-      this.buildMarkdownRenderer(),
-      this.buildSettingRetrievers()
-    );
+    this.parser = new ListFormat(this);
 
     this.registerView(initialView, initialData, true);
   }
@@ -135,11 +130,10 @@ export class StateManager {
 
   async forceRefresh() {
     if (this.state) {
-      this.state = await this.parser.refreshBoard(this.state);
+      this.compileSettings();
+      this.state = await this.parser.reparseBoard();
 
-      this.compiledSettings = this.compileSettings();
       this.stateReceivers.forEach((receiver) => receiver(this.state));
-
       this.views.forEach((view) => view.initHeaderButtons());
     }
   }
@@ -159,14 +153,15 @@ export class StateManager {
     if (
       oldSettings &&
       newSettings &&
-      this.parser.shouldRefreshBoard(oldSettings, newSettings)
+      shouldRefreshBoard(oldSettings, newSettings)
     ) {
-      this.state = await this.parser.refreshBoard(newState);
+      this.compileSettings(newState.data.settings);
+      this.state = await this.parser.reparseBoard();
     } else {
       this.state = newState;
+      this.compileSettings();
     }
 
-    this.compiledSettings = this.compileSettings();
     this.views.forEach((view) => view.initHeaderButtons());
 
     if (shouldSave) {
@@ -229,7 +224,7 @@ export class StateManager {
     return state;
   }
 
-  compileSettings(suppliedSettings?: KanbanSettings): KanbanSettings {
+  compileSettings(suppliedSettings?: KanbanSettings) {
     const globalKeys = this.getGlobalSetting('metadata-keys') || [];
     const localKeys =
       this.getSettingRaw('metadata-keys', suppliedSettings) || [];
@@ -246,7 +241,7 @@ export class StateManager {
       this.getSettingRaw('prepend-archive-format', suppliedSettings) ||
       `${dateFormat} ${timeFormat}`;
 
-    return {
+    this.compiledSettings = {
       'date-format': dateFormat,
       'date-display-format':
         this.getSettingRaw('date-display-format', suppliedSettings) ||
@@ -348,7 +343,7 @@ export class StateManager {
 
     try {
       if (trimmedContent) {
-        board = await this.parser.mdToBoard(trimmedContent, this.file?.path);
+        board = await this.parser.mdToBoard(trimmedContent);
       }
     } catch (e) {
       console.error(e);
@@ -378,15 +373,11 @@ export class StateManager {
     );
   }
 
-  onFileMetadataChange(file: TFile) {
-    // Invalidate the metadata caching and reparse the file if needed,
-    // recreating all items that referenced the changed file
-    if (this.parser.invalidateFile(file)) {
-      return this.reparseBoard();
-    }
+  onFileMetadataChange() {
+    this.reparseBoardFromMd();
   }
 
-  async reparseBoard() {
+  async reparseBoardFromMd() {
     this.setState(await this.getParsedBoard(this.getAView().data));
   }
 
@@ -406,7 +397,8 @@ export class StateManager {
       newTitle.push(item.data.titleRaw);
 
       const titleRaw = newTitle.join(' ');
-      return this.parser.updateItem(item, titleRaw);
+
+      return this.parser.updateItemContent(item, titleRaw);
     };
 
     const lanes = board.children.map((lane) => {
@@ -445,5 +437,13 @@ export class StateManager {
         },
       })
     );
+  }
+
+  getNewItem(content: string, isComplete?: boolean) {
+    return this.parser.newItem(content, isComplete);
+  }
+
+  updateItemContent(item: Item, content: string) {
+    return this.parser.updateItemContent(item, content);
   }
 }

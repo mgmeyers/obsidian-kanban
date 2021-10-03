@@ -114,8 +114,8 @@ export const ItemContent = React.memo(function ItemContent({
       if (!allowNewLine(e, stateManager)) {
         e.preventDefault();
 
-        stateManager.parser
-          .updateItem(item, editState)
+        stateManager
+          .updateItemContent(item, editState)
           .then((item) => {
             boardModifiers.updateItem(path, item);
           })
@@ -141,8 +141,11 @@ export const ItemContent = React.memo(function ItemContent({
       if (target.hasClass('task-list-item-checkbox')) {
         const checkboxIndex = parseInt(target.dataset.checkboxIndex, 10);
 
-        stateManager.parser
-          .updateItem(item, checkCheckbox(item.data.titleRaw, checkboxIndex))
+        stateManager
+          .updateItemContent(
+            item,
+            checkCheckbox(item.data.titleRaw, checkboxIndex)
+          )
           .then((item) => {
             boardModifiers.updateItem(path, item);
           })
