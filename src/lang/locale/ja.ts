@@ -56,7 +56,7 @@ export default {
   'These settings will take precedence over the default Kanban board settings.':
     'これらの設定はデフォルトのカンバン設定より優先されます。',
   'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.':
-    'デフォルトのカンバンボード設定をセットします。この設定はボード毎の設定により上書きされます。',
+    'デフォルトのカンバンボード設定をセットします。この設定はボード毎に上書きできます。',
   'Note template': 'ノートテンプレート',
   'This template will be used when creating new notes from Kanban cards.':
     'このテンプレートはカンバンカードからノートを新規作成した際に使用されます。',
