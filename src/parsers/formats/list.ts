@@ -43,7 +43,7 @@ export function listItemToItemData(md: string, item: ListItem) {
   let title = itemContent;
 
   const itemData: ItemData = {
-    titleRaw: itemContent,
+    titleRaw: itemContent.replace(/<br>/g, '\n'),
     blockId: undefined,
     title: '',
     titleSearch: '',
@@ -132,7 +132,7 @@ export function listItemToItemData(md: string, item: ListItem) {
     }
   );
 
-  itemData.title = executeDeletion(title);
+  itemData.title = executeDeletion(title).replace(/<br>/g, '\n');
 
   return itemData;
 }
@@ -221,7 +221,7 @@ export function astToUnhydratedBoard(
 
   root.children.forEach((child, index) => {
     if (isArchiveList(child, root.children, index)) {
-      archive.push(
+      return archive.push(
         ...(child as List).children.map((listItem) => {
           return {
             ...ItemTemplate,
@@ -304,17 +304,8 @@ export async function newItem(
   return newItem;
 }
 
-export async function reparseBoard(
-  stateManager: StateManager,
-  board: Board,
-  settings: KanbanSettings
-) {
+export async function reparseBoard(stateManager: StateManager, board: Board) {
   return update(board, {
-    data: {
-      settings: {
-        $set: settings,
-      },
-    },
     children: {
       $set: await Promise.all(
         board.children.map(async (lane) => {

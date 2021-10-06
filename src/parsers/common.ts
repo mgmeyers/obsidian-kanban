@@ -16,7 +16,7 @@ export interface BaseFormat {
   updateItemContent(item: Item, content: string): Promise<Item>;
   boardToMd(board: Board): string;
   mdToBoard(md: string): Promise<Board>;
-  reparseBoard(settings?: KanbanSettings): Promise<Board>;
+  reparseBoard(): Promise<Board>;
 }
 
 export const completeString = `**${t('Complete')}**`;
@@ -33,6 +33,8 @@ export const basicFrontmatter = [
 
 export function settingsToCodeblock(settings: KanbanSettings): string {
   return [
+    '',
+    '',
     '%% kanban:settings',
     '```',
     JSON.stringify(settings),

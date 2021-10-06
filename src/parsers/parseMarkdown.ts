@@ -131,7 +131,7 @@ function getMdastExtensions(stateManager: StateManager) {
       node.fileAccessor = {
         target: normalizedPath.root,
         isEmbed: true,
-        stats: file.stat,
+        stats: file?.stat,
       } as FileAccessor;
     }),
     genericWrappedFromMarkdown('wikilink', (text, node) => {

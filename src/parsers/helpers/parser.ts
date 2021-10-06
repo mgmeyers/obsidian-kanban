@@ -3,7 +3,7 @@ import { Stat } from 'obsidian';
 export interface FileAccessor {
   isEmbed: boolean;
   target: string;
-  stats: Stat;
+  stats?: Stat;
 }
 
 export function markRangeForDeletion(
