@@ -27,6 +27,7 @@ import {
 import { DateNode, FileNode, TimeNode, ValueNode } from '../extensions/types';
 import {
   getListItemContent,
+  getNextSibling,
   getParagraphContentBoundary,
   getPrevSibling,
 } from '../helpers/ast';
@@ -158,6 +159,26 @@ function isArchiveList(
   }
 }
 
+function isEmptyLane(
+  child: Content,
+  children: Content[],
+  currentIndex: number
+) {
+  if (child.type !== 'heading') return false;
+  const next = getNextSibling(children, currentIndex);
+  const nextNext = getNextSibling(children, currentIndex + 1);
+
+  if (next === null) {
+    return true;
+  }
+
+  if (next.type === 'paragraph' && (!nextNext || nextNext.type !== 'list')) {
+    return toString(next) === t('Complete');
+  }
+
+  return next.type === 'heading';
+}
+
 function isLane(child: Content, children: Content[], currentIndex: number) {
   if (child.type !== 'list') return false;
   const prev = getPrevSibling(children, currentIndex);
@@ -210,6 +231,31 @@ function buildLane(
   };
 }
 
+function buildEmptyLane(
+  child: Content,
+  children: Content[],
+  currentIndex: number
+): Lane {
+  const next = getNextSibling(children, currentIndex);
+  const title = toString(child);
+
+  let shouldMarkItemsComplete = false;
+
+  if (next.type === 'paragraph') {
+    shouldMarkItemsComplete = true;
+  }
+
+  return {
+    ...LaneTemplate,
+    children: [],
+    id: generateInstanceId(),
+    data: {
+      title,
+      shouldMarkItemsComplete,
+    },
+  };
+}
+
 export function astToUnhydratedBoard(
   stateManager: StateManager,
   settings: KanbanSettings,
@@ -233,7 +279,11 @@ export function astToUnhydratedBoard(
     }
 
     if (isLane(child, root.children, index)) {
-      lanes.push(buildLane(md, child, root.children, index));
+      return lanes.push(buildLane(md, child, root.children, index));
+    }
+
+    if (isEmptyLane(child, root.children, index)) {
+      return lanes.push(buildEmptyLane(child, root.children, index));
     }
   });
 

@@ -9,7 +9,7 @@ Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
 
 ![Screen Shot 2021-09-16 at 1.10.38 PM.png](http://matthewmeye.rs/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%201.10.38%20PM.png)
 
-## [How do I](http://matthewmeye.rs/obsidian-kanban/How%20do%20I/index.md)
+## [How do I](http://matthewmeye.rs/obsidian-kanban/How%20do%20I/index)
 
 - [Add a date to a card](http://matthewmeye.rs/obsidian-kanban/How%20do%20I/Add%20a%20date%20to%20a%20card)
 - [Add a time to a card](http://matthewmeye.rs/obsidian-kanban/How%20do%20I/Add%20a%20time%20to%20a%20card)

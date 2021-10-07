@@ -40,3 +40,8 @@ export function getPrevSibling(children: Content[], currentIndex: number) {
   if (currentIndex <= 0) return null;
   return children[currentIndex - 1];
 }
+
+export function getNextSibling(children: Content[], currentIndex: number) {
+  if (currentIndex === children.length - 1) return null;
+  return children[currentIndex + 1];
+}
