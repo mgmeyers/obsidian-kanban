@@ -241,7 +241,7 @@ function buildEmptyLane(
 
   let shouldMarkItemsComplete = false;
 
-  if (next.type === 'paragraph') {
+  if (next?.type === 'paragraph') {
     shouldMarkItemsComplete = true;
   }
 
