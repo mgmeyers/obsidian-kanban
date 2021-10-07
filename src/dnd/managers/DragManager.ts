@@ -180,7 +180,7 @@ export class DragManager {
 
   onHTMLDragLeave(callback: () => void) {
     clearTimeout(this.dragOverTimeout);
-    this.dragOverTimeout = window.setTimeout(callback, 100);
+    this.dragOverTimeout = window.setTimeout(callback, 351);
   }
 
   calculateDragIntersect() {
