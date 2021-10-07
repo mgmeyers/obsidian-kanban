@@ -173,7 +173,10 @@ function isEmptyLane(
   }
 
   if (next.type === 'paragraph' && (!nextNext || nextNext.type !== 'list')) {
-    return toString(next) === t('Complete');
+    const nextStr = toString(next);
+    return (
+      nextStr === t('Complete') || nextStr.startsWith('%% kanban:settings')
+    );
   }
 
   return next.type === 'heading';

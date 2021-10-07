@@ -49,7 +49,11 @@ export function tagExtension(): Extension {
     }
 
     function consumeTarget(code: number) {
-      if (markdownLineEndingOrSpace(code) || code === null) {
+      if (
+        markdownLineEndingOrSpace(code) ||
+        '#'.charCodeAt(0) === code ||
+        code === null
+      ) {
         if (!data) return nok(code);
         effects.exit(`${name}Target`);
         effects.exit(`${name}Data`);

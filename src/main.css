@@ -272,6 +272,13 @@ button.kanban-plugin__lane-settings-button
   border: 3px dashed rgba(var(--text-muted-rgb), 0.1);
   margin-bottom: 4px;
   border-radius: 6px;
+  transition: border 200ms ease;
+}
+
+.is-sorting
+  .kanban-plugin__lane-items
+  > .kanban-plugin__placeholder:only-child {
+  border-color: rgba(var(--interactive-accent-rgb), 0.6);
 }
 
 .kanban-plugin__lane-items > div {

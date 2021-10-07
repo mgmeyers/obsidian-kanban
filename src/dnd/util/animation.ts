@@ -36,7 +36,7 @@ export const transitions = {
     return `transform ${timing}, opacity ${timing}`;
   },
   outOfTheWay: `transform ${outOfTheWayTiming}`,
-  placeholder: `height ${outOfTheWayTiming}, width ${outOfTheWayTiming}, margin ${outOfTheWayTiming}`,
+  placeholder: `height ${outOfTheWayTiming}, width ${outOfTheWayTiming}, margin ${outOfTheWayTiming}, border-color ${outOfTheWayTiming}`,
 };
 
 export const isEqual = (point1: Coordinates, point2: Coordinates): boolean =>
