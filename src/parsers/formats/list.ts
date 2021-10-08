@@ -1,5 +1,5 @@
 import update from 'immutability-helper';
-import { Content, List, Root } from 'mdast';
+import { Content, List, Parent, Root } from 'mdast';
 import { ListItem, Paragraph } from 'mdast-util-from-markdown/lib';
 import { toString } from 'mdast-util-to-string';
 import { visit } from 'unist-util-visit';
@@ -26,20 +26,18 @@ import {
 } from '../common';
 import { DateNode, FileNode, TimeNode, ValueNode } from '../extensions/types';
 import {
-  getListItemContent,
   getNextSibling,
-  getParagraphContentBoundary,
+  getNodeContentBoundary,
   getPrevSibling,
+  getStringFromBoundary,
 } from '../helpers/ast';
 import { hydrateItem } from '../helpers/hydrateBoard';
 import { executeDeletion, markRangeForDeletion } from '../helpers/parser';
 import { parseFragment } from '../parseMarkdown';
 
 export function listItemToItemData(md: string, item: ListItem) {
-  const itemBoundary = getParagraphContentBoundary(
-    item.children[0] as Paragraph
-  );
-  const itemContent = getListItemContent(md, itemBoundary);
+  const itemBoundary = getNodeContentBoundary(item.children[0] as Paragraph);
+  const itemContent = getStringFromBoundary(md, itemBoundary);
 
   let title = itemContent;
 
@@ -207,15 +205,12 @@ function buildLane(
   const prev = getPrevSibling(children, currentIndex);
   const prevPrev = getPrevSibling(children, currentIndex - 1);
 
-  let shouldMarkItemsComplete = false;
-  let title = t('Untitled');
-
-  if (prev.type === 'paragraph' && prevPrev?.type === 'heading') {
-    shouldMarkItemsComplete = true;
-    title = toString(prevPrev);
-  } else {
-    title = toString(prev);
-  }
+  const isCompleteLane =
+    prev.type === 'paragraph' && prevPrev?.type === 'heading';
+  const headingBoundary = isCompleteLane
+    ? getNodeContentBoundary(prevPrev as Parent)
+    : getNodeContentBoundary(prev as Parent);
+  const title = getStringFromBoundary(md, headingBoundary);
 
   return {
     ...LaneTemplate,
@@ -229,24 +224,22 @@ function buildLane(
     id: generateInstanceId(),
     data: {
       title,
-      shouldMarkItemsComplete,
+      shouldMarkItemsComplete: isCompleteLane,
     },
   };
 }
 
 function buildEmptyLane(
+  md: string,
   child: Content,
   children: Content[],
   currentIndex: number
 ): Lane {
   const next = getNextSibling(children, currentIndex);
-  const title = toString(child);
+  const headingBoundary = getNodeContentBoundary(child as Parent);
+  const title = getStringFromBoundary(md, headingBoundary);
 
-  let shouldMarkItemsComplete = false;
-
-  if (next?.type === 'paragraph') {
-    shouldMarkItemsComplete = true;
-  }
+  const shouldMarkItemsComplete = next?.type === 'paragraph';
 
   return {
     ...LaneTemplate,
@@ -286,7 +279,7 @@ export function astToUnhydratedBoard(
     }
 
     if (isEmptyLane(child, root.children, index)) {
-      return lanes.push(buildEmptyLane(child, root.children, index));
+      return lanes.push(buildEmptyLane(md, child, root.children, index));
     }
   });
 
