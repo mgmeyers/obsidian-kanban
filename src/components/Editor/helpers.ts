@@ -337,14 +337,15 @@ export async function handlePaste(
   stateManager: StateManager
 ) {
   const html = e.clipboardData.getData('text/html');
+  const hasFiles = e.clipboardData.types.includes('Files');
 
-  if (html) {
+  if (html || hasFiles) {
     e.preventDefault();
   }
 
   const pasteLines = await handleDragOrPaste(stateManager, e.nativeEvent);
 
-  if (html) {
+  if (html || hasFiles) {
     const input = e.target as HTMLTextAreaElement;
     const paste = pasteLines.join('');
 

@@ -373,7 +373,7 @@ export function fixLinks(text: string) {
 function handleFiles(stateManager: StateManager, files: FileWithPath[]) {
   return Promise.all(
     files.map((file) => {
-      const splitFileName = (file as FileWithPath).name.split('.');
+      const splitFileName = file.name.split('.');
 
       const ext = splitFileName.pop();
       const fileName = splitFileName.join('.');
@@ -417,6 +417,21 @@ async function handleNullDraggable(
     const files = await fromEvent(e);
     if (files.length) {
       return await handleFiles(stateManager, files as FileWithPath[]);
+    }
+  } else {
+    const files: File[] = [];
+    const items = e.clipboardData.items;
+
+    for (const index in items) {
+      const item = items[index];
+      if (item.kind === 'file') {
+        files.push(item.getAsFile());
+      }
+    }
+
+    if (files.length) {
+      console.log(files);
+      return await handleFiles(stateManager, files);
     }
   }
 
