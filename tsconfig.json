@@ -12,14 +12,7 @@
     "importHelpers": true,
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
-    "lib": [
-      "dom",
-      "es6",
-      "scripthost",
-      "es2018"
-    ]
+    "lib": ["dom", "es6", "scripthost", "es2018"]
   },
-  "include": [
-    "**/*.ts"
-  ]
+  "include": ["src/*.ts", "src/*.tsx"]
 }

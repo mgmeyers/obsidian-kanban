@@ -11,7 +11,7 @@ export default {
     '错误：无法转换当前文件，当前文件不是空白文档',
   'New kanban board': '新看板',
   'Untitled Kanban': '未命名看板',
-  'Toggle between Kanban and markdown mode': 
+  'Toggle between Kanban and markdown mode':
     '在看板和 Markdown 模式之间进行切换',
 
   // KanbanView.tsx
@@ -29,8 +29,7 @@ export default {
   Archive: '归档',
   'Invalid Kanban file: problems parsing frontmatter':
     '无效的看板文件：解析前端内容时出现问题',
-  "I don't know how to interpret this line:":
-    "我不知道如何解读这句话: ",
+  "I don't know how to interpret this line:": '我不知道如何解读这句话: ',
   Untitled: '未命名', // auto-created column
 
   // settingHelpers.ts
@@ -119,8 +118,7 @@ export default {
     '展示卡片中第一个连接所对应的笔记元数据，请在下方指定哪些元数据可以展示。你可以选择展示标志，标志可以都被隐藏。',
   'Board Header Buttons': '板头按钮',
   'Calendar: first day of week': '日历：一周的第一天',
-  'Override which day is used as the start of the week':
-    '哪一天作为一周的开始',
+  'Override which day is used as the start of the week': '哪一天作为一周的开始',
   Sunday: '周日',
   Monday: '周一',
   Tuesday: '周二',
