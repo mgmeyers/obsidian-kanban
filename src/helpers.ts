@@ -12,7 +12,7 @@ export function buildLinkToDailyNote(app: App, dateStr: string) {
       dailyNoteSettings.folder
         ? `${encodeURIComponent(dailyNoteSettings.folder)}/`
         : ''
-    }${dateStr}.md)`;
+    }${encodeURIComponent(dateStr)}.md)`;
   }
 
   return `[[${dateStr}]]`;
