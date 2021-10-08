@@ -2,6 +2,7 @@ import { FileWithPath, fromEvent } from 'file-selector';
 import flatpickr from 'flatpickr';
 import {
   MarkdownSourceView,
+  Platform,
   TFile,
   TFolder,
   htmlToMarkdown,
@@ -370,13 +371,171 @@ export function fixLinks(text: string) {
   return text.replace(/^\[(.*)\]\(app:\/\/obsidian.md\/(.*)\)$/, '[$1]($2)');
 }
 
-function handleFiles(stateManager: StateManager, files: FileWithPath[]) {
+interface FileData {
+  buffer: ArrayBuffer;
+  mimeType: string;
+  originalName: string;
+}
+
+export function getFileListFromClipboard() {
+  const clipboard = window.require('electron').remote.clipboard;
+
+  if (process.platform === 'darwin') {
+    // https://github.com/electron/electron/issues/9035#issuecomment-359554116
+    if (clipboard.has('NSFilenamesPboardType')) {
+      return (
+        (clipboard.read('NSFilenamesPboardType') as string)
+          .match(/<string>.*<\/string>/g)
+          ?.map((item) => item.replace(/<string>|<\/string>/g, '')) || []
+      );
+    } else {
+      const clipboardImage = clipboard.readImage('clipboard');
+      if (!clipboardImage.isEmpty()) {
+        const png = clipboardImage.toPNG();
+        const fileInfo: FileData = {
+          buffer: png,
+          mimeType: 'image/png',
+          originalName: `Pasted image ${moment().format('YYYYMMDDHHmmss')}.png`,
+        };
+        return [fileInfo];
+      } else {
+        return [
+          (clipboard.read('public.file-url') as string).replace('file://', ''),
+        ].filter((item) => item);
+      }
+    }
+  } else {
+    // https://github.com/electron/electron/issues/9035#issuecomment-536135202
+    // https://docs.microsoft.com/en-us/windows/win32/shell/clipboard#cf_hdrop
+    // https://www.codeproject.com/Reference/1091137/Windows-Clipboard-Formats
+    if (clipboard.has('CF_HDROP')) {
+      const rawFilePathStr = clipboard.read('CF_HDROP') || '';
+      let formatFilePathStr = [...rawFilePathStr]
+        .filter((_, index) => rawFilePathStr.charCodeAt(index) !== 0)
+        .join('')
+        .replace(/\\/g, '\\');
+
+      const drivePrefix = formatFilePathStr.match(/[a-zA-Z]:\\/);
+
+      if (drivePrefix) {
+        const drivePrefixIndex = formatFilePathStr.indexOf(drivePrefix[0]);
+        if (drivePrefixIndex !== 0) {
+          formatFilePathStr = formatFilePathStr.substring(drivePrefixIndex);
+        }
+        return formatFilePathStr
+          .split(drivePrefix[0])
+          .filter((item) => item)
+          .map((item) => drivePrefix + item);
+      }
+    } else {
+      const clipboardImage = clipboard.readImage('clipboard');
+      if (!clipboardImage.isEmpty()) {
+        const png = clipboardImage.toPNG();
+        const fileInfo: FileData = {
+          buffer: png,
+          mimeType: 'image/png',
+          originalName: `Pasted image ${moment().format('YYYYMMDDHHmmss')}.png`,
+        };
+        return [fileInfo];
+      } else {
+        return [
+          (
+            clipboard.readBuffer('FileNameW').toString('ucs2') as string
+          ).replace(RegExp(String.fromCharCode(0), 'g'), ''),
+        ].filter((item) => item);
+      }
+    }
+  }
+
+  return null;
+}
+
+function getFileFromPath(file: string) {
+  return file.split('\\').pop().split('/').pop();
+}
+
+async function linkFromBuffer(
+  stateManager: StateManager,
+  fileName: string,
+  ext: string,
+  buffer: ArrayBuffer
+) {
+  const path = (await (
+    stateManager.app.vault as any
+  ).getAvailablePathForAttachments(
+    fileName,
+    ext,
+    stateManager.file.path
+  )) as string;
+
+  const newFile = await stateManager.app.vault.createBinary(path, buffer);
+
+  return linkTo(stateManager, newFile, stateManager.file.path);
+}
+
+async function handleElectronPaste(stateManager: StateManager) {
+  const list = getFileListFromClipboard();
+
+  if (!list || list.length === 0) return null;
+
+  const fs = window.require('fs/promises');
+
+  return (
+    await Promise.all(
+      list.map(async (file) => {
+        if (typeof file === 'string') {
+          const buf = await fs.readFile(file);
+
+          if (buf) {
+            const fileStr = getFileFromPath(file);
+
+            const splitFile = fileStr.split('.');
+            const ext = splitFile.pop();
+            const fileName = splitFile.join('.');
+
+            return await linkFromBuffer(stateManager, fileName, ext, buf);
+          }
+        } else {
+          const splitFile = file.originalName.split('.');
+          const ext = splitFile.pop();
+          const fileName = splitFile.join('.');
+
+          return await linkFromBuffer(stateManager, fileName, ext, file.buffer);
+        }
+
+        return null;
+      })
+    )
+  ).filter((file) => file);
+}
+
+function handleFiles(
+  stateManager: StateManager,
+  files: FileWithPath[],
+  isPaste?: boolean
+) {
   return Promise.all(
     files.map((file) => {
       const splitFileName = file.name.split('.');
 
-      const ext = splitFileName.pop();
-      const fileName = splitFileName.join('.');
+      let ext = splitFileName.pop();
+      let fileName = splitFileName.join('.');
+
+      if (isPaste) {
+        switch (file.type) {
+          case 'text/jpg':
+            ext = 'jpg';
+            break;
+          case 'text/jpeg':
+            ext = 'jpeg';
+            break;
+          case 'text/png':
+            ext = 'png';
+            break;
+        }
+
+        fileName = 'Pasted image ' + moment().format('YYYYMMDDHHmmss');
+      }
 
       return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
@@ -419,6 +578,14 @@ async function handleNullDraggable(
       return await handleFiles(stateManager, files as FileWithPath[]);
     }
   } else {
+    if (Platform.isDesktopApp) {
+      const links = await handleElectronPaste(stateManager);
+
+      if (links.length) {
+        return links;
+      }
+    }
+
     const files: File[] = [];
     const items = e.clipboardData.items;
 
@@ -430,8 +597,7 @@ async function handleNullDraggable(
     }
 
     if (files.length) {
-      console.log(files);
-      return await handleFiles(stateManager, files);
+      return await handleFiles(stateManager, files, true);
     }
   }
 

@@ -1,9 +1,10 @@
 import insertText from 'insert-text-at-cursor';
+import { Platform } from 'obsidian';
 import React from 'react';
 
 import { StateManager } from 'src/StateManager';
 
-import { handleDragOrPaste } from '../Item/helpers';
+import { getFileListFromClipboard, handleDragOrPaste } from '../Item/helpers';
 
 export interface TextRange {
   start: number;
@@ -338,16 +339,22 @@ export async function handlePaste(
 ) {
   const html = e.clipboardData.getData('text/html');
   const hasFiles = e.clipboardData.types.includes('Files');
+  const electronClipboardFiles = Platform.isDesktopApp
+    ? getFileListFromClipboard()
+    : null;
 
-  if (html || hasFiles) {
+  const shouldConsumePaste =
+    html || hasFiles || electronClipboardFiles?.length > 0;
+
+  if (shouldConsumePaste) {
     e.preventDefault();
   }
 
   const pasteLines = await handleDragOrPaste(stateManager, e.nativeEvent);
 
-  if (html || hasFiles) {
+  if (shouldConsumePaste) {
     const input = e.target as HTMLTextAreaElement;
-    const paste = pasteLines.join('');
+    const paste = pasteLines.join('\n');
 
     replaceSelection(input, paste);
   }
