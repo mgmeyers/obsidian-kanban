@@ -479,22 +479,38 @@ async function handleElectronPaste(stateManager: StateManager) {
   if (!list || list.length === 0) return null;
 
   const fs = window.require('fs/promises');
+  const nPath = window.require('path');
 
   return (
     await Promise.all(
       list.map(async (file) => {
         if (typeof file === 'string') {
-          const buf = await fs.readFile(file);
+          const fileStr = getFileFromPath(file);
 
-          if (buf) {
-            const fileStr = getFileFromPath(file);
+          const splitFile = fileStr.split('.');
+          const ext = splitFile.pop();
+          const fileName = splitFile.join('.');
 
-            const splitFile = fileStr.split('.');
-            const ext = splitFile.pop();
-            const fileName = splitFile.join('.');
+          const path = (await (
+            stateManager.app.vault as any
+          ).getAvailablePathForAttachments(
+            fileName,
+            ext,
+            stateManager.file.path
+          )) as string;
 
-            return await linkFromBuffer(stateManager, fileName, ext, buf);
-          }
+          const basePath = (stateManager.app.vault.adapter as any).basePath;
+
+          await fs.copyFile(file, nPath.join(basePath, path));
+
+          // Wait for Obsidian to update
+          await new Promise((resolve) => setTimeout(resolve, 50));
+
+          const newFile = stateManager.app.vault.getAbstractFileByPath(
+            path
+          ) as TFile;
+
+          return linkTo(stateManager, newFile, stateManager.file.path);
         } else {
           const splitFile = file.originalName.split('.');
           const ext = splitFile.pop();
@@ -502,8 +518,6 @@ async function handleElectronPaste(stateManager: StateManager) {
 
           return await linkFromBuffer(stateManager, fileName, ext, file.buffer);
         }
-
-        return null;
       })
     )
   ).filter((file) => file);
