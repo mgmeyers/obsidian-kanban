@@ -11,15 +11,27 @@ export default {
     '错误：无法转换当前文件，当前文件不是空白文档',
   'New kanban board': '新看板',
   'Untitled Kanban': '未命名看板',
+  'Toggle between Kanban and markdown mode': 
+    '在看板和 Markdown 模式之间进行切换',
 
   // KanbanView.tsx
   'Open as markdown': '打开为 Markdown 文件',
   'Open board settings': '打开看板设置',
   'Archive completed cards': '归档已完成卡片',
+  'Something went wrong': '出了点问题 `(*>﹏<*)′ ',
+  'You may wish to open as markdown and inspect or edit the file.':
+    '你可能希望以 Markdown 方式打开，并检查或编辑该文件。',
+  'Are you sure you want to archive all completed cards on this board?':
+    '你确定要将这个板块上所有已完成的卡片归档吗？',
 
   // parser.ts
   Complete: '完成',
   Archive: '归档',
+  'Invalid Kanban file: problems parsing frontmatter':
+    '无效的看板文件：解析前端内容时出现问题',
+  "I don't know how to interpret this line:":
+    "我不知道如何解读这句话: ",
+  Untitled: '未命名', // auto-created column
 
   // settingHelpers.ts
   'Note: No template plugins are currently enabled.':
@@ -28,6 +40,15 @@ export default {
   'Search...': '搜索。。。',
 
   // Settings.ts
+  'New line trigger': '换行触发器',
+  'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lanes.':
+    '选择 Enter 或是 Shift+Enter 来创建新行, 你没有选择的将用来创建和完成卡片',
+  'Prepend / append new cards': '追加新卡',
+  'This setting controls whether new cards are added to the beginning or end of the list.':
+    '设置新卡片添加到列表头部或尾部。',
+  Prepend: '头部',
+  'Prepend (compact)': '头部 (紧凑)',
+  Append: '尾部',
   'These settings will take precedence over the default Kanban board settings.':
     '当前看板设置将会覆盖默认的看板设置',
   'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.':
@@ -96,6 +117,17 @@ export default {
   'Linked Page Metadata': '连接的页面元数据',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     '展示卡片中第一个连接所对应的笔记元数据，请在下方指定哪些元数据可以展示。你可以选择展示标志，标志可以都被隐藏。',
+  'Board Header Buttons': '板头按钮',
+  'Calendar: first day of week': '日历：一周的第一天',
+  'Override which day is used as the start of the week':
+    '哪一天作为一周的开始',
+  Sunday: '周日',
+  Monday: '周一',
+  Tuesday: '周二',
+  Wednesday: '周三',
+  Thursday: '周四',
+  Friday: '周五',
+  Saturday: '周六',
 
   // MetadataSettings.tsx
   'Metadata key': '元数据参数名',
@@ -104,6 +136,7 @@ export default {
   'Drag to rearrange': '拖动来重排顺序',
   Delete: '删除',
   'Add key': '添加参数名',
+  'Field contains markdown': '字段包含 Markdown',
 
   // components/Item/Item.tsx
   'More options': '更多选项',
@@ -133,6 +166,8 @@ export default {
   'Add time': '添加时间',
   'Remove time': '移除时间',
   'Duplicate card': '复制卡片',
+  'Split card': '分离卡片',
+  'Copy link to card': '复制链接至卡片',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': '输入新的列标题',
@@ -158,4 +193,8 @@ export default {
   'Archive cards': '归档卡片',
   'Archive list': '归档列',
   'Delete list': '删除列',
+
+  // components/helpers/renderMarkdown.ts
+  'Unable to find': '无法找到',
+  'Open in default app': '在默认应用中打开',
 };
