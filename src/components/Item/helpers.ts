@@ -591,7 +591,7 @@ async function handleNullDraggable(
     if (Platform.isDesktopApp) {
       const links = await handleElectronPaste(stateManager);
 
-      if (links.length) {
+      if (links?.length) {
         return links;
       }
     }
