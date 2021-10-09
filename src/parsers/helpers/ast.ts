@@ -30,6 +30,8 @@ export function getNodeContentBoundary(node: Parent): ContentBoundary {
 }
 
 export function getStringFromBoundary(md: string, boundary: ContentBoundary) {
+  if (!boundary) return '';
+
   return md.slice(boundary.start, boundary.end);
 }
 

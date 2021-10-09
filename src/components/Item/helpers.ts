@@ -462,11 +462,7 @@ async function linkFromBuffer(
 ) {
   const path = (await (
     stateManager.app.vault as any
-  ).getAvailablePathForAttachments(
-    fileName,
-    ext,
-    stateManager.file.path
-  )) as string;
+  ).getAvailablePathForAttachments(fileName, ext, stateManager.file)) as string;
 
   const newFile = await stateManager.app.vault.createBinary(path, buffer);
 
@@ -496,7 +492,7 @@ async function handleElectronPaste(stateManager: StateManager) {
           ).getAvailablePathForAttachments(
             fileName,
             ext,
-            stateManager.file.path
+            stateManager.file
           )) as string;
 
           const basePath = (stateManager.app.vault.adapter as any).basePath;
@@ -560,7 +556,7 @@ function handleFiles(
             ).getAvailablePathForAttachments(
               fileName,
               ext,
-              stateManager.file.path
+              stateManager.file
             )) as string;
             const newFile = await stateManager.app.vault.createBinary(
               path,
