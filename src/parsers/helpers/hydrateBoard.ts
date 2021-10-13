@@ -43,10 +43,18 @@ export async function hydrateItem(stateManager: StateManager, item: Item) {
   }
 
   if (timeStr) {
-    item.data.metadata.time = moment(
-      timeStr,
-      stateManager.getSetting('time-format')
-    );
+    let time = moment(timeStr, stateManager.getSetting('time-format'));
+
+    if (item.data.metadata.date) {
+      const date = item.data.metadata.date;
+
+      date.hour(time.hour());
+      date.minute(time.minute());
+
+      time = date.clone();
+    }
+
+    item.data.metadata.time = time;
   }
 
   if (fileAccessor) {
