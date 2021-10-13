@@ -44,3 +44,24 @@ export function getNextSibling(children: Content[], currentIndex: number) {
   if (currentIndex === children.length - 1) return null;
   return children[currentIndex + 1];
 }
+
+export function getNextOfType(
+  children: Content[],
+  currentIndex: number,
+  type: string,
+  shouldContinue: (child: Content) => boolean = () => true
+) {
+  for (let i = currentIndex + 1, len = children.length; i < len; i++) {
+    const child = children[i];
+
+    if (type === child.type) {
+      return child;
+    }
+
+    if (!shouldContinue(child)) {
+      return null;
+    }
+  }
+
+  return null;
+}

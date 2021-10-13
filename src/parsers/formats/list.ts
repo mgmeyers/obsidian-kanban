@@ -26,7 +26,7 @@ import {
 } from '../common';
 import { DateNode, FileNode, TimeNode, ValueNode } from '../extensions/types';
 import {
-  getNextSibling,
+  getNextOfType,
   getNodeContentBoundary,
   getPrevSibling,
   getStringFromBoundary,
@@ -136,120 +136,21 @@ export function listItemToItemData(md: string, item: ListItem) {
   return itemData;
 }
 
-function isArchiveList(
+function isArchiveLane(
   child: Content,
   children: Content[],
   currentIndex: number
 ) {
-  if (child.type !== 'list') return false;
-  const prev = getPrevSibling(children, currentIndex);
-  const prevPrev = getPrevSibling(children, currentIndex - 1);
-
-  if (prev === null || prevPrev === null) {
-    return false;
-  }
-
   if (
-    prev.type === 'heading' &&
-    toString(prev, { includeImageAlt: false }) === t('Archive')
+    child.type !== 'heading' ||
+    toString(child, { includeImageAlt: false }) !== t('Archive')
   ) {
-    return prevPrev.type === 'thematicBreak';
-  }
-}
-
-function isEmptyLane(
-  child: Content,
-  children: Content[],
-  currentIndex: number
-) {
-  if (child.type !== 'heading') return false;
-  const next = getNextSibling(children, currentIndex);
-  const nextNext = getNextSibling(children, currentIndex + 1);
-
-  if (next === null) {
-    return true;
-  }
-
-  if (next.type === 'paragraph' && (!nextNext || nextNext.type !== 'list')) {
-    const nextStr = toString(next);
-    return (
-      nextStr === t('Complete') || nextStr.startsWith('%% kanban:settings')
-    );
-  }
-
-  return next.type === 'heading';
-}
-
-function isLane(child: Content, children: Content[], currentIndex: number) {
-  if (child.type !== 'list') return false;
-  const prev = getPrevSibling(children, currentIndex);
-  const prevPrev = getPrevSibling(children, currentIndex - 1);
-
-  if (prev === null) {
     return false;
   }
 
-  if (prev.type === 'paragraph' && prevPrev?.type === 'heading') {
-    return toString(prev) === t('Complete');
-  }
-
-  return prev.type === 'heading';
-}
-
-function buildLane(
-  md: string,
-  child: Content,
-  children: Content[],
-  currentIndex: number
-): Lane {
   const prev = getPrevSibling(children, currentIndex);
-  const prevPrev = getPrevSibling(children, currentIndex - 1);
 
-  const isCompleteLane =
-    prev.type === 'paragraph' && prevPrev?.type === 'heading';
-  const headingBoundary = isCompleteLane
-    ? getNodeContentBoundary(prevPrev as Parent)
-    : getNodeContentBoundary(prev as Parent);
-  const title = getStringFromBoundary(md, headingBoundary);
-
-  return {
-    ...LaneTemplate,
-    children: (child as List).children.map((listItem) => {
-      return {
-        ...ItemTemplate,
-        id: generateInstanceId(),
-        data: listItemToItemData(md, listItem),
-      };
-    }),
-    id: generateInstanceId(),
-    data: {
-      title,
-      shouldMarkItemsComplete: isCompleteLane,
-    },
-  };
-}
-
-function buildEmptyLane(
-  md: string,
-  child: Content,
-  children: Content[],
-  currentIndex: number
-): Lane {
-  const next = getNextSibling(children, currentIndex);
-  const headingBoundary = getNodeContentBoundary(child as Parent);
-  const title = getStringFromBoundary(md, headingBoundary);
-
-  const shouldMarkItemsComplete = next?.type === 'paragraph';
-
-  return {
-    ...LaneTemplate,
-    children: [],
-    id: generateInstanceId(),
-    data: {
-      title,
-      shouldMarkItemsComplete,
-    },
-  };
+  return prev && prev.type === 'thematicBreak';
 }
 
 export function astToUnhydratedBoard(
@@ -262,24 +163,75 @@ export function astToUnhydratedBoard(
   const archive: Item[] = [];
 
   root.children.forEach((child, index) => {
-    if (isArchiveList(child, root.children, index)) {
-      return archive.push(
-        ...(child as List).children.map((listItem) => {
-          return {
-            ...ItemTemplate,
-            id: generateInstanceId(),
-            data: listItemToItemData(md, listItem),
-          };
-        })
-      );
-    }
+    if (child.type === 'heading') {
+      const isArchive = isArchiveLane(child, root.children, index);
+      const headingBoundary = getNodeContentBoundary(child as Parent);
+      const title = getStringFromBoundary(md, headingBoundary);
 
-    if (isLane(child, root.children, index)) {
-      return lanes.push(buildLane(md, child, root.children, index));
-    }
+      let shouldMarkItemsComplete = false;
 
-    if (isEmptyLane(child, root.children, index)) {
-      return lanes.push(buildEmptyLane(md, child, root.children, index));
+      const list = getNextOfType(root.children, index, 'list', (child) => {
+        if (child.type === 'heading') return false;
+
+        if (child.type === 'paragraph') {
+          const childStr = toString(child);
+
+          if (childStr.startsWith('%% kanban:settings')) {
+            return false;
+          }
+
+          if (childStr === t('Complete')) {
+            shouldMarkItemsComplete = true;
+            return true;
+          }
+        }
+
+        return true;
+      });
+
+      console.log(title, list, isArchive, shouldMarkItemsComplete);
+
+      if (isArchive && list) {
+        archive.push(
+          ...(list as List).children.map((listItem) => {
+            return {
+              ...ItemTemplate,
+              id: generateInstanceId(),
+              data: listItemToItemData(md, listItem),
+            };
+          })
+        );
+
+        return;
+      }
+
+      if (!list) {
+        lanes.push({
+          ...LaneTemplate,
+          children: [],
+          id: generateInstanceId(),
+          data: {
+            title,
+            shouldMarkItemsComplete,
+          },
+        });
+      } else {
+        lanes.push({
+          ...LaneTemplate,
+          children: (list as List).children.map((listItem) => {
+            return {
+              ...ItemTemplate,
+              id: generateInstanceId(),
+              data: listItemToItemData(md, listItem),
+            };
+          }),
+          id: generateInstanceId(),
+          data: {
+            title,
+            shouldMarkItemsComplete,
+          },
+        });
+      }
     }
   });
 
