@@ -7,7 +7,6 @@ import {
   getDefaultTimeFormat,
 } from './components/helpers';
 import { Board, BoardTemplate, Item } from './components/types';
-import { renderMarkdown } from './helpers/renderMarkdown';
 import { KanbanView } from './KanbanView';
 import { BaseFormat, shouldRefreshBoard } from './parsers/common';
 import { ListFormat } from './parsers/List';
@@ -84,12 +83,6 @@ export class StateManager {
       getGlobalSettings: this.getGlobalSettings,
       getGlobalSetting: this.getGlobalSetting,
       getSetting: this.getSetting,
-    };
-  }
-
-  buildMarkdownRenderer() {
-    return (md: string) => {
-      return renderMarkdown(this.getAView(), md);
     };
   }
 

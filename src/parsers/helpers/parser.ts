@@ -18,5 +18,5 @@ export function markRangeForDeletion(
 }
 
 export function executeDeletion(str: string) {
-  return str.replace(/[\0\s]+/g, ' ').trim();
+  return str.replace(/\s*\0+\s*/g, ' ').trim();
 }

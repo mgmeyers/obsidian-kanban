@@ -189,8 +189,6 @@ export function astToUnhydratedBoard(
         return true;
       });
 
-      console.log(title, list, isArchive, shouldMarkItemsComplete);
-
       if (isArchive && list) {
         archive.push(
           ...(list as List).children.map((listItem) => {
