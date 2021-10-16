@@ -57,8 +57,9 @@ export function constructAutocomplete({
     .filter(
       (suggestion: LinkSuggestion) => !!suggestion.file
     ) as Array<LinkSuggestion>;
+
   const fileSearch = new Fuse(linkSuggestions, {
-    keys: ['path', 'alias'],
+    keys: ['file.basename', 'alias'],
   });
 
   const willAutoPairBrackets = (view.app.vault as any).getConfig(
@@ -96,7 +97,7 @@ export function constructAutocomplete({
   const editor = new TextareaEditor(inputRef.current);
   const autocomplete = new Textcomplete(editor, configs, {
     dropdown: {
-      maxCount: 50,
+      maxCount: 96,
       className: `${c('autocomplete')} ${c('ignore-click-outside')}`,
       rotate: true,
       item: {

@@ -1,5 +1,6 @@
 import classcat from 'classcat';
 import React from 'react';
+import { DndManagerContext } from 'src/dnd/components/context';
 
 import { Droppable, useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { useDragHandle } from 'src/dnd/managers/DragManager';
@@ -37,6 +38,20 @@ const ItemInner = React.memo(function ItemInner({
 }: ItemInnerProps) {
   const { stateManager, boardModifiers } = React.useContext(KanbanContext);
   const [isEditing, setIsEditing] = React.useState(false);
+
+  const dndManager = React.useContext(DndManagerContext);
+
+  React.useEffect(() => {
+    const handler = () => {
+      if (isEditing) setIsEditing(false);
+    };
+
+    dndManager.dragManager.emitter.on('dragStart', handler);
+
+    return () => {
+      dndManager.dragManager.emitter.off('dragStart', handler);
+    };
+  }, [dndManager, isEditing]);
 
   const path = useNestedEntityPath();
 
