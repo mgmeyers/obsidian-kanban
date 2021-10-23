@@ -199,7 +199,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       if (targetEl.hasClass('internal-link')) {
         e.preventDefault();
         const destination = targetEl.getAttr('href');
-        const inNewLeaf = e.ctrlKey || e.metaKey;
+        const inNewLeaf = e.button === 1 || e.ctrlKey || e.metaKey;
         const isUnresolved = targetEl.hasClass('is-unresolved');
 
         if (isUnresolved && appHasDailyNotesPluginLoaded()) {
@@ -299,6 +299,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
             ])}
             onMouseOver={onMouseOver}
             onClick={onClick}
+            onAuxClick={onClick}
             {...html5DragHandlers}
           >
             {(isLaneFormVisible || boardData.children.length === 0) && (
