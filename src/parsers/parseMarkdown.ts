@@ -4,9 +4,10 @@ import { frontmatter } from 'micromark-extension-frontmatter';
 import { parseYaml } from 'obsidian';
 
 import { getNormalizedPath } from 'src/helpers/renderMarkdown';
+import { KanbanSettings, settingKeyLookup } from 'src/Settings';
 import { StateManager } from 'src/StateManager';
 
-import { getLinkedPageMetadata } from './common';
+import { frontMatterKey, getLinkedPageMetadata } from './common';
 import { blockidExtension, blockidFromMarkdown } from './extensions/blockid';
 import {
   genericWrappedExtension,
@@ -189,12 +190,25 @@ function getMdastExtensions(stateManager: StateManager) {
 export function parseMarkdown(stateManager: StateManager, md: string) {
   const mdFrontmatter = extractFrontmatter(md);
   const mdSettings = extractSettingsFooter(md);
-  const settings = { ...mdFrontmatter, ...mdSettings };
+  const settings = { ...mdSettings };
+  const fileFrontmatter: Record<string, any> = {};
+
+  Object.keys(mdFrontmatter).forEach((key) => {
+    if (key === frontMatterKey) {
+      settings[key] = mdFrontmatter[key];
+      fileFrontmatter[key] = mdFrontmatter[key];
+    } else if (settingKeyLookup[key as keyof KanbanSettings]) {
+      settings[key] = mdFrontmatter[key];
+    } else {
+      fileFrontmatter[key] = mdFrontmatter[key];
+    }
+  });
 
   stateManager.compileSettings(settings);
 
   return {
     settings,
+    frontmatter: fileFrontmatter,
     ast: fromMarkdown(md, {
       extensions: [frontmatter(['yaml']), ...getExtensions(stateManager)],
       mdastExtensions: [

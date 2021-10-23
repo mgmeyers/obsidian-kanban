@@ -71,6 +71,39 @@ export interface KanbanSettings {
   'show-search'?: boolean;
 }
 
+export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
+  [frontMatterKey]: true,
+  'date-display-format': true,
+  'date-format': true,
+  'date-picker-week-start': true,
+  'date-time-display-format': true,
+  'date-trigger': true,
+  'hide-date-display': true,
+  'hide-date-in-title': true,
+  'hide-tags-display': true,
+  'hide-tags-in-title': true,
+  'lane-width': true,
+  'link-date-to-daily-note': true,
+  'max-archive-size': true,
+  'metadata-keys': true,
+  'new-card-insertion-method': true,
+  'new-line-trigger': true,
+  'new-note-folder': true,
+  'new-note-template': true,
+  'prepend-archive-date': true,
+  'prepend-archive-format': true,
+  'prepend-archive-separator': true,
+  'show-checkboxes': true,
+  'show-relative-date': true,
+  'time-format': true,
+  'time-trigger': true,
+  'show-add-list': true,
+  'show-archive-all': true,
+  'show-view-as-markdown': true,
+  'show-board-settings': true,
+  'show-search': true,
+};
+
 export type SettingRetriever = <K extends keyof KanbanSettings>(
   key: K,
   supplied?: KanbanSettings

@@ -35,8 +35,14 @@ export class ListFormat implements BaseFormat {
   }
 
   mdToBoard(md: string) {
-    const { ast, settings } = parseMarkdown(this.stateManager, md);
-    const newBoard = astToUnhydratedBoard(this.stateManager, settings, ast, md);
+    const { ast, settings, frontmatter } = parseMarkdown(this.stateManager, md);
+    const newBoard = astToUnhydratedBoard(
+      this.stateManager,
+      settings,
+      frontmatter,
+      ast,
+      md
+    );
 
     if (this.stateManager.state) {
       const ops = compare(this.stateManager.state, newBoard);

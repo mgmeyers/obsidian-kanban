@@ -18,12 +18,7 @@ import { t } from 'src/lang/helpers';
 import { KanbanSettings } from 'src/Settings';
 import { StateManager } from 'src/StateManager';
 
-import {
-  archiveString,
-  basicFrontmatter,
-  completeString,
-  settingsToCodeblock,
-} from '../common';
+import { archiveString, completeString, settingsToCodeblock } from '../common';
 import { DateNode, FileNode, TimeNode, ValueNode } from '../extensions/types';
 import {
   getNextOfType,
@@ -34,6 +29,7 @@ import {
 import { hydrateItem } from '../helpers/hydrateBoard';
 import { executeDeletion, markRangeForDeletion } from '../helpers/parser';
 import { parseFragment } from '../parseMarkdown';
+import { stringifyYaml } from 'obsidian';
 
 export function listItemToItemData(md: string, item: ListItem) {
   const itemBoundary = getNodeContentBoundary(item.children[0] as Paragraph);
@@ -156,11 +152,14 @@ function isArchiveLane(
 export function astToUnhydratedBoard(
   stateManager: StateManager,
   settings: KanbanSettings,
+  frontmatter: Record<string, any>,
   root: Root,
   md: string
 ): Board {
   const lanes: Lane[] = [];
   const archive: Item[] = [];
+
+  console.log(settings, frontmatter);
 
   root.children.forEach((child, index) => {
     if (child.type === 'heading') {
@@ -239,6 +238,7 @@ export function astToUnhydratedBoard(
     children: lanes,
     data: {
       settings,
+      frontmatter,
       archive,
       isSearching: false,
       errors: [],
@@ -371,8 +371,17 @@ export function boardToMd(board: Board) {
     return md + laneToMd(lane);
   }, '');
 
+  const frontmatter = [
+    '---',
+    '',
+    stringifyYaml(board.data.frontmatter),
+    '---',
+    '',
+    '',
+  ].join('\n');
+
   return (
-    basicFrontmatter +
+    frontmatter +
     lanes +
     archiveToMd(board.data.archive) +
     settingsToCodeblock(board.data.settings)
