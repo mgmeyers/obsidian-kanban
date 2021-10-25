@@ -159,8 +159,6 @@ export function astToUnhydratedBoard(
   const lanes: Lane[] = [];
   const archive: Item[] = [];
 
-  console.log(settings, frontmatter);
-
   root.children.forEach((child, index) => {
     if (child.type === 'heading') {
       const isArchive = isArchiveLane(child, root.children, index);

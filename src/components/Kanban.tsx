@@ -174,10 +174,14 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const onClick = React.useCallback(
     async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       const targetEl = e.target as HTMLElement;
+      const closestAnchor =
+        targetEl.tagName === 'A' ? targetEl : targetEl.closest('a');
 
-      if (targetEl.hasClass('file-link')) {
+      if (!closestAnchor) return;
+
+      if (closestAnchor.hasClass('file-link')) {
         e.preventDefault();
-        const href = targetEl.getAttribute('href');
+        const href = closestAnchor.getAttribute('href');
         const normalizedPath = getNormalizedPath(href);
         const target =
           typeof href === 'string' &&
@@ -193,14 +197,12 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
         return;
       }
 
-      if (targetEl.tagName !== 'A') return;
-
       // Open an internal link in a new pane
-      if (targetEl.hasClass('internal-link')) {
+      if (closestAnchor.hasClass('internal-link')) {
         e.preventDefault();
-        const destination = targetEl.getAttr('href');
+        const destination = closestAnchor.getAttr('href');
         const inNewLeaf = e.button === 1 || e.ctrlKey || e.metaKey;
-        const isUnresolved = targetEl.hasClass('is-unresolved');
+        const isUnresolved = closestAnchor.hasClass('is-unresolved');
 
         if (isUnresolved && appHasDailyNotesPluginLoaded()) {
           const dateFormat = stateManager.getSetting('date-format');
@@ -227,19 +229,19 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       }
 
       // Open a tag search
-      if (targetEl.hasClass('tag')) {
+      if (closestAnchor.hasClass('tag')) {
         e.preventDefault();
         (stateManager.app as any).internalPlugins
           .getPluginById('global-search')
-          .instance.openGlobalSearch(`tag:${targetEl.getAttr('href')}`);
+          .instance.openGlobalSearch(`tag:${closestAnchor.getAttr('href')}`);
 
         return;
       }
 
       // Open external link
-      if (targetEl.hasClass('external-link')) {
+      if (closestAnchor.hasClass('external-link')) {
         e.preventDefault();
-        window.open(targetEl.getAttr('href'), '_blank');
+        window.open(closestAnchor.getAttr('href'), '_blank');
       }
     },
     [stateManager, filePath]

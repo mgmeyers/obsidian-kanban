@@ -1,4 +1,4 @@
-import { Menu, TFolder, getLinkpath } from 'obsidian';
+import { Menu, TFolder, getLinkpath, TFile } from 'obsidian';
 import React from 'react';
 
 import { Path } from 'src/dnd/types';
@@ -56,11 +56,22 @@ export function useItemMenu({
             i.setIcon('create-new')
               .setTitle(t('New note from card'))
               .onClick(async () => {
-                const prevTitle = item.data.title;
-                const sanitizedTitle = item.data.title.replace(
-                  illegalCharsRegEx,
-                  ' '
-                );
+                const prevTitle = item.data.title.split('\n')[0].trim();
+                let sanitizedTitle = prevTitle
+                  .replace(illegalCharsRegEx, ' ')
+                  .trim();
+
+                const isEmbed = /^!\[/.test(prevTitle);
+
+                if (isEmbed) {
+                  const split = sanitizedTitle
+                    .replace(/!\[+([^\]]+).+$/, '$1')
+                    .split('.');
+
+                  split.pop();
+
+                  sanitizedTitle = split.join('.').trim();
+                }
 
                 const newNoteFolder =
                   stateManager.getSetting('new-note-folder');
@@ -75,9 +86,9 @@ export function useItemMenu({
                       stateManager.file.path
                     );
 
-                const newFile = await (
+                const newFile = (await (
                   stateManager.app.fileManager as any
-                ).createNewMarkdownFile(targetFolder, sanitizedTitle);
+                ).createNewMarkdownFile(targetFolder, sanitizedTitle)) as TFile;
 
                 const newLeaf = stateManager.app.workspace.splitActiveLeaf();
 
@@ -92,11 +103,14 @@ export function useItemMenu({
 
                 const newTitleRaw = item.data.titleRaw.replace(
                   prevTitle,
-                  stateManager.app.fileManager.generateMarkdownLink(
-                    newFile,
-                    stateManager.file.path
-                  )
+                  isEmbed
+                    ? `[${prevTitle}](${encodeURIComponent(newFile.path)})`
+                    : stateManager.app.fileManager.generateMarkdownLink(
+                        newFile,
+                        stateManager.file.path
+                      )
                 );
+
                 stateManager
                   .updateItemContent(item, newTitleRaw)
                   .then((item) => {
