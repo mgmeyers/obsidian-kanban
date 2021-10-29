@@ -36,7 +36,7 @@ export default {
   'Note: No template plugins are currently enabled.':
     '注意：当前模板插件没有运行',
   default: '默认',
-  'Search...': '搜索。。。',
+  'Search...': '搜索...',
 
   // Settings.ts
   'New line trigger': '换行触发器',
