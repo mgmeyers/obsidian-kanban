@@ -522,7 +522,7 @@ export function createHTMLDndHandlers(stateManager: StateManager) {
         );
       });
     },
-    [dndManager]
+    [dndManager, stateManager]
   );
 
   const onDrop = React.useCallback(
