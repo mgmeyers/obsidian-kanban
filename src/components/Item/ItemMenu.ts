@@ -1,4 +1,4 @@
-import { Menu, TFolder, getLinkpath, TFile } from 'obsidian';
+import { Menu, TFile, TFolder, getLinkpath } from 'obsidian';
 import React from 'react';
 
 import { Path } from 'src/dnd/types';

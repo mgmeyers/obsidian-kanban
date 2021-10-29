@@ -1,7 +1,7 @@
 import classcat from 'classcat';
 import React from 'react';
-import { DndManagerContext } from 'src/dnd/components/context';
 
+import { DndManagerContext } from 'src/dnd/components/context';
 import { Droppable, useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { useDragHandle } from 'src/dnd/managers/DragManager';
 

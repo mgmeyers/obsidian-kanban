@@ -336,6 +336,7 @@ export class StateManager {
       data: {
         archive: [],
         settings: { 'kanban-plugin': 'basic' },
+        frontmatter: {},
         isSearching: false,
         errors: [],
       },

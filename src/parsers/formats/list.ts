@@ -2,6 +2,7 @@ import update from 'immutability-helper';
 import { Content, List, Parent, Root } from 'mdast';
 import { ListItem, Paragraph } from 'mdast-util-from-markdown/lib';
 import { toString } from 'mdast-util-to-string';
+import { stringifyYaml } from 'obsidian';
 import { visit } from 'unist-util-visit';
 
 import { generateInstanceId } from 'src/components/helpers';
@@ -29,7 +30,6 @@ import {
 import { hydrateItem } from '../helpers/hydrateBoard';
 import { executeDeletion, markRangeForDeletion } from '../helpers/parser';
 import { parseFragment } from '../parseMarkdown';
-import { stringifyYaml } from 'obsidian';
 
 export function listItemToItemData(md: string, item: ListItem) {
   const itemBoundary = getNodeContentBoundary(item.children[0] as Paragraph);
