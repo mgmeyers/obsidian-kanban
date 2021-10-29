@@ -125,7 +125,7 @@ export const ItemContent = React.memo(function ItemContent({
         return true;
       }
     },
-    [stateManager, editState]
+    [stateManager, editState, path]
   );
 
   const onEscape = React.useCallback(() => {
