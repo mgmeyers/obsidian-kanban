@@ -440,8 +440,8 @@ export class StateManager {
     );
   }
 
-  getNewItem(content: string, isComplete?: boolean) {
-    return this.parser.newItem(content, isComplete);
+  getNewItem(content: string, isComplete?: boolean, forceEdit?: boolean) {
+    return this.parser.newItem(content, isComplete, forceEdit);
   }
 
   updateItemContent(item: Item, content: string) {

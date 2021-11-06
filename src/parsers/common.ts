@@ -12,7 +12,11 @@ export enum ParserFormats {
 }
 
 export interface BaseFormat {
-  newItem(content: string, isComplete?: boolean): Promise<Item>;
+  newItem(
+    content: string,
+    isComplete?: boolean,
+    forceEdit?: boolean
+  ): Promise<Item>;
   updateItemContent(item: Item, content: string): Promise<Item>;
   boardToMd(board: Board): string;
   mdToBoard(md: string): Promise<Board>;

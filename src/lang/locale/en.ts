@@ -172,6 +172,8 @@ export default {
   'Duplicate card': 'Duplicate card',
   'Split card': 'Split card',
   'Copy link to card': 'Copy link to card',
+  'Insert card before': 'Insert card before',
+  'Insert card after': 'Insert card after',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Enter list title...',
@@ -197,6 +199,8 @@ export default {
   'Archive cards': 'Archive cards',
   'Archive list': 'Archive list',
   'Delete list': 'Delete list',
+  'Insert list before': 'Insert list before',
+  'Insert list after': 'Insert list after',
 
   // components/helpers/renderMarkdown.ts
   'Unable to find': 'Unable to find',

@@ -33,7 +33,12 @@ import { parseFragment } from '../parseMarkdown';
 
 export function listItemToItemData(md: string, item: ListItem) {
   const itemBoundary = getNodeContentBoundary(item.children[0] as Paragraph);
-  const itemContent = getStringFromBoundary(md, itemBoundary);
+  let itemContent = getStringFromBoundary(md, itemBoundary);
+
+  // Handle empty task
+  if (itemContent === '[ ]' || itemContent === '[x]') {
+    itemContent = '';
+  }
 
   let title = itemContent;
 
@@ -274,7 +279,8 @@ export async function updateItemContent(
 export async function newItem(
   stateManager: StateManager,
   newContent: string,
-  isComplete?: boolean
+  isComplete?: boolean,
+  forceEdit?: boolean
 ) {
   const md = `- [${isComplete ? 'x' : ' '}] ${newContent
     .trim()
@@ -286,6 +292,8 @@ export async function newItem(
     md,
     (ast.children[0] as List).children[0]
   );
+
+  itemData.forceEditMode = !!forceEdit;
 
   const newItem: Item = {
     ...ItemTemplate,

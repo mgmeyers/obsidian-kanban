@@ -53,6 +53,12 @@ const ItemInner = React.memo(function ItemInner({
     };
   }, [dndManager, isEditing]);
 
+  React.useEffect(() => {
+    if (item.data.forceEditMode) {
+      setIsEditing(true);
+    }
+  }, [item.data.forceEditMode]);
+
   const path = useNestedEntityPath();
 
   const showItemMenu = useItemMenu({

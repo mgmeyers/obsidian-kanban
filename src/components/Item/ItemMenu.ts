@@ -179,6 +179,28 @@ export function useItemMenu({
               .onClick(() => boardModifiers.duplicateEntity(path));
           })
           .addItem((i) => {
+            i.setIcon('plus-with-circle')
+              .setTitle(t('Insert card before'))
+              .onClick(async () =>
+                boardModifiers.insertItems(path, [
+                  await stateManager.getNewItem('', false, true),
+                ])
+              );
+          })
+          .addItem((i) => {
+            i.setIcon('plus-with-circle')
+              .setTitle(t('Insert card after'))
+              .onClick(async () => {
+                const newPath = [...path];
+
+                newPath[newPath.length - 1] = newPath[newPath.length - 1] + 1;
+
+                boardModifiers.insertItems(newPath, [
+                  await stateManager.getNewItem('', false, true),
+                ]);
+              });
+          })
+          .addItem((i) => {
             i.setIcon('sheets-in-box')
               .setTitle(t('Archive card'))
               .onClick(() => boardModifiers.archiveItem(path));

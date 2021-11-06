@@ -8,6 +8,7 @@ export interface LaneData {
   shouldMarkItemsComplete?: boolean;
   title: string;
   dom?: HTMLDivElement;
+  forceEditMode?: boolean;
 }
 
 export interface DataKey {
@@ -44,6 +45,7 @@ export interface ItemData {
   titleSearch?: string;
   metadata: ItemMetaData;
   dom?: HTMLDivElement;
+  forceEditMode?: boolean;
 }
 
 export interface ErrorReport {

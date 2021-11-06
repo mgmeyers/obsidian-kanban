@@ -22,6 +22,7 @@ export interface BoardModifiers {
   insertItems: (path: Path, items: Item[]) => void;
   splitItem: (path: Path, items: Item[]) => void;
   addLane: (lane: Lane) => void;
+  insertLane: (path: Path, lane: Lane) => void;
   updateLane: (path: Path, lane: Lane) => void;
   archiveLane: (path: Path) => void;
   archiveLaneItems: (path: Path) => void;
@@ -113,6 +114,18 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
 
       stateManager.setState((boardData) =>
         appendEntities(boardData, [], [lane])
+      );
+    },
+
+    insertLane: (path: Path, lane: Lane) => {
+      stateManager.app.workspace.trigger(
+        'kanban:lane-added',
+        stateManager.file,
+        lane
+      );
+
+      stateManager.setState((boardData) =>
+        insertEntity(boardData, path, [lane])
       );
     },
 

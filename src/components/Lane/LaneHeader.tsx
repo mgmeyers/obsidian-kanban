@@ -34,7 +34,14 @@ export const LaneHeader = React.memo(
 
     const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
       setIsEditing,
+      path: lanePath,
     });
+
+    React.useEffect(() => {
+      if (lane.data.forceEditMode) {
+        setIsEditing(true);
+      }
+    }, [lane.data.forceEditMode]);
 
     return (
       <>

@@ -1,11 +1,12 @@
 import { Menu } from 'obsidian';
 import React from 'react';
+import { Path } from 'src/dnd/types';
 
 import { t } from 'src/lang/helpers';
 
 import { KanbanContext } from '../context';
-import { c } from '../helpers';
-import { Lane } from '../types';
+import { c, generateInstanceId } from '../helpers';
+import { Lane, LaneTemplate } from '../types';
 
 export type LaneAction = 'delete' | 'archive' | 'archive-items' | null;
 
@@ -69,10 +70,11 @@ export function ConfirmAction({
 
 export interface UseSettingsMenuParams {
   setIsEditing: React.Dispatch<boolean>;
+  path: Path;
 }
 
-export function useSettingsMenu({ setIsEditing }: UseSettingsMenuParams) {
-  const { stateManager } = React.useContext(KanbanContext);
+export function useSettingsMenu({ setIsEditing, path }: UseSettingsMenuParams) {
+  const { stateManager, boardModifiers } = React.useContext(KanbanContext);
   const [confirmAction, setConfirmAction] = React.useState<LaneAction>(null);
 
   const settingsMenu = React.useMemo(() => {
@@ -88,6 +90,43 @@ export function useSettingsMenu({ setIsEditing }: UseSettingsMenuParams) {
           .setIcon('documents')
           .setTitle(t('Archive cards'))
           .onClick(() => setConfirmAction('archive-items'));
+      })
+      .addSeparator()
+      .addItem((i) => {
+        i.setIcon('plus-with-circle')
+          .setTitle(t('Insert list before'))
+          .onClick(() =>
+            boardModifiers.insertLane(path, {
+              ...LaneTemplate,
+              id: generateInstanceId(),
+              children: [],
+              data: {
+                title: '',
+                shouldMarkItemsComplete: false,
+                forceEditMode: true,
+              },
+            })
+          );
+      })
+      .addItem((i) => {
+        i.setIcon('plus-with-circle')
+          .setTitle(t('Insert list after'))
+          .onClick(() => {
+            const newPath = [...path];
+
+            newPath[newPath.length - 1] = newPath[newPath.length - 1] + 1;
+
+            boardModifiers.insertLane(newPath, {
+              ...LaneTemplate,
+              id: generateInstanceId(),
+              children: [],
+              data: {
+                title: '',
+                shouldMarkItemsComplete: false,
+                forceEditMode: true,
+              },
+            });
+          });
       })
       .addSeparator()
       .addItem((item) => {
