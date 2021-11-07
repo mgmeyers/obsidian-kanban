@@ -141,7 +141,7 @@ export function useSettingsMenu({ setIsEditing, path }: UseSettingsMenuParams) {
           .setTitle(t('Delete list'))
           .onClick(() => setConfirmAction('delete'));
       });
-  }, [stateManager, setConfirmAction]);
+  }, [stateManager, setConfirmAction, path]);
 
   return {
     settingsMenu,
