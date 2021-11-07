@@ -30,7 +30,7 @@
     "import-sort-cli": "^6.0.0",
     "import-sort-style-module-alias": "^1.1.0",
     "obsidian": "^0.12.11",
-    "obsidian-dataview": "^0.4.5",
+    "obsidian-dataview": "^0.4.20",
     "obsidian-plugin-cli": "^0.8.1",
     "prettier": "^2.3.2",
     "replace": "^1.2.1",

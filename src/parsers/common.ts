@@ -165,9 +165,21 @@ export function getLinkedPageMetadata(
       };
       haveData = true;
     } else if (dataviewCache && dataviewCache[k.metadataKey]) {
+      const cachedValue = dataviewCache[k.metadataKey];
+      const val = cachedValue.values || cachedValue.val || cachedValue;
+
+      // Protect against proxy values
+      if (
+        !Array.isArray(val) &&
+        typeof val !== 'string' &&
+        typeof val !== 'number'
+      ) {
+        return;
+      }
+
       metadata[k.metadataKey] = {
         ...k,
-        value: dataviewCache[k.metadataKey],
+        value: val,
       };
       haveData = true;
     }

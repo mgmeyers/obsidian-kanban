@@ -1393,6 +1393,11 @@ electron-to-chromium@^1.3.811:
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.822.tgz#7036edc7f669b0aa79e9801dc5f56866c6ddc0b2"
   integrity sha512-k7jG5oYYHxF4jx6PcqwHX3JVME/OjzolqOZiIogi9xtsfsmTjTdie4x88OakYFPEa8euciTgCCzvVNwvmjHb1Q==
 
+emoji-regex@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-10.0.0.tgz#96559e19f82231b436403e059571241d627c42b8"
+  integrity sha512-KmJa8l6uHi1HrBI34udwlzZY1jOEuID/ft4d8BSSEdRyap7PwBEt910453PJa5MuGvxkLqlt4Uvhu7tttFHViw==
+
 emoji-regex@^7.0.1:
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-7.0.3.tgz#933a04052860c85e83c122479c4748a8e4c72156"
@@ -2978,10 +2983,10 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
-luxon@^1.25.0:
-  version "1.28.0"
-  resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.28.0.tgz#e7f96daad3938c06a62de0fb027115d251251fbf"
-  integrity sha512-TfTiyvZhwBYM/7QdAVDh+7dBTBA29v4ik0Ce9zda3Mnf8on1S5KJI8P2jKFZ8+5C0jhmr0KwJEO/Wdpm0VeWJQ==
+luxon@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-2.0.2.tgz#11f2cd4a11655fdf92e076b5782d7ede5bcdd133"
+  integrity sha512-ZRioYLCgRHrtTORaZX1mx+jtxKtKuI5ZDvHNAmqpUzGqSrR+tL4FVLn/CUGMA3h0+AKD1MAxGI5GnCqR5txNqg==
 
 make-dir@^3.0.0:
   version "3.1.0"
@@ -3509,15 +3514,15 @@ obsidian-daily-notes-interface@^0.9.4:
     obsidian obsidianmd/obsidian-api#master
     tslib "2.1.0"
 
-obsidian-dataview@^0.4.5:
-  version "0.4.5"
-  resolved "https://registry.yarnpkg.com/obsidian-dataview/-/obsidian-dataview-0.4.5.tgz#2b69fcd6dd4b2714e47601508bb27c3bab3790b5"
-  integrity sha512-gmETJf7BGavqgQhVwdShhqQgXH1Q7tiHFL2cL1urJzqymVR0gEc1ydX1zjBc8Jz2HxAD/GCfd17+L2USn070gw==
+obsidian-dataview@^0.4.20:
+  version "0.4.20"
+  resolved "https://registry.yarnpkg.com/obsidian-dataview/-/obsidian-dataview-0.4.20.tgz#e0f6a98e865094a071b0c37dcf02ea688947eeb4"
+  integrity sha512-o7Kfoofj8gtZJOP7m6Jamk2Tr3ALz6F5udgCiJDr+2JLAjYYJX0kop//10bK2MgCx5aEdONURExiwEtXBKSZ1A==
   dependencies:
-    luxon "^1.25.0"
+    emoji-regex "^10.0.0"
+    luxon "^2.0.2"
     papaparse "^5.3.1"
-    parsimmon "^1.16.0"
-    rollup-plugin-web-worker-loader "^1.6.1"
+    parsimmon "^1.18.0"
 
 obsidian-plugin-cli@^0.8.1:
   version "0.8.1"
@@ -3719,7 +3724,7 @@ parse-json@^5.0.0:
     json-parse-even-better-errors "^2.3.0"
     lines-and-columns "^1.1.6"
 
-parsimmon@^1.16.0:
+parsimmon@^1.18.0:
   version "1.18.0"
   resolved "https://registry.yarnpkg.com/parsimmon/-/parsimmon-1.18.0.tgz#21db143f6e6386237394caf7ee94722879c54b5f"
   integrity sha512-EtVsGuQfDgwGgXzsSDe+5egRPwbcgKRd/omQ1L3Oj2pHy0gYqd+Q7zrBIQ7P/BN6DWUP9vV45HIgZHCmssdzMg==
@@ -4068,11 +4073,6 @@ rimraf@^3.0.2:
   integrity sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==
   dependencies:
     glob "^7.1.3"
-
-rollup-plugin-web-worker-loader@^1.6.1:
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-web-worker-loader/-/rollup-plugin-web-worker-loader-1.6.1.tgz#9d7a27575b64b0780fe4e8b3bc87470d217e485f"
-  integrity sha512-4QywQSz1NXFHKdyiou16mH3ijpcfLtLGOrAqvAqu1Gx+P8+zj+3gwC2BSL/VW1d+LW4nIHC8F7d7OXhs9UdR2A==
 
 run-async@^2.2.0:
   version "2.4.1"
