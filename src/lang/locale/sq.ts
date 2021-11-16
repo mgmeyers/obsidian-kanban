@@ -1,3 +1,3 @@
-// British English
+// Shqip
 
 export default {};
