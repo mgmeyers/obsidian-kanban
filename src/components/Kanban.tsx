@@ -173,6 +173,10 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
 
   const onClick = React.useCallback(
     async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (e.type === 'auxclick' && e.button == 2) {
+        return;
+      }
+
       const targetEl = e.target as HTMLElement;
       const closestAnchor =
         targetEl.tagName === 'A' ? targetEl : targetEl.closest('a');
