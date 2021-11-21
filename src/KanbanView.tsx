@@ -38,7 +38,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   get isPrimary(): boolean {
-    return this.plugin.getStateManager(this.file).getAView() === this;
+    return this.plugin.getStateManager(this.file)?.getAView() === this;
   }
 
   get id(): string {
@@ -191,14 +191,6 @@ export class KanbanView extends TextFileView implements HoverParent {
     return this.file?.basename || 'Kanban';
   }
 
-  async onClose() {
-    // Remove draggables from render, as the DOM has already detached
-    this.plugin.removeView(this);
-
-    Object.values(this.actionButtons).forEach((b) => b.remove());
-    this.actionButtons = {};
-  }
-
   async onLoadFile(file: TFile) {
     try {
       return await super.onLoadFile(file);
@@ -211,12 +203,20 @@ export class KanbanView extends TextFileView implements HoverParent {
     }
   }
 
-  async onUnloadFile(file: TFile) {
+  destroy() {
+    // Remove draggables from render, as the DOM has already detached
     this.plugin.removeView(this);
 
     Object.values(this.actionButtons).forEach((b) => b.remove());
     this.actionButtons = {};
+  }
 
+  async onClose() {
+    this.destroy();
+  }
+
+  async onUnloadFile(file: TFile) {
+    this.destroy();
     return await super.onUnloadFile(file);
   }
 

@@ -61,9 +61,15 @@ export class StateManager {
     }
 
     if (shouldParseData) {
-      this.newBoardPromise = this.newBoard(data).then(() => {
-        this.newBoardPromise = null;
-      });
+      if (this.newBoardPromise !== null) {
+        this.newBoardPromise.then(() => {
+          return this.newBoard(data);
+        });
+      } else {
+        this.newBoardPromise = this.newBoard(data).then(() => {
+          this.newBoardPromise = null;
+        });
+      }
     }
   }
 
@@ -86,39 +92,23 @@ export class StateManager {
     };
   }
 
-  private isParseThrottled = false;
   async newBoard(md: string) {
-    if (!this.isParseThrottled) {
-      this.isParseThrottled = true;
-      await this.setState(await this.getParsedBoard(md), false);
-      setTimeout(() => {
-        this.isParseThrottled = false;
-      }, 50);
-    }
+    await this.setState(await this.getParsedBoard(md), false);
   }
 
-  private isSaveThrottled = false;
   saveToDisk() {
     if (this.state.data.errors.length > 0) {
       return;
     }
 
-    if (!this.isSaveThrottled) {
-      this.isSaveThrottled = true;
+    const view = this.getAView();
+    const fileStr = this.parser.boardToMd(this.state);
 
-      const view = this.getAView();
-      const fileStr = this.parser.boardToMd(this.state);
+    view.requestSaveToDisk(fileStr);
 
-      view.requestSaveToDisk(fileStr);
-
-      this.views.forEach((view) => {
-        view.data = fileStr;
-      });
-
-      setTimeout(() => {
-        this.isSaveThrottled = false;
-      }, 50);
-    }
+    this.views.forEach((view) => {
+      view.data = fileStr;
+    });
   }
 
   async forceRefresh() {
@@ -379,7 +369,7 @@ export class StateManager {
   }
 
   async reparseBoardFromMd() {
-    this.setState(await this.getParsedBoard(this.getAView().data));
+    this.setState(await this.getParsedBoard(this.getAView().data), false);
   }
 
   async archiveCompletedCards() {
