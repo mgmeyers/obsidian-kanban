@@ -131,7 +131,7 @@ export function getLinkedPageMetadata(
     if (k.metadataKey === 'tags') {
       let tags = cache?.tags || [];
 
-      if (cache?.frontmatter?.tags) {
+      if (Array.isArray(cache?.frontmatter?.tags)) {
         tags = [].concat(
           tags,
           cache.frontmatter.tags.map((tag: string) => ({ tag: `#${tag}` }))
