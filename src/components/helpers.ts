@@ -82,53 +82,61 @@ export async function applyTemplate(
 
   if (templateFile && templateFile instanceof TFile) {
     const activeView = stateManager.app.workspace.activeLeaf.view;
-    // Force the view to source mode, if needed
-    if (
-      activeView instanceof MarkdownView &&
-      activeView.getMode() !== 'source'
-    ) {
-      await activeView.setState(
-        {
-          ...activeView.getState(),
-          mode: 'source',
-        },
-        {}
-      );
-    }
 
-    const {
-      templatesEnabled,
-      templaterEnabled,
-      templatesPlugin,
-      templaterPlugin,
-    } = getTemplatePlugins(stateManager.app);
+    try {
+      // Force the view to source mode, if needed
+      if (
+        activeView instanceof MarkdownView &&
+        activeView.getMode() !== 'source'
+      ) {
+        await activeView.setState(
+          {
+            ...activeView.getState(),
+            mode: 'source',
+          },
+          {}
+        );
+      }
 
-    const templateContent = await stateManager.app.vault.read(templateFile);
+      const {
+        templatesEnabled,
+        templaterEnabled,
+        templatesPlugin,
+        templaterPlugin,
+      } = getTemplatePlugins(stateManager.app);
 
-    // If both plugins are enabled, attempt to detect templater first
-    if (templatesEnabled && templaterEnabled) {
-      if (templaterDetectRegex.test(templateContent)) {
+      const templateContent = await stateManager.app.vault.read(templateFile);
+
+      // If both plugins are enabled, attempt to detect templater first
+      if (templatesEnabled && templaterEnabled) {
+        if (templaterDetectRegex.test(templateContent)) {
+          return await templaterPlugin.append_template_to_active_file(
+            templateFile
+          );
+        }
+
+        return await templatesPlugin.instance.insertTemplate(templateFile);
+      }
+
+      if (templatesEnabled) {
+        return await templatesPlugin.instance.insertTemplate(templateFile);
+      }
+
+      if (templaterEnabled) {
         return await templaterPlugin.append_template_to_active_file(
           templateFile
         );
       }
 
-      return await templatesPlugin.instance.insertTemplate(templateFile);
+      // No template plugins enabled so we can just append the template to the doc
+      await stateManager.app.vault.modify(
+        stateManager.app.workspace.getActiveFile(),
+        templateContent
+      );
+    } catch (e) {
+      console.error(e);
+      stateManager.setError(e);
     }
-
-    if (templatesEnabled) {
-      return await templatesPlugin.instance.insertTemplate(templateFile);
-    }
-
-    if (templaterEnabled) {
-      return await templaterPlugin.append_template_to_active_file(templateFile);
-    }
-
-    // No template plugins enabled so we can just append the template to the doc
-    await stateManager.app.vault.modify(
-      stateManager.app.workspace.getActiveFile(),
-      templateContent
-    );
   }
 }
 

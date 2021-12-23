@@ -13,6 +13,7 @@ import { c } from './components/helpers';
 import { Kanban } from './components/Kanban';
 import { Board } from './components/types';
 import { Emitter, createEmitter } from './dnd/util/emitter';
+import { hasFrontmatterKey } from './helpers';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
 import { SettingsModal } from './Settings';
@@ -244,6 +245,15 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   setViewData(data: string, clear?: boolean) {
+    if (!hasFrontmatterKey(data)) {
+      this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] =
+        'markdown';
+      this.plugin.removeView(this);
+      this.plugin.setMarkdownView(this.leaf, false);
+
+      return;
+    }
+
     this.plugin.addView(this, data, !clear && this.isPrimary);
   }
 

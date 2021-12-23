@@ -213,12 +213,17 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
           const parsed = moment(destination, dateFormat, true);
 
           if (parsed.isValid()) {
-            const dailyNote = await createDailyNote(parsed);
-            const leaf = inNewLeaf
-              ? view.app.workspace.splitActiveLeaf()
-              : view.app.workspace.getUnpinnedLeaf();
+            try {
+              const dailyNote = await createDailyNote(parsed);
+              const leaf = inNewLeaf
+                ? view.app.workspace.splitActiveLeaf()
+                : view.app.workspace.getUnpinnedLeaf();
 
-            await leaf.openFile(dailyNote, { active: true });
+              await leaf.openFile(dailyNote, { active: true });
+            } catch (e) {
+              console.error(e);
+              stateManager.setError(e);
+            }
             return;
           }
         }

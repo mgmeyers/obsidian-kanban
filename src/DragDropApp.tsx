@@ -49,10 +49,10 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
           dropPath.slice(0, -1)
         );
 
-        const parseItems = async (titles: string[]) => {
-          return await Promise.all(
-            titles.map(async (title) => {
-              return await stateManager.getNewItem(title);
+        const parseItems = (titles: string[]) => {
+          return Promise.all(
+            titles.map((title) => {
+              return stateManager.getNewItem(title);
             })
           );
         };
@@ -69,11 +69,14 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
               })
             );
 
-            stateManager.setState((board) =>
+            return stateManager.setState((board) =>
               insertEntity(board, dropPath, processed)
             );
           })
-          .catch((e) => console.error(e));
+          .catch((e) => {
+            stateManager.setError(e);
+            console.error(e);
+          });
 
         return;
       }

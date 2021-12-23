@@ -366,16 +366,20 @@ export async function renderMarkdown(
 ): Promise<HTMLDivElement> {
   const dom = createDiv();
 
-  await MarkdownRenderer.renderMarkdown(
-    markdownString,
-    dom,
-    view.file.path,
-    view
-  );
+  try {
+    await MarkdownRenderer.renderMarkdown(
+      markdownString,
+      dom,
+      view.file.path,
+      view
+    );
 
-  await handleEmbeds(dom, view, 5);
-  applyCheckboxIndexes(dom);
-  findUnresolvedLinks(dom, view);
+    await handleEmbeds(dom, view, 5);
+    applyCheckboxIndexes(dom);
+    findUnresolvedLinks(dom, view);
+  } catch (e) {
+    console.error(e);
+  }
 
   return dom;
 }

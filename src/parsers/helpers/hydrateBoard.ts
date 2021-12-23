@@ -10,21 +10,32 @@ import { StateManager } from 'src/StateManager';
 import { getSearchValue } from '../common';
 
 export async function hydrateLane(stateManager: StateManager, lane: Lane) {
-  const laneTitleDom = await renderMarkdown(
-    stateManager.getAView(),
-    lane.data.title
-  );
+  try {
+    const laneTitleDom = await renderMarkdown(
+      stateManager.getAView(),
+      lane.data.title
+    );
+    lane.data.dom = laneTitleDom;
 
-  lane.data.dom = laneTitleDom;
-
-  return lane;
+    return lane;
+  } catch (e) {
+    stateManager.setError(e);
+    throw e;
+  }
 }
 
 export async function hydrateItem(stateManager: StateManager, item: Item) {
-  const itemTitleDom = await renderMarkdown(
-    stateManager.getAView(),
-    item.data.title
-  );
+  let itemTitleDom: HTMLDivElement;
+
+  try {
+    itemTitleDom = await renderMarkdown(
+      stateManager.getAView(),
+      item.data.title
+    );
+  } catch (e) {
+    stateManager.setError(e);
+    throw e;
+  }
 
   item.data.dom = itemTitleDom;
   item.data.titleSearch = getSearchValue(
@@ -75,16 +86,26 @@ export async function hydrateBoard(
   stateManager: StateManager,
   board: Board
 ): Promise<Board> {
-  await Promise.all(
-    board.children.map(async (lane) => {
-      await hydrateLane(stateManager, lane);
-      await Promise.all(
-        lane.children.map(async (item) => {
-          await hydrateItem(stateManager, item);
-        })
-      );
-    })
-  );
+  try {
+    await Promise.all(
+      board.children.map(async (lane) => {
+        try {
+          await hydrateLane(stateManager, lane);
+          await Promise.all(
+            lane.children.map((item) => {
+              return hydrateItem(stateManager, item);
+            })
+          );
+        } catch (e) {
+          stateManager.setError(e);
+          throw e;
+        }
+      })
+    );
+  } catch (e) {
+    stateManager.setError(e);
+    throw e;
+  }
 
   return board;
 }
@@ -138,19 +159,24 @@ export async function hydratePostOp(
     return paths;
   }, [] as Path[]);
 
-  await Promise.all(
-    toHydrate.map(async (path) => {
-      const entity = getEntityFromPath(board, path);
+  try {
+    await Promise.all(
+      toHydrate.map((path) => {
+        const entity = getEntityFromPath(board, path);
 
-      if (entity.type === DataTypes.Lane) {
-        return await hydrateLane(stateManager, entity);
-      }
+        if (entity.type === DataTypes.Lane) {
+          return hydrateLane(stateManager, entity);
+        }
 
-      if (entity.type === DataTypes.Item) {
-        return await hydrateItem(stateManager, entity);
-      }
-    })
-  );
+        if (entity.type === DataTypes.Item) {
+          return hydrateItem(stateManager, entity);
+        }
+      })
+    );
+  } catch (e) {
+    stateManager.setError(e);
+    throw e;
+  }
 
   return board;
 }

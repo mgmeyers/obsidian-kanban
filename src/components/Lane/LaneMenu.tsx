@@ -1,7 +1,7 @@
 import { Menu } from 'obsidian';
 import React from 'react';
-import { Path } from 'src/dnd/types';
 
+import { Path } from 'src/dnd/types';
 import { t } from 'src/lang/helpers';
 
 import { KanbanContext } from '../context';

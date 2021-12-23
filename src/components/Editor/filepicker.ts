@@ -383,13 +383,19 @@ export function getBlockSearchConfig(
         const blockId = generateInstanceId();
         const spacer = shouldInsertAfter(result.item.block.type) ? '\n\n' : ' ';
 
-        stateManager.app.vault.cachedRead(result.item.file).then((content) => {
-          const newContent = `${content.substring(
-            0,
-            result.item.block.end
-          )}${spacer}^${blockId}${content.substring(result.item.block.end)}`;
-          stateManager.app.vault.modify(result.item.file, newContent);
-        });
+        stateManager.app.vault
+          .cachedRead(result.item.file)
+          .then((content) => {
+            const newContent = `${content.substring(
+              0,
+              result.item.block.end
+            )}${spacer}^${blockId}${content.substring(result.item.block.end)}`;
+            stateManager.app.vault.modify(result.item.file, newContent);
+          })
+          .catch((e) => {
+            stateManager.setError(e);
+            console.error(e);
+          });
 
         subpath += blockId;
       }

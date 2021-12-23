@@ -119,7 +119,10 @@ export const ItemContent = React.memo(function ItemContent({
           .then((item) => {
             boardModifiers.updateItem(path, item);
           })
-          .catch((e) => console.error(e));
+          .catch((e) => {
+            stateManager.setError(e);
+            console.error(e);
+          });
 
         setIsEditing(false);
         return true;
@@ -149,7 +152,10 @@ export const ItemContent = React.memo(function ItemContent({
           .then((item) => {
             boardModifiers.updateItem(path, item);
           })
-          .catch((e) => console.error(e));
+          .catch((e) => {
+            stateManager.setError(e);
+            console.error(e);
+          });
       }
     },
     [path, boardModifiers, stateManager, item]

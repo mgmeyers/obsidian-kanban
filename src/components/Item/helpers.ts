@@ -137,7 +137,10 @@ export function constructMenuDatePickerOnChange({
       .then((item) => {
         boardModifiers.updateItem(path, item);
       })
-      .catch((e) => console.error(e));
+      .catch((e) => {
+        stateManager.setError(e);
+        console.error(e);
+      });
   };
 }
 
@@ -301,7 +304,10 @@ export function constructMenuTimePickerOnChange({
       .then((item) => {
         boardModifiers.updateItem(path, item);
       })
-      .catch((e) => console.error(e));
+      .catch((e) => {
+        stateManager.setError(e);
+        console.error(e);
+      });
   };
 }
 

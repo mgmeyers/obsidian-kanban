@@ -271,7 +271,11 @@ export async function updateItemContent(
     },
   });
 
-  await hydrateItem(stateManager, newItem);
+  try {
+    await hydrateItem(stateManager, newItem);
+  } catch (e) {
+    console.error(e);
+  }
 
   return newItem;
 }
@@ -301,33 +305,47 @@ export async function newItem(
     data: itemData,
   };
 
-  await hydrateItem(stateManager, newItem);
+  try {
+    await hydrateItem(stateManager, newItem);
+  } catch (e) {
+    console.error(e);
+  }
 
   return newItem;
 }
 
 export async function reparseBoard(stateManager: StateManager, board: Board) {
-  return update(board, {
-    children: {
-      $set: await Promise.all(
-        board.children.map(async (lane) => {
-          return update(lane, {
-            children: {
-              $set: await Promise.all(
-                lane.children.map(async (item) => {
-                  return await updateItemContent(
-                    stateManager,
-                    item,
-                    item.data.titleRaw
-                  );
-                })
-              ),
-            },
-          });
-        })
-      ),
-    },
-  });
+  try {
+    return update(board, {
+      children: {
+        $set: await Promise.all(
+          board.children.map(async (lane) => {
+            try {
+              return update(lane, {
+                children: {
+                  $set: await Promise.all(
+                    lane.children.map((item) => {
+                      return updateItemContent(
+                        stateManager,
+                        item,
+                        item.data.titleRaw
+                      );
+                    })
+                  ),
+                },
+              });
+            } catch (e) {
+              stateManager.setError(e);
+              throw e;
+            }
+          })
+        ),
+      },
+    });
+  } catch (e) {
+    stateManager.setError(e);
+    throw e;
+  }
 }
 
 function itemToMd(item: Item) {

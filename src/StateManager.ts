@@ -66,9 +66,14 @@ export class StateManager {
           return this.newBoard(data);
         });
       } else {
-        this.newBoardPromise = this.newBoard(data).then(() => {
-          this.newBoardPromise = null;
-        });
+        this.newBoardPromise = this.newBoard(data)
+          .then(() => {
+            this.newBoardPromise = null;
+          })
+          .catch((e) => {
+            console.error(e);
+            this.setError(e);
+          });
       }
     }
   }
@@ -93,7 +98,11 @@ export class StateManager {
   }
 
   async newBoard(md: string) {
-    await this.setState(await this.getParsedBoard(md), false);
+    try {
+      await this.setState(await this.getParsedBoard(md), false);
+    } catch (e) {
+      this.setError(e);
+    }
   }
 
   saveToDisk() {
@@ -113,11 +122,16 @@ export class StateManager {
 
   async forceRefresh() {
     if (this.state) {
-      this.compileSettings();
-      this.state = await this.parser.reparseBoard();
+      try {
+        this.compileSettings();
+        this.state = await this.parser.reparseBoard();
 
-      this.stateReceivers.forEach((receiver) => receiver(this.state));
-      this.views.forEach((view) => view.initHeaderButtons());
+        this.stateReceivers.forEach((receiver) => receiver(this.state));
+        this.views.forEach((view) => view.initHeaderButtons());
+      } catch (e) {
+        console.error(e);
+        this.setError(e);
+      }
     }
   }
 
@@ -128,47 +142,52 @@ export class StateManager {
       | ((board: Board) => Promise<Board>),
     shouldSave: boolean = true
   ) {
-    const oldSettings = this.state?.data.settings;
-    const newState =
-      typeof state === 'function' ? await state(this.state) : state;
-    const newSettings = newState?.data.settings;
+    try {
+      const oldSettings = this.state?.data.settings;
+      const newState =
+        typeof state === 'function' ? await state(this.state) : state;
+      const newSettings = newState?.data.settings;
 
-    if (
-      oldSettings &&
-      newSettings &&
-      shouldRefreshBoard(oldSettings, newSettings)
-    ) {
-      this.state = update(this.state, {
-        data: {
-          settings: {
-            $set: newSettings,
+      if (
+        oldSettings &&
+        newSettings &&
+        shouldRefreshBoard(oldSettings, newSettings)
+      ) {
+        this.state = update(this.state, {
+          data: {
+            settings: {
+              $set: newSettings,
+            },
           },
-        },
-      });
-      this.compileSettings();
-      this.state = await this.parser.reparseBoard();
-    } else {
-      this.state = newState;
-      this.compileSettings();
-    }
+        });
+        this.compileSettings();
+        this.state = await this.parser.reparseBoard();
+      } else {
+        this.state = newState;
+        this.compileSettings();
+      }
 
-    this.views.forEach((view) => view.initHeaderButtons());
+      this.views.forEach((view) => view.initHeaderButtons());
 
-    if (shouldSave) {
-      this.saveToDisk();
-    }
+      if (shouldSave) {
+        this.saveToDisk();
+      }
 
-    this.stateReceivers.forEach((receiver) => receiver(this.state));
+      this.stateReceivers.forEach((receiver) => receiver(this.state));
 
-    if (oldSettings !== newSettings && newSettings) {
-      this.settingsNotifiers.forEach((notifiers, key) => {
-        if (
-          (!oldSettings && newSettings) ||
-          oldSettings[key] !== newSettings[key]
-        ) {
-          notifiers.forEach((fn) => fn());
-        }
-      });
+      if (oldSettings !== newSettings && newSettings) {
+        this.settingsNotifiers.forEach((notifiers, key) => {
+          if (
+            (!oldSettings && newSettings) ||
+            oldSettings[key] !== newSettings[key]
+          ) {
+            notifiers.forEach((fn) => fn());
+          }
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      this.setError(e);
     }
   }
 
@@ -369,7 +388,12 @@ export class StateManager {
   }
 
   async reparseBoardFromMd() {
-    this.setState(await this.getParsedBoard(this.getAView().data), false);
+    try {
+      this.setState(await this.getParsedBoard(this.getAView().data), false);
+    } catch (e) {
+      console.error(e);
+      this.setError(e);
+    }
   }
 
   async archiveCompletedCards() {
@@ -412,22 +436,26 @@ export class StateManager {
       archived
     );
 
-    this.setState(
-      update(board, {
-        children: {
-          $set: lanes,
-        },
-        data: {
-          archive: {
-            $push: shouldAppendArchiveDate
-              ? await Promise.all(
-                  archived.map(async (item) => await appendArchiveDate(item))
-                )
-              : archived,
+    try {
+      this.setState(
+        update(board, {
+          children: {
+            $set: lanes,
           },
-        },
-      })
-    );
+          data: {
+            archive: {
+              $push: shouldAppendArchiveDate
+                ? await Promise.all(
+                    archived.map((item) => appendArchiveDate(item))
+                  )
+                : archived,
+            },
+          },
+        })
+      );
+    } catch (e) {
+      this.setError(e);
+    }
   }
 
   getNewItem(content: string, isComplete?: boolean, forceEdit?: boolean) {

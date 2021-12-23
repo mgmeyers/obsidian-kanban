@@ -116,7 +116,10 @@ export function useItemMenu({
                   .then((item) => {
                     boardModifiers.updateItem(path, item);
                   })
-                  .catch((e) => console.error(e));
+                  .catch((e) => {
+                    stateManager.setError(e);
+                    console.error(e);
+                  });
               });
           })
           .addItem((i) => {
@@ -147,7 +150,10 @@ export function useItemMenu({
                     .then((item) => {
                       boardModifiers.updateItem(path, item);
                     })
-                    .catch((e) => console.error(e));
+                    .catch((e) => {
+                      stateManager.setError(e);
+                      console.error(e);
+                    });
                 }
               });
           })
@@ -162,8 +168,8 @@ export function useItemMenu({
                   .split(/[\r\n]+/g)
                   .map((t) => t.trim());
                 const newItems = await Promise.all(
-                  titles.map(async (title) => {
-                    return await stateManager.getNewItem(title);
+                  titles.map((title) => {
+                    return stateManager.getNewItem(title);
                   })
                 );
 
@@ -257,7 +263,10 @@ export function useItemMenu({
                   .then((item) => {
                     boardModifiers.updateItem(path, item);
                   })
-                  .catch((e) => console.error(e));
+                  .catch((e) => {
+                    stateManager.setError(e);
+                    console.error(e);
+                  });
               });
           });
 
@@ -299,7 +308,10 @@ export function useItemMenu({
                     .then((item) => {
                       boardModifiers.updateItem(path, item);
                     })
-                    .catch((e) => console.error(e));
+                    .catch((e) => {
+                      stateManager.setError(e);
+                      console.error(e);
+                    });
                 });
             });
           }

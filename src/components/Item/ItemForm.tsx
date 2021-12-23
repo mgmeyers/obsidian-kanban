@@ -41,13 +41,17 @@ export function ItemForm({
   }, []);
 
   const addItemsFromStrings = async (titles: string[]) => {
-    addItems(
-      await Promise.all(
-        titles.map(async (title) => {
-          return await stateManager.getNewItem(title);
-        })
-      )
-    );
+    try {
+      addItems(
+        await Promise.all(
+          titles.map((title) => {
+            return stateManager.getNewItem(title);
+          })
+        )
+      );
+    } catch (e) {
+      stateManager.setError(e);
+    }
   };
 
   const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

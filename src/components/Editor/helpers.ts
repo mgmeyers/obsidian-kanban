@@ -350,12 +350,17 @@ export async function handlePaste(
     e.preventDefault();
   }
 
-  const pasteLines = await handleDragOrPaste(stateManager, e.nativeEvent);
+  try {
+    const pasteLines = await handleDragOrPaste(stateManager, e.nativeEvent);
 
-  if (shouldConsumePaste) {
-    const input = e.target as HTMLTextAreaElement;
-    const paste = pasteLines.join('\n');
+    if (shouldConsumePaste) {
+      const input = e.target as HTMLTextAreaElement;
+      const paste = pasteLines.join('\n');
 
-    replaceSelection(input, paste);
+      replaceSelection(input, paste);
+    }
+  } catch (e) {
+    console.error(e);
+    stateManager.setError(e);
   }
 }

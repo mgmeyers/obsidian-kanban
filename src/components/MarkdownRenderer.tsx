@@ -37,14 +37,19 @@ export const MarkdownRenderer = React.memo(function MarkdownRenderer({
   const markRef = React.useRef<Mark>();
 
   React.useEffect(() => {
-    renderMarkdown(stateManager.getAView(), markdownString).then((el) => {
-      contentRef.current = el;
-      markRef.current = new Mark(el);
+    renderMarkdown(stateManager.getAView(), markdownString)
+      .then((el) => {
+        contentRef.current = el;
+        markRef.current = new Mark(el);
 
-      if (wrapperRef.current) {
-        appendOrReplaceFirstChild(wrapperRef.current, el);
-      }
-    });
+        if (wrapperRef.current) {
+          appendOrReplaceFirstChild(wrapperRef.current, el);
+        }
+      })
+      .catch((e) => {
+        stateManager.setError(e);
+        console.error(e);
+      });
   }, [stateManager, markdownString]);
 
   React.useEffect(() => {

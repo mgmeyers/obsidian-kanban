@@ -178,14 +178,14 @@ export default class KanbanPlugin extends Plugin {
     );
   }
 
-  async setMarkdownView(leaf: WorkspaceLeaf) {
+  async setMarkdownView(leaf: WorkspaceLeaf, focus: boolean = true) {
     await leaf.setViewState(
       {
         type: 'markdown',
         state: leaf.view.getState(),
         popstate: true,
       } as ViewState,
-      { focus: true }
+      { focus }
     );
   }
 
@@ -353,9 +353,12 @@ export default class KanbanPlugin extends Plugin {
 
         if (checking) return isFileEmpty;
         if (isFileEmpty) {
-          this.app.vault.modify(activeFile, basicFrontmatter).then(() => {
-            this.setKanbanView(activeLeaf);
-          });
+          this.app.vault
+            .modify(activeFile, basicFrontmatter)
+            .then(() => {
+              this.setKanbanView(activeLeaf);
+            })
+            .catch((e) => console.error(e));
         }
       },
     });

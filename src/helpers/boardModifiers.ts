@@ -158,15 +158,20 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
           lane
         );
 
-        return update(removeEntity(boardData, path), {
-          data: {
-            archive: {
-              $unshift: stateManager.getSetting('prepend-archive-date')
-                ? await Promise.all(items.map(appendArchiveDate))
-                : items,
+        try {
+          return update(removeEntity(boardData, path), {
+            data: {
+              archive: {
+                $unshift: stateManager.getSetting('prepend-archive-date')
+                  ? await Promise.all(items.map(appendArchiveDate))
+                  : items,
+              },
             },
-          },
-        });
+          });
+        } catch (e) {
+          stateManager.setError(e);
+          return boardData;
+        }
       });
     },
 
@@ -181,22 +186,27 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
           items
         );
 
-        return update(
-          updateEntity(boardData, path, {
-            children: {
-              $set: [],
-            },
-          }),
-          {
-            data: {
-              archive: {
-                $unshift: stateManager.getSetting('prepend-archive-date')
-                  ? await Promise.all(items.map(appendArchiveDate))
-                  : items,
+        try {
+          return update(
+            updateEntity(boardData, path, {
+              children: {
+                $set: [],
               },
-            },
-          }
-        );
+            }),
+            {
+              data: {
+                archive: {
+                  $unshift: stateManager.getSetting('prepend-archive-date')
+                    ? await Promise.all(items.map(appendArchiveDate))
+                    : items,
+                },
+              },
+            }
+          );
+        } catch (e) {
+          stateManager.setError(e);
+          return boardData;
+        }
       });
     },
 
@@ -246,17 +256,22 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
           item
         );
 
-        return update(removeEntity(boardData, path), {
-          data: {
-            archive: {
-              $push: [
-                stateManager.getSetting('prepend-archive-date')
-                  ? await appendArchiveDate(item)
-                  : item,
-              ],
+        try {
+          return update(removeEntity(boardData, path), {
+            data: {
+              archive: {
+                $push: [
+                  stateManager.getSetting('prepend-archive-date')
+                    ? await appendArchiveDate(item)
+                    : item,
+                ],
+              },
             },
-          },
-        });
+          });
+        } catch (e) {
+          stateManager.setError(e);
+          return boardData;
+        }
       });
     },
 
