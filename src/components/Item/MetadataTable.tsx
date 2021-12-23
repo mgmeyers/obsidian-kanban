@@ -22,6 +22,7 @@ export function ItemMetadata({
     <div className={c('item-metadata-wrapper')}>
       <MetadataTable
         metadata={item.data.metadata.fileMetadata}
+        order={item.data.metadata.fileMetadataOrder}
         searchQuery={searchQuery}
       />
     </div>
@@ -94,19 +95,21 @@ function MetadataValue({ data, searchQuery }: MetadataValueProps) {
 
 export interface MetadataTableProps {
   metadata: { [k: string]: PageData } | null;
+  order?: string[];
   searchQuery?: string;
 }
 
 export const MetadataTable = React.memo(function MetadataTable({
   metadata,
+  order,
   searchQuery,
 }: MetadataTableProps) {
-  if (!metadata) return null;
+  if (!metadata || !order || order.length === 0) return null;
 
   return (
     <table className={c('meta-table')}>
       <tbody>
-        {Object.keys(metadata).map((k) => {
+        {order.map((k) => {
           const data = metadata[k];
           return (
             <tr key={k} className={c('meta-row')}>

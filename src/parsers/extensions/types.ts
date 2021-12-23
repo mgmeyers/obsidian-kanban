@@ -19,4 +19,5 @@ export interface TimeNode extends ValueNode {
 export interface FileNode extends ValueNode {
   fileAccessor: FileAccessor;
   fileMetadata?: FileMetadata;
+  fileMetadataOrder?: string[];
 }

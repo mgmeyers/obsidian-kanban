@@ -35,6 +35,7 @@ export interface ItemMetaData {
   fileAccessor?: FileAccessor;
   file?: TFile | null;
   fileMetadata?: FileMetadata;
+  fileMetadataOrder?: string[];
 }
 
 export interface ItemData {

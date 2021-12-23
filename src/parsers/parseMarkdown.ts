@@ -151,7 +151,10 @@ function getMdastExtensions(stateManager: StateManager) {
       } as FileAccessor;
 
       if (file) {
-        node.fileMetadata = getLinkedPageMetadata(stateManager, file);
+        const metadata = getLinkedPageMetadata(stateManager, file);
+
+        node.fileMetadata = metadata.fileMetadata;
+        node.fileMetadataOrder = metadata.fileMetadataOrder;
       }
     }),
     internalMarkdownLinks((node, isEmbed) => {
@@ -178,7 +181,10 @@ function getMdastExtensions(stateManager: StateManager) {
         } as FileAccessor;
 
         if (file) {
-          node.fileMetadata = getLinkedPageMetadata(stateManager, file);
+          const metadata = getLinkedPageMetadata(stateManager, file);
+
+          node.fileMetadata = metadata.fileMetadata;
+          node.fileMetadataOrder = metadata.fileMetadataOrder;
         }
       }
     }),

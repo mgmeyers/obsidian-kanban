@@ -56,6 +56,7 @@ export function listItemToItemData(md: string, item: ListItem) {
       fileAccessor: undefined,
       file: undefined,
       fileMetadata: undefined,
+      fileMetadataOrder: undefined,
     },
     dom: undefined,
     isComplete: !!item.checked,
@@ -113,6 +114,9 @@ export function listItemToItemData(md: string, item: ListItem) {
       if (genericNode.type === 'wikilink') {
         itemData.metadata.fileAccessor = (genericNode as FileNode).fileAccessor;
         itemData.metadata.fileMetadata = (genericNode as FileNode).fileMetadata;
+        itemData.metadata.fileMetadataOrder = (
+          genericNode as FileNode
+        ).fileMetadataOrder;
         return true;
       }
 
@@ -122,6 +126,9 @@ export function listItemToItemData(md: string, item: ListItem) {
       ) {
         itemData.metadata.fileAccessor = (genericNode as FileNode).fileAccessor;
         itemData.metadata.fileMetadata = (genericNode as FileNode).fileMetadata;
+        itemData.metadata.fileMetadataOrder = (
+          genericNode as FileNode
+        ).fileMetadataOrder;
         return true;
       }
 

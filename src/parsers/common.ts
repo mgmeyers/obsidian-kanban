@@ -95,15 +95,15 @@ export function getDataViewCache(
 export function getLinkedPageMetadata(
   stateManager: StateManager,
   linkedFile: TFile | null | undefined
-): FileMetadata | undefined {
+): { fileMetadata?: FileMetadata; fileMetadataOrder?: string[] } {
   const metaKeys = stateManager.getSetting('metadata-keys');
 
   if (!metaKeys.length) {
-    return;
+    return {};
   }
 
   if (!linkedFile) {
-    return;
+    return {};
   }
 
   const cache = stateManager.app.metadataCache.getFileCache(linkedFile);
@@ -114,7 +114,7 @@ export function getLinkedPageMetadata(
   );
 
   if (!cache && !dataviewCache) {
-    return;
+    return {};
   }
 
   const metadata: FileMetadata = {};
@@ -187,7 +187,12 @@ export function getLinkedPageMetadata(
     }
   });
 
-  return haveData ? metadata : undefined;
+  return {
+    fileMetadata: haveData ? metadata : undefined,
+    fileMetadataOrder: metaKeys
+      .map((k) => k.metadataKey)
+      .filter((k) => !!metadata[k]),
+  };
 }
 
 export function shouldRefreshBoard(
