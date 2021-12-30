@@ -1,7 +1,7 @@
 import animateScrollTo from 'animated-scroll-to';
 import classcat from 'classcat';
 import update from 'immutability-helper';
-import { moment } from 'obsidian';
+import { moment, TFile } from 'obsidian';
 import {
   appHasDailyNotesPluginLoaded,
   createDailyNote,
@@ -219,7 +219,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                 ? view.app.workspace.splitActiveLeaf()
                 : view.app.workspace.getUnpinnedLeaf();
 
-              await leaf.openFile(dailyNote, { active: true });
+              await leaf.openFile(dailyNote as TFile, { active: true });
             } catch (e) {
               console.error(e);
               stateManager.setError(e);
