@@ -21,119 +21,117 @@ interface LaneHeaderProps {
   setIsItemInputVisible?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const LaneHeader = React.memo(
-  ({
-    lane,
-    laneIndex,
-    dragHandleRef,
-    setIsItemInputVisible,
-  }: LaneHeaderProps) => {
-    const { boardModifiers, stateManager } = React.useContext(KanbanContext);
-    const [isEditing, setIsEditing] = React.useState(false);
-    const lanePath = useNestedEntityPath(laneIndex);
+export const LaneHeader = React.memo(function LaneHeader({
+  lane,
+  laneIndex,
+  dragHandleRef,
+  setIsItemInputVisible,
+}: LaneHeaderProps) {
+  const { boardModifiers, stateManager } = React.useContext(KanbanContext);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const lanePath = useNestedEntityPath(laneIndex);
 
-    const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
-      setIsEditing,
-      path: lanePath,
-    });
+  const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
+    setIsEditing,
+    path: lanePath,
+  });
 
-    React.useEffect(() => {
-      if (lane.data.forceEditMode) {
-        setIsEditing(true);
-      }
-    }, [lane.data.forceEditMode]);
+  React.useEffect(() => {
+    if (lane.data.forceEditMode) {
+      setIsEditing(true);
+    }
+  }, [lane.data.forceEditMode]);
 
-    return (
-      <>
-        <div
-          onDoubleClick={() => setIsEditing(true)}
-          className={c('lane-header-wrapper')}
-        >
-          <div className={c('lane-grip')} ref={dragHandleRef}>
-            <GripIcon />
-          </div>
-
-          <LaneTitle
-            isEditing={isEditing}
-            setIsEditing={setIsEditing}
-            itemCount={lane.children.length}
-            title={lane.data.title}
-            onChange={(e) => {
-              boardModifiers.updateLane(
-                lanePath,
-                update(lane, { data: { title: { $set: e.target.value } } })
-              );
-            }}
-          />
-
-          <div className={c('lane-settings-button-wrapper')}>
-            {isEditing ? (
-              <button
-                onClick={() => {
-                  setIsEditing(false);
-                }}
-                aria-label="Close"
-                className={`${c('lane-settings-button')} is-enabled`}
-              >
-                <Icon name="cross" />
-              </button>
-            ) : (
-              <>
-                {setIsItemInputVisible && (
-                  <button
-                    aria-label={t('Add a card')}
-                    className={c('lane-settings-button')}
-                    onClick={() => {
-                      setIsItemInputVisible(true);
-                    }}
-                    onDragOver={(e) => {
-                      if (getDropAction(stateManager, e.dataTransfer)) {
-                        setIsItemInputVisible(true);
-                      }
-                    }}
-                  >
-                    <Icon name="plus-with-circle" />
-                  </button>
-                )}
-                <button
-                  aria-label={t('More options')}
-                  className={c('lane-settings-button')}
-                  onClick={(e) => {
-                    settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
-                  }}
-                >
-                  <Icon name="vertical-three-dots" />
-                </button>
-              </>
-            )}
-          </div>
+  return (
+    <>
+      <div
+        onDoubleClick={() => setIsEditing(true)}
+        className={c('lane-header-wrapper')}
+      >
+        <div className={c('lane-grip')} ref={dragHandleRef}>
+          <GripIcon />
         </div>
 
-        {isEditing && <LaneSettings lane={lane} lanePath={lanePath} />}
+        <LaneTitle
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+          itemCount={lane.children.length}
+          title={lane.data.title}
+          onChange={(e) => {
+            boardModifiers.updateLane(
+              lanePath,
+              update(lane, { data: { title: { $set: e.target.value } } })
+            );
+          }}
+        />
 
-        {confirmAction && (
-          <ConfirmAction
-            lane={lane}
-            action={confirmAction}
-            onAction={() => {
-              switch (confirmAction) {
-                case 'archive':
-                  boardModifiers.archiveLane(lanePath);
-                  break;
-                case 'archive-items':
-                  boardModifiers.archiveLaneItems(lanePath);
-                  break;
-                case 'delete':
-                  boardModifiers.deleteEntity(lanePath);
-                  break;
-              }
+        <div className={c('lane-settings-button-wrapper')}>
+          {isEditing ? (
+            <button
+              onClick={() => {
+                setIsEditing(false);
+              }}
+              aria-label="Close"
+              className={`${c('lane-settings-button')} is-enabled`}
+            >
+              <Icon name="cross" />
+            </button>
+          ) : (
+            <>
+              {setIsItemInputVisible && (
+                <button
+                  aria-label={t('Add a card')}
+                  className={c('lane-settings-button')}
+                  onClick={() => {
+                    setIsItemInputVisible(true);
+                  }}
+                  onDragOver={(e) => {
+                    if (getDropAction(stateManager, e.dataTransfer)) {
+                      setIsItemInputVisible(true);
+                    }
+                  }}
+                >
+                  <Icon name="plus-with-circle" />
+                </button>
+              )}
+              <button
+                aria-label={t('More options')}
+                className={c('lane-settings-button')}
+                onClick={(e) => {
+                  settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
+                }}
+              >
+                <Icon name="vertical-three-dots" />
+              </button>
+            </>
+          )}
+        </div>
+      </div>
 
-              setConfirmAction(null);
-            }}
-            cancel={() => setConfirmAction(null)}
-          />
-        )}
-      </>
-    );
-  }
-);
+      {isEditing && <LaneSettings lane={lane} lanePath={lanePath} />}
+
+      {confirmAction && (
+        <ConfirmAction
+          lane={lane}
+          action={confirmAction}
+          onAction={() => {
+            switch (confirmAction) {
+              case 'archive':
+                boardModifiers.archiveLane(lanePath);
+                break;
+              case 'archive-items':
+                boardModifiers.archiveLaneItems(lanePath);
+                break;
+              case 'delete':
+                boardModifiers.deleteEntity(lanePath);
+                break;
+            }
+
+            setConfirmAction(null);
+          }}
+          cancel={() => setConfirmAction(null)}
+        />
+      )}
+    </>
+  );
+});
