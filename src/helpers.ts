@@ -1,5 +1,34 @@
-import { App } from 'obsidian';
-import { getDailyNoteSettings } from 'obsidian-daily-notes-interface';
+import { App, TFile } from 'obsidian';
+import {
+  getDailyNoteSettings,
+  getDateFromFile,
+} from 'obsidian-daily-notes-interface';
+
+export function gotoNextDailyNote(app: App, file: TFile) {
+  const date = getDateFromFile(file, 'day');
+
+  if (!date || !date.isValid()) {
+    return;
+  }
+
+  const dailyNotePlugin = (app as any).internalPlugins.plugins['daily-notes']
+    .instance;
+
+  dailyNotePlugin.gotoNextExisting(date);
+}
+
+export function gotoPrevDailyNote(app: App, file: TFile) {
+  const date = getDateFromFile(file, 'day');
+
+  if (!date || !date.isValid()) {
+    return;
+  }
+
+  const dailyNotePlugin = (app as any).internalPlugins.plugins['daily-notes']
+    .instance;
+
+  dailyNotePlugin.gotoPreviousExisting(date);
+}
 
 export function buildLinkToDailyNote(app: App, dateStr: string) {
   const dailyNoteSettings = getDailyNoteSettings();

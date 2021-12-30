@@ -13,7 +13,11 @@ import { c } from './components/helpers';
 import { Kanban } from './components/Kanban';
 import { Board } from './components/types';
 import { Emitter, createEmitter } from './dnd/util/emitter';
-import { hasFrontmatterKey } from './helpers';
+import {
+  gotoNextDailyNote,
+  gotoPrevDailyNote,
+  hasFrontmatterKey,
+} from './helpers';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
 import { SettingsModal } from './Settings';
@@ -36,6 +40,19 @@ export class KanbanView extends TextFileView implements HoverParent {
     super(leaf);
     this.plugin = plugin;
     this.emitter = createEmitter();
+
+    this.emitter.on('hotkey', (commmandId) => {
+      switch (commmandId) {
+        case 'daily-notes:goto-prev': {
+          gotoPrevDailyNote(this.app, this.file);
+          break;
+        }
+        case 'daily-notes:goto-next': {
+          gotoNextDailyNote(this.app, this.file);
+          break;
+        }
+      }
+    });
   }
 
   get isPrimary(): boolean {
