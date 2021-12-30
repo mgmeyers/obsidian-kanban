@@ -22,7 +22,7 @@ jobs:
         id: build
         run: |
           yarn
-          yarn run build
+          yarn run release
       # Create the release on github
       - name: Create Release
         id: create_release

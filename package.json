@@ -6,7 +6,8 @@
   "scripts": {
     "check-types": "tsc --noemit",
     "dev": "cross-env BUILD=dev obsidian-plugin dev src/main.ts",
-    "build": "cross-env BUILD=production obsidian-plugin build src/main.ts && yarn docs",
+    "build": "yarn release && yarn docs",
+    "release": "cross-env BUILD=production obsidian-plugin build src/main.ts",
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
     "sort-imports": "import-sort --write \"./src/**/*.{ts,tsx}\"",
