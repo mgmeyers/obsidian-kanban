@@ -25,7 +25,7 @@ import { KanbanContext, SearchContext } from './context';
 import { baseClassName, c } from './helpers';
 import { Icon } from './Icon/Icon';
 import { Lanes } from './Lane/Lane';
-import { LaneForm } from './lane/LaneForm';
+import { LaneForm } from './Lane/LaneForm';
 import { DataTypes } from './types';
 
 const boardScrollTiggers = [DataTypes.Item, DataTypes.Lane];
