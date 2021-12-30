@@ -120,6 +120,7 @@ export function getLinkedPageMetadata(
   const metadata: FileMetadata = {};
   const seenTags: { [k: string]: boolean } = {};
   const seenKey: { [k: string]: boolean } = {};
+  const order: string[] = [];
 
   let haveData = false;
 
@@ -140,6 +141,7 @@ export function getLinkedPageMetadata(
 
       if (tags?.length === 0) return;
 
+      order.push(k.metadataKey);
       metadata.tags = {
         ...k,
         value: tags
@@ -159,6 +161,7 @@ export function getLinkedPageMetadata(
     }
 
     if (cache?.frontmatter && cache.frontmatter[k.metadataKey]) {
+      order.push(k.metadataKey);
       metadata[k.metadataKey] = {
         ...k,
         value: cache.frontmatter[k.metadataKey],
@@ -179,6 +182,7 @@ export function getLinkedPageMetadata(
         return;
       }
 
+      order.push(k.metadataKey);
       metadata[k.metadataKey] = {
         ...k,
         value: val,
@@ -189,9 +193,7 @@ export function getLinkedPageMetadata(
 
   return {
     fileMetadata: haveData ? metadata : undefined,
-    fileMetadataOrder: metaKeys
-      .map((k) => k.metadataKey)
-      .filter((k) => !!metadata[k]),
+    fileMetadataOrder: order,
   };
 }
 
