@@ -63,6 +63,154 @@ export class KanbanView extends TextFileView implements HoverParent {
     return `${(this.leaf as any).id}:::${this.file?.path}`;
   }
 
+  setBoard(board: Board, shouldSave: boolean = true) {
+    const stateManager = this.plugin.stateManagers.get(this.file);
+    stateManager.setState(board, shouldSave);
+  }
+
+  getBoard(): Board {
+    const stateManager = this.plugin.stateManagers.get(this.file);
+    return stateManager.state;
+  }
+
+  getViewType() {
+    return kanbanViewType;
+  }
+
+  getIcon() {
+    return kanbanIcon;
+  }
+
+  getDisplayText() {
+    return this.file?.basename || 'Kanban';
+  }
+
+  async onLoadFile(file: TFile) {
+    try {
+      return await super.onLoadFile(file);
+    } catch (e) {
+      const stateManager = this.plugin.stateManagers.get(this.file);
+
+      stateManager.setError(e);
+
+      throw e;
+    }
+  }
+
+  destroy() {
+    // Remove draggables from render, as the DOM has already detached
+    this.plugin.removeView(this);
+
+    Object.values(this.actionButtons).forEach((b) => b.remove());
+    this.actionButtons = {};
+  }
+
+  async onClose() {
+    this.destroy();
+  }
+
+  async onUnloadFile(file: TFile) {
+    this.destroy();
+    return await super.onUnloadFile(file);
+  }
+
+  handleRename(newPath: string, oldPath: string) {
+    if (this.file.path === newPath) {
+      this.plugin.handleViewFileRename(this, oldPath);
+    }
+  }
+
+  requestSaveToDisk(data: string) {
+    if (this.data !== data && this.isPrimary) {
+      this.data = data;
+      this.requestSave();
+    } else {
+      this.data = data;
+    }
+  }
+
+  getViewData() {
+    // In theory, we could unparse the board here.  In practice, the board can be
+    // in an error state, so we return the last good data here.  (In addition,
+    // unparsing is slow, and getViewData() can be called more often than the
+    // data actually changes.)
+    return this.data;
+  }
+
+  setViewData(data: string, clear?: boolean) {
+    if (!hasFrontmatterKey(data)) {
+      this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] =
+        'markdown';
+      this.plugin.removeView(this);
+      this.plugin.setMarkdownView(this.leaf, false);
+
+      return;
+    }
+
+    this.plugin.addView(this, data, !clear && this.isPrimary);
+  }
+
+  getPortal() {
+    const stateManager = this.plugin.stateManagers.get(this.file);
+    return <Kanban stateManager={stateManager} view={this} />;
+  }
+
+  onMoreOptionsMenu(menu: Menu) {
+    // Add a menu item to force the board to markdown view
+    menu
+      .addItem((item) => {
+        item
+          .setTitle(t('Open as markdown'))
+          .setIcon('document')
+          .onClick(() => {
+            this.plugin.kanbanFileModes[
+              (this.leaf as any).id || this.file.path
+            ] = 'markdown';
+            this.plugin.setMarkdownView(this.leaf);
+          });
+      })
+      .addItem((item) => {
+        item
+          .setTitle(t('Open board settings'))
+          .setIcon('gear')
+          .onClick(() => {
+            const stateManager = this.plugin.stateManagers.get(this.file);
+            const board = stateManager.state;
+
+            new SettingsModal(
+              this,
+              {
+                onSettingsChange: (settings) => {
+                  const updatedBoard = update(board, {
+                    data: {
+                      settings: {
+                        $set: settings,
+                      },
+                    },
+                  });
+
+                  // Save to disk, compute text of new board
+                  stateManager.setState(updatedBoard);
+                },
+              },
+              board.data.settings
+            ).open();
+          });
+      })
+      .addItem((item) => {
+        item
+          .setTitle(t('Archive completed cards'))
+          .setIcon('sheets-in-box')
+          .onClick(() => {
+            const stateManager = this.plugin.stateManagers.get(this.file);
+            stateManager.archiveCompletedCards();
+          });
+      })
+      .addSeparator();
+
+    super.onMoreOptionsMenu(menu);
+  }
+
   initHeaderButtons() {
     const stateManager = this.plugin.getStateManager(this.file);
 
@@ -185,155 +333,6 @@ export class KanbanView extends TextFileView implements HoverParent {
       this.actionButtons['show-add-list'].remove();
       delete this.actionButtons['show-add-list'];
     }
-  }
-
-  setBoard(board: Board, shouldSave: boolean = true) {
-    const stateManager = this.plugin.stateManagers.get(this.file);
-    stateManager.setState(board, shouldSave);
-  }
-
-  getBoard(): Board {
-    const stateManager = this.plugin.stateManagers.get(this.file);
-    return stateManager.state;
-  }
-
-  getViewType() {
-    return kanbanViewType;
-  }
-
-  getIcon() {
-    return kanbanIcon;
-  }
-
-  getDisplayText() {
-    return this.file?.basename || 'Kanban';
-  }
-
-  async onLoadFile(file: TFile) {
-    try {
-      return await super.onLoadFile(file);
-    } catch (e) {
-      const stateManager = this.plugin.stateManagers.get(this.file);
-
-      stateManager.setError(e);
-
-      throw e;
-    }
-  }
-
-  destroy() {
-    // Remove draggables from render, as the DOM has already detached
-    this.plugin.removeView(this);
-
-    Object.values(this.actionButtons).forEach((b) => b.remove());
-    this.actionButtons = {};
-  }
-
-  async onClose() {
-    this.destroy();
-  }
-
-  async onUnloadFile(file: TFile) {
-    this.destroy();
-    return await super.onUnloadFile(file);
-  }
-
-  handleRename(newPath: string, oldPath: string) {
-    if (this.file.path === newPath && this.isPrimary) {
-      this.plugin.handleViewFileRename(this, oldPath);
-    }
-  }
-
-  requestSaveToDisk(data: string) {
-    if (this.data !== data && this.isPrimary) {
-      this.data = data;
-      this.requestSave();
-    } else {
-      this.data = data;
-    }
-  }
-
-  getViewData() {
-    // In theory, we could unparse the board here.  In practice, the board can be
-    // in an error state, so we return the last good data here.  (In addition,
-    // unparsing is slow, and getViewData() can be called more often than the
-    // data actually changes.)
-    return this.data;
-  }
-
-  setViewData(data: string, clear?: boolean) {
-    if (!hasFrontmatterKey(data)) {
-      this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] =
-        'markdown';
-      this.plugin.removeView(this);
-      this.plugin.setMarkdownView(this.leaf, false);
-
-      return;
-    }
-
-    this.plugin.addView(this, data, !clear && this.isPrimary);
-  }
-
-  getPortal() {
-    const stateManager = this.plugin.stateManagers.get(this.file);
-
-    return <Kanban stateManager={stateManager} view={this} />;
-  }
-
-  onMoreOptionsMenu(menu: Menu) {
-    // Add a menu item to force the board to markdown view
-    menu
-      .addItem((item) => {
-        item
-          .setTitle(t('Open as markdown'))
-          .setIcon('document')
-          .onClick(() => {
-            this.plugin.kanbanFileModes[
-              (this.leaf as any).id || this.file.path
-            ] = 'markdown';
-            this.plugin.setMarkdownView(this.leaf);
-          });
-      })
-      .addItem((item) => {
-        item
-          .setTitle(t('Open board settings'))
-          .setIcon('gear')
-          .onClick(() => {
-            const stateManager = this.plugin.stateManagers.get(this.file);
-            const board = stateManager.state;
-
-            new SettingsModal(
-              this,
-              {
-                onSettingsChange: (settings) => {
-                  const updatedBoard = update(board, {
-                    data: {
-                      settings: {
-                        $set: settings,
-                      },
-                    },
-                  });
-
-                  // Save to disk, compute text of new board
-                  stateManager.setState(updatedBoard);
-                },
-              },
-              board.data.settings
-            ).open();
-          });
-      })
-      .addItem((item) => {
-        item
-          .setTitle(t('Archive completed cards'))
-          .setIcon('sheets-in-box')
-          .onClick(() => {
-            const stateManager = this.plugin.stateManagers.get(this.file);
-            stateManager.archiveCompletedCards();
-          });
-      })
-      .addSeparator();
-
-    super.onMoreOptionsMenu(menu);
   }
 
   clear() {

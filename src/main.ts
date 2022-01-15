@@ -169,6 +169,10 @@ export default class KanbanPlugin extends Plugin {
     if (!this.viewMap.has(view.id)) {
       this.viewMap.set(view.id, view);
     }
+
+    if (view.isPrimary) {
+      this.getStateManager(view.file).softRefresh();
+    }
   }
 
   mount() {

@@ -21,8 +21,7 @@ export class StateManager {
   private settingsNotifiers: Map<keyof KanbanSettings, Array<() => void>> =
     new Map();
 
-  private views: Map<string, KanbanView> = new Map();
-  private ids: string[] = [];
+  private viewSet: Set<KanbanView> = new Set();
   private compiledSettings: KanbanSettings = {};
 
   public app: App;
@@ -48,15 +47,13 @@ export class StateManager {
   }
 
   getAView(): KanbanView {
-    const viewId = this.ids[0];
-    return this.views.get(viewId);
+    return this.viewSet.values().next().value;
   }
 
   newBoardPromise: Promise<void> | null = null;
   registerView(view: KanbanView, data: string, shouldParseData: boolean) {
-    if (!this.views.has(view.id)) {
-      this.ids.push(view.id);
-      this.views.set(view.id, view);
+    if (!this.viewSet.has(view)) {
+      this.viewSet.add(view);
       view.initHeaderButtons();
     }
 
@@ -79,11 +76,10 @@ export class StateManager {
   }
 
   unregisterView(view: KanbanView) {
-    if (this.views.has(view.id)) {
-      this.ids.remove(view.id);
-      this.views.delete(view.id);
+    if (this.viewSet.has(view)) {
+      this.viewSet.delete(view);
 
-      if (this.views.size === 0) {
+      if (this.viewSet.size === 0) {
         this.onEmpty();
       }
     }
@@ -115,9 +111,13 @@ export class StateManager {
 
     view.requestSaveToDisk(fileStr);
 
-    this.views.forEach((view) => {
+    this.viewSet.forEach((view) => {
       view.data = fileStr;
     });
+  }
+
+  softRefresh() {
+    this.stateReceivers.forEach((receiver) => receiver({ ...this.state }));
   }
 
   async forceRefresh() {
@@ -127,7 +127,7 @@ export class StateManager {
         this.state = await this.parser.reparseBoard();
 
         this.stateReceivers.forEach((receiver) => receiver(this.state));
-        this.views.forEach((view) => view.initHeaderButtons());
+        this.viewSet.forEach((view) => view.initHeaderButtons());
       } catch (e) {
         console.error(e);
         this.setError(e);
@@ -167,7 +167,7 @@ export class StateManager {
         this.compileSettings();
       }
 
-      this.views.forEach((view) => view.initHeaderButtons());
+      this.viewSet.forEach((view) => view.initHeaderButtons());
 
       if (shouldSave) {
         this.saveToDisk();
