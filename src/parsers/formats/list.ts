@@ -31,7 +31,14 @@ import { hydrateItem } from '../helpers/hydrateBoard';
 import { executeDeletion, markRangeForDeletion } from '../helpers/parser';
 import { parseFragment } from '../parseMarkdown';
 
-export function listItemToItemData(md: string, item: ListItem) {
+export function listItemToItemData(
+  stateManager: StateManager,
+  md: string,
+  item: ListItem
+) {
+  const hideTagsInTitle = stateManager.getSetting('hide-tags-in-title');
+  const hideDateInTitle = stateManager.getSetting('hide-date-in-title');  
+
   const itemBoundary = getNodeContentBoundary(item.children[0] as Paragraph);
   let itemContent = getStringFromBoundary(md, itemBoundary);
 
@@ -81,19 +88,25 @@ export function listItemToItemData(md: string, item: ListItem) {
         }
 
         itemData.metadata.tags.push('#' + genericNode.value);
-        title = markRangeForDeletion(title, {
-          start: node.position.start.offset - itemBoundary.start,
-          end: node.position.end.offset - itemBoundary.start,
-        });
+        
+        if (hideTagsInTitle) {
+          title = markRangeForDeletion(title, {
+            start: node.position.start.offset - itemBoundary.start,
+            end: node.position.end.offset - itemBoundary.start,
+          });
+        }
         return true;
       }
 
       if (genericNode.type === 'date' || genericNode.type === 'dateLink') {
         itemData.metadata.dateStr = (genericNode as DateNode).date;
-        title = markRangeForDeletion(title, {
-          start: node.position.start.offset - itemBoundary.start,
-          end: node.position.end.offset - itemBoundary.start,
-        });
+        
+        if (hideDateInTitle) {
+          title = markRangeForDeletion(title, {
+            start: node.position.start.offset - itemBoundary.start,
+            end: node.position.end.offset - itemBoundary.start,
+          });
+        }
         return true;
       }
 
@@ -204,7 +217,7 @@ export function astToUnhydratedBoard(
             return {
               ...ItemTemplate,
               id: generateInstanceId(),
-              data: listItemToItemData(md, listItem),
+              data: listItemToItemData(stateManager, md, listItem),
             };
           })
         );
@@ -229,7 +242,7 @@ export function astToUnhydratedBoard(
             return {
               ...ItemTemplate,
               id: generateInstanceId(),
-              data: listItemToItemData(md, listItem),
+              data: listItemToItemData(stateManager, md, listItem),
             };
           }),
           id: generateInstanceId(),
@@ -268,6 +281,7 @@ export async function updateItemContent(
   const ast = parseFragment(stateManager, md);
 
   const itemData = listItemToItemData(
+    stateManager,
     md,
     (ast.children[0] as List).children[0]
   );
@@ -300,6 +314,7 @@ export async function newItem(
   const ast = parseFragment(stateManager, md);
 
   const itemData = listItemToItemData(
+    stateManager,
     md,
     (ast.children[0] as List).children[0]
   );
