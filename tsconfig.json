@@ -14,16 +14,16 @@
     "noImplicitAny": true,
     "paths": {
       "@textcomplete/core": [
-        "./src/components/editor/textcomplete/textcomplete-core"
+        "src/components/editor/textcomplete/textcomplete-core"
       ],
       "@textcomplete/utils": [
-        "./src/components/editor/textcomplete/textcomplete-utils"
+        "src/components/editor/textcomplete/textcomplete-utils"
       ],
       "@textcomplete/textarea": [
-        "./src/components/editor/textcomplete/textcomplete-textarea"
+        "src/components/editor/textcomplete/textcomplete-textarea"
       ]
     },
     "target": "es2018"
   },
-  "include": ["./src/*.ts", "./src/*.tsx"]
+  "include": ["src/*.ts", "src/*.tsx"]
 }
