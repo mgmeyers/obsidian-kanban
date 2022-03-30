@@ -16,6 +16,9 @@ import {
 } from './helpers';
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
+const embedRegEx = /!?\[\[([^\]]*)\.[^\]]+\]\]/g;
+const wikilinkRegEx = /!?\[\[([^\]]*)\]\]/g;
+const mdLinkRegEx = /!?\[([^\]]*)\]\([^)]*\)/g;
 
 interface UseItemMenuParams {
   setIsEditing: React.Dispatch<boolean>;
@@ -57,21 +60,12 @@ export function useItemMenu({
               .setTitle(t('New note from card'))
               .onClick(async () => {
                 const prevTitle = item.data.title.split('\n')[0].trim();
-                let sanitizedTitle = prevTitle
+                const sanitizedTitle = prevTitle
+                  .replace(embedRegEx, '$1')
+                  .replace(wikilinkRegEx, '$1')
+                  .replace(mdLinkRegEx, '$1')
                   .replace(illegalCharsRegEx, ' ')
                   .trim();
-
-                const isEmbed = /^!\[/.test(prevTitle);
-
-                if (isEmbed) {
-                  const split = sanitizedTitle
-                    .replace(/!\[+([^\]]+).+$/, '$1')
-                    .split('.');
-
-                  split.pop();
-
-                  sanitizedTitle = split.join('.').trim();
-                }
 
                 const newNoteFolder =
                   stateManager.getSetting('new-note-folder');
@@ -103,12 +97,10 @@ export function useItemMenu({
 
                 const newTitleRaw = item.data.titleRaw.replace(
                   prevTitle,
-                  isEmbed
-                    ? `[${prevTitle}](${encodeURIComponent(newFile.path)})`
-                    : stateManager.app.fileManager.generateMarkdownLink(
-                        newFile,
-                        stateManager.file.path
-                      )
+                  stateManager.app.fileManager.generateMarkdownLink(
+                    newFile,
+                    stateManager.file.path
+                  )
                 );
 
                 stateManager
