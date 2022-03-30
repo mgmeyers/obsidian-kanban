@@ -37,7 +37,7 @@ export function listItemToItemData(
   item: ListItem
 ) {
   const hideTagsInTitle = stateManager.getSetting('hide-tags-in-title');
-  const hideDateInTitle = stateManager.getSetting('hide-date-in-title');  
+  const hideDateInTitle = stateManager.getSetting('hide-date-in-title');
 
   const itemBoundary = getNodeContentBoundary(item.children[0] as Paragraph);
   let itemContent = getStringFromBoundary(md, itemBoundary);
@@ -88,7 +88,7 @@ export function listItemToItemData(
         }
 
         itemData.metadata.tags.push('#' + genericNode.value);
-        
+
         if (hideTagsInTitle) {
           title = markRangeForDeletion(title, {
             start: node.position.start.offset - itemBoundary.start,
@@ -100,7 +100,7 @@ export function listItemToItemData(
 
       if (genericNode.type === 'date' || genericNode.type === 'dateLink') {
         itemData.metadata.dateStr = (genericNode as DateNode).date;
-        
+
         if (hideDateInTitle) {
           title = markRangeForDeletion(title, {
             start: node.position.start.offset - itemBoundary.start,

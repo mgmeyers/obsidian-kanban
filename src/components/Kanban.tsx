@@ -1,7 +1,7 @@
 import animateScrollTo from 'animated-scroll-to';
 import classcat from 'classcat';
 import update from 'immutability-helper';
-import { moment, TFile } from 'obsidian';
+import { TFile, moment } from 'obsidian';
 import {
   appHasDailyNotesPluginLoaded,
   createDailyNote,

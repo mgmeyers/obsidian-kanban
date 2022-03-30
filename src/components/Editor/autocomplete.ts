@@ -1,5 +1,3 @@
-import { StrategyProps, Textcomplete } from '@textcomplete/core';
-import { TextareaEditor } from '@textcomplete/textarea';
 import flatpickr from 'flatpickr';
 import Fuse from 'fuse.js';
 import { moment } from 'obsidian';
@@ -23,6 +21,8 @@ import {
 } from './filepicker';
 import { replaceSelection } from './helpers';
 import { getTagSearchConfig } from './tagpicker';
+import { StrategyProps, Textcomplete } from './textcomplete/textcomplete-core';
+import { TextareaEditor } from './textcomplete/textcomplete-textarea';
 
 export interface ConstructAutocompleteParams {
   inputRef: React.MutableRefObject<HTMLTextAreaElement>;

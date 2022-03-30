@@ -32,7 +32,6 @@
     "@typescript-eslint/eslint-plugin": "^5.8.1",
     "@typescript-eslint/parser": "^5.8.1",
     "cross-env": "^7",
-    "esbuild-ts-paths": "^1.1.3",
     "eslint": "^8.5.0",
     "eslint-plugin-react": "^7.24.0",
     "import-sort-cli": "^6.0.0",

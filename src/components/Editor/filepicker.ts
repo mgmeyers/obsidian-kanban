@@ -1,10 +1,10 @@
-import { StrategyProps } from '@textcomplete/core';
 import Fuse from 'fuse.js';
 import { App, TFile, setIcon } from 'obsidian';
 
 import { StateManager } from 'src/StateManager';
 
 import { c, generateInstanceId } from '../helpers';
+import { StrategyProps } from './textcomplete/textcomplete-core';
 
 const linkRegex = /\B\[\[([^\]]*)$/;
 const embedRegex = /\B!\[\[([^\]]*)$/;

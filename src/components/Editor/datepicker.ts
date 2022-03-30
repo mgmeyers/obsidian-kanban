@@ -1,4 +1,3 @@
-import { CursorOffset, StrategyProps } from '@textcomplete/core';
 import flatpickr from 'flatpickr';
 import { moment } from 'obsidian';
 import React from 'react';
@@ -10,6 +9,7 @@ import { escapeRegExpStr } from '../helpers';
 import { buildTimeArray } from '../Item/helpers';
 import { getDefaultLocale } from './datePickerLocale';
 import { replaceSelection } from './helpers';
+import { CursorOffset, StrategyProps } from './textcomplete/textcomplete-core';
 
 export function applyDate(
   date: Date,

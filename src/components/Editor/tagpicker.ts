@@ -1,5 +1,6 @@
-import { StrategyProps } from '@textcomplete/core';
 import Fuse from 'fuse.js';
+
+import { StrategyProps } from './textcomplete/textcomplete-core';
 
 const tagRegex = /\B#([^\s]*)?$/;
 

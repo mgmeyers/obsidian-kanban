@@ -1,8 +1,8 @@
 import { EventEmitter } from 'eventemitter3';
 
+import { CursorOffset } from './Editor';
 import { SearchResult } from './SearchResult';
 import { createCustomEvent } from './utils';
-import { CursorOffset } from './Editor';
 
 export interface DropdownOption {
   className?: string;

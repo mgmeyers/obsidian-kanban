@@ -1,1 +1,1 @@
-export { TextareaEditor } from "./TextareaEditor"
+export { TextareaEditor } from './TextareaEditor';
