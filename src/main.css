@@ -439,9 +439,19 @@ button.kanban-plugin__new-item-button {
   padding-inline-start: 0;
 }
 
-.kanban-plugin__markdown-preview-view ol > li.task-list-item,
-.kanban-plugin__markdown-preview-view ul > li.task-list-item {
-  text-indent: 0;
+.kanban-plugin__markdown-preview-view ol > li.task-list-item {
+  margin-inline-start: 3ch;
+}
+
+.kanban-plugin__markdown-preview-view
+  ol
+  > li.task-list-item
+  .task-list-item-checkbox,
+.kanban-plugin__markdown-preview-view
+  ul
+  > li.task-list-item
+  .task-list-item-checkbox {
+  margin-left: 0;
 }
 
 .kanban-plugin__meta-value .kanban-plugin__markdown-preview-view p,
