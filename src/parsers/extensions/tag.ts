@@ -14,11 +14,20 @@ export function tagExtension(): Extension {
   function tokenize(effects: Effects, ok: State, nok: State) {
     let data = false;
     let startMarkerCursor = 0;
+    const self = this;
 
     return start;
 
     function start(code: number) {
-      if (code !== startMarker.charCodeAt(startMarkerCursor)) return nok(code);
+      if (
+        code !== startMarker.charCodeAt(startMarkerCursor) ||
+        (startMarkerCursor === 0 &&
+          // Tag must come after space or <br>
+          self.previous !== ' '.charCodeAt(0) &&
+          self.previous !== '>'.charCodeAt(0))
+      ) {
+        return nok(code);
+      }
 
       effects.enter(name);
       effects.enter(`${name}Marker`);
@@ -51,6 +60,8 @@ export function tagExtension(): Extension {
     function consumeTarget(code: number) {
       if (
         markdownLineEndingOrSpace(code) ||
+        // Take into account <br>
+        '<'.charCodeAt(0) === code ||
         '#'.charCodeAt(0) === code ||
         code === null
       ) {
