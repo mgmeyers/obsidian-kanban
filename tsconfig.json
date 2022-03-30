@@ -14,13 +14,13 @@
     "noImplicitAny": true,
     "paths": {
       "@textcomplete/core": [
-        "src/components/editor/textcomplete/textcomplete-core"
+        "./src/components/editor/textcomplete/textcomplete-core/index"
       ],
       "@textcomplete/utils": [
-        "src/components/editor/textcomplete/textcomplete-utils"
+        "./src/components/editor/textcomplete/textcomplete-utils/index"
       ],
       "@textcomplete/textarea": [
-        "src/components/editor/textcomplete/textcomplete-textarea"
+        "./src/components/editor/textcomplete/textcomplete-textarea/index"
       ]
     },
     "target": "es2018"
