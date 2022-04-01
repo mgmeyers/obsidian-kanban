@@ -427,31 +427,9 @@ button.kanban-plugin__new-item-button {
   margin-bottom: 0;
 }
 
-.kanban-plugin__markdown-preview-view ol.contains-task-list .contains-task-list,
-.kanban-plugin__markdown-preview-view ul.contains-task-list .contains-task-list,
 .kanban-plugin__markdown-preview-view ul,
 .kanban-plugin__markdown-preview-view ol {
-  padding-inline-start: 19px;
-}
-
-.kanban-plugin__markdown-preview-view ol.contains-task-list,
-.kanban-plugin__markdown-preview-view ul.contains-task-list {
-  padding-inline-start: 0;
-}
-
-.kanban-plugin__markdown-preview-view ol > li.task-list-item {
-  margin-inline-start: 3ch;
-}
-
-.kanban-plugin__markdown-preview-view
-  ol
-  > li.task-list-item
-  .task-list-item-checkbox,
-.kanban-plugin__markdown-preview-view
-  ul
-  > li.task-list-item
-  .task-list-item-checkbox {
-  margin-left: 0;
+  padding-inline-start: 24px;
 }
 
 .kanban-plugin__meta-value .kanban-plugin__markdown-preview-view p,
