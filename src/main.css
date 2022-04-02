@@ -190,6 +190,8 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   font-size: 0.875rem;
   flex-grow: 1;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .kanban-plugin__lane-title-count {
@@ -316,6 +318,17 @@ button.kanban-plugin__lane-settings-button
 
 .kanban-plugin__item-input-wrapper {
   display: flex;
+  flex-direction: column;
+}
+
+.kanban-plugin button.kanban-plugin__item-submit-button {
+  background-color: var(--background-secondary-alt);
+  flex-grow: 0;
+  flex-shrink: 1;
+  width: auto;
+  margin-top: 5px;
+  line-height: 1;
+  font-size: 14px;
 }
 
 button.kanban-plugin__new-item-button {

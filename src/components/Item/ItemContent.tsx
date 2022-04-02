@@ -131,6 +131,20 @@ export const ItemContent = React.memo(function ItemContent({
     [stateManager, editState, item, path]
   );
 
+  const onSubmit = React.useCallback(() => {
+    stateManager
+      .updateItemContent(item, editState)
+      .then((item) => {
+        boardModifiers.updateItem(path, item);
+      })
+      .catch((e) => {
+        stateManager.setError(e);
+        console.error(e);
+      });
+
+    setIsEditing(false);
+  }, [stateManager, editState, item, path]);
+
   const onEscape = React.useCallback(() => {
     setIsEditing(false);
     setEditState(item.data.titleRaw);
@@ -163,16 +177,21 @@ export const ItemContent = React.memo(function ItemContent({
 
   if (isEditing) {
     return (
-      <MarkdownEditor
-        className={c('item-input')}
-        onChange={(e) => setEditState((e.target as HTMLTextAreaElement).value)}
-        onEnter={onEnter}
-        onEscape={onEscape}
-        value={editState}
-        onPaste={(e) => {
-          handlePaste(e, stateManager);
-        }}
-      />
+      <div className={c('item-input-wrapper')}>
+        <MarkdownEditor
+          className={c('item-input')}
+          onChange={(e) =>
+            setEditState((e.target as HTMLTextAreaElement).value)
+          }
+          onEnter={onEnter}
+          onEscape={onEscape}
+          onSubmit={onSubmit}
+          value={editState}
+          onPaste={(e) => {
+            handlePaste(e, stateManager);
+          }}
+        />
+      </div>
     );
   }
 

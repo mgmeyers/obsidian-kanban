@@ -6,7 +6,7 @@ import { t } from 'src/lang/helpers';
 import { StateManager } from 'src/StateManager';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
-import { applyTemplate, escapeRegExpStr } from '../helpers';
+import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
 import { Item } from '../types';
 import {
   constructDatePicker,
@@ -127,7 +127,7 @@ export function useItemMenu({
                     )}`
                   );
                 } else {
-                  const id = Math.random().toString(36).substr(2, 6);
+                  const id = generateInstanceId(6);
 
                   navigator.clipboard.writeText(
                     `${this.app.fileManager.generateMarkdownLink(

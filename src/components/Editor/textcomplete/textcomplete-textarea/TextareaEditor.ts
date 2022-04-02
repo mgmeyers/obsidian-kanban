@@ -65,11 +65,11 @@ export class TextareaEditor extends Editor {
   getBeforeCursor(): string | null {
     return this.el.selectionStart !== this.el.selectionEnd
       ? null
-      : this.el.value.substring(0, this.el.selectionEnd);
+      : this.el.value.slice(0, this.el.selectionEnd);
   }
 
   private getAfterCursor(): string {
-    return this.el.value.substring(this.el.selectionEnd);
+    return this.el.value.slice(this.el.selectionEnd);
   }
 
   private getElScroll(): { top: number; left: number } {

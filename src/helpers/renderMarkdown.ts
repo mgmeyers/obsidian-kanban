@@ -55,7 +55,7 @@ function getSubpathBoundary(fileCache: CachedMetadata, subpath: string) {
     const firstSegment = pathArr[0];
 
     if (firstSegment.startsWith('^')) {
-      const blockId = firstSegment.substr(1).toLowerCase();
+      const blockId = firstSegment.slice(1).toLowerCase();
       const blockCache = fileCache.blocks;
 
       if (blockCache && blockCache[blockId]) {

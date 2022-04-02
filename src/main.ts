@@ -36,6 +36,8 @@ export default class KanbanPlugin extends Plugin {
 
   _loaded: boolean = false;
 
+  isShiftPressed: boolean = false;
+
   async loadSettings() {
     this.settings = Object.assign({}, await this.loadData());
   }
@@ -61,6 +63,9 @@ export default class KanbanPlugin extends Plugin {
       ReactDOM.unmountComponentAtNode(this.appEl);
       this.appEl.detach();
     }
+
+    window.removeEventListener('keydown', this.handleShift);
+    window.removeEventListener('keyup', this.handleShift);
   }
 
   async onload() {
@@ -87,7 +92,14 @@ export default class KanbanPlugin extends Plugin {
 
     // Mount an empty component to start; views will be added as we go
     this.mount();
+
+    window.addEventListener('keydown', this.handleShift);
+    window.addEventListener('keyup', this.handleShift);
   }
+
+  handleShift = (e: KeyboardEvent) => {
+    this.isShiftPressed = e.shiftKey;
+  };
 
   viewStateReceivers: Array<(views: KanbanView[]) => void> = [];
 

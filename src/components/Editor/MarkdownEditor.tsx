@@ -1,4 +1,5 @@
 import React, { ForwardedRef } from 'react';
+import { Platform } from 'obsidian';
 
 import { StateManager } from 'src/StateManager';
 
@@ -14,16 +15,22 @@ import {
   unpairBrackets,
   unpairMarkdown,
 } from './commands';
+import { t } from 'src/lang/helpers';
 
 interface MarkdownEditorProps extends React.HTMLProps<HTMLTextAreaElement> {
   onEnter: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onEscape: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  onSubmit: () => void;
 }
 
 export function allowNewLine(
   e: React.KeyboardEvent<HTMLTextAreaElement>,
   stateManager: StateManager
 ) {
+  if (Platform.isMobile) {
+    return true;
+  }
+
   const newLineTrigger = stateManager.getSetting('new-line-trigger');
 
   if (newLineTrigger === 'enter') {
@@ -34,7 +41,7 @@ export function allowNewLine(
 }
 
 export const MarkdownEditor = React.forwardRef(function MarkdownEditor(
-  { onEnter, onEscape, ...textareaProps }: MarkdownEditorProps,
+  { onEnter, onEscape, onSubmit, ...textareaProps }: MarkdownEditorProps,
   ref: ForwardedRef<HTMLTextAreaElement>
 ) {
   const { view, stateManager } = React.useContext(KanbanContext);
@@ -137,23 +144,33 @@ export const MarkdownEditor = React.forwardRef(function MarkdownEditor(
   }, [view]);
 
   return (
-    <div data-replicated-value={textareaProps.value} className={c('grow-wrap')}>
-      <textarea
-        data-ignore-drag={true}
-        rows={1}
-        className={c('item-input')}
-        {...textareaProps}
-        {...autocompleteProps}
-        ref={(c: HTMLTextAreaElement) => {
-          autocompleteProps.ref.current = c;
+    <>
+      <div
+        data-replicated-value={textareaProps.value}
+        className={c('grow-wrap')}
+      >
+        <textarea
+          data-ignore-drag={true}
+          rows={1}
+          className={c('item-input')}
+          {...textareaProps}
+          {...autocompleteProps}
+          ref={(c: HTMLTextAreaElement) => {
+            autocompleteProps.ref.current = c;
 
-          if (ref && typeof ref === 'function') {
-            ref(c);
-          } else if (ref) {
-            (ref as React.MutableRefObject<HTMLTextAreaElement>).current = c;
-          }
-        }}
-      />
-    </div>
+            if (ref && typeof ref === 'function') {
+              ref(c);
+            } else if (ref) {
+              (ref as React.MutableRefObject<HTMLTextAreaElement>).current = c;
+            }
+          }}
+        />
+      </div>
+      {Platform.isMobile && (
+        <button onPointerDown={onSubmit} className={c('item-submit-button')}>
+          {t('Submit')}
+        </button>
+      )}
+    </>
   );
 });

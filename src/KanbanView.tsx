@@ -63,6 +63,10 @@ export class KanbanView extends TextFileView implements HoverParent {
     return `${(this.leaf as any).id}:::${this.file?.path}`;
   }
 
+  get isShiftPressed(): boolean {
+    return this.plugin.isShiftPressed;
+  }
+
   setBoard(board: Board, shouldSave: boolean = true) {
     const stateManager = this.plugin.stateManagers.get(this.file);
     stateManager.setState(board, shouldSave);

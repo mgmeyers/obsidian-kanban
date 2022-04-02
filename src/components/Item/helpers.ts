@@ -426,7 +426,7 @@ export function getFileListFromClipboard() {
       if (drivePrefix) {
         const drivePrefixIndex = formatFilePathStr.indexOf(drivePrefix[0]);
         if (drivePrefixIndex !== 0) {
-          formatFilePathStr = formatFilePathStr.substring(drivePrefixIndex);
+          formatFilePathStr = formatFilePathStr.slice(drivePrefixIndex);
         }
         return formatFilePathStr
           .split(drivePrefix[0])
@@ -585,15 +585,27 @@ async function handleNullDraggable(
   stateManager: StateManager,
   e: DragEvent | ClipboardEvent
 ) {
-  const forcePlaintext = e instanceof DragEvent ? e.shiftKey : false;
-  const transfer = e instanceof DragEvent ? e.dataTransfer : e.clipboardData;
+  const isClipboardEvent = e instanceof ClipboardEvent;
+  const forcePlaintext = isClipboardEvent
+    ? stateManager.getAView().isShiftPressed
+    : false;
+  const transfer = isClipboardEvent ? e.clipboardData : e.dataTransfer;
+  const clipboard =
+    isClipboardEvent && Platform.isDesktopApp
+      ? window.require('electron').remote.clipboard
+      : null;
+  const formats = clipboard ? clipboard.availableFormats() : [];
 
-  if (e instanceof DragEvent) {
+  if (!isClipboardEvent) {
     const files = await fromEvent(e);
     if (files.length) {
       return await handleFiles(stateManager, files as FileWithPath[]);
     }
-  } else {
+  } else if (
+    isClipboardEvent &&
+    !forcePlaintext &&
+    !formats.includes('text/rtf')
+  ) {
     if (Platform.isDesktopApp) {
       const links = await handleElectronPaste(stateManager);
 
@@ -625,7 +637,7 @@ async function handleNullDraggable(
     ? plain || html
     : getMarkdown(stateManager, transfer, html);
 
-  return [fixLinks(text || uris || plain || html || '')];
+  return [fixLinks(text || uris || plain || html || '').trim()];
 }
 
 export async function handleDragOrPaste(

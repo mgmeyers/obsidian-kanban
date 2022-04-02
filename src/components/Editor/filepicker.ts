@@ -386,10 +386,10 @@ export function getBlockSearchConfig(
         stateManager.app.vault
           .cachedRead(result.item.file)
           .then((content) => {
-            const newContent = `${content.substring(
+            const newContent = `${content.slice(
               0,
               result.item.block.end
-            )}${spacer}^${blockId}${content.substring(result.item.block.end)}`;
+            )}${spacer}^${blockId}${content.slice(result.item.block.end)}`;
             stateManager.app.vault.modify(result.item.file, newContent);
           })
           .catch((e) => {

@@ -64,6 +64,9 @@ export function LaneForm({
               createLane();
             }
           }}
+          onSubmit={() => {
+            createLane();
+          }}
           onEscape={closeLaneForm}
           value={laneTitle}
         />

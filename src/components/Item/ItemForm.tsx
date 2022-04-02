@@ -67,6 +67,15 @@ export function ItemForm({
     }
   };
 
+  const onSubmit = () => {
+    const title = itemTitle.trim();
+
+    if (title) {
+      addItemsFromStrings([title]);
+      setItemTitle('');
+    }
+  };
+
   if (isInputVisible) {
     return (
       <div className={c('item-form')} ref={clickOutsideRef}>
@@ -77,6 +86,7 @@ export function ItemForm({
             placeholder={t('Card title...')}
             onEnter={onEnter}
             onEscape={clear}
+            onSubmit={onSubmit}
             value={itemTitle}
             onChange={(e) => {
               setItemTitle((e.target as HTMLTextAreaElement).value);

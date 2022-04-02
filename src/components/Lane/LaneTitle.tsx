@@ -31,6 +31,10 @@ export function LaneTitle({
     }
   };
 
+  const onSubmit = () => {
+    isEditing && setIsEditing(false);
+  };
+
   const onEscape = () => {
     isEditing && setIsEditing(false);
   };
@@ -53,6 +57,7 @@ export function LaneTitle({
           onChange={onChange}
           onEnter={onEnter}
           onEscape={onEscape}
+          onSubmit={onSubmit}
           value={title}
         />
       ) : (
