@@ -49,45 +49,47 @@ export function LaneTitle({
   }, [isEditing]);
 
   return (
-    <div className={c('lane-title')}>
-      {isEditing ? (
-        <MarkdownEditor
-          ref={inputRef}
-          className={c('lane-input')}
-          onChange={onChange}
-          onEnter={onEnter}
-          onEscape={onEscape}
-          onSubmit={onSubmit}
-          value={title}
-        />
-      ) : (
-        <>
-          <div
-            className={c('lane-title-text')}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
+    <>
+      <div className={c('lane-title')}>
+        {isEditing ? (
+          <MarkdownEditor
+            ref={inputRef}
+            className={c('lane-input')}
+            onChange={onChange}
+            onEnter={onEnter}
+            onEscape={onEscape}
+            onSubmit={onSubmit}
+            value={title}
+          />
+        ) : (
+          <>
+            <div
+              className={c('lane-title-text')}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
 
-              const internalLinkPath =
-                e.target instanceof HTMLAnchorElement &&
-                e.target.hasClass('internal-link')
-                  ? e.target.dataset.href
-                  : undefined;
+                const internalLinkPath =
+                  e.target instanceof HTMLAnchorElement &&
+                  e.target.hasClass('internal-link')
+                    ? e.target.dataset.href
+                    : undefined;
 
-              if (internalLinkPath) {
-                (stateManager.app.workspace as any).onLinkContextMenu(
-                  e,
-                  getLinkpath(internalLinkPath),
-                  stateManager.file.path
-                );
-              }
-            }}
-          >
-            <MarkdownRenderer markdownString={title} />
-          </div>
-          <div className={c('lane-title-count')}>{itemCount}</div>
-        </>
-      )}
-    </div>
+                if (internalLinkPath) {
+                  (stateManager.app.workspace as any).onLinkContextMenu(
+                    e,
+                    getLinkpath(internalLinkPath),
+                    stateManager.file.path
+                  );
+                }
+              }}
+            >
+              <MarkdownRenderer markdownString={title} />
+            </div>
+          </>
+        )}
+      </div>
+      {!isEditing && <div className={c('lane-title-count')}>{itemCount}</div>}
+    </>
   );
 }

@@ -194,30 +194,23 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   flex-direction: column;
 }
 
-.kanban-plugin__lane-title {
-  display: flex;
-  align-items: center;
-}
-
 .kanban-plugin__lane-title-text {
-  display: inline-flex;
   flex-grow: 1;
 }
 
-div.kanban-plugin__markdown-preview-view>div>* {
-    overflow-wrap: anywhere;
-    padding-right: 5px;
+div.kanban-plugin__markdown-preview-view > div > * {
+  overflow-wrap: anywhere;
 }
 
 div.kanban-plugin__lane-title-count {
-  display: block;
-  color: var(--text-muted);
   background-color: var(--background-secondary-alt);
-  height: fit-content;
-  line-height: 20px;
-  font-size: 0.8em;
   border-radius: 3px;
-  padding: 0px 4px;
+  color: var(--text-muted);
+  display: block;
+  font-size: 13px;
+  line-height: 1;
+  padding: 4px;
+  margin-left: 5px;
 }
 
 .kanban-plugin__item button.kanban-plugin__item-prefix-button,
