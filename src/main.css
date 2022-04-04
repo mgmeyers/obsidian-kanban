@@ -195,22 +195,29 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
 }
 
 .kanban-plugin__lane-title {
-    display: flex;
+  display: flex;
+  align-items: center;
 }
 
 .kanban-plugin__lane-title-text {
-    display: inline-flex;
-    flex-grow: 1;
+  display: inline-flex;
+  flex-grow: 1;
 }
 
-/* Kanban Item Counter */
+div.kanban-plugin__markdown-preview-view>div>* {
+    overflow-wrap: anywhere;
+    padding-right: 5px;
+}
+
 div.kanban-plugin__lane-title-count {
-    display: inline-flex;
-    background-color: var(--background-secondary);
-    border-radius: 3px;
-    line-height: 20px;
-    font-size: 0.9em;
-    padding: 0px 4px;
+  display: block;
+  color: var(--text-muted);
+  background-color: var(--background-secondary-alt);
+  height: fit-content;
+  line-height: 20px;
+  font-size: 0.8em;
+  border-radius: 3px;
+  padding: 0px 4px;
 }
 
 .kanban-plugin__item button.kanban-plugin__item-prefix-button,
