@@ -194,8 +194,23 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   flex-direction: column;
 }
 
-.kanban-plugin__lane-title-count {
-  display: none;
+.kanban-plugin__lane-title {
+    display: flex;
+}
+
+.kanban-plugin__lane-title-text {
+    display: inline-flex;
+    flex-grow: 1;
+}
+
+/* Kanban Item Counter */
+div.kanban-plugin__lane-title-count {
+    display: inline-flex;
+    background-color: var(--background-secondary);
+    border-radius: 3px;
+    line-height: 20px;
+    font-size: 0.9em;
+    padding: 0px 4px;
 }
 
 .kanban-plugin__item button.kanban-plugin__item-prefix-button,
