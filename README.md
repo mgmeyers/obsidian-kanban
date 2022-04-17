@@ -52,6 +52,9 @@ Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
 - [Frontmatter limitations & gotchas](https://matthewmeye.rs/obsidian-kanban/FAQs/Frontmatter%20limitations%20&%20gotchas)
 - [Themes with enhanced Kanban support](https://matthewmeye.rs/obsidian-kanban/FAQs/Themes%20with%20enhanced%20Kanban%20support)
 
+## Contributing
+- [Contributing to the documentation](docs/README.md)
+
 ## Support
 
 If you find this plugin useful and would like to support its development, you can sponsor [me](https://github.com/mgmeyers) on Github, or buy me a coffee.
