@@ -407,7 +407,7 @@ button.kanban-plugin__new-item-button {
 }
 
 .kanban-plugin__markdown-preview-view {
-  font-family: var(--default-font);
+  font-family: var(--font-text, var(--default-font));
   font-size: 0.875rem;
   padding: unset;
   width: unset;
