@@ -961,6 +961,7 @@ button.kanban-plugin__cancel-action-button {
   border-color: var(--background-modifier-border);
   word-break: normal;
   max-height: 200px;
+  overflow: scroll;
 }
 
 .kanban-plugin__board-settings-modal
