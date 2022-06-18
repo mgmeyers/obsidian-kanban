@@ -21,11 +21,13 @@ import { c, escapeRegExpStr } from '../helpers';
 import { Item } from '../types';
 
 export function constructDatePicker(
+  window: Window,
   stateManager: StateManager,
   coordinates: { x: number; y: number },
   onChange: (dates: Date[]) => void,
   date?: Date
 ) {
+  const {document} = window;
   return document.body.createDiv(
     { cls: `${c('date-picker')} ${c('ignore-click-outside')}` },
     (div) => {
@@ -159,6 +161,7 @@ export function buildTimeArray(stateManager: StateManager) {
 }
 
 export function constructTimePicker(
+  window: Window,
   stateManager: StateManager,
   coordinates: { x: number; y: number },
   onSelect: (opt: string) => void,
@@ -168,6 +171,7 @@ export function constructTimePicker(
   const timeFormat = stateManager.getSetting('time-format');
   const selected = time?.format(timeFormat);
 
+  const {document} = window;
   document.body.createDiv(
     { cls: `${pickerClassName} ${c('ignore-click-outside')}` },
     (div) => {

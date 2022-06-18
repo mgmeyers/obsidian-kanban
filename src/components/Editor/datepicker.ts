@@ -64,6 +64,7 @@ export function ensureDatePickerIsOnScreen(
 ) {
   const height = div.clientHeight;
   const width = div.clientWidth;
+  const window = div.ownerDocument.defaultView;
 
   if (position.top + height > window.innerHeight) {
     div.style.top = `${(position.clientTop || 0) - height}px`;

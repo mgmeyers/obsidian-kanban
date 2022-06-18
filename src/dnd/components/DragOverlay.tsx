@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 import { DragEventData } from '../managers/DragManager';
 import { Coordinates, Entity, Hitbox } from '../types';
@@ -8,6 +9,13 @@ import { DndManagerContext } from './context';
 
 export interface DragOverlayProps {
   children(entity: Entity, styles: React.CSSProperties): JSX.Element;
+}
+
+declare global {
+  interface Window {
+    // backward compatibility w/0.14.x; this block can be removed once we depend on 0.15.x API
+    activeDocument?: Document
+  }
 }
 
 function getDragOverlayStyles(
@@ -143,7 +151,7 @@ export function DragOverlay({ children }: DragOverlayProps) {
     return null;
   }
 
-  return children(dragEntity, styles);
+  return createPortal(children(dragEntity, styles), (window.activeDocument || document).body);
 }
 
 export function useIsAnythingDragging() {

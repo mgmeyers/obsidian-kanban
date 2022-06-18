@@ -389,6 +389,8 @@ export function useDragHandle(
       return;
     }
 
+    const window = handle.ownerDocument.defaultView;
+
     const onPointerDown = (e: PointerEvent) => {
       if (e.defaultPrevented || (e.target as HTMLElement).dataset.ignoreDrag) {
         return;

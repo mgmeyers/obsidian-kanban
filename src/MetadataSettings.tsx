@@ -259,7 +259,7 @@ function useKeyModifiers({
 const accepts = [DataTypes.MetadataSetting];
 
 function Overlay({ keys }: { keys: MetadataSetting[] }) {
-  return ReactDOM.createPortal(
+  return (
     <DragOverlay>
       {(entity, styles) => {
         const path = entity.getPath();
@@ -281,8 +281,7 @@ function Overlay({ keys }: { keys: MetadataSetting[] }) {
           </div>
         );
       }}
-    </DragOverlay>,
-    document.body
+    </DragOverlay>
   );
 }
 
