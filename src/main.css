@@ -951,6 +951,10 @@ button.kanban-plugin__cancel-action-button {
   border-right: none;
 }
 
+.kanban-plugin__board-settings-modal .choices__list[role='listbox'] {
+  overflow-x: hidden;
+}
+
 .kanban-plugin__board-settings-modal .choices__list--single {
   padding: 4px 20px 4px 6px;
 }
@@ -961,6 +965,8 @@ button.kanban-plugin__cancel-action-button {
   border-color: var(--background-modifier-border);
   word-break: normal;
   max-height: 200px;
+  display: flex;
+  flex-direction: column;
 }
 
 .kanban-plugin__board-settings-modal
