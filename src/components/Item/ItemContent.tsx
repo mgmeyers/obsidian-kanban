@@ -23,6 +23,7 @@ function useDatePickers(item: Item) {
   return React.useMemo(() => {
     const onEditDate: React.MouseEventHandler = (e) => {
       constructDatePicker(
+        e.view as unknown as Window, // Preact uses real events, so this is safe
         stateManager,
         { x: e.clientX, y: e.clientY },
         constructMenuDatePickerOnChange({
@@ -38,6 +39,7 @@ function useDatePickers(item: Item) {
 
     const onEditTime: React.MouseEventHandler = (e) => {
       constructTimePicker(
+        e.view as unknown as Window, // Preact uses real events, so this is safe
         stateManager,
         { x: e.clientX, y: e.clientY },
         constructMenuTimePickerOnChange({

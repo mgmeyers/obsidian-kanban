@@ -97,6 +97,7 @@ export function constructAutocomplete({
   const editor = new TextareaEditor(inputRef.current);
   const autocomplete = new Textcomplete(editor, configs, {
     dropdown: {
+      parent: inputRef.current.ownerDocument.body,
       maxCount: 96,
       className: `${c('autocomplete')} ${c('ignore-click-outside')}`,
       rotate: true,
@@ -213,6 +214,7 @@ export function constructAutocomplete({
     };
 
     inputRef.current.addEventListener('keydown', keydownHandler);
+    const document = inputRef.current.ownerDocument;
 
     editor.on('change', (e: CustomEvent) => {
       const beforeCursor = e.detail.beforeCursor as string;

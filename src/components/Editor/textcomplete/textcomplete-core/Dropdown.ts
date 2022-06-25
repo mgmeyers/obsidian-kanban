@@ -38,6 +38,8 @@ export class Dropdown extends EventEmitter {
   private activeIndex: number | null = null;
 
   static create(option: DropdownOption): Dropdown {
+    const parent = option.parent || window.document.body;
+    const document = parent.ownerDocument;
     const ul = document.createElement('ul');
     ul.className = option.className || DEFAULT_DROPDOWN_CLASS_NAME;
     Object.assign(
@@ -49,7 +51,6 @@ export class Dropdown extends EventEmitter {
       },
       option.style
     );
-    const parent = option.parent || document.body;
     parent?.appendChild(ul);
     return new Dropdown(ul, option);
   }
@@ -202,6 +203,7 @@ export class Dropdown extends EventEmitter {
   }
 
   setOffset(cursorOffset: CursorOffset): this {
+    const document = this.el.ownerDocument;
     const doc = document.documentElement;
     if (doc) {
       const elementWidth = this.el.offsetWidth;
@@ -263,6 +265,7 @@ export class Dropdown extends EventEmitter {
   }
 
   private renderItems(): this {
+    const document = this.el.ownerDocument;
     const fragment = document.createDocumentFragment();
     for (const item of this.items) {
       fragment.appendChild(item.el);
@@ -282,6 +285,7 @@ export class Dropdown extends EventEmitter {
     type: 'header' | 'footer'
   ): this {
     const option = this.option[type];
+    const document = this.el.ownerDocument;
     const li = document.createElement('li');
     li.className = `textcomplete-${type}`;
     li.innerHTML =
@@ -309,6 +313,7 @@ class DropdownItem {
     this.activeClassName =
       this.props.activeClassName || DEFAULT_DROPDOWN_ITEM_ACTIVE_CLASS_NAME;
 
+    const document = dropdown.el.ownerDocument;
     const li = document.createElement('li');
     li.className = this.active ? this.activeClassName : this.className;
 

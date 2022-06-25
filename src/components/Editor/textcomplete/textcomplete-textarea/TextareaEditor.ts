@@ -49,6 +49,7 @@ export class TextareaEditor extends Editor {
     const top = elOffset.top - elScroll.top + cursorPosition.top + lineHeight;
     const left = elOffset.left - elScroll.left + cursorPosition.left;
     const clientTop = this.el.getBoundingClientRect().top;
+    const document = this.el.ownerDocument;
     if (this.el.dir !== 'rtl') {
       return { top, left, lineHeight, clientTop };
     } else {
