@@ -1,4 +1,4 @@
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { generateInstanceId } from 'src/components/helpers';
 
@@ -10,10 +10,10 @@ interface ScopeProps extends WithChildren {
 }
 
 export function DndScope({ id, children }: ScopeProps) {
-  const scrollStateManager = React.useContext(ScrollStateContext);
-  const scopeId = React.useMemo(() => id || generateInstanceId(), [id]);
+  const scrollStateManager = Preact.useContext(ScrollStateContext);
+  const scopeId = Preact.useMemo(() => id || generateInstanceId(), [id]);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     return () => {
       scrollStateManager.unmountScope(id);
     };

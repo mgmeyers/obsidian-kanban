@@ -1,7 +1,7 @@
 import animateScrollTo from 'animated-scroll-to';
 import classcat from 'classcat';
 import update from 'immutability-helper';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { Droppable, useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
@@ -24,13 +24,13 @@ export interface DraggableLaneProps {
   isStatic?: boolean;
 }
 
-export const DraggableLane = React.memo(function DraggableLane({
+export const DraggableLane = Preact.memo(function DraggableLane({
   isStatic,
   lane,
   laneIndex,
 }: DraggableLaneProps) {
-  const { stateManager, boardModifiers } = React.useContext(KanbanContext);
-  const [isItemInputVisible, setIsItemInputVisible] = React.useState(false);
+  const { stateManager, boardModifiers } = Preact.useContext(KanbanContext);
+  const [isItemInputVisible, setIsItemInputVisible] = Preact.useState(false);
 
   const path = useNestedEntityPath(laneIndex);
   const laneWidth = stateManager.useSetting('lane-width');
@@ -39,10 +39,10 @@ export const DraggableLane = React.memo(function DraggableLane({
 
   const laneStyles = laneWidth ? { width: `${laneWidth}px` } : undefined;
 
-  const elementRef = React.useRef<HTMLDivElement>(null);
-  const measureRef = React.useRef<HTMLDivElement>(null);
-  const dragHandleRef = React.useRef<HTMLDivElement>(null);
-  const [isSorting, setIsSorting] = React.useState(false);
+  const elementRef = Preact.useRef<HTMLDivElement>(null);
+  const measureRef = Preact.useRef<HTMLDivElement>(null);
+  const dragHandleRef = Preact.useRef<HTMLDivElement>(null);
+  const [isSorting, setIsSorting] = Preact.useState(false);
 
   const isCompactPrepend = insertionMethod === 'prepend-compact';
   const shouldPrepend = isCompactPrepend || insertionMethod === 'prepend';
@@ -180,7 +180,7 @@ export interface Lanes {
   lanes: Lane[];
 }
 
-export const Lanes = React.memo(function Lanes({ lanes }: Lanes) {
+export const Lanes = Preact.memo(function Lanes({ lanes }: Lanes) {
   return (
     <>
       {lanes.map((lane, i) => {

@@ -1,5 +1,5 @@
 import { getLinkpath, moment } from 'obsidian';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { t } from 'src/lang/helpers';
 import { StateManager } from 'src/StateManager';
@@ -54,8 +54,8 @@ export function RelativeDate({ item, stateManager }: DateProps) {
 }
 
 interface DateAndTimeProps {
-  onEditDate?: React.MouseEventHandler;
-  onEditTime?: React.MouseEventHandler;
+  onEditDate?: Preact.JSX.MouseEventHandler<HTMLSpanElement>;
+  onEditTime?: Preact.JSX.MouseEventHandler<HTMLSpanElement>;
   filePath: string;
 }
 
@@ -103,7 +103,7 @@ export function DateAndTime({
       dateDisplayStr
     );
 
-  const dateProps: React.HTMLAttributes<HTMLSpanElement> = {};
+  const dateProps: HTMLAttributes<HTMLSpanElement> = {};
 
   if (!shouldLinkDate) {
     dateProps['aria-label'] = t('Change date');
@@ -111,7 +111,7 @@ export function DateAndTime({
   }
 
   return (
-    <span className={c('item-metadata-date-wrapper')}>
+    <span aria-label="hello" className={c('item-metadata-date-wrapper')}>
       <span
         {...dateProps}
         className={`${c('item-metadata-date')} ${

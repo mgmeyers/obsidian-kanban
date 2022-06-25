@@ -148,22 +148,27 @@ export class ScrollManager {
 
   handleEntityRegistration() {
     sides.forEach((side) => {
+      const win = this.scrollEl.ownerDocument.defaultView;
       const id = this.getId(side);
-      const hasId = this.dndManager.scrollEntities.has(id);
+
+      const hasId =
+        this.dndManager.scrollEntities.has(win) &&
+        this.dndManager.scrollEntities.get(win).has(id);
       const isDoneScrolling = this.isDoneScrolling(side);
 
       if (!isDoneScrolling && !hasId) {
-        this.dndManager.registerScrollEntity(id, this[side]);
+        this.dndManager.registerScrollEntity(id, this[side], win);
       } else if (isDoneScrolling && hasId) {
-        this.dndManager.unregisterScrollEntity(id);
+        this.dndManager.unregisterScrollEntity(id, win);
       }
     });
   }
 
   handleEntityUnregistration() {
     sides.forEach((side) => {
+      const win = this.scrollEl.ownerDocument.defaultView;
       const id = this.getId(side);
-      this.dndManager.unregisterScrollEntity(id);
+      this.dndManager.unregisterScrollEntity(id, win);
     });
   }
 
@@ -385,6 +390,7 @@ export class ScrollManager {
           side: side,
           accepts: manager.triggerTypes || [],
           scrollContainer: manager.scrollEl,
+          win: manager.scrollEl.ownerDocument.defaultView,
         };
       },
     };

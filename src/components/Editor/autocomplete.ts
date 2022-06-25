@@ -1,7 +1,7 @@
 import flatpickr from 'flatpickr';
 import Fuse from 'fuse.js';
 import { moment } from 'obsidian';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { KanbanContext, KanbanContextProps } from '../context';
 import { c, escapeRegExpStr, useIMEInputProps } from '../helpers';
@@ -25,8 +25,8 @@ import { StrategyProps, Textcomplete } from './textcomplete/textcomplete-core';
 import { TextareaEditor } from './textcomplete/textcomplete-textarea';
 
 export interface ConstructAutocompleteParams {
-  inputRef: React.MutableRefObject<HTMLTextAreaElement>;
-  isAutocompleteVisibleRef: React.MutableRefObject<boolean>;
+  inputRef: Preact.RefObject<HTMLTextAreaElement>;
+  isAutocompleteVisibleRef: Preact.RefObject<boolean>;
   obsidianContext: KanbanContextProps;
   excludeDatePicker?: boolean;
 }
@@ -268,9 +268,9 @@ export function constructAutocomplete({
 
 export interface UseAutocompleteInputPropsParams {
   isInputVisible: boolean;
-  onEnter?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => boolean | void;
-  onEscape?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => boolean | void;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => boolean | void;
+  onEnter?: (e: KeyboardEvent) => boolean | void;
+  onEscape?: (e: KeyboardEvent) => boolean | void;
+  onKeyDown?: (e: KeyboardEvent) => boolean | void;
   excludeDatePicker?: boolean;
 }
 
@@ -281,13 +281,13 @@ export function useAutocompleteInputProps({
   onKeyDown,
   excludeDatePicker,
 }: UseAutocompleteInputPropsParams) {
-  const obsidianContext = React.useContext(KanbanContext);
-  const isAutocompleteVisibleRef = React.useRef<boolean>(false);
-  const inputRef = React.useRef<HTMLTextAreaElement>();
+  const obsidianContext = Preact.useContext(KanbanContext);
+  const isAutocompleteVisibleRef = Preact.useRef<boolean>(false);
+  const inputRef = Preact.useRef<HTMLTextAreaElement>();
   const { oncompositionstart, oncompositionend, getShouldIMEBlockAction } =
     useIMEInputProps();
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     const input = inputRef.current;
 
     if (isInputVisible && input) {
@@ -307,7 +307,7 @@ export function useAutocompleteInputProps({
     ref: inputRef,
     oncompositionstart,
     oncompositionend,
-    onKeyDownCapture: (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    onKeyDownCapture: (e: KeyboardEvent) => {
       if (getShouldIMEBlockAction() || isAutocompleteVisibleRef.current) {
         return;
       }

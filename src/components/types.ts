@@ -65,7 +65,7 @@ export interface BoardData {
 export type Item = Nestable<ItemData>;
 export type Lane = Nestable<LaneData, Item>;
 export type Board = Nestable<BoardData, Lane>;
-export type MetadataSetting = Nestable<DataKey>;
+export type MetadataSetting = Nestable<DataKey> & { win: Window };
 
 export const DataTypes = {
   Item: 'item',

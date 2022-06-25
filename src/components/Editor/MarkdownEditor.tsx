@@ -1,6 +1,8 @@
-import React, { ForwardedRef } from 'react';
 import { Platform } from 'obsidian';
+import { Ref } from 'preact';
+import Preact from 'preact/compat';
 
+import { t } from 'src/lang/helpers';
 import { StateManager } from 'src/StateManager';
 
 import { KanbanContext } from '../context';
@@ -15,18 +17,15 @@ import {
   unpairBrackets,
   unpairMarkdown,
 } from './commands';
-import { t } from 'src/lang/helpers';
 
-interface MarkdownEditorProps extends React.HTMLProps<HTMLTextAreaElement> {
-  onEnter: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
-  onEscape: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+interface MarkdownEditorProps
+  extends Preact.DetailedHTMLProps<Preact.HTMLAttributes<HTMLTextAreaElement>> {
+  onEnter: (e: KeyboardEvent) => void;
+  onEscape: (e: KeyboardEvent) => void;
   onSubmit: () => void;
 }
 
-export function allowNewLine(
-  e: React.KeyboardEvent<HTMLTextAreaElement>,
-  stateManager: StateManager
-) {
+export function allowNewLine(e: KeyboardEvent, stateManager: StateManager) {
   if (Platform.isMobile) {
     return true;
   }
@@ -40,25 +39,25 @@ export function allowNewLine(
   return e.key === 'Enter' && e.shiftKey;
 }
 
-export const MarkdownEditor = React.forwardRef(function MarkdownEditor(
+export const MarkdownEditor = Preact.forwardRef(function MarkdownEditor(
   { onEnter, onEscape, onSubmit, ...textareaProps }: MarkdownEditorProps,
-  ref: ForwardedRef<HTMLTextAreaElement>
+  ref: Ref<HTMLTextAreaElement>
 ) {
-  const { view, stateManager } = React.useContext(KanbanContext);
+  const { view, stateManager } = Preact.useContext(KanbanContext);
 
-  const shouldAutoPairMarkdown = React.useMemo(() => {
+  const shouldAutoPairMarkdown = Preact.useMemo(() => {
     return (view.app.vault as any).getConfig('autoPairMarkdown');
   }, [view]);
 
-  const shouldAutoPairBrackets = React.useMemo(() => {
+  const shouldAutoPairBrackets = Preact.useMemo(() => {
     return (view.app.vault as any).getConfig('autoPairBrackets');
   }, [view]);
 
-  const shouldUseTab = React.useMemo(() => {
+  const shouldUseTab = Preact.useMemo(() => {
     return (view.app.vault as any).getConfig('useTab');
   }, [view]);
 
-  const tabWidth = React.useMemo(() => {
+  const tabWidth = Preact.useMemo(() => {
     return (view.app.vault as any).getConfig('tabSize');
   }, [view]);
 
@@ -127,7 +126,7 @@ export const MarkdownEditor = React.forwardRef(function MarkdownEditor(
     },
   });
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     const onHotkey = (command: string) => {
       const fn = commands[command];
 
@@ -161,7 +160,7 @@ export const MarkdownEditor = React.forwardRef(function MarkdownEditor(
             if (ref && typeof ref === 'function') {
               ref(c);
             } else if (ref) {
-              (ref as React.MutableRefObject<HTMLTextAreaElement>).current = c;
+              (ref as Preact.RefObject<HTMLTextAreaElement>).current = c;
             }
           }}
         />

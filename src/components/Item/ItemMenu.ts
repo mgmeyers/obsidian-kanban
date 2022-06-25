@@ -1,5 +1,5 @@
 import { Menu, TFile, TFolder, getLinkpath } from 'obsidian';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { Path } from 'src/dnd/types';
 import { t } from 'src/lang/helpers';
@@ -21,7 +21,7 @@ const wikilinkRegEx = /!?\[\[([^\]]*)\]\]/g;
 const mdLinkRegEx = /!?\[([^\]]*)\]\([^)]*\)/g;
 
 interface UseItemMenuParams {
-  setIsEditing: React.Dispatch<boolean>;
+  setIsEditing: Preact.StateUpdater<boolean>;
   item: Item;
   path: Path;
   boardModifiers: BoardModifiers;
@@ -35,7 +35,7 @@ export function useItemMenu({
   boardModifiers,
   stateManager,
 }: UseItemMenuParams) {
-  return React.useCallback(
+  return Preact.useCallback(
     (e: MouseEvent, internalLinkPath?: string) => {
       if (internalLinkPath) {
         (stateManager.app.workspace as any).onLinkContextMenu(
@@ -214,6 +214,7 @@ export function useItemMenu({
               .setTitle(hasDate ? t('Edit date') : t('Add date'))
               .onClick(() => {
                 constructDatePicker(
+                  e.view,
                   stateManager,
                   coordinates,
                   constructMenuDatePickerOnChange({
@@ -267,6 +268,7 @@ export function useItemMenu({
               .setTitle(hasTime ? t('Edit time') : t('Add time'))
               .onClick(() => {
                 constructTimePicker(
+                  e.view,
                   stateManager,
                   coordinates,
                   constructMenuTimePickerOnChange({

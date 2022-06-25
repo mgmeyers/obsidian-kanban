@@ -1,4 +1,4 @@
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { SortManager } from '../managers/SortManager';
 import { Axis, WithChildren } from '../types';
@@ -10,9 +10,9 @@ interface SortableProps extends WithChildren {
 }
 
 export function Sortable({ axis, children, onSortChange }: SortableProps) {
-  const dndManager = React.useContext(DndManagerContext);
-  const managerRef = React.useRef<SortManager>();
-  const sortManager = React.useMemo(() => {
+  const dndManager = Preact.useContext(DndManagerContext);
+  const managerRef = Preact.useRef<SortManager>();
+  const sortManager = Preact.useMemo(() => {
     if (dndManager) {
       if (managerRef.current) {
         managerRef.current.destroy();
@@ -28,7 +28,7 @@ export function Sortable({ axis, children, onSortChange }: SortableProps) {
     return null;
   }, [dndManager, axis, onSortChange]);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     return () => managerRef.current?.destroy();
   }, []);
 
@@ -44,10 +44,10 @@ export function Sortable({ axis, children, onSortChange }: SortableProps) {
 }
 
 export function useIsSorting() {
-  const sortManager = React.useContext(SortManagerContext);
-  const [isSorting, setIsSorting] = React.useState(false);
+  const sortManager = Preact.useContext(SortManagerContext);
+  const [isSorting, setIsSorting] = Preact.useState(false);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     sortManager.addSortNotifier(setIsSorting);
 
     return () => {

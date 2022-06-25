@@ -1,5 +1,5 @@
 import { Link } from 'obsidian-dataview';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { c } from '../helpers';
 import { MarkdownRenderer } from '../MarkdownRenderer';
@@ -99,7 +99,7 @@ export interface MetadataTableProps {
   searchQuery?: string;
 }
 
-export const MetadataTable = React.memo(function MetadataTable({
+export const MetadataTable = Preact.memo(function MetadataTable({
   metadata,
   order,
   searchQuery,

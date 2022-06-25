@@ -1,5 +1,5 @@
 import { getLinkpath } from 'obsidian';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { KanbanContext } from '../context';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
@@ -10,8 +10,8 @@ export interface LaneTitleProps {
   itemCount: number;
   title: string;
   isEditing: boolean;
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
-  onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
+  setIsEditing: Preact.StateUpdater<boolean>;
+  onChange: Preact.ChangeEventHandler<HTMLTextAreaElement>;
 }
 
 export function LaneTitle({
@@ -21,10 +21,10 @@ export function LaneTitle({
   title,
   onChange,
 }: LaneTitleProps) {
-  const { stateManager } = React.useContext(KanbanContext);
-  const inputRef = React.useRef<HTMLTextAreaElement>();
+  const { stateManager } = Preact.useContext(KanbanContext);
+  const inputRef = Preact.useRef<HTMLTextAreaElement>();
 
-  const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const onEnter = (e: KeyboardEvent) => {
     if (!allowNewLine(e, stateManager)) {
       e.preventDefault();
       isEditing && setIsEditing(false);
@@ -39,7 +39,7 @@ export function LaneTitle({
     isEditing && setIsEditing(false);
   };
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     if (isEditing && inputRef.current) {
       const input = inputRef.current;
 

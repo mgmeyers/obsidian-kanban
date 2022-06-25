@@ -1,4 +1,4 @@
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { t } from 'src/lang/helpers';
 
@@ -7,16 +7,16 @@ import { Icon } from '../Icon/Icon';
 
 interface ItemMenuButtonProps {
   isEditing: boolean;
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsEditing: Preact.StateUpdater<boolean>;
   showMenu: (e: MouseEvent, internalLinkPath?: string) => void;
 }
 
-export const ItemMenuButton = React.memo(function ItemMenuButton({
+export const ItemMenuButton = Preact.memo(function ItemMenuButton({
   isEditing,
   setIsEditing,
   showMenu,
 }: ItemMenuButtonProps) {
-  const ignoreAttr = React.useMemo(() => {
+  const ignoreAttr = Preact.useMemo(() => {
     if (isEditing) {
       return {
         'data-ignore-drag': true,
@@ -47,7 +47,7 @@ export const ItemMenuButton = React.memo(function ItemMenuButton({
           data-ignore-drag={true}
           onPointerDown={(e) => e.preventDefault()}
           onClick={
-            showMenu as unknown as React.MouseEventHandler<HTMLButtonElement>
+            showMenu as unknown as Preact.JSX.MouseEventHandler<HTMLButtonElement>
           }
           className={c('item-postfix-button')}
           aria-label={t('More options')}

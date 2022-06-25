@@ -1,4 +1,4 @@
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { ScrollManager } from '../managers/ScrollManager';
 import { WithChildren } from '../types';
@@ -9,7 +9,7 @@ import {
 } from './context';
 
 interface ScrollContextProps extends WithChildren {
-  scrollRef: React.MutableRefObject<HTMLElement | null>;
+  scrollRef: Preact.RefObject<HTMLElement | null>;
   triggerTypes?: string[];
 }
 
@@ -18,13 +18,13 @@ export function Scrollable({
   triggerTypes,
   children,
 }: ScrollContextProps) {
-  const dndManager = React.useContext(DndManagerContext);
-  const scopeId = React.useContext(ScopeIdContext);
-  const parentScrollManager = React.useContext(ScrollManagerContext);
+  const dndManager = Preact.useContext(DndManagerContext);
+  const scopeId = Preact.useContext(ScopeIdContext);
+  const parentScrollManager = Preact.useContext(ScrollManagerContext);
 
-  const managerRef = React.useRef<ScrollManager>();
+  const managerRef = Preact.useRef<ScrollManager>();
 
-  const scrollManager = React.useMemo(() => {
+  const scrollManager = Preact.useMemo(() => {
     if (dndManager) {
       if (managerRef.current) {
         managerRef.current.destroy();
@@ -46,7 +46,7 @@ export function Scrollable({
     return null;
   }, [dndManager, scopeId, scrollRef, triggerTypes, parentScrollManager]);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     return () => managerRef.current?.destroy();
   }, []);
 

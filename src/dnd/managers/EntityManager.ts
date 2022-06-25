@@ -92,6 +92,8 @@ export class EntityManager {
         this.entityId,
         measureNode,
         (entry) => {
+          const win = entry.target.ownerDocument.defaultView;
+
           if (entry.isIntersecting) {
             const entity = this.getEntity(entry.boundingClientRect);
             this.parent?.children.set(this.entityId, {
@@ -102,16 +104,20 @@ export class EntityManager {
             this.dndManager.observeResize(measureNode);
 
             if (!this.parent || this.parent.isVisible) {
-              this.dndManager.registerHitboxEntity(this.entityId, entity);
+              this.dndManager.registerHitboxEntity(this.entityId, entity, win);
               this.children.forEach((child, childId) => {
-                this.dndManager.registerHitboxEntity(childId, child.entity);
+                this.dndManager.registerHitboxEntity(
+                  childId,
+                  child.entity,
+                  win
+                );
               });
               this.setVisibility(true);
             }
           } else {
-            this.dndManager.unregisterHitboxEntity(this.entityId);
+            this.dndManager.unregisterHitboxEntity(this.entityId, win);
             this.children.forEach((_, childId) => {
-              this.dndManager.unregisterHitboxEntity(childId);
+              this.dndManager.unregisterHitboxEntity(childId, win);
             });
             this.parent?.children.delete(this.entityId);
             this.dndManager.unobserveResize(measureNode);
@@ -122,7 +128,11 @@ export class EntityManager {
     } else {
       const entity = this.getEntity(measureNode.getBoundingClientRect());
       this.dndManager.observeResize(measureNode);
-      this.dndManager.registerHitboxEntity(this.entityId, entity);
+      this.dndManager.registerHitboxEntity(
+        this.entityId,
+        entity,
+        entityNode.ownerDocument.defaultView
+      );
       this.parent?.children.set(this.entityId, {
         entity,
         manager: this,
@@ -145,7 +155,12 @@ export class EntityManager {
       this.entityId,
       this.measureNode
     );
-    this.dndManager.unregisterHitboxEntity(this.entityId);
+    if (this.entityNode) {
+      this.dndManager.unregisterHitboxEntity(
+        this.entityId,
+        this.entityNode.ownerDocument.defaultView
+      );
+    }
     this.parent?.children.delete(this.entityId);
   }
 
@@ -195,6 +210,7 @@ export class EntityManager {
         return {
           ...manager.getEntityData(),
           sortAxis: manager.sortManager?.axis,
+          win: manager.measureNode.ownerDocument.defaultView,
         };
       },
     };

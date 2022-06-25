@@ -121,4 +121,7 @@ module.exports = {
     global: 'window',
   },
   plugins: [NodeModulesPolyfillPlugin(), renamePlugin],
+  inject: ['./preact-shim.js'],
+  jsxFactory: 'h',
+  jsxFragment: 'Fragment',
 };

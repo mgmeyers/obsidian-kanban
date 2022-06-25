@@ -1,4 +1,4 @@
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 
@@ -17,13 +17,13 @@ import {
 } from './helpers';
 
 function useDatePickers(item: Item) {
-  const { stateManager, boardModifiers } = React.useContext(KanbanContext);
+  const { stateManager, boardModifiers } = Preact.useContext(KanbanContext);
   const path = useNestedEntityPath();
 
-  return React.useMemo(() => {
-    const onEditDate: React.MouseEventHandler = (e) => {
+  return Preact.useMemo(() => {
+    const onEditDate: Preact.JSX.MouseEventHandler<HTMLSpanElement> = (e) => {
       constructDatePicker(
-        e.view as unknown as Window, // Preact uses real events, so this is safe
+        e.view,
         stateManager,
         { x: e.clientX, y: e.clientY },
         constructMenuDatePickerOnChange({
@@ -37,9 +37,9 @@ function useDatePickers(item: Item) {
       );
     };
 
-    const onEditTime: React.MouseEventHandler = (e) => {
+    const onEditTime: Preact.JSX.MouseEventHandler<HTMLSpanElement> = (e) => {
       constructTimePicker(
-        e.view as unknown as Window, // Preact uses real events, so this is safe
+        e.view, // Preact uses real events, so this is safe
         stateManager,
         { x: e.clientX, y: e.clientY },
         constructMenuTimePickerOnChange({
@@ -63,7 +63,7 @@ function useDatePickers(item: Item) {
 export interface ItemContentProps {
   item: Item;
   isEditing: boolean;
-  setIsEditing: React.Dispatch<boolean>;
+  setIsEditing: Preact.StateUpdater<boolean>;
   searchQuery?: string;
 }
 
@@ -90,29 +90,29 @@ function checkCheckbox(title: string, checkboxIndex: number) {
   );
 }
 
-export const ItemContent = React.memo(function ItemContent({
+export const ItemContent = Preact.memo(function ItemContent({
   item,
   isEditing,
   setIsEditing,
   searchQuery,
 }: ItemContentProps) {
-  const [editState, setEditState] = React.useState(item.data.titleRaw);
+  const [editState, setEditState] = Preact.useState(item.data.titleRaw);
   const { stateManager, filePath, boardModifiers } =
-    React.useContext(KanbanContext);
+    Preact.useContext(KanbanContext);
 
   const hideTagsDisplay = stateManager.useSetting('hide-tags-display');
   const path = useNestedEntityPath();
 
   const { onEditDate, onEditTime } = useDatePickers(item);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     if (isEditing) {
       setEditState(item.data.titleRaw);
     }
   }, [isEditing]);
 
-  const onEnter = React.useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const onEnter = Preact.useCallback(
+    (e: KeyboardEvent) => {
       if (!allowNewLine(e, stateManager)) {
         e.preventDefault();
 
@@ -133,7 +133,7 @@ export const ItemContent = React.memo(function ItemContent({
     [stateManager, editState, item, path]
   );
 
-  const onSubmit = React.useCallback(() => {
+  const onSubmit = Preact.useCallback(() => {
     stateManager
       .updateItemContent(item, editState)
       .then((item) => {
@@ -147,14 +147,14 @@ export const ItemContent = React.memo(function ItemContent({
     setIsEditing(false);
   }, [stateManager, editState, item, path]);
 
-  const onEscape = React.useCallback(() => {
+  const onEscape = Preact.useCallback(() => {
     setIsEditing(false);
     setEditState(item.data.titleRaw);
     return true;
   }, [item]);
 
-  const onCheckboxContainerClick = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
+  const onCheckboxContainerClick = Preact.useCallback(
+    (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
       if (target.hasClass('task-list-item-checkbox')) {

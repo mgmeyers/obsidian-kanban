@@ -1,4 +1,4 @@
-import React from 'react';
+import Preact from 'preact/compat';
 import useOnclickOutside from 'react-cool-onclickoutside';
 
 import { t } from 'src/lang/helpers';
@@ -12,7 +12,7 @@ import { Item } from '../types';
 interface ItemFormProps {
   addItems: (items: Item[]) => void;
   isInputVisible: boolean;
-  setIsInputVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsInputVisible: Preact.StateUpdater<boolean>;
   hideButton?: boolean;
 }
 
@@ -22,9 +22,9 @@ export function ItemForm({
   setIsInputVisible,
   hideButton,
 }: ItemFormProps) {
-  const [itemTitle, setItemTitle] = React.useState('');
-  const { stateManager } = React.useContext(KanbanContext);
-  const inputRef = React.useRef<HTMLTextAreaElement>();
+  const [itemTitle, setItemTitle] = Preact.useState('');
+  const { stateManager } = Preact.useContext(KanbanContext);
+  const inputRef = Preact.useRef<HTMLTextAreaElement>();
 
   const clickOutsideRef = useOnclickOutside(
     () => {
@@ -35,7 +35,7 @@ export function ItemForm({
     }
   );
 
-  const clear = React.useCallback(() => {
+  const clear = Preact.useCallback(() => {
     setItemTitle('');
     setIsInputVisible(false);
   }, []);
@@ -54,7 +54,7 @@ export function ItemForm({
     }
   };
 
-  const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const onEnter = (e: KeyboardEvent) => {
     if (!allowNewLine(e, stateManager)) {
       e.preventDefault();
 

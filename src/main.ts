@@ -14,8 +14,7 @@ import {
   WorkspaceLeaf,
   debounce,
 } from 'obsidian';
-import React from 'react';
-import ReactDOM from 'react-dom';
+import Preact from 'preact/compat';
 
 import { createApp } from './DragDropApp';
 import { KanbanView, kanbanIcon, kanbanViewType } from './KanbanView';
@@ -27,12 +26,13 @@ import { StateManager } from './StateManager';
 export default class KanbanPlugin extends Plugin {
   settingsTab: KanbanSettingsTab;
   settings: KanbanSettings = {};
-  appEl: HTMLDivElement;
 
   // leafid => view mode
   kanbanFileModes: Record<string, string> = {};
   stateManagers: Map<TFile, StateManager> = new Map();
-  viewMap: Map<string, KanbanView> = new Map();
+
+  viewMap: Map<Window, Map<string, KanbanView>> = new Map();
+  appRootMap: Map<Window, HTMLElement> = new Map();
 
   _loaded: boolean = false;
 
@@ -59,10 +59,14 @@ export default class KanbanPlugin extends Plugin {
 
     (this.app.workspace as any).unregisterHoverLinkSource(frontMatterKey);
 
-    if (this.appEl) {
-      ReactDOM.unmountComponentAtNode(this.appEl);
-      this.appEl.detach();
+    for (const win of this.appRootMap.keys()) {
+      this.unmount(win);
     }
+
+    this.unmount(window);
+
+    this.appRootMap.clear();
+    this.viewMap.clear();
 
     window.removeEventListener('keydown', this.handleShift);
     window.removeEventListener('keyup', this.handleShift);
@@ -70,6 +74,18 @@ export default class KanbanPlugin extends Plugin {
 
   async onload() {
     await this.loadSettings();
+
+    this.registerEvent(
+      app.workspace.on('window-open', (_, win) => {
+        this.mount(win);
+      })
+    );
+
+    this.registerEvent(
+      app.workspace.on('window-close', (_, win) => {
+        this.unmount(win);
+      })
+    );
 
     this.settingsTab = new KanbanSettingsTab(this, {
       onSettingsChange: async (newSettings) => {
@@ -91,7 +107,7 @@ export default class KanbanPlugin extends Plugin {
     this.registerEvents();
 
     // Mount an empty component to start; views will be added as we go
-    this.mount();
+    this.mount(window);
 
     window.addEventListener('keydown', this.handleShift);
     window.addEventListener('keyup', this.handleShift);
@@ -104,25 +120,46 @@ export default class KanbanPlugin extends Plugin {
   viewStateReceivers: Array<(views: KanbanView[]) => void> = [];
 
   getKanbanViews() {
-    return Array.from(this.viewMap.values());
+    return Array.from(this.viewMap.values()).reduce<KanbanView[]>(
+      (allViews, current) => {
+        return allViews.concat(Array.from(current.values()));
+      },
+      []
+    );
   }
 
-  getKanbanView(id: string) {
-    return this.viewMap.get(id);
+  getKanbanView(id: string, win: Window) {
+    if (win && this.viewMap.has(win)) {
+      return this.viewMap.get(win).get(id);
+    }
+
+    for (const viewMap of this.viewMap.values()) {
+      if (viewMap.has(id)) {
+        return viewMap.get(id);
+      }
+    }
+
+    return null;
   }
 
   getStateManager(file: TFile) {
     return this.stateManagers.get(file);
   }
 
-  getStateManagerFromViewID(id: string) {
-    return this.stateManagers.get(this.getKanbanView(id).file);
+  getStateManagerFromViewID(id: string, win: Window) {
+    const view = this.getKanbanView(id, win);
+
+    if (!view) {
+      return null;
+    }
+
+    return this.stateManagers.get(view.file);
   }
 
   useViewState(): KanbanView[] {
-    const [state, setState] = React.useState(this.getKanbanViews());
+    const [state, setState] = Preact.useState(this.getKanbanViews());
 
-    React.useEffect(() => {
+    Preact.useEffect(() => {
       this.viewStateReceivers.push(setState);
 
       return () => {
@@ -134,8 +171,16 @@ export default class KanbanPlugin extends Plugin {
   }
 
   addView(view: KanbanView, data: string, shouldParseData: boolean) {
-    if (!this.viewMap.has(view.id)) {
-      this.viewMap.set(view.id, view);
+    const win = view.getWindow();
+
+    if (!this.viewMap.has(win)) {
+      this.viewMap.set(win, new Map());
+    }
+
+    const viewMap = this.viewMap.get(win);
+
+    if (!viewMap.has(view.id)) {
+      viewMap.set(view.id, view);
     }
 
     const file = view.file;
@@ -159,10 +204,21 @@ export default class KanbanPlugin extends Plugin {
   }
 
   removeView(view: KanbanView) {
+    const win = view.getWindow();
+
+    if (!this.viewMap.has(win)) {
+      return;
+    }
+
+    const viewMap = this.viewMap.get(win);
     const file = view.file;
 
-    if (this.viewMap.has(view.id)) {
-      this.viewMap.delete(view.id);
+    if (viewMap.has(view.id)) {
+      viewMap.delete(view.id);
+    }
+
+    if (viewMap.size === 0) {
+      this.viewMap.delete(win);
     }
 
     if (this.stateManagers.has(file)) {
@@ -172,14 +228,20 @@ export default class KanbanPlugin extends Plugin {
   }
 
   handleViewFileRename(view: KanbanView, oldPath: string) {
-    const oldId = `${(view.leaf as any).id}:::${oldPath}`;
-
-    if (this.viewMap.has(oldId)) {
-      this.viewMap.delete(oldId);
+    const win = view.getWindow();
+    if (!this.viewMap.has(win)) {
+      return;
     }
 
-    if (!this.viewMap.has(view.id)) {
-      this.viewMap.set(view.id, view);
+    const viewMap = this.viewMap.get(win);
+    const oldId = `${(view.leaf as any).id}:::${oldPath}`;
+
+    if (viewMap.has(oldId)) {
+      viewMap.delete(oldId);
+    }
+
+    if (!viewMap.has(view.id)) {
+      viewMap.set(view.id, view);
     }
 
     if (view.isPrimary) {
@@ -187,11 +249,34 @@ export default class KanbanPlugin extends Plugin {
     }
   }
 
-  mount() {
-    ReactDOM.render(
-      createApp(this),
-      this.appEl ?? (this.appEl = document.body.createDiv())
-    );
+  mount(win: Window) {
+    if (this.appRootMap.has(win)) {
+      return;
+    }
+
+    const el = win.document.body.createDiv();
+
+    this.appRootMap.set(win, el);
+
+    Preact.render(createApp(this), el);
+  }
+
+  unmount(win: Window) {
+    if (!this.appRootMap.has(win)) {
+      return;
+    }
+
+    const viewMap = this.viewMap.get(win);
+
+    if (viewMap) {
+      for (const view of viewMap.values()) {
+        view.destroy();
+      }
+    }
+
+    const el = this.appRootMap.get(win);
+
+    Preact.unmountComponentAtNode(el);
   }
 
   async setMarkdownView(leaf: WorkspaceLeaf, focus: boolean = true) {

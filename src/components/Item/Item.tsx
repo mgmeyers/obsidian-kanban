@@ -1,5 +1,5 @@
 import classcat from 'classcat';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { DndManagerContext } from 'src/dnd/components/context';
 import { Droppable, useNestedEntityPath } from 'src/dnd/components/Droppable';
@@ -30,18 +30,18 @@ export interface ItemInnerProps {
   searchQuery?: string;
 }
 
-const ItemInner = React.memo(function ItemInner({
+const ItemInner = Preact.memo(function ItemInner({
   item,
   shouldMarkItemsComplete,
   isMatch,
   searchQuery,
 }: ItemInnerProps) {
-  const { stateManager, boardModifiers } = React.useContext(KanbanContext);
-  const [isEditing, setIsEditing] = React.useState(false);
+  const { stateManager, boardModifiers } = Preact.useContext(KanbanContext);
+  const [isEditing, setIsEditing] = Preact.useState(false);
 
-  const dndManager = React.useContext(DndManagerContext);
+  const dndManager = Preact.useContext(DndManagerContext);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     const handler = () => {
       if (isEditing) setIsEditing(false);
     };
@@ -53,7 +53,7 @@ const ItemInner = React.memo(function ItemInner({
     };
   }, [dndManager, isEditing]);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     if (item.data.forceEditMode) {
       setIsEditing(true);
     }
@@ -69,31 +69,33 @@ const ItemInner = React.memo(function ItemInner({
     path,
   });
 
-  const onContextMenu: React.MouseEventHandler = React.useCallback(
-    (e) => {
-      if (e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
+  const onContextMenu: Preact.JSX.MouseEventHandler<HTMLDivElement> =
+    Preact.useCallback(
+      (e) => {
+        if (e.target instanceof HTMLTextAreaElement) {
+          return;
+        }
 
-      e.preventDefault();
-      e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
 
-      const internalLinkPath =
-        e.target instanceof HTMLAnchorElement &&
-        e.target.hasClass('internal-link')
-          ? e.target.dataset.href
-          : undefined;
+        const internalLinkPath =
+          e.target instanceof HTMLAnchorElement &&
+          e.target.hasClass('internal-link')
+            ? e.target.dataset.href
+            : undefined;
 
-      showItemMenu(e.nativeEvent, internalLinkPath);
-    },
-    [showItemMenu]
-  );
+        showItemMenu(e, internalLinkPath);
+      },
+      [showItemMenu]
+    );
 
-  const onDoubleClick: React.MouseEventHandler = React.useCallback(() => {
-    setIsEditing(true);
-  }, [setIsEditing]);
+  const onDoubleClick: Preact.JSX.MouseEventHandler<HTMLDivElement> =
+    Preact.useCallback(() => {
+      setIsEditing(true);
+    }, [setIsEditing]);
 
-  const ignoreAttr = React.useMemo(() => {
+  const ignoreAttr = Preact.useMemo(() => {
     if (isEditing) {
       return {
         'data-ignore-drag': true,
@@ -106,7 +108,7 @@ const ItemInner = React.memo(function ItemInner({
   return (
     <div
       onContextMenu={onContextMenu}
-      onDoubleClick={onDoubleClick}
+      onDblClick={onDoubleClick}
       className={c('item-content-wrapper')}
       {...ignoreAttr}
     >
@@ -139,12 +141,12 @@ const ItemInner = React.memo(function ItemInner({
   );
 });
 
-export const DraggableItem = React.memo(function DraggableItem(
+export const DraggableItem = Preact.memo(function DraggableItem(
   props: DraggableItemProps
 ) {
-  const elementRef = React.useRef<HTMLDivElement>(null);
-  const measureRef = React.useRef<HTMLDivElement>(null);
-  const searchQuery = React.useContext(SearchContext);
+  const elementRef = Preact.useRef<HTMLDivElement>(null);
+  const measureRef = Preact.useRef<HTMLDivElement>(null);
+  const searchQuery = Preact.useContext(SearchContext);
 
   const { itemIndex, ...innerProps } = props;
 
@@ -202,7 +204,7 @@ interface ItemsProps {
   shouldMarkItemsComplete: boolean;
 }
 
-export const Items = React.memo(function Items({
+export const Items = Preact.memo(function Items({
   isStatic,
   items,
   shouldMarkItemsComplete,

@@ -1,5 +1,5 @@
 import update from 'immutability-helper';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { Path } from 'src/dnd/types';
 import { t } from 'src/lang/helpers';
@@ -14,7 +14,7 @@ export interface LaneSettingsProps {
 }
 
 export function LaneSettings({ lane, lanePath }: LaneSettingsProps) {
-  const { boardModifiers } = React.useContext(KanbanContext);
+  const { boardModifiers } = Preact.useContext(KanbanContext);
 
   return (
     <div className={c('lane-setting-wrapper')}>

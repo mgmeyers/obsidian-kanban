@@ -1,12 +1,12 @@
+import Preact from 'preact/compat';
 import rafSchd from 'raf-schd';
-import React from 'react';
 
 import { ScrollStateManager } from '../managers/ScrollStateManager';
 import { WithChildren } from '../types';
 import { ScopeIdContext, ScrollStateContext } from './context';
 
 export function DndScrollState({ children }: WithChildren) {
-  const manager = React.useMemo(() => {
+  const manager = Preact.useMemo(() => {
     return new ScrollStateManager();
   }, []);
 
@@ -18,9 +18,9 @@ export function DndScrollState({ children }: WithChildren) {
 }
 
 export function useStoredScrollState(id: string, index: number | undefined) {
-  const scopeId = React.useContext(ScopeIdContext);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-  const scrollStateManager = React.useContext(ScrollStateContext);
+  const scopeId = Preact.useContext(ScopeIdContext);
+  const scrollRef = Preact.useRef<HTMLDivElement>(null);
+  const scrollStateManager = Preact.useContext(ScrollStateContext);
 
   const setRef = (el: HTMLDivElement) => {
     scrollRef.current = el;
@@ -37,7 +37,7 @@ export function useStoredScrollState(id: string, index: number | undefined) {
     }
   };
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     const el = scrollRef.current;
 
     if (!el) return;

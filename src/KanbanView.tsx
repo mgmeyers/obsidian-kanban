@@ -7,7 +7,6 @@ import {
   TextFileView,
   WorkspaceLeaf,
 } from 'obsidian';
-import React from 'react';
 
 import { c } from './components/helpers';
 import { Kanban } from './components/Kanban';
@@ -87,6 +86,10 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   getDisplayText() {
     return this.file?.basename || 'Kanban';
+  }
+
+  getWindow() {
+    return this.containerEl.ownerDocument.defaultView;
   }
 
   async onLoadFile(file: TFile) {

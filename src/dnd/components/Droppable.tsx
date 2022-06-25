@@ -1,4 +1,4 @@
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { EntityManager } from '../managers/EntityManager';
 import { EntityData, WithChildren } from '../types';
@@ -13,12 +13,12 @@ import {
 interface DraggableProps extends WithChildren {
   id: string;
   index: number;
-  elementRef: React.MutableRefObject<HTMLElement | null>;
-  measureRef: React.MutableRefObject<HTMLElement | null>;
+  elementRef: Preact.RefObject<HTMLElement | null>;
+  measureRef: Preact.RefObject<HTMLElement | null>;
   data: EntityData;
 }
 
-export const Droppable = React.memo(function Droppable({
+export const Droppable = Preact.memo(function Droppable({
   id,
   index,
   elementRef,
@@ -26,17 +26,17 @@ export const Droppable = React.memo(function Droppable({
   children,
   data,
 }: DraggableProps) {
-  const dndManager = React.useContext(DndManagerContext);
-  const sortManager = React.useContext(SortManagerContext);
-  const scopeId = React.useContext(ScopeIdContext);
-  const parentEntityManager = React.useContext(EntityManagerContext);
-  const parentScrollManager = React.useContext(ScrollManagerContext);
-  const dataRef = React.useRef(data);
-  const managerRef = React.useRef<EntityManager>();
+  const dndManager = Preact.useContext(DndManagerContext);
+  const sortManager = Preact.useContext(SortManagerContext);
+  const scopeId = Preact.useContext(ScopeIdContext);
+  const parentEntityManager = Preact.useContext(EntityManagerContext);
+  const parentScrollManager = Preact.useContext(ScrollManagerContext);
+  const dataRef = Preact.useRef(data);
+  const managerRef = Preact.useRef<EntityManager>();
 
   dataRef.current = data;
 
-  const entityManager = React.useMemo(() => {
+  const entityManager = Preact.useMemo(() => {
     if (dndManager) {
       if (managerRef.current) {
         managerRef.current.destroy();
@@ -73,7 +73,7 @@ export const Droppable = React.memo(function Droppable({
     sortManager,
   ]);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     return () => managerRef.current?.destroy();
   }, []);
 
@@ -89,12 +89,12 @@ export const Droppable = React.memo(function Droppable({
 });
 
 export function useNestedEntityPath(selfIndex?: number) {
-  const entityManager = React.useContext(EntityManagerContext);
+  const entityManager = Preact.useContext(EntityManagerContext);
   const currentPath = entityManager?.getPath() || [];
 
   if (selfIndex !== undefined) {
     currentPath.push(selfIndex);
   }
 
-  return React.useMemo(() => currentPath, currentPath);
+  return Preact.useMemo(() => currentPath, currentPath);
 }

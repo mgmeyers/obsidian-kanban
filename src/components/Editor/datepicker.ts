@@ -1,6 +1,6 @@
 import flatpickr from 'flatpickr';
 import { moment } from 'obsidian';
-import React from 'react';
+import Preact from 'preact';
 
 import { buildLinkToDailyNote } from 'src/helpers';
 import { StateManager } from 'src/StateManager';
@@ -13,7 +13,7 @@ import { CursorOffset, StrategyProps } from './textcomplete/textcomplete-core';
 
 export function applyDate(
   date: Date,
-  inputRef: React.MutableRefObject<HTMLTextAreaElement>,
+  inputRef: Preact.RefObject<HTMLTextAreaElement>,
   stateManager: StateManager
 ) {
   const dateFormat = stateManager.getSetting('date-format');
@@ -31,7 +31,7 @@ export function applyDate(
 
 export interface ConstructDatePickerParams {
   div: HTMLElement;
-  inputRef: React.MutableRefObject<HTMLTextAreaElement>;
+  inputRef: Preact.RefObject<HTMLTextAreaElement>;
   cb: (picker: flatpickr.Instance) => void;
   stateManager: StateManager;
 }

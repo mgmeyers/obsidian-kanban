@@ -1,5 +1,5 @@
 import { Menu } from 'obsidian';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { Path } from 'src/dnd/types';
 import { t } from 'src/lang/helpers';
@@ -42,7 +42,7 @@ export function ConfirmAction({
   onAction,
   lane,
 }: ConfirmActionProps) {
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     // Immediately execute action if lane is empty
     if (action && lane.children.length === 0) {
       onAction();
@@ -69,15 +69,15 @@ export function ConfirmAction({
 }
 
 export interface UseSettingsMenuParams {
-  setIsEditing: React.Dispatch<boolean>;
+  setIsEditing: Preact.StateUpdater<boolean>;
   path: Path;
 }
 
 export function useSettingsMenu({ setIsEditing, path }: UseSettingsMenuParams) {
-  const { stateManager, boardModifiers } = React.useContext(KanbanContext);
-  const [confirmAction, setConfirmAction] = React.useState<LaneAction>(null);
+  const { stateManager, boardModifiers } = Preact.useContext(KanbanContext);
+  const [confirmAction, setConfirmAction] = Preact.useState<LaneAction>(null);
 
-  const settingsMenu = React.useMemo(() => {
+  const settingsMenu = Preact.useMemo(() => {
     return new Menu(stateManager.app)
       .addItem((item) => {
         item

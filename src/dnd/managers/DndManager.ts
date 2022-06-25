@@ -8,8 +8,8 @@ export type DropHandler = (dragEntity: Entity, dropEntity: Entity) => void;
 
 export class DndManager {
   emitter: Emitter;
-  hitboxEntities: Map<string, Entity>;
-  scrollEntities: Map<string, Entity>;
+  hitboxEntities: Map<Window, Map<string, Entity>>;
+  scrollEntities: Map<Window, Map<string, Entity>>;
   resizeObserver: ResizeObserver;
   dragManager: DragManager;
   onDrop: DropHandler;
@@ -36,7 +36,15 @@ export class DndManager {
 
   scrollResizeDebounce = 0;
   handleResize: ResizeObserverCallback = (entries) => {
+    const resizedWindows = new Set<Window>();
+
     entries.forEach((e) => {
+      const win = e.target.ownerDocument.defaultView;
+
+      if (!resizedWindows.has(win)) {
+        resizedWindows.add(win);
+      }
+
       if ((e.target as HTMLElement).dataset.scrollid) {
         clearTimeout(this.scrollResizeDebounce);
 
@@ -46,13 +54,21 @@ export class DndManager {
       }
     });
 
-    this.hitboxEntities.forEach((entity) => {
-      entity.recalcInitial();
+    resizedWindows.forEach((win) => {
+      if (this.hitboxEntities.has(win)) {
+        this.hitboxEntities.get(win).forEach((entity) => {
+          entity.recalcInitial();
+        });
+      }
+
+      if (this.scrollEntities.has(win)) {
+        this.scrollEntities.get(win).forEach((entity) => {
+          entity.recalcInitial();
+        });
+      }
     });
 
-    this.scrollEntities.forEach((entity) => {
-      entity.recalcInitial();
-    });
+    resizedWindows.clear();
   };
 
   observeResize(element: HTMLElement) {
@@ -67,19 +83,47 @@ export class DndManager {
     }
   }
 
-  registerHitboxEntity(id: string, entity: Entity) {
-    this.hitboxEntities.set(id, entity);
+  registerHitboxEntity(id: string, entity: Entity, win: Window) {
+    if (!this.hitboxEntities.has(win)) {
+      this.hitboxEntities.set(win, new Map());
+    }
+
+    this.hitboxEntities.get(win).set(id, entity);
   }
 
-  registerScrollEntity(id: string, entity: Entity) {
-    this.scrollEntities.set(id, entity);
+  registerScrollEntity(id: string, entity: Entity, win: Window) {
+    if (!this.scrollEntities.has(win)) {
+      this.scrollEntities.set(win, new Map());
+    }
+
+    this.scrollEntities.get(win).set(id, entity);
   }
 
-  unregisterHitboxEntity(id: string) {
-    this.hitboxEntities.delete(id);
+  unregisterHitboxEntity(id: string, win: Window) {
+    if (!this.hitboxEntities.has(win)) {
+      return;
+    }
+
+    const entities = this.hitboxEntities.get(win);
+
+    entities.delete(id);
+
+    if (entities.size === 0) {
+      this.hitboxEntities.delete(win);
+    }
   }
 
-  unregisterScrollEntity(id: string) {
-    this.scrollEntities.delete(id);
+  unregisterScrollEntity(id: string, win: Window) {
+    if (!this.scrollEntities.has(win)) {
+      return;
+    }
+
+    const entities = this.scrollEntities.get(win);
+
+    entities.delete(id);
+
+    if (entities.size === 0) {
+      this.scrollEntities.delete(win);
+    }
   }
 }

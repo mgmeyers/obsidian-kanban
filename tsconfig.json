@@ -7,11 +7,18 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "isolatedModules": true,
-    "jsx": "react",
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
     "lib": ["dom", "es6", "scripthost", "es2018"],
     "module": "ESNext",
     "moduleResolution": "node",
     "noImplicitAny": true,
+    "paths": {
+      "react": ["./node_modules/preact/compat/"],
+      "react-dom": ["./node_modules/preact/compat/"],
+      "react-types": ["./node_modules/@types/react/"]
+    },
+    "skipLibCheck": true,
     "target": "es2018"
   },
   "include": ["src/*.ts", "src/*.tsx"]

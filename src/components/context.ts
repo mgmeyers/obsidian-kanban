@@ -1,4 +1,4 @@
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
@@ -12,5 +12,5 @@ export interface KanbanContextProps {
   view: KanbanView;
 }
 
-export const KanbanContext = React.createContext<KanbanContextProps>(null);
-export const SearchContext = React.createContext<string | null>(null);
+export const KanbanContext = Preact.createContext<KanbanContextProps>(null);
+export const SearchContext = Preact.createContext<string | null>(null);

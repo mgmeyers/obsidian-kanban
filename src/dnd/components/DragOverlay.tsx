@@ -1,5 +1,5 @@
-import React from 'react';
-import { createPortal } from 'react-dom';
+import { JSX } from 'preact';
+import Preact from 'preact/compat';
 
 import { DragEventData } from '../managers/DragManager';
 import { Coordinates, Entity, Hitbox } from '../types';
@@ -8,14 +8,7 @@ import { emptyHitbox } from '../util/hitbox';
 import { DndManagerContext } from './context';
 
 export interface DragOverlayProps {
-  children(entity: Entity, styles: React.CSSProperties): JSX.Element;
-}
-
-declare global {
-  interface Window {
-    // backward compatibility w/0.14.x; this block can be removed once we depend on 0.15.x API
-    activeDocument?: Document
-  }
+  children(entity: Entity, styles: JSX.CSSProperties): JSX.Element;
 }
 
 function getDragOverlayStyles(
@@ -25,7 +18,7 @@ function getDragOverlayStyles(
   margin: Hitbox,
   transition?: string,
   transform?: string
-): React.CSSProperties {
+): Preact.CSSProperties {
   const adjustedHitbox = [
     originHitbox[0] - margin[0],
     originHitbox[1] - margin[1],
@@ -46,12 +39,14 @@ function getDragOverlayStyles(
 }
 
 export function DragOverlay({ children }: DragOverlayProps) {
-  const dndManager = React.useContext(DndManagerContext);
+  const dndManager = Preact.useContext(DndManagerContext);
 
-  const [dragEntity, setDragEntity] = React.useState<Entity | undefined>();
-  const [styles, setStyles] = React.useState<React.CSSProperties | undefined>();
+  const [dragEntity, setDragEntity] = Preact.useState<Entity | undefined>();
+  const [styles, setStyles] = Preact.useState<
+    Preact.CSSProperties | undefined
+  >();
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     if (!dndManager) return;
 
     let dragOriginHitbox: Hitbox = emptyHitbox;
@@ -151,14 +146,17 @@ export function DragOverlay({ children }: DragOverlayProps) {
     return null;
   }
 
-  return createPortal(children(dragEntity, styles), (window.activeDocument || document).body);
+  return Preact.createPortal(
+    children(dragEntity, styles),
+    dragEntity.getData().win.document.body
+  );
 }
 
 export function useIsAnythingDragging() {
-  const dndManager = React.useContext(DndManagerContext);
-  const [isDragging, setIsDragging] = React.useState(false);
+  const dndManager = Preact.useContext(DndManagerContext);
+  const [isDragging, setIsDragging] = Preact.useState(false);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     const onDragStart = () => {
       setIsDragging(true);
     };

@@ -1,3 +1,5 @@
+import { ComponentChildren } from 'preact';
+
 export type Axis = 'horizontal' | 'vertical';
 export type Side = 'top' | 'right' | 'bottom' | 'left';
 export type Path = number[];
@@ -37,6 +39,7 @@ export interface EntityData {
   type: string;
   id: string;
   accepts: string[];
+  win: Window;
   sortAxis?: Axis;
   [k: string]: any;
 }
@@ -55,7 +58,7 @@ export interface Entity {
 }
 
 export interface WithChildren {
-  children?: React.ReactNode;
+  children?: ComponentChildren;
 }
 
 export const initialScrollState: ScrollState = {

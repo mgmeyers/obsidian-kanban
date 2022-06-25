@@ -6,7 +6,7 @@ import {
   appHasDailyNotesPluginLoaded,
   createDailyNote,
 } from 'obsidian-daily-notes-interface';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { useIsAnythingDragging } from 'src/dnd/components/DragOverlay';
 import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
@@ -40,33 +40,33 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const boardData = stateManager.useState();
   const isAnythingDragging = useIsAnythingDragging();
 
-  const rootRef = React.useRef<HTMLDivElement>(null);
-  const searchRef = React.useRef<HTMLInputElement>(null);
-  const [searchQuery, setSearchQuery] = React.useState<string>('');
-  const [isSearching, setIsSearching] = React.useState<boolean>(false);
+  const rootRef = Preact.useRef<HTMLDivElement>(null);
+  const searchRef = Preact.useRef<HTMLInputElement>(null);
+  const [searchQuery, setSearchQuery] = Preact.useState<string>('');
+  const [isSearching, setIsSearching] = Preact.useState<boolean>(false);
   const [debouncedSearchQuery, setDebouncedSearchQuery] =
-    React.useState<string>('');
+    Preact.useState<string>('');
 
-  const [isLaneFormVisible, setIsLaneFormVisible] = React.useState<boolean>(
+  const [isLaneFormVisible, setIsLaneFormVisible] = Preact.useState<boolean>(
     boardData?.children.length === 0
   );
 
   const filePath = stateManager.file.path;
   const maxArchiveLength = stateManager.useSetting('max-archive-size');
 
-  const closeLaneForm = React.useCallback(() => {
+  const closeLaneForm = Preact.useCallback(() => {
     if (boardData?.children.length > 0) {
       setIsLaneFormVisible(false);
     }
   }, [boardData?.children.length]);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     if (boardData?.children.length === 0) {
       setIsLaneFormVisible(true);
     }
   }, [boardData?.children.length]);
 
-  const onNewLane = React.useCallback(() => {
+  const onNewLane = Preact.useCallback(() => {
     setTimeout(() => {
       const board = rootRef.current?.getElementsByClassName(c('board'));
 
@@ -83,7 +83,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     });
   }, []);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     const onSearchHotkey = (e: string) => {
       if (e === 'editor:open-search') {
         setIsSearching((val) => !val);
@@ -103,13 +103,13 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     };
   }, [view]);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     if (isSearching) {
       searchRef.current?.focus();
     }
   }, [isSearching]);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     const trimmed = searchQuery.trim();
     let id: number;
 
@@ -126,7 +126,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     };
   }, [searchQuery]);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     if (maxArchiveLength === undefined || maxArchiveLength === -1) {
       return;
     }
@@ -147,19 +147,19 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     }
   }, [boardData?.data.archive.length, maxArchiveLength]);
 
-  const boardModifiers = React.useMemo(() => {
+  const boardModifiers = Preact.useMemo(() => {
     return getBoardModifiers(stateManager);
   }, [stateManager]);
 
-  const onMouseOver = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const onMouseOver = Preact.useCallback(
+    (e: MouseEvent) => {
       const targetEl = e.target as HTMLElement;
 
       if (targetEl.tagName !== 'A') return;
 
       if (targetEl.hasClass('internal-link')) {
         view.app.workspace.trigger('hover-link', {
-          event: e.nativeEvent,
+          event: e,
           source: frontMatterKey,
           hoverParent: view,
           targetEl,
@@ -171,8 +171,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     [view]
   );
 
-  const onClick = React.useCallback(
-    async (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const onClick = Preact.useCallback(
+    async (e: MouseEvent) => {
       if (e.type === 'auxclick' && e.button == 2) {
         return;
       }
@@ -256,7 +256,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     [stateManager, filePath]
   );
 
-  const kanbanContext = React.useMemo(() => {
+  const kanbanContext = Preact.useMemo(() => {
     return {
       view,
       stateManager,
@@ -310,6 +310,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
             ])}
             onMouseOver={onMouseOver}
             onClick={onClick}
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             onAuxClick={onClick}
             {...html5DragHandlers}
           >
@@ -322,7 +324,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                   ref={searchRef}
                   value={searchQuery}
                   onChange={(e) => {
-                    setSearchQuery(e.target.value);
+                    setSearchQuery((e.target as HTMLInputElement).value);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') {

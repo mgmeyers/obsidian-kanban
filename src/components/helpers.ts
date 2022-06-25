@@ -1,6 +1,6 @@
 import update from 'immutability-helper';
 import { App, MarkdownView, TFile } from 'obsidian';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
@@ -55,7 +55,7 @@ export function maybeCompleteForMove(
 }
 
 export function useIMEInputProps() {
-  const isComposingRef = React.useRef<boolean>(false);
+  const isComposingRef = Preact.useRef<boolean>(false);
 
   return {
     // Note: these are lowercased because we use preact

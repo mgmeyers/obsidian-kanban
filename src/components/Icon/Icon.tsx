@@ -1,5 +1,4 @@
 import { setIcon } from 'obsidian';
-import React from 'react';
 
 import { c } from '../helpers';
 

@@ -232,7 +232,13 @@ function pollForCachedSubpath(
   remainingCount: number
 ) {
   setTimeout(async () => {
-    if (view.plugin.viewMap.has(view.id)) {
+    if (!view.plugin.viewMap.has(view.getWindow())) {
+      return;
+    }
+
+    const viewMap = view.plugin.viewMap.get(view.getWindow());
+
+    if (viewMap.has(view.id)) {
       const string = await getEmbeddedMarkdownString(
         file,
         normalizedPath,

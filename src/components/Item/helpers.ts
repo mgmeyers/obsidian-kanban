@@ -27,7 +27,7 @@ export function constructDatePicker(
   onChange: (dates: Date[]) => void,
   date?: Date
 ) {
-  const {document} = window;
+  const { document } = window;
   return document.body.createDiv(
     { cls: `${c('date-picker')} ${c('ignore-click-outside')}` },
     (div) => {
@@ -171,7 +171,7 @@ export function constructTimePicker(
   const timeFormat = stateManager.getSetting('time-format');
   const selected = time?.format(timeFormat);
 
-  const {document} = window;
+  const { document } = window;
   document.body.createDiv(
     { cls: `${pickerClassName} ${c('ignore-click-outside')}` },
     (div) => {

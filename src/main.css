@@ -1253,6 +1253,7 @@ button.kanban-plugin__cancel-action-button {
 
 .kanban-plugin__draggable-setting-container > div {
   width: 100%;
+  margin-right: 0 !important;
 }
 
 .kanban-plugin__setting-item-wrapper {

@@ -1,5 +1,5 @@
 import classcat from 'classcat';
-import React from 'react';
+import { ComponentChildren } from 'preact';
 
 import { c } from 'src/components/helpers';
 
@@ -7,7 +7,7 @@ import { Scrollable } from './Scrollable';
 import { useStoredScrollState } from './ScrollStateContext';
 
 interface ScrollContainerProps {
-  children?: React.ReactNode;
+  children?: ComponentChildren;
   className?: string;
   triggerTypes: string[];
   isStatic?: boolean;

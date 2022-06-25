@@ -1,6 +1,5 @@
 import insertText from 'insert-text-at-cursor';
 import { Platform } from 'obsidian';
-import React from 'react';
 
 import { StateManager } from 'src/StateManager';
 
@@ -334,7 +333,7 @@ export function getDropAction(
 }
 
 export async function handlePaste(
-  e: React.ClipboardEvent,
+  e: ClipboardEvent,
   stateManager: StateManager
 ) {
   const html = e.clipboardData.getData('text/html');
@@ -351,7 +350,7 @@ export async function handlePaste(
   }
 
   try {
-    const pasteLines = await handleDragOrPaste(stateManager, e.nativeEvent);
+    const pasteLines = await handleDragOrPaste(stateManager, e);
 
     if (shouldConsumePaste) {
       const input = e.target as HTMLTextAreaElement;

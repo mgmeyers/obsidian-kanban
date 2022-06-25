@@ -1,6 +1,5 @@
 import update from 'immutability-helper';
-import React from 'react';
-import ReactDOM from 'react-dom';
+import Preact from 'preact/compat';
 
 import {
   c,
@@ -24,6 +23,7 @@ import { SortPlaceholder } from './dnd/components/SortPlaceholder';
 import { useDragHandle } from './dnd/managers/DragManager';
 import { Entity } from './dnd/types';
 import { t } from './lang/helpers';
+import { getWindowFromEl } from './dnd/util/getWindow';
 
 interface ItemProps {
   itemIndex: number;
@@ -46,9 +46,9 @@ function Item({
   updateKey,
   updateLabel,
 }: ItemProps) {
-  const elementRef = React.useRef<HTMLDivElement>(null);
-  const measureRef = React.useRef<HTMLDivElement>(null);
-  const dragHandleRef = React.useRef<HTMLDivElement>(null);
+  const elementRef = Preact.useRef<HTMLDivElement>(null);
+  const measureRef = Preact.useRef<HTMLDivElement>(null);
+  const dragHandleRef = Preact.useRef<HTMLDivElement>(null);
 
   useDragHandle(measureRef, dragHandleRef);
 
@@ -60,7 +60,7 @@ function Item({
           <input
             type="text"
             value={item.data.metadataKey}
-            onChange={(e) => updateKey(e.target.value)}
+            onChange={(e) => updateKey((e.target as HTMLInputElement).value)}
           />
         </div>
         <div>
@@ -68,7 +68,7 @@ function Item({
           <input
             type="text"
             value={item.data.label}
-            onChange={(e) => updateLabel(e.target.value)}
+            onChange={(e) => updateLabel((e.target as HTMLInputElement).value)}
           />
         </div>
       </div>
@@ -136,13 +136,15 @@ interface MetadataSettingsProps {
   dataKeys: MetadataSetting[];
   scrollEl: HTMLElement;
   onChange(keys: MetadataSetting[]): void;
+  portalContainer: HTMLElement;
 }
 
 interface UseKeyModifiersParams {
   onChange(keys: MetadataSetting[]): void;
   inputValue: string;
   keys: MetadataSetting[];
-  setKeys: React.Dispatch<React.SetStateAction<MetadataSetting[]>>;
+  setKeys: Preact.StateUpdater<MetadataSetting[]>;
+  win: Window;
 }
 
 function useKeyModifiers({
@@ -150,6 +152,7 @@ function useKeyModifiers({
   inputValue,
   keys,
   setKeys,
+  win,
 }: UseKeyModifiersParams) {
   const updateKeys = (keys: MetadataSetting[]) => {
     onChange(keys);
@@ -224,6 +227,7 @@ function useKeyModifiers({
             {
               ...MetadataSettingTemplate,
               id: generateInstanceId(),
+              win,
               data: {
                 metadataKey: inputValue,
                 label: '',
@@ -258,8 +262,14 @@ function useKeyModifiers({
 
 const accepts = [DataTypes.MetadataSetting];
 
-function Overlay({ keys }: { keys: MetadataSetting[] }) {
-  return (
+function Overlay({
+  keys,
+  portalContainer,
+}: {
+  keys: MetadataSetting[];
+  portalContainer: HTMLElement;
+}) {
+  return Preact.createPortal(
     <DragOverlay>
       {(entity, styles) => {
         const path = entity.getPath();
@@ -281,20 +291,26 @@ function Overlay({ keys }: { keys: MetadataSetting[] }) {
           </div>
         );
       }}
-    </DragOverlay>
+    </DragOverlay>,
+    portalContainer
   );
 }
 
-function RespondToScroll({ scrollEl }: { scrollEl: HTMLElement }): JSX.Element {
-  const dndManager = React.useContext(DndManagerContext);
+function RespondToScroll({
+  scrollEl,
+}: {
+  scrollEl: HTMLElement;
+}): Preact.JSX.Element {
+  const dndManager = Preact.useContext(DndManagerContext);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     let debounce = 0;
 
     const onScroll = () => {
       clearTimeout(debounce);
       debounce = window.setTimeout(() => {
-        dndManager.hitboxEntities.forEach((entity) => {
+        const win = getWindowFromEl(scrollEl);
+        dndManager.hitboxEntities.get(win)?.forEach((entity) => {
           entity.recalcInitial();
         });
       }, 100);
@@ -314,8 +330,8 @@ function RespondToScroll({ scrollEl }: { scrollEl: HTMLElement }): JSX.Element {
 }
 
 function MetadataSettings(props: MetadataSettingsProps) {
-  const [keys, setKeys] = React.useState(props.dataKeys);
-  const [inputValue, setInputValue] = React.useState('');
+  const [keys, setKeys] = Preact.useState(props.dataKeys);
+  const [inputValue, setInputValue] = Preact.useState('');
   const { getShouldIMEBlockAction, ...inputProps } = useIMEInputProps();
 
   const {
@@ -331,6 +347,7 @@ function MetadataSettings(props: MetadataSettingsProps) {
     inputValue,
     keys,
     setKeys,
+    win: getWindowFromEl(props.scrollEl),
   });
 
   return (
@@ -356,14 +373,14 @@ function MetadataSettings(props: MetadataSettingsProps) {
             <SortPlaceholder accepts={accepts} index={keys.length} />
           </Sortable>
         </DndScope>
-        <Overlay keys={keys} />
+        <Overlay keys={keys} portalContainer={props.portalContainer} />
       </DndContext>
       <div className={c('setting-key-input-wrapper')}>
         <input
           placeholder={t('Metadata key')}
           type="text"
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          onChange={(e) => setInputValue((e.target as HTMLInputElement).value)}
           onKeyDown={(e) => {
             if (getShouldIMEBlockAction()) return;
 
@@ -410,16 +427,17 @@ export function renderMetadataSettings(
   keys: MetadataSetting[],
   onChange: (key: MetadataSetting[]) => void
 ) {
-  ReactDOM.render(
+  Preact.render(
     <MetadataSettings
       dataKeys={keys}
       scrollEl={scrollEl}
       onChange={onChange}
+      portalContainer={containerEl.ownerDocument.body}
     />,
     containerEl
   );
 }
 
 export function cleanupMetadataSettings(containerEl: HTMLElement) {
-  ReactDOM.unmountComponentAtNode(containerEl);
+  Preact.unmountComponentAtNode(containerEl);
 }

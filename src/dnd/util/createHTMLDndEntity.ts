@@ -7,7 +7,8 @@ export function createHTMLDndEntity(
   x: number,
   y: number,
   content: string[],
-  viewId: string
+  viewId: string,
+  win: Window
 ): Entity {
   const scopeId = 'htmldnd';
   const id = generateInstanceId();
@@ -41,6 +42,7 @@ export function createHTMLDndEntity(
         id,
         content,
         accepts: [],
+        win,
       };
     },
   };

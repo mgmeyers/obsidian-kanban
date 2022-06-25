@@ -1,5 +1,5 @@
 import update from 'immutability-helper';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { Path } from 'src/dnd/types';
 import { StateManager } from 'src/StateManager';
@@ -17,7 +17,7 @@ interface ItemCheckboxProps {
   boardModifiers: BoardModifiers;
 }
 
-export const ItemCheckbox = React.memo(function ItemCheckbox({
+export const ItemCheckbox = Preact.memo(function ItemCheckbox({
   shouldMarkItemsComplete,
   path,
   item,
@@ -27,10 +27,10 @@ export const ItemCheckbox = React.memo(function ItemCheckbox({
   const shouldShowCheckbox = stateManager.useSetting('show-checkboxes');
 
   const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] =
-    React.useState(false);
-  const [isHoveringCheckbox, setIsHoveringCheckbox] = React.useState(false);
+    Preact.useState(false);
+  const [isHoveringCheckbox, setIsHoveringCheckbox] = Preact.useState(false);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     if (isHoveringCheckbox) {
       const handler = (e: KeyboardEvent) => {
         if (e.metaKey || e.ctrlKey) {

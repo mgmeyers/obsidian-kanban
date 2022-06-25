@@ -1,6 +1,5 @@
 import update from 'immutability-helper';
-import React from 'react';
-import { createPortal } from 'react-dom';
+import Preact from 'preact/compat';
 
 import { KanbanContext } from './components/context';
 import { c, maybeCompleteForMove } from './components/helpers';
@@ -24,17 +23,17 @@ export function createApp(plugin: KanbanPlugin) {
   return <DragDropApp plugin={plugin} />;
 }
 
-const View = React.memo(function View({ view }: { view: KanbanView }) {
-  return createPortal(view.getPortal(), view.contentEl);
+const View = Preact.memo(function View({ view }: { view: KanbanView }) {
+  return Preact.createPortal(view.getPortal(), view.contentEl);
 });
 
 export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
   const views = plugin.useViewState();
-  const portals: JSX.Element[] = views.map((view) => (
+  const portals: Preact.JSX.Element[] = views.map((view) => (
     <View key={view.id} view={view} />
   ));
 
-  const handleDrop = React.useCallback(
+  const handleDrop = Preact.useCallback(
     (dragEntity: Entity, dropEntity: Entity) => {
       if (!dragEntity || !dropEntity) {
         return;
@@ -42,7 +41,10 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
 
       if (dragEntity.scopeId === 'htmldnd') {
         const data = dragEntity.getData();
-        const stateManager = plugin.getStateManagerFromViewID(data.viewId);
+        const stateManager = plugin.getStateManagerFromViewID(
+          data.viewId,
+          data.win
+        );
         const dropPath = dropEntity.getPath();
         const destinationParent = getEntityFromPath(
           stateManager.state,
@@ -87,10 +89,14 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
       const [, sourceFile] = dragEntity.scopeId.split(':::');
       const [, destinationFile] = dropEntity.scopeId.split(':::');
 
+      const dragEntityData = dragEntity.getData();
+      const dropEntityData = dropEntity.getData();
+
       // Same board
       if (sourceFile === destinationFile) {
         const stateManager = plugin.getStateManagerFromViewID(
-          dragEntity.scopeId
+          dragEntity.scopeId,
+          dragEntityData.win
         );
 
         plugin.app.workspace.trigger(
@@ -98,7 +104,7 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
           stateManager.file,
           dragPath,
           dropPath,
-          dragEntity.getData()
+          dragEntityData
         );
 
         return stateManager.setState((board) => {
@@ -119,10 +125,12 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
       }
 
       const sourceStateManager = plugin.getStateManagerFromViewID(
-        dragEntity.scopeId
+        dragEntity.scopeId,
+        dragEntityData.win
       );
       const destinationStateManager = plugin.getStateManagerFromViewID(
-        dropEntity.scopeId
+        dropEntity.scopeId,
+        dropEntityData.win
       );
 
       sourceStateManager.setState((sourceBoard) => {
@@ -154,12 +162,17 @@ export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
         {...portals}
         <DragOverlay>
           {(entity, styles) => {
-            const [data, context] = React.useMemo(() => {
+            const [data, context] = Preact.useMemo(() => {
               if (entity.scopeId === 'htmldnd') {
                 return [null, null];
               }
 
-              const view = plugin.getKanbanView(entity.scopeId);
+              const overlayData = entity.getData();
+
+              const view = plugin.getKanbanView(
+                entity.scopeId,
+                overlayData.win
+              );
               const stateManager = plugin.stateManagers.get(view.file);
               const data = getEntityFromPath(
                 stateManager.state,

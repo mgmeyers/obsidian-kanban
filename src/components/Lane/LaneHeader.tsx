@@ -1,5 +1,5 @@
 import update from 'immutability-helper';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { t } from 'src/lang/helpers';
@@ -17,18 +17,18 @@ import { LaneTitle } from './LaneTitle';
 interface LaneHeaderProps {
   lane: Lane;
   laneIndex: number;
-  dragHandleRef: React.MutableRefObject<HTMLDivElement>;
-  setIsItemInputVisible?: React.Dispatch<React.SetStateAction<boolean>>;
+  dragHandleRef: Preact.RefObject<HTMLDivElement>;
+  setIsItemInputVisible?: Preact.StateUpdater<boolean>;
 }
 
-export const LaneHeader = React.memo(function LaneHeader({
+export const LaneHeader = Preact.memo(function LaneHeader({
   lane,
   laneIndex,
   dragHandleRef,
   setIsItemInputVisible,
 }: LaneHeaderProps) {
-  const { boardModifiers, stateManager } = React.useContext(KanbanContext);
-  const [isEditing, setIsEditing] = React.useState(false);
+  const { boardModifiers, stateManager } = Preact.useContext(KanbanContext);
+  const [isEditing, setIsEditing] = Preact.useState(false);
   const lanePath = useNestedEntityPath(laneIndex);
 
   const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
@@ -36,7 +36,7 @@ export const LaneHeader = React.memo(function LaneHeader({
     path: lanePath,
   });
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     if (lane.data.forceEditMode) {
       setIsEditing(true);
     }
@@ -45,7 +45,7 @@ export const LaneHeader = React.memo(function LaneHeader({
   return (
     <>
       <div
-        onDoubleClick={() => setIsEditing(true)}
+        onDblClick={() => setIsEditing(true)}
         className={c('lane-header-wrapper')}
       >
         <div className={c('lane-grip')} ref={dragHandleRef}>
@@ -60,7 +60,11 @@ export const LaneHeader = React.memo(function LaneHeader({
           onChange={(e) => {
             boardModifiers.updateLane(
               lanePath,
-              update(lane, { data: { title: { $set: e.target.value } } })
+              update(lane, {
+                data: {
+                  title: { $set: (e.target as HTMLTextAreaElement).value },
+                },
+              })
             );
           }}
         />

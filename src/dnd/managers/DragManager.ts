@@ -1,13 +1,14 @@
 import boxIntersect from 'box-intersect';
 import { Platform } from 'obsidian';
+import Preact from 'preact/compat';
 import rafSchd from 'raf-schd';
-import React from 'react';
 
 import { handleDragOrPaste } from 'src/components/Item/helpers';
 import { StateManager } from 'src/StateManager';
 
 import { DndManagerContext } from '../components/context';
 import { Coordinates, Entity, Hitbox, Side } from '../types';
+import { createHTMLDndEntity } from '../util/createHTMLDndEntity';
 import { Emitter } from '../util/emitter';
 import {
   adjustHitboxForMovement,
@@ -15,7 +16,6 @@ import {
   getBestIntersect,
   getScrollIntersection,
 } from '../util/hitbox';
-import { createHTMLDndEntity } from './createHTMLDndEntity';
 
 export interface DragEventData {
   dragEntity?: Entity;
@@ -48,8 +48,8 @@ interface Events {
 
 export class DragManager {
   emitter: Emitter<Events>;
-  hitboxEntities: Map<string, Entity>;
-  scrollEntities: Map<string, Entity>;
+  hitboxEntities: Map<Window, Map<string, Entity>>;
+  scrollEntities: Map<Window, Map<string, Entity>>;
 
   dragEntity?: Entity;
   dragEntityId?: string;
@@ -66,8 +66,8 @@ export class DragManager {
 
   constructor(
     emitter: Emitter,
-    hitboxEntities: Map<string, Entity>,
-    scrollEntities: Map<string, Entity>
+    hitboxEntities: Map<Window, Map<string, Entity>>,
+    scrollEntities: Map<Window, Map<string, Entity>>
   ) {
     this.hitboxEntities = hitboxEntities;
     this.scrollEntities = scrollEntities;
@@ -101,7 +101,7 @@ export class DragManager {
     this.dragEntityId = id;
     this.dragOrigin = { x: e.pageX, y: e.pageY };
     this.dragPosition = { x: e.pageX, y: e.pageY };
-    this.dragEntity = this.hitboxEntities.get(id);
+    this.dragEntity = this.hitboxEntities.get(e.view)?.get(id);
     this.dragOriginHitbox = this.dragEntity?.getHitbox();
     this.dragEntityMargin = [
       parseFloat(styles.marginLeft) || 0,
@@ -115,7 +115,7 @@ export class DragManager {
 
   dragStartHTML(e: DragEvent, viewId: string) {
     this.isHTMLDragging = true;
-    const entity = createHTMLDndEntity(e.pageX, e.pageY, [], viewId);
+    const entity = createHTMLDndEntity(e.pageX, e.pageY, [], viewId, e.view);
 
     this.dragEntityId = entity.entityId;
     this.dragOrigin = { x: e.pageX, y: e.pageY };
@@ -160,7 +160,13 @@ export class DragManager {
   ) {
     this.isHTMLDragging = false;
     if (!isLeave) {
-      this.dragEntity = createHTMLDndEntity(e.pageX, e.pageY, content, viewId);
+      this.dragEntity = createHTMLDndEntity(
+        e.pageX,
+        e.pageY,
+        content,
+        viewId,
+        e.view
+      );
       this.emitter.emit('dragEnd', this.getDragEventData());
     }
 
@@ -193,26 +199,38 @@ export class DragManager {
       return;
     }
 
-    const { type } = this.dragEntity.getData();
+    const { type, win } = this.dragEntity.getData();
 
     const hitboxEntities: Entity[] = [];
     const hitboxHitboxes: Hitbox[] = [];
     const scrollEntities: Entity[] = [];
     const scrollHitboxes: Hitbox[] = [];
 
-    this.hitboxEntities.forEach((entity) => {
-      if (entity.getData().accepts.includes(type)) {
-        hitboxEntities.push(entity);
-        hitboxHitboxes.push(entity.getHitbox());
-      }
-    });
+    if (this.hitboxEntities.has(win)) {
+      this.hitboxEntities.get(win).forEach((entity) => {
+        const data = entity.getData();
 
-    this.scrollEntities.forEach((entity) => {
-      if (entity.getData().accepts.includes(type)) {
-        scrollEntities.push(entity);
-        scrollHitboxes.push(entity.getHitbox());
-      }
-    });
+        if (win === data.win && data.accepts.includes(type)) {
+          hitboxEntities.push(entity);
+          hitboxHitboxes.push(entity.getHitbox());
+        }
+      });
+    }
+
+    if (this.scrollEntities.has(win)) {
+      this.scrollEntities.get(win).forEach((entity) => {
+        const data = entity.getData();
+
+        if (win === data.win && data.accepts.includes(type)) {
+          scrollEntities.push(entity);
+          scrollHitboxes.push(entity.getHitbox());
+        }
+      });
+    }
+
+    if (hitboxEntities.length === 0 && scrollEntities.length === 0) {
+      return;
+    }
 
     const dragHitbox = adjustHitboxForMovement(
       this.dragOriginHitbox,
@@ -376,12 +394,12 @@ const cancelEvent = (e: TouchEvent) => {
 };
 
 export function useDragHandle(
-  droppableElement: React.MutableRefObject<HTMLElement | null>,
-  handleElement: React.MutableRefObject<HTMLElement | null>
+  droppableElement: Preact.RefObject<HTMLElement | null>,
+  handleElement: Preact.RefObject<HTMLElement | null>
 ) {
-  const dndManager = React.useContext(DndManagerContext);
+  const dndManager = Preact.useContext(DndManagerContext);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     const droppable = droppableElement.current;
     const handle = handleElement.current;
 
@@ -502,22 +520,19 @@ export function useDragHandle(
 }
 
 export function createHTMLDndHandlers(stateManager: StateManager) {
-  const dndManager = React.useContext(DndManagerContext);
-  const onDragOver = React.useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
+  const dndManager = Preact.useContext(DndManagerContext);
+  const onDragOver = Preact.useCallback(
+    (e: DragEvent) => {
       if (dndManager.dragManager.isHTMLDragging) {
         e.preventDefault();
-        dndManager.dragManager.dragMoveHTML(e.nativeEvent);
+        dndManager.dragManager.dragMoveHTML(e);
       } else {
-        dndManager.dragManager.dragStartHTML(
-          e.nativeEvent,
-          stateManager.getAView().id
-        );
+        dndManager.dragManager.dragStartHTML(e, stateManager.getAView().id);
       }
 
       dndManager.dragManager.onHTMLDragLeave(() => {
         dndManager.dragManager.dragEndHTML(
-          e.nativeEvent,
+          e,
           stateManager.getAView().id,
           [],
           true
@@ -527,12 +542,12 @@ export function createHTMLDndHandlers(stateManager: StateManager) {
     [dndManager, stateManager]
   );
 
-  const onDrop = React.useCallback(
-    async (e: React.DragEvent<HTMLDivElement>) => {
+  const onDrop = Preact.useCallback(
+    async (e: DragEvent) => {
       dndManager.dragManager.dragEndHTML(
-        e.nativeEvent,
+        e,
         stateManager.getAView().id,
-        await handleDragOrPaste(stateManager, e.nativeEvent),
+        await handleDragOrPaste(stateManager, e),
         false
       );
     },

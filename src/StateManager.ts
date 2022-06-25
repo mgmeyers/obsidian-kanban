@@ -1,6 +1,6 @@
 import update from 'immutability-helper';
 import { App, TFile, moment } from 'obsidian';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import {
   getDefaultDateFormat,
@@ -192,9 +192,9 @@ export class StateManager {
   }
 
   useState(): Board {
-    const [state, setState] = React.useState(this.state);
+    const [state, setState] = Preact.useState(this.state);
 
-    React.useEffect(() => {
+    Preact.useEffect(() => {
       this.stateReceivers.push((state) => {
         setState(state);
       });
@@ -210,11 +210,11 @@ export class StateManager {
   }
 
   useSetting<K extends keyof KanbanSettings>(key: K): KanbanSettings[K] {
-    const [state, setState] = React.useState<KanbanSettings[K]>(
+    const [state, setState] = Preact.useState<KanbanSettings[K]>(
       this.getSetting(key)
     );
 
-    React.useEffect(() => {
+    Preact.useEffect(() => {
       const receiver = () => {
         setState(this.getSetting(key));
       };

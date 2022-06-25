@@ -1,12 +1,12 @@
 import classcat from 'classcat';
 import Mark from 'mark.js';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { renderMarkdown } from '../helpers/renderMarkdown';
 import { KanbanContext } from './context';
 import { c } from './helpers';
 
-interface MarkdownRendererProps extends React.HTMLProps<HTMLDivElement> {
+interface MarkdownRendererProps extends HTMLAttributes<HTMLDivElement> {
   className?: string;
   markdownString: string;
   searchQuery?: string;
@@ -25,18 +25,18 @@ function appendOrReplaceFirstChild(
   }
 }
 
-export const MarkdownRenderer = React.memo(function MarkdownRenderer({
+export const MarkdownRenderer = Preact.memo(function MarkdownRenderer({
   className,
   markdownString,
   searchQuery,
   ...divProps
 }: MarkdownRendererProps) {
-  const { stateManager } = React.useContext(KanbanContext);
-  const wrapperRef = React.useRef<HTMLDivElement>();
-  const contentRef = React.useRef<HTMLDivElement>();
-  const markRef = React.useRef<Mark>();
+  const { stateManager } = Preact.useContext(KanbanContext);
+  const wrapperRef = Preact.useRef<HTMLDivElement>();
+  const contentRef = Preact.useRef<HTMLDivElement>();
+  const markRef = Preact.useRef<Mark>();
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     renderMarkdown(stateManager.getAView(), markdownString)
       .then((el) => {
         contentRef.current = el;
@@ -52,7 +52,7 @@ export const MarkdownRenderer = React.memo(function MarkdownRenderer({
       });
   }, [stateManager, markdownString]);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     markRef.current?.unmark();
 
     if (searchQuery && searchQuery.trim()) {
@@ -76,29 +76,29 @@ export const MarkdownRenderer = React.memo(function MarkdownRenderer({
   );
 });
 
-interface MarkdownDomRendererProps extends React.HTMLProps<HTMLDivElement> {
+interface MarkdownDomRendererProps extends HTMLAttributes<HTMLDivElement> {
   className?: string;
   dom: HTMLDivElement;
   searchQuery?: string;
 }
 
-export const MarkdownDomRenderer = React.memo(function MarkdownDomRenderer({
+export const MarkdownDomRenderer = Preact.memo(function MarkdownDomRenderer({
   dom,
   className,
   searchQuery,
   ...divProps
 }: MarkdownDomRendererProps) {
-  const { stateManager } = React.useContext(KanbanContext);
+  const { stateManager } = Preact.useContext(KanbanContext);
 
-  const contentEl = React.useMemo(() => {
+  const contentEl = Preact.useMemo(() => {
     return dom.cloneNode(true) as HTMLDivElement;
   }, [dom, stateManager]);
 
-  const marker = React.useMemo(() => {
+  const marker = Preact.useMemo(() => {
     return new Mark(contentEl);
   }, [contentEl]);
 
-  React.useEffect(() => {
+  Preact.useEffect(() => {
     marker.unmark();
 
     if (searchQuery && searchQuery.trim()) {

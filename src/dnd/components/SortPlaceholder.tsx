@@ -1,5 +1,5 @@
 import classcat from 'classcat';
-import React from 'react';
+import Preact from 'preact/compat';
 
 import { c, generateInstanceId } from 'src/components/helpers';
 
@@ -19,10 +19,10 @@ export function SortPlaceholder({
   className,
   isStatic,
 }: SortPlaceholderProps) {
-  const elementRef = React.useRef<HTMLDivElement>(null);
-  const measureRef = React.useRef<HTMLDivElement>(null);
+  const elementRef = Preact.useRef<HTMLDivElement>(null);
+  const measureRef = Preact.useRef<HTMLDivElement>(null);
 
-  const data = React.useMemo<EntityData>(() => {
+  const data = Preact.useMemo<EntityData>(() => {
     return {
       id: generateInstanceId(),
       type: 'placeholder',

@@ -1,4 +1,4 @@
-import React from 'react';
+import Preact from 'preact/compat';
 import useOnclickOutside from 'react-cool-onclickoutside';
 
 import { t } from 'src/lang/helpers';
@@ -15,11 +15,12 @@ export function LaneForm({
   onNewLane: () => void;
   closeLaneForm: () => void;
 }) {
-  const { boardModifiers, stateManager } = React.useContext(KanbanContext);
-  const [shouldMarkAsComplete, setShouldMarkAsComplete] = React.useState(false);
-  const [laneTitle, setLaneTitle] = React.useState('');
+  const { boardModifiers, stateManager } = Preact.useContext(KanbanContext);
+  const [shouldMarkAsComplete, setShouldMarkAsComplete] =
+    Preact.useState(false);
+  const [laneTitle, setLaneTitle] = Preact.useState('');
 
-  const inputRef = React.useRef<HTMLTextAreaElement>();
+  const inputRef = Preact.useRef<HTMLTextAreaElement>();
   const clickOutsideRef = useOnclickOutside(
     () => {
       closeLaneForm();
@@ -29,7 +30,7 @@ export function LaneForm({
     }
   );
 
-  React.useLayoutEffect(() => {
+  Preact.useLayoutEffect(() => {
     inputRef.current?.focus();
   }, []);
 
