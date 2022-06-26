@@ -468,13 +468,15 @@ export default class KanbanPlugin extends Plugin {
       id: 'add-kanban-lane',
       name: t('Add a list'),
       checkCallback: (checking) => {
-        const activeLeaf = this.app.workspace.activeLeaf;
+        const view = app.workspace.getActiveViewOfType(KanbanView);
 
         if (checking) {
-          return activeLeaf.view instanceof KanbanView;
+          return view && view instanceof KanbanView;
         }
 
-        (activeLeaf.view as KanbanView).emitter.emit('showLaneForm', undefined);
+        if (view && view instanceof KanbanView) {
+          view.emitter.emit('showLaneForm', undefined);
+        }
       },
     });
   }
@@ -482,15 +484,15 @@ export default class KanbanPlugin extends Plugin {
   registerMonkeyPatches() {
     const self = this;
 
-    this.app.workspace.onLayoutReady(() => {
+    app.workspace.onLayoutReady(() => {
       this.register(
-        around((this.app as any).commands, {
-          executeCommandById(next) {
-            return function (command: string) {
-              const view = self.app.workspace.getActiveViewOfType(KanbanView);
+        around((app as any).commands, {
+          executeCommand(next) {
+            return function (command: any) {
+              const view = app.workspace.getActiveViewOfType(KanbanView);
 
-              if (view) {
-                view.emitter.emit('hotkey', command);
+              if (view && command?.id) {
+                view.emitter.emit('hotkey', command.id);
               }
 
               return next.call(this, command);

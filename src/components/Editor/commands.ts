@@ -78,9 +78,9 @@ function removeQuote(str: string) {
   return unquoted;
 }
 
-const isOrderedList = /^(?:\s*\d+[.)]\s+.+?(?:[\r\n]|$))+$/;
-const isOrderedEmptyCheck = /^(?:\s*\d+[.)]\s+\[\s+\]+.+?(?:[\r\n]|$))+$/;
-const isOrderedChecked = /^(?:\s*\d+[.)]\s+\[[^\]\s]+\]+.+?(?:[\r\n]|$))+$/;
+const isOrderedList = /^(?:\s*\d+[.)]\s+.*?(?:[\r\n]|$))+$/;
+const isOrderedEmptyCheck = /^(?:\s*\d+[.)]\s+\[\s+\]\s+.*?(?:[\r\n]|$))+$/;
+const isOrderedChecked = /^(?:\s*\d+[.)]\s+\[[^\]\s]+\]\s+.*?(?:[\r\n]|$))+$/;
 
 function getIndent(line: string) {
   return line.match(/^\s*/)[0].length;
@@ -139,9 +139,9 @@ function removeOrderedList(str: string) {
     .join('\n');
 }
 
-const isBulleted = /^(?:\s*[-*+]\s+.+?(?:[\r\n]|$))+$/;
-const isBulletEmptyCheck = /^(?:\s*[-*+]\s+\[\s+\]+.+?(?:[\r\n]|$))+$/;
-const isBulletChecked = /^(?:\s*[-*+]\s+\[[^\]\s]+\]+.+?(?:[\r\n]|$))+$/;
+const isBulleted = /^(?:\s*[-*+]\s+.*?(?:[\r\n]|$))+$/;
+const isBulletEmptyCheck = /^(?:\s*[-*+]\s+\[\s+\]\s+.*?(?:[\r\n]|$))+$/;
+const isBulletChecked = /^(?:\s*[-*+]\s+\[[^\]\s]+\]\s+.*?(?:[\r\n]|$))+$/;
 
 function applyBullet(str: string) {
   const bulleted = str
@@ -294,6 +294,7 @@ export const commands: Record<string, (ta: HTMLTextAreaElement) => void> = {
 
   'editor:toggle-checklist-status': (textarea: HTMLTextAreaElement) => {
     const state = getStateFromTextarea(textarea);
+    const isEmptySelection = state.selection.end === state.selection.start;
 
     const lineRange = expandSelectionToLineBoundaries({
       text: state.text,
@@ -329,10 +330,19 @@ export const commands: Record<string, (ta: HTMLTextAreaElement) => void> = {
 
     const newState = replaceSelection(textarea, newLines);
 
-    setSelectionRange(textarea, {
-      start: selection.selection.start,
-      end: newState.selection.end,
-    });
+    if (isEmptySelection) {
+      const diff = newLines.length - selection.selectedText.length;
+
+      setSelectionRange(textarea, {
+        start: state.selection.start + diff,
+        end: state.selection.end + diff,
+      });
+    } else {
+      setSelectionRange(textarea, {
+        start: selection.selection.start,
+        end: newState.selection.end,
+      });
+    }
   },
 };
 
