@@ -27,7 +27,7 @@ interface MarkdownEditorProps
 
 export function allowNewLine(e: KeyboardEvent, stateManager: StateManager) {
   if (Platform.isMobile) {
-    return true;
+    return e.key === 'Enter' && true;
   }
 
   const newLineTrigger = stateManager.getSetting('new-line-trigger');
