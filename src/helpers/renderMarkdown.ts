@@ -66,6 +66,8 @@ function getSubpathBoundary(fileCache: CachedMetadata, subpath: string) {
           block,
           start: block.position.start.offset,
           end: block.position.end.offset,
+          startLine: block.position.start.line,
+          endLine: block.position.end.line,
         };
       } else {
         return null;
@@ -111,6 +113,8 @@ function getSubpathBoundary(fileCache: CachedMetadata, subpath: string) {
         next: nextHeading,
         start: targetHeading.position.start.offset,
         end: nextHeading ? nextHeading.position.start.offset : null,
+        startLine: targetHeading.position.start.line,
+        endLine: nextHeading ? nextHeading.position.end.line : null,
       }
     : null;
 }
@@ -208,20 +212,26 @@ async function getEmbeddedMarkdownString(
   const content = await view.app.vault.cachedRead(file);
 
   if (!normalizedPath.subpath) {
-    return content;
+    return { markdown: content, boundary: null };
   }
 
   const contentBoundary = getSubpathBoundary(fileCache, normalizedPath.subpath);
 
   if (contentBoundary) {
-    return content.substring(
-      contentBoundary.start,
-      contentBoundary.end === null ? undefined : contentBoundary.end
-    );
+    return {
+      markdown: content.substring(
+        contentBoundary.start,
+        contentBoundary.end === null ? undefined : contentBoundary.end
+      ),
+      boundary: contentBoundary,
+    };
   } else if (normalizedPath.subpath) {
-    return `${t('Unable to find')} ${normalizedPath.root}${
-      normalizedPath.subpath
-    }`;
+    return {
+      markdown: `${t('Unable to find')} ${normalizedPath.root}${
+        normalizedPath.subpath
+      }`,
+      boundary: null,
+    };
   }
 }
 
@@ -239,15 +249,15 @@ function pollForCachedSubpath(
     const viewMap = view.plugin.viewMap.get(view.getWindow());
 
     if (viewMap.has(view.id)) {
-      const string = await getEmbeddedMarkdownString(
+      const { markdown } = await getEmbeddedMarkdownString(
         file,
         normalizedPath,
         view
       );
 
-      if (!string) return;
+      if (!markdown) return;
 
-      if (!string.startsWith(t('Unable to find'))) {
+      if (!markdown.startsWith(t('Unable to find'))) {
         view.plugin.stateManagers.forEach((manager) => {
           manager.onFileMetadataChange();
         });
@@ -265,9 +275,13 @@ async function handleMarkdown(
   view: KanbanView,
   depth: number
 ) {
-  const content = await getEmbeddedMarkdownString(file, normalizedPath, view);
+  const { markdown, boundary } = await getEmbeddedMarkdownString(
+    file,
+    normalizedPath,
+    view
+  );
 
-  if (!content) return;
+  if (!markdown) return;
 
   el.empty();
   const dom = el.createDiv();
@@ -288,7 +302,7 @@ async function handleMarkdown(
   });
 
   await MarkdownRenderer.renderMarkdown(
-    content,
+    markdown,
     dom.createDiv(),
     file.path,
     view
@@ -297,11 +311,33 @@ async function handleMarkdown(
   el.addClass('is-loaded');
 
   if (
-    content.startsWith(t('Unable to find')) &&
+    markdown.startsWith(t('Unable to find')) &&
     normalizedPath.subpath &&
     normalizedPath.subpath !== '#'
   ) {
     pollForCachedSubpath(file, normalizedPath, view, 4);
+  } else {
+    const listItems = el.findAll('.task-list-item-checkbox');
+
+    if (listItems?.length) {
+      const fileCache = app.metadataCache.getFileCache(file);
+
+      fileCache.listItems
+        ?.filter((li) => {
+          if (!boundary) return true;
+          return (
+            li.position.start.line >= boundary.startLine &&
+            li.position.end.line <= boundary.endLine
+          );
+        })
+        .forEach((li, i) => {
+          if (listItems[i]) {
+            listItems[i].dataset.oStart = li.position.start.offset.toString();
+            listItems[i].dataset.oEnd = li.position.end.offset.toString();
+            listItems[i].dataset.src = file.path;
+          }
+        });
+    }
   }
 
   if (depth > 0) {
@@ -377,9 +413,10 @@ export async function renderMarkdown(
       view
     );
 
-    await handleEmbeds(dom, view, 5);
     applyCheckboxIndexes(dom);
     findUnresolvedLinks(dom, view);
+
+    await handleEmbeds(dom, view, 5);
   } catch (e) {
     console.error(e);
   }

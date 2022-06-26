@@ -1,3 +1,4 @@
+import { TFile } from 'obsidian';
 import Preact from 'preact/compat';
 
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
@@ -90,6 +91,34 @@ function checkCheckbox(title: string, checkboxIndex: number) {
   );
 }
 
+async function checkEmbeddedCheckbox(checkbox: HTMLElement) {
+  const file = app.vault.getAbstractFileByPath(checkbox.dataset.src);
+
+  if (!(file instanceof TFile)) return;
+
+  const content = await app.vault.cachedRead(file);
+  const start = parseInt(checkbox.dataset.oStart);
+  const end = parseInt(checkbox.dataset.oEnd);
+  const li = content.substring(start, end);
+
+  const updated = li.replace(/^(.+?)\[(.)\](.+)$/, (_, g1, g2, g3) => {
+    if (g2 !== ' ') {
+      checkbox.parentElement.removeClass('is-checked');
+      checkbox.parentElement.dataset.task = '';
+      return `${g1}[ ]${g3}`;
+    }
+
+    checkbox.parentElement.addClass('is-checked');
+    checkbox.parentElement.dataset.task = 'x';
+    return `${g1}[x]${g3}`;
+  });
+
+  await app.vault.modify(
+    file,
+    `${content.substring(0, start)}${updated}${content.substring(end)}`
+  );
+}
+
 export const ItemContent = Preact.memo(function ItemContent({
   item,
   isEditing,
@@ -158,6 +187,10 @@ export const ItemContent = Preact.memo(function ItemContent({
       const target = e.target as HTMLElement;
 
       if (target.hasClass('task-list-item-checkbox')) {
+        if (target.dataset.src) {
+          return checkEmbeddedCheckbox(target);
+        }
+
         const checkboxIndex = parseInt(target.dataset.checkboxIndex, 10);
 
         stateManager
