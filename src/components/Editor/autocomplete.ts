@@ -3,6 +3,8 @@ import Fuse from 'fuse.js';
 import { moment } from 'obsidian';
 import Preact from 'preact/compat';
 
+import { getParentBodyElement } from 'src/dnd/util/getWindow';
+
 import { KanbanContext, KanbanContextProps } from '../context';
 import { c, escapeRegExpStr, useIMEInputProps } from '../helpers';
 import {
@@ -97,7 +99,7 @@ export function constructAutocomplete({
   const editor = new TextareaEditor(inputRef.current);
   const autocomplete = new Textcomplete(editor, configs, {
     dropdown: {
-      parent: inputRef.current.ownerDocument.body,
+      parent: getParentBodyElement(inputRef.current),
       maxCount: 96,
       className: `${c('autocomplete')} ${c('ignore-click-outside')}`,
       rotate: true,

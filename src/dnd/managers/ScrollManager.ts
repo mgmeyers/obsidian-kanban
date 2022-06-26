@@ -9,6 +9,7 @@ import {
   initialScrollShift,
   initialScrollState,
 } from '../types';
+import { getParentWindow } from '../util/getWindow';
 import {
   adjustHitbox,
   calculateScrollHitbox,
@@ -148,7 +149,7 @@ export class ScrollManager {
 
   handleEntityRegistration() {
     sides.forEach((side) => {
-      const win = this.scrollEl.ownerDocument.defaultView;
+      const win = getParentWindow(this.scrollEl);
       const id = this.getId(side);
 
       const hasId =
@@ -166,7 +167,7 @@ export class ScrollManager {
 
   handleEntityUnregistration() {
     sides.forEach((side) => {
-      const win = this.scrollEl.ownerDocument.defaultView;
+      const win = getParentWindow(this.scrollEl);
       const id = this.getId(side);
       this.dndManager.unregisterScrollEntity(id, win);
     });
@@ -390,7 +391,7 @@ export class ScrollManager {
           side: side,
           accepts: manager.triggerTypes || [],
           scrollContainer: manager.scrollEl,
-          win: manager.scrollEl.ownerDocument.defaultView,
+          win: getParentWindow(manager.scrollEl),
         };
       },
     };

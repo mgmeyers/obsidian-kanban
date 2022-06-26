@@ -65,6 +65,12 @@ export function getFileSearchConfig(
     match: isEmbed ? embedRegex : linkRegex,
     index: 1,
     template: (res: Fuse.FuseResult<LinkSuggestion>) => {
+      if (res.item.file === null) {
+        const alias = res.item.path.split('|').pop();
+
+        return `<em>${alias || res.item.path}</em>`;
+      }
+
       if (res.item.alias) {
         return getAliasMarkup(stateManager, filePath, res);
       }
@@ -83,7 +89,24 @@ export function getFileSearchConfig(
           files.slice(0, 10).map((file, i) => ({ item: file, refIndex: i }))
         );
       } else {
-        callback(fileSearch.search(term));
+        const split = term.split('|');
+        const haveAlias = split.length > 1;
+        const search = split[0];
+        const aliasSearch = haveAlias ? split.slice(1).join('|') : null;
+
+        let params: string | Record<string, string> = term;
+
+        if (haveAlias) {
+          params = {
+            'file.basename': search,
+            alias: aliasSearch,
+          };
+        }
+
+        callback([
+          { item: { file: null, path: term, alias: '' }, refIndex: -1 },
+          ...fileSearch.search(params),
+        ]);
       }
     },
     replace: (result: Fuse.FuseResult<LinkSuggestion>): string => {
@@ -93,14 +116,18 @@ export function getFileSearchConfig(
         output.push('!');
       }
 
-      output.push(
-        stateManager.app.fileManager.generateMarkdownLink(
-          result.item.file,
-          stateManager.file.path,
-          undefined,
-          result.item.alias
-        )
-      );
+      if (result.item.file === null) {
+        output.push(`[[${result.item.path}]]`);
+      } else {
+        output.push(
+          stateManager.app.fileManager.generateMarkdownLink(
+            result.item.file,
+            stateManager.file.path,
+            undefined,
+            result.item.alias
+          )
+        );
+      }
 
       const shouldUseMarkdownLinks = !!(
         stateManager.app.vault as any

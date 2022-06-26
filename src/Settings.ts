@@ -18,7 +18,7 @@ import {
   MetadataSetting,
   MetadataSettingTemplate,
 } from './components/types';
-import { getWindowFromEl } from './dnd/util/getWindow';
+import { getParentWindow } from './dnd/util/getWindow';
 import { KanbanView } from './KanbanView';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
@@ -1322,7 +1322,7 @@ export class SettingsManager {
           ...MetadataSettingTemplate,
           id: generateInstanceId(),
           data: k,
-          win: getWindowFromEl(contentEl),
+          win: getParentWindow(contentEl),
         };
       });
 

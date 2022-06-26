@@ -1,6 +1,7 @@
 import flatpickr from 'flatpickr';
 import { moment } from 'obsidian';
 import Preact from 'preact';
+import { getParentWindow } from 'src/dnd/util/getWindow';
 
 import { buildLinkToDailyNote } from 'src/helpers';
 import { StateManager } from 'src/StateManager';
@@ -64,7 +65,7 @@ export function ensureDatePickerIsOnScreen(
 ) {
   const height = div.clientHeight;
   const width = div.clientWidth;
-  const window = div.ownerDocument.defaultView;
+  const window = getParentWindow(div);
 
   if (position.top + height > window.innerHeight) {
     div.style.top = `${(position.clientTop || 0) - height}px`;

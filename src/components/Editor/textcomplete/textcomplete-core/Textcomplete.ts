@@ -1,4 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
+import { getParentWindow } from 'src/dnd/util/getWindow';
 
 import { Completer } from './Completer';
 import { Dropdown, DropdownOption } from './Dropdown';
@@ -132,14 +133,14 @@ export class Textcomplete extends EventEmitter {
       this.dropdown.on(eventName, (e) => this.emit(eventName, e));
     }
     this.completer.on('hit', this.handleHit);
-    this.dropdown.el.ownerDocument.defaultView?.addEventListener(
+    getParentWindow(this.dropdown.el)?.addEventListener(
       'resize',
       this.handleResize
     );
   }
 
   private stopListening() {
-    this.dropdown.el.ownerDocument.defaultView?.removeEventListener(
+    getParentWindow(this.dropdown.el)?.removeEventListener(
       'resize',
       this.handleResize
     );

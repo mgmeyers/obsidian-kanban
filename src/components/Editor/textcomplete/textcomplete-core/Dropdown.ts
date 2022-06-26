@@ -285,6 +285,9 @@ export class Dropdown extends EventEmitter {
     type: 'header' | 'footer'
   ): this {
     const option = this.option[type];
+
+    if (!option) return this;
+
     const document = this.el.ownerDocument;
     const li = document.createElement('li');
     li.className = `textcomplete-${type}`;

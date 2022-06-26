@@ -7,6 +7,7 @@ import {
   initialScrollShift,
   initialScrollState,
 } from '../types';
+import { getParentWindow } from '../util/getWindow';
 import { adjustHitbox, calculateHitbox, emptyDomRect } from '../util/hitbox';
 import { DndManager } from './DndManager';
 import { ScrollManager } from './ScrollManager';
@@ -92,7 +93,7 @@ export class EntityManager {
         this.entityId,
         measureNode,
         (entry) => {
-          const win = entry.target.ownerDocument.defaultView;
+          const win = getParentWindow(entry.target);
 
           if (entry.isIntersecting) {
             const entity = this.getEntity(entry.boundingClientRect);
@@ -131,7 +132,7 @@ export class EntityManager {
       this.dndManager.registerHitboxEntity(
         this.entityId,
         entity,
-        entityNode.ownerDocument.defaultView
+        getParentWindow(entityNode)
       );
       this.parent?.children.set(this.entityId, {
         entity,
@@ -158,7 +159,7 @@ export class EntityManager {
     if (this.entityNode) {
       this.dndManager.unregisterHitboxEntity(
         this.entityId,
-        this.entityNode.ownerDocument.defaultView
+        getParentWindow(this.entityNode)
       );
     }
     this.parent?.children.delete(this.entityId);
@@ -210,7 +211,7 @@ export class EntityManager {
         return {
           ...manager.getEntityData(),
           sortAxis: manager.sortManager?.axis,
-          win: manager.measureNode.ownerDocument.defaultView,
+          win: getParentWindow(manager.measureNode),
         };
       },
     };

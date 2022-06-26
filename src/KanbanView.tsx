@@ -12,6 +12,7 @@ import { c } from './components/helpers';
 import { Kanban } from './components/Kanban';
 import { Board } from './components/types';
 import { Emitter, createEmitter } from './dnd/util/emitter';
+import { getParentWindow } from './dnd/util/getWindow';
 import {
   gotoNextDailyNote,
   gotoPrevDailyNote,
@@ -89,7 +90,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   getWindow() {
-    return this.containerEl.ownerDocument.defaultView;
+    return getParentWindow(this.containerEl);
   }
 
   async onLoadFile(file: TFile) {

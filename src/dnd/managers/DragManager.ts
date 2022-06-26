@@ -406,8 +406,6 @@ export function useDragHandle(
       return;
     }
 
-    const window = handle.ownerDocument.defaultView;
-
     const onPointerDown = (e: PointerEvent) => {
       if (e.defaultPrevented || (e.target as HTMLElement).dataset.ignoreDrag) {
         return;
@@ -419,6 +417,7 @@ export function useDragHandle(
         return;
       }
 
+      const win = e.view;
       const isTouchEvent = ['pen', 'touch'].includes(e.pointerType);
 
       if (!isTouchEvent) {
@@ -436,12 +435,12 @@ export function useDragHandle(
       let longPressTimeout = 0;
 
       if (isTouchEvent) {
-        window.addEventListener('contextmenu', cancelEvent, true);
+        win.addEventListener('contextmenu', cancelEvent, true);
 
         longPressTimeout = window.setTimeout(() => {
           dndManager.dragManager.dragStart(initialEvent, droppable);
           isDragging = true;
-          window.addEventListener('touchmove', cancelEvent, {
+          win.addEventListener('touchmove', cancelEvent, {
             passive: false,
           });
         }, 500);
@@ -457,11 +456,11 @@ export function useDragHandle(
               }) > 5
             ) {
               clearTimeout(longPressTimeout);
-              window.removeEventListener('touchmove', cancelEvent);
-              window.removeEventListener('contextmenu', cancelEvent, true);
-              window.removeEventListener('pointermove', onMove);
-              window.removeEventListener('pointerup', onEnd);
-              window.removeEventListener('pointercancel', onEnd);
+              win.removeEventListener('touchmove', cancelEvent);
+              win.removeEventListener('contextmenu', cancelEvent, true);
+              win.removeEventListener('pointermove', onMove);
+              win.removeEventListener('pointerup', onEnd);
+              win.removeEventListener('pointercancel', onEnd);
             }
           } else {
             dndManager.dragManager.dragMove(e);
@@ -489,19 +488,19 @@ export function useDragHandle(
 
         dndManager.dragManager.dragEnd(e);
 
-        window.removeEventListener('pointermove', onMove);
-        window.removeEventListener('pointerup', onEnd);
-        window.removeEventListener('pointercancel', onEnd);
+        win.removeEventListener('pointermove', onMove);
+        win.removeEventListener('pointerup', onEnd);
+        win.removeEventListener('pointercancel', onEnd);
 
         if (isTouchEvent) {
-          window.removeEventListener('contextmenu', cancelEvent, true);
-          window.removeEventListener('touchmove', cancelEvent);
+          win.removeEventListener('contextmenu', cancelEvent, true);
+          win.removeEventListener('touchmove', cancelEvent);
         }
       };
 
-      window.addEventListener('pointermove', onMove);
-      window.addEventListener('pointerup', onEnd);
-      window.addEventListener('pointercancel', onEnd);
+      win.addEventListener('pointermove', onMove);
+      win.addEventListener('pointerup', onEnd);
+      win.addEventListener('pointercancel', onEnd);
     };
 
     const swallowTouchEvent = (e: TouchEvent) => {

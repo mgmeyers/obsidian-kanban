@@ -45,23 +45,15 @@ export const MarkdownEditor = Preact.forwardRef(function MarkdownEditor(
 ) {
   const { view, stateManager } = Preact.useContext(KanbanContext);
 
-  const shouldAutoPairMarkdown = Preact.useMemo(() => {
-    return (view.app.vault as any).getConfig('autoPairMarkdown');
-  }, [view]);
-
-  const shouldAutoPairBrackets = Preact.useMemo(() => {
-    return (view.app.vault as any).getConfig('autoPairBrackets');
-  }, [view]);
-
-  const shouldUseTab = Preact.useMemo(() => {
-    return (view.app.vault as any).getConfig('useTab');
-  }, [view]);
-
-  const tabWidth = Preact.useMemo(() => {
-    return (view.app.vault as any).getConfig('tabSize');
-  }, [view]);
-
-  const shouldUseMarkdownLinks = !!(view.app.vault as any).getConfig(
+  const shouldAutoPairMarkdown = (app.vault as any).getConfig(
+    'autoPairMarkdown'
+  );
+  const shouldAutoPairBrackets = (app.vault as any).getConfig(
+    'autoPairBrackets'
+  );
+  const shouldUseTab = (app.vault as any).getConfig('useTab');
+  const tabWidth = (app.vault as any).getConfig('tabSize');
+  const shouldUseMarkdownLinks = !!(app.vault as any).getConfig(
     'useMarkdownLinks'
   );
 

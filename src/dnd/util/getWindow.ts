@@ -1,7 +1,7 @@
-export function getWindowFromEl(el: HTMLElement) {
+export function getParentWindow(el: Element) {
   return el.ownerDocument.defaultView;
 }
 
-export function getBodyFromEl(el: HTMLElement) {
+export function getParentBodyElement(el: Element) {
   return el.ownerDocument.body;
 }

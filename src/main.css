@@ -848,6 +848,10 @@ button.kanban-plugin__cancel-action-button {
   margin: 0;
 }
 
+.kanban-plugin__autocomplete li em {
+  opacity: 0.6;
+}
+
 .kanban-plugin .textcomplete-footer,
 .kanban-plugin .textcomplete-header {
   display: none;

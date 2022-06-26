@@ -39,15 +39,18 @@ export interface EntityData {
   type: string;
   id: string;
   accepts: string[];
-  win: Window;
   sortAxis?: Axis;
   [k: string]: any;
+}
+
+export interface ScopedEntityData extends EntityData {
+  win: Window;
 }
 
 export interface Entity {
   getPath(): Path;
   getHitbox(): Hitbox;
-  getData(): EntityData;
+  getData(): ScopedEntityData;
   recalcInitial(): void;
   getParentScrollState(): ScrollState;
   getParentScrollShift(): CoordinateShift;

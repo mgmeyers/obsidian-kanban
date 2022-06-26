@@ -2,6 +2,7 @@ import { debounce } from 'obsidian';
 
 import { Entity } from '../types';
 import { Emitter, createEmitter } from '../util/emitter';
+import { getParentWindow } from '../util/getWindow';
 import { DragManager } from './DragManager';
 
 export type DropHandler = (dragEntity: Entity, dropEntity: Entity) => void;
@@ -39,7 +40,7 @@ export class DndManager {
     const resizedWindows = new Set<Window>();
 
     entries.forEach((e) => {
-      const win = e.target.ownerDocument.defaultView;
+      const win = getParentWindow(e.target);
 
       if (!resizedWindows.has(win)) {
         resizedWindows.add(win);

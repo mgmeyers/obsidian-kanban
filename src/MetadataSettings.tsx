@@ -22,7 +22,7 @@ import { Sortable } from './dnd/components/Sortable';
 import { SortPlaceholder } from './dnd/components/SortPlaceholder';
 import { useDragHandle } from './dnd/managers/DragManager';
 import { Entity } from './dnd/types';
-import { getWindowFromEl } from './dnd/util/getWindow';
+import { getParentBodyElement, getParentWindow } from './dnd/util/getWindow';
 import { t } from './lang/helpers';
 
 interface ItemProps {
@@ -152,7 +152,6 @@ function useKeyModifiers({
   inputValue,
   keys,
   setKeys,
-  win,
 }: UseKeyModifiersParams) {
   const updateKeys = (keys: MetadataSetting[]) => {
     onChange(keys);
@@ -227,7 +226,6 @@ function useKeyModifiers({
             {
               ...MetadataSettingTemplate,
               id: generateInstanceId(),
-              win,
               data: {
                 metadataKey: inputValue,
                 label: '',
@@ -309,10 +307,11 @@ function RespondToScroll({
     const onScroll = () => {
       clearTimeout(debounce);
       debounce = window.setTimeout(() => {
-        const win = getWindowFromEl(scrollEl);
-        dndManager.hitboxEntities.get(win)?.forEach((entity) => {
-          entity.recalcInitial();
-        });
+        dndManager.hitboxEntities
+          .get(getParentWindow(scrollEl))
+          ?.forEach((entity) => {
+            entity.recalcInitial();
+          });
       }, 100);
     };
 
@@ -347,7 +346,7 @@ function MetadataSettings(props: MetadataSettingsProps) {
     inputValue,
     keys,
     setKeys,
-    win: getWindowFromEl(props.scrollEl),
+    win: getParentWindow(props.scrollEl),
   });
 
   return (
@@ -432,7 +431,7 @@ export function renderMetadataSettings(
       dataKeys={keys}
       scrollEl={scrollEl}
       onChange={onChange}
-      portalContainer={containerEl.ownerDocument.body}
+      portalContainer={getParentBodyElement(containerEl)}
     />,
     containerEl
   );
