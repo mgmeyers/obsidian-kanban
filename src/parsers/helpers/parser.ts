@@ -20,3 +20,11 @@ export function markRangeForDeletion(
 export function executeDeletion(str: string) {
   return str.replace(/\s*\0+\s*/g, ' ').trim();
 }
+
+export function replaceNewLines(str: string) {
+  return str.trim().replace(/(\r\n|\n)/g, '<br>');
+}
+
+export function replaceBrs(str: string) {
+  return str.replace(/<br>/g, '\n').trim();
+}

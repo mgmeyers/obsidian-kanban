@@ -28,7 +28,12 @@ import {
   getStringFromBoundary,
 } from '../helpers/ast';
 import { hydrateItem } from '../helpers/hydrateBoard';
-import { executeDeletion, markRangeForDeletion } from '../helpers/parser';
+import {
+  executeDeletion,
+  markRangeForDeletion,
+  replaceBrs,
+  replaceNewLines,
+} from '../helpers/parser';
 import { parseFragment } from '../parseMarkdown';
 
 export function listItemToItemData(
@@ -50,7 +55,7 @@ export function listItemToItemData(
   let title = itemContent;
 
   const itemData: ItemData = {
-    titleRaw: itemContent.replace(/<br>/g, '\n'),
+    titleRaw: replaceBrs(itemContent),
     blockId: undefined,
     title: '',
     titleSearch: '',
@@ -152,7 +157,7 @@ export function listItemToItemData(
     }
   );
 
-  itemData.title = executeDeletion(title).replace(/<br>/g, '\n');
+  itemData.title = replaceBrs(executeDeletion(title));
 
   return itemData;
 }
@@ -231,7 +236,7 @@ export function astToUnhydratedBoard(
           children: [],
           id: generateInstanceId(),
           data: {
-            title,
+            title: replaceBrs(title),
             shouldMarkItemsComplete,
           },
         });
@@ -247,7 +252,7 @@ export function astToUnhydratedBoard(
           }),
           id: generateInstanceId(),
           data: {
-            title,
+            title: replaceBrs(title),
             shouldMarkItemsComplete,
           },
         });
@@ -274,9 +279,9 @@ export async function updateItemContent(
   oldItem: Item,
   newContent: string
 ) {
-  const md = `- [${oldItem.data.isComplete ? 'x' : ' '}] ${newContent
-    .replace(/(\r\n|\n)/g, '<br>')
-    .trim()}${oldItem.data.blockId ? ` ^${oldItem.data.blockId}` : ''}`;
+  const md = `- [${oldItem.data.isComplete ? 'x' : ' '}] ${replaceNewLines(
+    newContent
+  )}${oldItem.data.blockId ? ` ^${oldItem.data.blockId}` : ''}`;
 
   const ast = parseFragment(stateManager, md);
 
@@ -307,9 +312,7 @@ export async function newItem(
   isComplete?: boolean,
   forceEdit?: boolean
 ) {
-  const md = `- [${isComplete ? 'x' : ' '}] ${newContent
-    .trim()
-    .replace(/(\r\n|\n)/g, '<br>')}`;
+  const md = `- [${isComplete ? 'x' : ' '}] ${replaceNewLines(newContent)}`;
 
   const ast = parseFragment(stateManager, md);
 
@@ -371,15 +374,15 @@ export async function reparseBoard(stateManager: StateManager, board: Board) {
 }
 
 function itemToMd(item: Item) {
-  return `- [${item.data.isComplete ? 'x' : ' '}] ${item.data.titleRaw
-    .replace(/(\r\n|\n)/g, '<br>')
-    .trim()}${item.data.blockId ? ` ^${item.data.blockId}` : ''}`;
+  return `- [${item.data.isComplete ? 'x' : ' '}] ${replaceNewLines(
+    item.data.titleRaw
+  )}${item.data.blockId ? ` ^${item.data.blockId}` : ''}`;
 }
 
 function laneToMd(lane: Lane) {
   const lines: string[] = [];
 
-  lines.push(`## ${lane.data.title}`);
+  lines.push(`## ${replaceNewLines(lane.data.title)}`);
 
   lines.push('');
 

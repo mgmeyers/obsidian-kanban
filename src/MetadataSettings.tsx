@@ -22,8 +22,8 @@ import { Sortable } from './dnd/components/Sortable';
 import { SortPlaceholder } from './dnd/components/SortPlaceholder';
 import { useDragHandle } from './dnd/managers/DragManager';
 import { Entity } from './dnd/types';
-import { t } from './lang/helpers';
 import { getWindowFromEl } from './dnd/util/getWindow';
+import { t } from './lang/helpers';
 
 interface ItemProps {
   itemIndex: number;
