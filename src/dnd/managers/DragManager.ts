@@ -1,5 +1,4 @@
 import boxIntersect from 'box-intersect';
-import { Platform } from 'obsidian';
 import Preact from 'preact/compat';
 import rafSchd from 'raf-schd';
 
@@ -420,9 +419,9 @@ export function useDragHandle(
         return;
       }
 
-      const isMobile = Platform.isMobile;
+      const isTouchEvent = ['pen', 'touch'].includes(e.pointerType);
 
-      if (!isMobile) {
+      if (!isTouchEvent) {
         e.stopPropagation();
         e.preventDefault();
       }
@@ -436,7 +435,7 @@ export function useDragHandle(
       let isDragging = false;
       let longPressTimeout = 0;
 
-      if (isMobile) {
+      if (isTouchEvent) {
         window.addEventListener('contextmenu', cancelEvent, true);
 
         longPressTimeout = window.setTimeout(() => {
@@ -449,7 +448,7 @@ export function useDragHandle(
       }
 
       const onMove = rafSchd((e: PointerEvent) => {
-        if (isMobile) {
+        if (isTouchEvent) {
           if (!isDragging) {
             if (
               distanceBetween(initialPosition, {
@@ -494,7 +493,7 @@ export function useDragHandle(
         window.removeEventListener('pointerup', onEnd);
         window.removeEventListener('pointercancel', onEnd);
 
-        if (isMobile) {
+        if (isTouchEvent) {
           window.removeEventListener('contextmenu', cancelEvent, true);
           window.removeEventListener('touchmove', cancelEvent);
         }
