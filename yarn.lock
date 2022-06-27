@@ -3572,7 +3572,15 @@ obsidian-utils@^0.10.0:
     node-fetch "^2.6.1"
     which "^2.0.2"
 
-obsidian@^0.15.2, obsidian@obsidianmd/obsidian-api#master:
+obsidian@latest:
+  version "0.15.2"
+  resolved "https://registry.yarnpkg.com/obsidian/-/obsidian-0.15.2.tgz#7216701d6688a1f78358d4cfca4ffb634487f25d"
+  integrity sha512-vN+MNwNmyXxyrIrQnc1tDquZYf1Z15Jl63pIBvHRMIDY8jIG4bSQxBVJSqH1vruKcqRd6TPnhpicrfj7yDKYGQ==
+  dependencies:
+    "@types/codemirror" "0.0.108"
+    moment "2.29.3"
+
+obsidian@obsidianmd/obsidian-api#master:
   version "0.15.3"
   resolved "git+ssh://git@github.com/obsidianmd/obsidian-api.git#4583a6b8305b05139c6b1bf226ad15e50a9a5987"
   dependencies:
