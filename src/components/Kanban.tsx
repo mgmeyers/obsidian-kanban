@@ -309,6 +309,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
               },
             ])}
             onMouseOver={onMouseOver}
+            onPointerDown={onClick}
             onClick={onClick}
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore

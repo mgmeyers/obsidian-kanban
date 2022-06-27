@@ -183,7 +183,7 @@ export const ItemContent = Preact.memo(function ItemContent({
   }, [item]);
 
   const onCheckboxContainerClick = Preact.useCallback(
-    (e: MouseEvent) => {
+    (e: PointerEvent) => {
       const target = e.target as HTMLElement;
 
       if (target.hasClass('task-list-item-checkbox')) {
@@ -236,7 +236,7 @@ export const ItemContent = Preact.memo(function ItemContent({
         className={c('item-markdown')}
         dom={item.data.dom}
         searchQuery={searchQuery}
-        onClick={onCheckboxContainerClick}
+        onPointerDown={onCheckboxContainerClick}
       />
       <div className={c('item-metadata')}>
         <RelativeDate item={item} stateManager={stateManager} />

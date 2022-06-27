@@ -1,5 +1,8 @@
-import { Link } from 'obsidian-dataview';
+import { TFile, moment } from 'obsidian';
 import Preact from 'preact/compat';
+import { KanbanView } from 'src/KanbanView';
+import { StateManager } from 'src/StateManager';
+import { KanbanContext } from '../context';
 
 import { c } from '../helpers';
 import { MarkdownRenderer } from '../MarkdownRenderer';
@@ -34,19 +37,48 @@ interface MetadataValueProps {
   searchQuery: string;
 }
 
-function getLinkFromObj(v: Link) {
+function getDateFromObj(v: any, stateManager: StateManager) {
+  if (v.ts) {
+    const dateFormat = stateManager.getSetting('date-display-format');
+    return moment(v.ts).format(dateFormat);
+  }
+
+  return null;
+}
+
+function getLinkFromObj(v: any, view: KanbanView) {
+  if (!v.path) return null;
+
+  const file = app.vault.getAbstractFileByPath(v.path);
+
+  if (file && file instanceof TFile) {
+    const link = app.fileManager.generateMarkdownLink(
+      file,
+      view.file.path,
+      v.subpath,
+      v.display
+    );
+
+    return `${v.embed ? '!' : ''}${link}`;
+  }
+
   return `${v.embed ? '!' : ''}[[${v.path}${
     v.display ? `|${v.display}` : ''
   }]]`;
 }
 
 function MetadataValue({ data, searchQuery }: MetadataValueProps) {
+  const { view, stateManager } = Preact.useContext(KanbanContext);
+
   if (Array.isArray(data.value)) {
     return (
       <span className={c('meta-value')}>
         {data.value.map((v, i, arr) => {
           const str = `${v}`;
-          const link = typeof v === 'object' && getLinkFromObj(v as Link);
+          const link =
+            typeof v === 'object' &&
+            !Array.isArray(v) &&
+            (getDateFromObj(v, stateManager) || getLinkFromObj(v, view));
           const isMatch = str.toLocaleLowerCase().contains(searchQuery);
 
           return (
@@ -73,7 +105,9 @@ function MetadataValue({ data, searchQuery }: MetadataValueProps) {
   const str = `${data.value}`;
   const isMatch = str.toLocaleLowerCase().contains(searchQuery);
   const link =
-    typeof data.value === 'object' && getLinkFromObj(data.value as Link);
+    typeof data.value === 'object' &&
+    (getDateFromObj(data.value, stateManager) ||
+      getLinkFromObj(data.value, view));
 
   return (
     <span
