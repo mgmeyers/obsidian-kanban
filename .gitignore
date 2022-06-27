@@ -11,3 +11,4 @@ package-lock.json
 *.js.map
 .env
 yarn*
+dist

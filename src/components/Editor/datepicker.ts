@@ -1,8 +1,8 @@
 import flatpickr from 'flatpickr';
 import { moment } from 'obsidian';
 import Preact from 'preact';
-import { getParentWindow } from 'src/dnd/util/getWindow';
 
+import { getParentWindow } from 'src/dnd/util/getWindow';
 import { buildLinkToDailyNote } from 'src/helpers';
 import { StateManager } from 'src/StateManager';
 

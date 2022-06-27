@@ -1,4 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
+
 import { getParentWindow } from 'src/dnd/util/getWindow';
 
 import { Completer } from './Completer';

@@ -1,9 +1,10 @@
 import { TFile, moment } from 'obsidian';
 import Preact from 'preact/compat';
+
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
-import { KanbanContext } from '../context';
 
+import { KanbanContext } from '../context';
 import { c } from '../helpers';
 import { MarkdownRenderer } from '../MarkdownRenderer';
 import { Item, PageData } from '../types';

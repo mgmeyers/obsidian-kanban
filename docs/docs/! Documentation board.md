@@ -21,7 +21,7 @@ show-add-list: true
 ## Archive
 
 * [x] [Date trigger](Settings/Date%20trigger.md)
-* [x] [Board header buttons](Settings/Board%20Header%20Buttons.md)
+* [x] [Board header buttons](Settings/Board%20header%20buttons.md)
 * [x] [Hide card display tags](Settings/Hide%20card%20display%20tags.md)
 * [x] [Hide tags in card titles](Settings/Hide%20tags%20in%20card%20titles.md)
 * [x] [Display card checkbox](Settings/Display%20card%20checkbox.md)
