@@ -135,8 +135,6 @@ export function getFileSearchConfig(
 
       if (willAutoPairBrackets && !shouldUseMarkdownLinks) {
         output[output.length - 1] = output[output.length - 1].slice(0, -2);
-      } else if (!willAutoPairBrackets && !shouldUseMarkdownLinks) {
-        output.push(']] ');
       }
 
       return output.join('');
