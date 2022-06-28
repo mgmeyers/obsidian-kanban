@@ -47,7 +47,7 @@ export function buildLinkToDailyNote(app: App, dateStr: string) {
   return `[[${dateStr}]]`;
 }
 
-export function hasFrontmatterKey(data: string) {
+export function hasFrontmatterKeyRaw(data: string) {
   if (!data) return false;
 
   const match = data.match(/---\s+([\w\W]+?)\s+---/);
@@ -61,4 +61,12 @@ export function hasFrontmatterKey(data: string) {
   }
 
   return true;
+}
+
+export function hasFrontmatterKey(file: TFile) {
+  if (!file) return false;
+
+  const cache = app.metadataCache.getFileCache(file);
+
+  return !!cache?.frontmatter && !!cache?.frontmatter['kanban-plugin'];
 }

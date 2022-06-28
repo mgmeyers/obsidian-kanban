@@ -16,7 +16,7 @@ import { getParentWindow } from './dnd/util/getWindow';
 import {
   gotoNextDailyNote,
   gotoPrevDailyNote,
-  hasFrontmatterKey,
+  hasFrontmatterKeyRaw,
 } from './helpers';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
@@ -53,6 +53,13 @@ export class KanbanView extends TextFileView implements HoverParent {
         }
       }
     });
+
+    this.register(
+      this.containerEl.onWindowMigrated(() => {
+        this.plugin.removeView(this);
+        this.plugin.addView(this, this.data, this.isPrimary);
+      })
+    );
   }
 
   get isPrimary(): boolean {
@@ -146,7 +153,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   setViewData(data: string, clear?: boolean) {
-    if (!hasFrontmatterKey(data)) {
+    if (!hasFrontmatterKeyRaw(data)) {
       this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] =
         'markdown';
       this.plugin.removeView(this);
@@ -163,7 +170,11 @@ export class KanbanView extends TextFileView implements HoverParent {
     return <Kanban stateManager={stateManager} view={this} />;
   }
 
-  onMoreOptionsMenu(menu: Menu) {
+  onPaneMenu(menu: Menu, source: string, callSuper: boolean = true) {
+    if (source !== 'more-options') {
+      super.onPaneMenu(menu, source);
+      return;
+    }
     // Add a menu item to force the board to markdown view
     menu
       .addItem((item) => {
@@ -216,7 +227,9 @@ export class KanbanView extends TextFileView implements HoverParent {
       })
       .addSeparator();
 
-    super.onMoreOptionsMenu(menu);
+    if (callSuper) {
+      super.onPaneMenu(menu, source);
+    }
   }
 
   initHeaderButtons() {

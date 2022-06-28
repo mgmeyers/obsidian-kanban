@@ -13,6 +13,7 @@ import {
   ViewState,
   WorkspaceLeaf,
   debounce,
+  Platform,
 } from 'obsidian';
 import Preact from 'preact/compat';
 
@@ -22,6 +23,7 @@ import { t } from './lang/helpers';
 import { basicFrontmatter, frontMatterKey } from './parsers/common';
 import { KanbanSettings, KanbanSettingsTab } from './Settings';
 import { StateManager } from './StateManager';
+import { hasFrontmatterKey } from './helpers';
 
 export default class KanbanPlugin extends Plugin {
   settingsTab: KanbanSettingsTab;
@@ -46,18 +48,19 @@ export default class KanbanPlugin extends Plugin {
     await this.saveData(this.settings);
   }
 
-  onunload() {
-    // Unmount views first
-    this.stateManagers.clear();
-    this.viewStateReceivers.forEach((fn) => fn(this.getKanbanViews()));
-
-    const kanbanLeaves = this.app.workspace.getLeavesOfType(kanbanViewType);
-
-    kanbanLeaves.forEach((leaf) => {
-      this.setMarkdownView(leaf);
+  unload(): void {
+    Promise.all(
+      app.workspace.getLeavesOfType(kanbanViewType).map((leaf) => {
+        this.kanbanFileModes[(leaf as any).id] = 'markdown';
+        return this.setMarkdownView(leaf);
+      })
+    ).then(() => {
+      super.unload();
     });
+  }
 
-    (this.app.workspace as any).unregisterHoverLinkSource(frontMatterKey);
+  onunload() {
+    this.viewStateReceivers.forEach((fn) => fn([]));
 
     for (const win of this.appRootMap.keys()) {
       this.unmount(win);
@@ -65,24 +68,27 @@ export default class KanbanPlugin extends Plugin {
 
     this.unmount(window);
 
+    this.stateManagers.clear();
     this.appRootMap.clear();
     this.viewMap.clear();
+    this.kanbanFileModes = {};
 
     window.removeEventListener('keydown', this.handleShift);
     window.removeEventListener('keyup', this.handleShift);
+    (app.workspace as any).unregisterHoverLinkSource(frontMatterKey);
   }
 
   async onload() {
     await this.loadSettings();
 
     this.registerEvent(
-      app.workspace.on('window-open', (_, win) => {
+      app.workspace.on('window-open', (_: any, win: Window) => {
         this.mount(win);
       })
     );
 
     this.registerEvent(
-      app.workspace.on('window-close', (_, win) => {
+      app.workspace.on('window-close', (_: any, win: Window) => {
         this.unmount(win);
       })
     );
@@ -301,17 +307,17 @@ export default class KanbanPlugin extends Plugin {
   async newKanban(folder?: TFolder) {
     const targetFolder = folder
       ? folder
-      : this.app.fileManager.getNewFileParent(
-          this.app.workspace.getActiveFile()?.path || ''
+      : app.fileManager.getNewFileParent(
+          app.workspace.getActiveFile()?.path || ''
         );
 
     try {
       const kanban: TFile = await (
-        this.app.fileManager as any
+        app.fileManager as any
       ).createNewMarkdownFile(targetFolder, t('Untitled Kanban'));
 
-      await this.app.vault.modify(kanban, basicFrontmatter);
-      await this.app.workspace.activeLeaf.setViewState({
+      await app.vault.modify(kanban, basicFrontmatter);
+      await app.workspace.getLeaf().setViewState({
         type: kanbanViewType,
         state: { file: kanban.path },
       });
@@ -322,7 +328,7 @@ export default class KanbanPlugin extends Plugin {
 
   registerEvents() {
     this.registerEvent(
-      this.app.workspace.on('file-menu', (menu, file: TFile) => {
+      app.workspace.on('file-menu', (menu, file, source, leaf) => {
         // Add a menu item to the folder context menu to create a board
         if (file instanceof TFolder) {
           menu.addItem((item) => {
@@ -332,12 +338,44 @@ export default class KanbanPlugin extends Plugin {
               .onClick(() => this.newKanban(file));
           });
         }
+
+        if (
+          !Platform.isMobile &&
+          file instanceof TFile &&
+          leaf &&
+          source === 'sidebar-context-menu' &&
+          hasFrontmatterKey(file)
+        ) {
+          const views = this.getKanbanViews();
+          let haveKanbanView = false;
+
+          for (const view of views) {
+            if (view.file === file) {
+              view.onPaneMenu(menu, 'more-options', false);
+              haveKanbanView = true;
+              break;
+            }
+          }
+
+          if (!haveKanbanView) {
+            menu.addItem((item) => {
+              item
+                .setTitle(t('Open as kanban board'))
+                .setIcon(kanbanIcon)
+                .onClick(() => {
+                  this.kanbanFileModes[(leaf as any).id || file.path] =
+                    kanbanViewType;
+                  this.setKanbanView(leaf);
+                });
+            });
+          }
+        }
       })
     );
 
     this.registerEvent(
-      this.app.vault.on('rename', (file, oldPath) => {
-        const kanbanLeaves = this.app.workspace.getLeavesOfType(kanbanViewType);
+      app.vault.on('rename', (file, oldPath) => {
+        const kanbanLeaves = app.workspace.getLeavesOfType(kanbanViewType);
 
         kanbanLeaves.forEach((leaf) => {
           (leaf.view as KanbanView).handleRename(file.path, oldPath);
@@ -358,7 +396,7 @@ export default class KanbanPlugin extends Plugin {
     );
 
     this.registerEvent(
-      this.app.vault.on('modify', (file) => {
+      app.vault.on('modify', (file) => {
         if (file instanceof TFile) {
           notifyFileChange(file);
         }
@@ -366,26 +404,26 @@ export default class KanbanPlugin extends Plugin {
     );
 
     this.registerEvent(
-      this.app.metadataCache.on('changed', (file) => {
+      app.metadataCache.on('changed', (file) => {
         notifyFileChange(file);
       })
     );
 
     this.registerEvent(
-      this.app.metadataCache.on('dataview:metadata-change', (_, file) => {
+      app.metadataCache.on('dataview:metadata-change', (_, file) => {
         notifyFileChange(file);
       })
     );
 
     this.registerEvent(
-      this.app.metadataCache.on('dataview:api-ready', () => {
+      app.metadataCache.on('dataview:api-ready', () => {
         this.stateManagers.forEach((manager) => {
           manager.forceRefresh();
         });
       })
     );
 
-    (this.app.workspace as any).registerHoverLinkSource(frontMatterKey, {
+    (app.workspace as any).registerHoverLinkSource(frontMatterKey, {
       display: 'Kanban',
       defaultMod: true,
     });
@@ -402,7 +440,7 @@ export default class KanbanPlugin extends Plugin {
       id: 'archive-completed-cards',
       name: t('Archive completed cards in active board'),
       checkCallback: (checking) => {
-        const activeView = this.app.workspace.getActiveViewOfType(KanbanView);
+        const activeView = app.workspace.getActiveViewOfType(KanbanView);
 
         if (!activeView) return false;
         if (checking) return true;
@@ -415,11 +453,11 @@ export default class KanbanPlugin extends Plugin {
       id: 'toggle-kanban-view',
       name: t('Toggle between Kanban and markdown mode'),
       checkCallback: (checking) => {
-        const activeFile = this.app.workspace.getActiveFile();
+        const activeFile = app.workspace.getActiveFile();
 
         if (!activeFile) return false;
 
-        const fileCache = this.app.metadataCache.getFileCache(activeFile);
+        const fileCache = app.metadataCache.getFileCache(activeFile);
         const fileIsKanban =
           !!fileCache?.frontmatter && !!fileCache.frontmatter[frontMatterKey];
 
@@ -427,16 +465,21 @@ export default class KanbanPlugin extends Plugin {
           return fileIsKanban;
         }
 
-        const activeLeaf = this.app.workspace.activeLeaf;
+        const activeView = app.workspace.getActiveViewOfType(KanbanView);
 
-        if (activeLeaf?.view && activeLeaf.view instanceof KanbanView) {
-          this.kanbanFileModes[(activeLeaf as any).id || activeFile.path] =
+        if (activeView) {
+          this.kanbanFileModes[(activeView.leaf as any).id || activeFile.path] =
             'markdown';
-          this.setMarkdownView(activeLeaf);
+          this.setMarkdownView(activeView.leaf);
         } else if (fileIsKanban) {
-          this.kanbanFileModes[(activeLeaf as any).id || activeFile.path] =
-            kanbanViewType;
-          this.setKanbanView(activeLeaf);
+          const activeView = app.workspace.getActiveViewOfType(MarkdownView);
+
+          if (activeView) {
+            this.kanbanFileModes[
+              (activeView.leaf as any).id || activeFile.path
+            ] = kanbanViewType;
+            this.setKanbanView(activeView.leaf);
+          }
         }
       },
     });
@@ -445,19 +488,18 @@ export default class KanbanPlugin extends Plugin {
       id: 'convert-to-kanban',
       name: t('Convert empty note to Kanban'),
       checkCallback: (checking) => {
-        const activeFile = this.app.workspace.getActiveFile();
-        const activeLeaf = this.app.workspace.activeLeaf;
+        const activeView = app.workspace.getActiveViewOfType(MarkdownView);
 
-        if (!activeFile || !activeLeaf) return false;
+        if (!activeView) return false;
 
-        const isFileEmpty = activeFile.stat.size === 0;
+        const isFileEmpty = activeView.file.stat.size === 0;
 
         if (checking) return isFileEmpty;
         if (isFileEmpty) {
-          this.app.vault
-            .modify(activeFile, basicFrontmatter)
+          app.vault
+            .modify(activeView.file, basicFrontmatter)
             .then(() => {
-              this.setKanbanView(activeLeaf);
+              this.setKanbanView(activeView.leaf);
             })
             .catch((e) => console.error(e));
         }
@@ -555,18 +597,11 @@ export default class KanbanPlugin extends Plugin {
     // Add a menu item to go back to kanban view
     this.register(
       around(MarkdownView.prototype, {
-        onMoreOptionsMenu(next) {
-          return function (menu: Menu) {
+        onPaneMenu(next) {
+          return function (menu: Menu, source: string) {
             const file = this.file;
-            const cache = file
-              ? self.app.metadataCache.getFileCache(file)
-              : null;
 
-            if (
-              !file ||
-              !cache?.frontmatter ||
-              !cache.frontmatter[frontMatterKey]
-            ) {
+            if (source !== 'more-options' || !hasFrontmatterKey(file)) {
               return next.call(this, menu);
             }
 

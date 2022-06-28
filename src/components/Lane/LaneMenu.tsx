@@ -78,7 +78,7 @@ export function useSettingsMenu({ setIsEditing, path }: UseSettingsMenuParams) {
   const [confirmAction, setConfirmAction] = Preact.useState<LaneAction>(null);
 
   const settingsMenu = Preact.useMemo(() => {
-    return new Menu(stateManager.app)
+    return new Menu()
       .addItem((item) => {
         item
           .setIcon('pencil')

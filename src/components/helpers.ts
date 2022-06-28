@@ -83,14 +83,11 @@ export async function applyTemplate(
     : null;
 
   if (templateFile && templateFile instanceof TFile) {
-    const activeView = stateManager.app.workspace.activeLeaf.view;
+    const activeView = app.workspace.getActiveViewOfType(MarkdownView);
 
     try {
       // Force the view to source mode, if needed
-      if (
-        activeView instanceof MarkdownView &&
-        activeView.getMode() !== 'source'
-      ) {
+      if (activeView?.getMode() !== 'source') {
         await activeView.setState(
           {
             ...activeView.getState(),

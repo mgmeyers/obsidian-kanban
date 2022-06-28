@@ -48,7 +48,7 @@ export function useItemMenu({
         const hasDate = !!item.data.metadata.date;
         const hasTime = !!item.data.metadata.time;
 
-        const menu = new Menu(stateManager.app).addItem((i) => {
+        const menu = new Menu().addItem((i) => {
           i.setIcon('pencil')
             .setTitle(t('Edit card'))
             .onClick(() => setIsEditing(true));
