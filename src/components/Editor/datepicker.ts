@@ -1,4 +1,4 @@
-import flatpickr from 'flatpickr';
+import flatpickr from './flatpickr';
 import { moment } from 'obsidian';
 import Preact from 'preact';
 
@@ -11,6 +11,7 @@ import { buildTimeArray } from '../Item/helpers';
 import { getDefaultLocale } from './datePickerLocale';
 import { replaceSelection } from './helpers';
 import { CursorOffset, StrategyProps } from './textcomplete/textcomplete-core';
+import { Instance } from './flatpickr/types/instance';
 
 export function applyDate(
   date: Date,
@@ -33,7 +34,7 @@ export function applyDate(
 export interface ConstructDatePickerParams {
   div: HTMLElement;
   inputRef: Preact.RefObject<HTMLTextAreaElement>;
-  cb: (picker: flatpickr.Instance) => void;
+  cb: (picker: Instance) => void;
   stateManager: StateManager;
 }
 
@@ -53,6 +54,7 @@ export function constructDatePicker({
           onChange: (dates) => {
             applyDate(dates[0], inputRef, stateManager);
           },
+          win: input.ownerDocument.defaultView,
         })
       )
     );

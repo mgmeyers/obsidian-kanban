@@ -54,7 +54,6 @@
     "eventemitter3": "^4.0.7",
     "fast-json-patch": "^3.1.0",
     "file-selector": "^0.2.4",
-    "flatpickr": "^4.6.11",
     "fuse.js": "^6.5.3",
     "immutability-helper": "^3.1.1",
     "immutable-json-patch": "^1.1.2",

@@ -19,16 +19,22 @@ import { getBoardModifiers } from './helpers/boardModifiers';
 import { KanbanView } from './KanbanView';
 import KanbanPlugin from './main';
 
-export function createApp(plugin: KanbanPlugin) {
-  return <DragDropApp plugin={plugin} />;
+export function createApp(win: Window, plugin: KanbanPlugin) {
+  return <DragDropApp win={win} plugin={plugin} />;
 }
 
 const View = Preact.memo(function View({ view }: { view: KanbanView }) {
   return Preact.createPortal(view.getPortal(), view.contentEl);
 });
 
-export function DragDropApp({ plugin }: { plugin: KanbanPlugin }) {
-  const views = plugin.useViewState();
+export function DragDropApp({
+  win,
+  plugin,
+}: {
+  win: Window;
+  plugin: KanbanPlugin;
+}) {
+  const views = plugin.useViewState(win);
   const portals: Preact.JSX.Element[] = views.map((view) => (
     <View key={view.id} view={view} />
   ));

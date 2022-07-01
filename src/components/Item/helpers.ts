@@ -1,5 +1,5 @@
 import { FileWithPath, fromEvent } from 'file-selector';
-import flatpickr from 'flatpickr';
+import flatpickr from '../Editor/flatpickr';
 import {
   MarkdownSourceView,
   Platform,
@@ -19,16 +19,16 @@ import { BoardModifiers } from '../../helpers/boardModifiers';
 import { getDefaultLocale } from '../Editor/datePickerLocale';
 import { c, escapeRegExpStr } from '../helpers';
 import { Item } from '../types';
+import { Instance } from '../Editor/flatpickr/types/instance';
 
 export function constructDatePicker(
-  window: Window,
+  win: Window,
   stateManager: StateManager,
   coordinates: { x: number; y: number },
   onChange: (dates: Date[]) => void,
   date?: Date
 ) {
-  const { document } = window;
-  return document.body.createDiv(
+  return win.document.body.createDiv(
     { cls: `${c('date-picker')} ${c('ignore-click-outside')}` },
     (div) => {
       div.style.left = `${coordinates.x || 0}px`;
@@ -36,11 +36,12 @@ export function constructDatePicker(
 
       div.createEl('input', { type: 'text' }, (input) => {
         setTimeout(() => {
-          let picker: flatpickr.Instance | null = null;
+          let picker: Instance | null = null;
 
           const clickHandler = (e: MouseEvent) => {
             if (
-              e.target instanceof HTMLElement &&
+              e.target instanceof
+                (e.view as Window & typeof globalThis).HTMLElement &&
               e.target.closest(`.${c('date-picker')}`) === null
             ) {
               selfDestruct();
@@ -56,8 +57,8 @@ export function constructDatePicker(
           const selfDestruct = () => {
             picker.destroy();
             div.remove();
-            document.body.removeEventListener('click', clickHandler);
-            document.removeEventListener('keydown', keyHandler);
+            win.document.body.removeEventListener('click', clickHandler);
+            win.document.removeEventListener('keydown', keyHandler);
           };
 
           picker = flatpickr(input, {
@@ -68,23 +69,24 @@ export function constructDatePicker(
               onChange(dates);
               selfDestruct();
             },
+            win,
           });
 
           setTimeout(() => {
             const height = div.clientHeight;
             const width = div.clientWidth;
 
-            if (coordinates.y + height > window.innerHeight) {
+            if (coordinates.y + height > win.innerHeight) {
               div.style.top = `${(coordinates.y || 0) - height}px`;
             }
 
-            if (coordinates.x + width > window.innerWidth) {
+            if (coordinates.x + width > win.innerWidth) {
               div.style.left = `${(coordinates.x || 0) - width}px`;
             }
           });
 
-          document.body.addEventListener('click', clickHandler);
-          document.addEventListener('keydown', keyHandler);
+          win.document.body.addEventListener('click', clickHandler);
+          win.document.addEventListener('keydown', keyHandler);
         });
       });
     }
@@ -161,7 +163,7 @@ export function buildTimeArray(stateManager: StateManager) {
 }
 
 export function constructTimePicker(
-  window: Window,
+  win: Window,
   stateManager: StateManager,
   coordinates: { x: number; y: number },
   onSelect: (opt: string) => void,
@@ -171,15 +173,15 @@ export function constructTimePicker(
   const timeFormat = stateManager.getSetting('time-format');
   const selected = time?.format(timeFormat);
 
-  const { document } = window;
-  document.body.createDiv(
+  win.document.body.createDiv(
     { cls: `${pickerClassName} ${c('ignore-click-outside')}` },
     (div) => {
       const options = buildTimeArray(stateManager);
 
       const clickHandler = (e: MouseEvent) => {
         if (
-          e.target instanceof HTMLElement &&
+          e.target instanceof
+            (e.view as Window & typeof globalThis).HTMLElement &&
           e.target.hasClass(c('time-picker-item')) &&
           e.target.dataset.value
         ) {
@@ -190,7 +192,8 @@ export function constructTimePicker(
 
       const clickOutsideHandler = (e: MouseEvent) => {
         if (
-          e.target instanceof HTMLElement &&
+          e.target instanceof
+            (e.view as Window & typeof globalThis).HTMLElement &&
           e.target.closest(`.${pickerClassName}`) === null
         ) {
           selfDestruct();
@@ -206,8 +209,8 @@ export function constructTimePicker(
       const selfDestruct = () => {
         div.remove();
         div.removeEventListener('click', clickHandler);
-        document.body.removeEventListener('click', clickOutsideHandler);
-        document.removeEventListener('keydown', escHandler);
+        win.document.body.removeEventListener('click', clickOutsideHandler);
+        win.document.removeEventListener('keydown', escHandler);
       };
 
       div.style.left = `${coordinates.x || 0}px`;
@@ -250,11 +253,11 @@ export function constructTimePicker(
         const height = div.clientHeight;
         const width = div.clientWidth;
 
-        if (coordinates.y + height > window.innerHeight) {
+        if (coordinates.y + height > win.innerHeight) {
           div.style.top = `${(coordinates.y || 0) - height}px`;
         }
 
-        if (coordinates.x + width > window.innerWidth) {
+        if (coordinates.x + width > win.innerWidth) {
           div.style.left = `${(coordinates.x || 0) - width}px`;
         }
 
@@ -264,8 +267,8 @@ export function constructTimePicker(
         });
 
         div.addEventListener('click', clickHandler);
-        document.body.addEventListener('click', clickOutsideHandler);
-        document.addEventListener('keydown', escHandler);
+        win.document.body.addEventListener('click', clickOutsideHandler);
+        win.document.addEventListener('keydown', escHandler);
       });
     }
   );
@@ -589,11 +592,13 @@ async function handleNullDraggable(
   stateManager: StateManager,
   e: DragEvent | ClipboardEvent
 ) {
-  const isClipboardEvent = e instanceof ClipboardEvent;
+  const isClipboardEvent = (e as DragEvent).view ? false : true;
   const forcePlaintext = isClipboardEvent
     ? stateManager.getAView().isShiftPressed
     : false;
-  const transfer = isClipboardEvent ? e.clipboardData : e.dataTransfer;
+  const transfer = isClipboardEvent
+    ? (e as ClipboardEvent).clipboardData
+    : (e as DragEvent).dataTransfer;
   const clipboard =
     isClipboardEvent && Platform.isDesktopApp
       ? window.require('electron').remote.clipboard
@@ -619,7 +624,7 @@ async function handleNullDraggable(
     }
 
     const files: File[] = [];
-    const items = e.clipboardData.items;
+    const items = (e as ClipboardEvent).clipboardData.items;
 
     for (const index in items) {
       const item = items[index];
@@ -649,7 +654,9 @@ export async function handleDragOrPaste(
   e: DragEvent | ClipboardEvent
 ): Promise<string[]> {
   const draggable = (stateManager.app as any).dragManager.draggable;
-  const transfer = e instanceof DragEvent ? e.dataTransfer : e.clipboardData;
+  const transfer = (e as DragEvent).view
+    ? (e as DragEvent).dataTransfer
+    : (e as ClipboardEvent).clipboardData;
 
   switch (draggable?.type) {
     case 'file':

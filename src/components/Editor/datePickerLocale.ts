@@ -1,5 +1,5 @@
-import l10n from 'flatpickr/dist/l10n';
-import { CustomLocale } from 'flatpickr/dist/types/locale';
+import l10n from './flatpickr/l10n';
+import { CustomLocale } from './flatpickr/types/locale';
 import { moment } from 'obsidian';
 
 import { StateManager } from 'src/StateManager';

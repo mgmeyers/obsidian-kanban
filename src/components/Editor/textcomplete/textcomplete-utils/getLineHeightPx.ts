@@ -1,3 +1,5 @@
+import { getParentWindow } from 'src/dnd/util/getWindow';
+
 const CHAR_CODE_ZERO = '0'.charCodeAt(0);
 const CHAR_CODE_NINE = '9'.charCodeAt(0);
 
@@ -44,7 +46,7 @@ const calculateLineHeightPx = (
   body.appendChild(tempNode);
 
   // Make sure textarea has only 1 row
-  if (tempNode instanceof HTMLTextAreaElement) {
+  if (tempNode instanceof getParentWindow(tempNode).HTMLTextAreaElement) {
     tempNode.rows = 1;
   }
 

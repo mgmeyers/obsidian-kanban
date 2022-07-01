@@ -38,7 +38,7 @@ export function useItemMenu({
   return Preact.useCallback(
     (e: MouseEvent, internalLinkPath?: string) => {
       if (internalLinkPath) {
-        (stateManager.app.workspace as any).onLinkContextMenu(
+        (app.workspace as any).onLinkContextMenu(
           e,
           getLinkpath(internalLinkPath),
           stateManager.file.path

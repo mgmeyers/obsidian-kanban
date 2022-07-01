@@ -216,8 +216,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
             try {
               const dailyNote = await createDailyNote(parsed);
               const leaf = inNewLeaf
-                ? view.app.workspace.splitActiveLeaf()
-                : view.app.workspace.getUnpinnedLeaf();
+                ? app.workspace.getLeaf(true)
+                : app.workspace.getLeaf(false);
 
               await leaf.openFile(dailyNote as TFile, { active: true });
             } catch (e) {

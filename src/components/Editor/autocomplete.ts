@@ -1,4 +1,3 @@
-import flatpickr from 'flatpickr';
 import Fuse from 'fuse.js';
 import { moment } from 'obsidian';
 import Preact from 'preact/compat';
@@ -21,6 +20,7 @@ import {
   getFileSearchConfig,
   getHeadingSearchConfig,
 } from './filepicker';
+import { Instance } from './flatpickr/types/instance';
 import { replaceSelection } from './helpers';
 import { getTagSearchConfig } from './tagpicker';
 import { StrategyProps, Textcomplete } from './textcomplete/textcomplete-core';
@@ -42,7 +42,7 @@ export function constructAutocomplete({
   const { stateManager, filePath, view } = obsidianContext;
 
   let datePickerEl: null | HTMLDivElement = null;
-  let datePickerInstance: flatpickr.Instance | null = null;
+  let datePickerInstance: Instance | null = null;
 
   const dateTrigger = stateManager.getSetting('date-trigger');
   const dateTriggerRegex = new RegExp(

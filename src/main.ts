@@ -1,5 +1,5 @@
 import 'choices.js/public/assets/styles/choices.css';
-import 'flatpickr/dist/flatpickr.min.css';
+import './components/Editor/flatpickr/flatpickr.min.css';
 
 import './main.css';
 
@@ -24,6 +24,13 @@ import { basicFrontmatter, frontMatterKey } from './parsers/common';
 import { KanbanSettings, KanbanSettingsTab } from './Settings';
 import { StateManager } from './StateManager';
 import { hasFrontmatterKey } from './helpers';
+import { getParentWindow } from './dnd/util/getWindow';
+
+interface WindowRegistry {
+  viewMap: Map<string, KanbanView>;
+  viewStateReceivers: Array<(views: KanbanView[]) => void>;
+  appRoot: HTMLElement;
+}
 
 export default class KanbanPlugin extends Plugin {
   settingsTab: KanbanSettingsTab;
@@ -33,8 +40,7 @@ export default class KanbanPlugin extends Plugin {
   kanbanFileModes: Record<string, string> = {};
   stateManagers: Map<TFile, StateManager> = new Map();
 
-  viewMap: Map<Window, Map<string, KanbanView>> = new Map();
-  appRootMap: Map<Window, HTMLElement> = new Map();
+  windowRegistry: Map<Window, WindowRegistry> = new Map();
 
   _loaded: boolean = false;
 
@@ -60,17 +66,15 @@ export default class KanbanPlugin extends Plugin {
   }
 
   onunload() {
-    this.viewStateReceivers.forEach((fn) => fn([]));
-
-    for (const win of this.appRootMap.keys()) {
+    this.windowRegistry.forEach((reg, win) => {
+      reg.viewStateReceivers.forEach((fn) => fn([]));
       this.unmount(win);
-    }
+    });
 
     this.unmount(window);
 
     this.stateManagers.clear();
-    this.appRootMap.clear();
-    this.viewMap.clear();
+    this.windowRegistry.clear();
     this.kanbanFileModes = {};
 
     window.removeEventListener('keydown', this.handleShift);
@@ -123,25 +127,26 @@ export default class KanbanPlugin extends Plugin {
     this.isShiftPressed = e.shiftKey;
   };
 
-  viewStateReceivers: Array<(views: KanbanView[]) => void> = [];
+  getKanbanViews(win: Window) {
+    const reg = this.windowRegistry.get(win);
 
-  getKanbanViews() {
-    return Array.from(this.viewMap.values()).reduce<KanbanView[]>(
-      (allViews, current) => {
-        return allViews.concat(Array.from(current.values()));
-      },
-      []
-    );
+    if (reg) {
+      return Array.from(reg.viewMap.values());
+    }
+
+    return [];
   }
 
   getKanbanView(id: string, win: Window) {
-    if (win && this.viewMap.has(win)) {
-      return this.viewMap.get(win).get(id);
+    const reg = this.windowRegistry.get(win);
+
+    if (reg?.viewMap.has(id)) {
+      return reg.viewMap.get(id);
     }
 
-    for (const viewMap of this.viewMap.values()) {
-      if (viewMap.has(id)) {
-        return viewMap.get(id);
+    for (const reg of this.windowRegistry.values()) {
+      if (reg.viewMap.has(id)) {
+        return reg.viewMap.get(id);
       }
     }
 
@@ -162,31 +167,32 @@ export default class KanbanPlugin extends Plugin {
     return this.stateManagers.get(view.file);
   }
 
-  useViewState(): KanbanView[] {
-    const [state, setState] = Preact.useState(this.getKanbanViews());
+  useViewState(win: Window): KanbanView[] {
+    const [state, setState] = Preact.useState(this.getKanbanViews(win));
 
     Preact.useEffect(() => {
-      this.viewStateReceivers.push(setState);
+      const reg = this.windowRegistry.get(win);
+
+      reg?.viewStateReceivers.push(setState);
 
       return () => {
-        this.viewStateReceivers.remove(setState);
+        reg?.viewStateReceivers.remove(setState);
       };
-    }, []);
+    }, [win]);
 
     return state;
   }
 
   addView(view: KanbanView, data: string, shouldParseData: boolean) {
     const win = view.getWindow();
+    const reg = this.windowRegistry.get(win);
 
-    if (!this.viewMap.has(win)) {
-      this.viewMap.set(win, new Map());
+    if (!reg) {
+      return;
     }
 
-    const viewMap = this.viewMap.get(win);
-
-    if (!viewMap.has(view.id)) {
-      viewMap.set(view.id, view);
+    if (!reg.viewMap.has(view.id)) {
+      reg.viewMap.set(view.id, view);
     }
 
     const file = view.file;
@@ -206,48 +212,46 @@ export default class KanbanPlugin extends Plugin {
       );
     }
 
-    this.viewStateReceivers.forEach((fn) => fn(this.getKanbanViews()));
+    reg.viewStateReceivers.forEach((fn) => fn(this.getKanbanViews(win)));
   }
 
   removeView(view: KanbanView) {
-    const win = view.getWindow();
+    const entry = Array.from(this.windowRegistry.entries()).find(([, reg]) => {
+      return reg.viewMap.has(view.id);
+    }, []);
 
-    if (!this.viewMap.has(win)) {
+    if (!entry) {
       return;
     }
 
-    const viewMap = this.viewMap.get(win);
+    const [win, reg] = entry;
     const file = view.file;
 
-    if (viewMap.has(view.id)) {
-      viewMap.delete(view.id);
-    }
-
-    if (viewMap.size === 0) {
-      this.viewMap.delete(win);
+    if (reg.viewMap.has(view.id)) {
+      reg.viewMap.delete(view.id);
     }
 
     if (this.stateManagers.has(file)) {
       this.stateManagers.get(file).unregisterView(view);
-      this.viewStateReceivers.forEach((fn) => fn(this.getKanbanViews()));
+      reg.viewStateReceivers.forEach((fn) => fn(this.getKanbanViews(win)));
     }
   }
 
   handleViewFileRename(view: KanbanView, oldPath: string) {
     const win = view.getWindow();
-    if (!this.viewMap.has(win)) {
+    if (!this.windowRegistry.has(win)) {
       return;
     }
 
-    const viewMap = this.viewMap.get(win);
+    const reg = this.windowRegistry.get(win);
     const oldId = `${(view.leaf as any).id}:::${oldPath}`;
 
-    if (viewMap.has(oldId)) {
-      viewMap.delete(oldId);
+    if (reg.viewMap.has(oldId)) {
+      reg.viewMap.delete(oldId);
     }
 
-    if (!viewMap.has(view.id)) {
-      viewMap.set(view.id, view);
+    if (!reg.viewMap.has(view.id)) {
+      reg.viewMap.set(view.id, view);
     }
 
     if (view.isPrimary) {
@@ -256,33 +260,40 @@ export default class KanbanPlugin extends Plugin {
   }
 
   mount(win: Window) {
-    if (this.appRootMap.has(win)) {
+    if (this.windowRegistry.has(win)) {
       return;
     }
 
     const el = win.document.body.createDiv();
 
-    this.appRootMap.set(win, el);
+    this.windowRegistry.set(win, {
+      viewMap: new Map(),
+      viewStateReceivers: [],
+      appRoot: el,
+    });
 
-    Preact.render(createApp(this), el);
+    Preact.render(createApp(win, this), el);
   }
 
   unmount(win: Window) {
-    if (!this.appRootMap.has(win)) {
+    if (!this.windowRegistry.has(win)) {
       return;
     }
 
-    const viewMap = this.viewMap.get(win);
+    const reg = this.windowRegistry.get(win);
 
-    if (viewMap) {
-      for (const view of viewMap.values()) {
-        view.destroy();
-      }
+    for (const view of reg.viewMap.values()) {
+      view.destroy();
     }
 
-    const el = this.appRootMap.get(win);
+    Preact.unmountComponentAtNode(reg.appRoot);
 
-    Preact.unmountComponentAtNode(el);
+    reg.appRoot.remove();
+    reg.viewMap.clear();
+    reg.viewStateReceivers.length = 0;
+    reg.appRoot = null;
+
+    this.windowRegistry.delete(win);
   }
 
   async setMarkdownView(leaf: WorkspaceLeaf, focus: boolean = true) {
@@ -346,7 +357,9 @@ export default class KanbanPlugin extends Plugin {
           source === 'sidebar-context-menu' &&
           hasFrontmatterKey(file)
         ) {
-          const views = this.getKanbanViews();
+          const views = this.getKanbanViews(
+            getParentWindow(leaf.view.containerEl)
+          );
           let haveKanbanView = false;
 
           for (const view of views) {

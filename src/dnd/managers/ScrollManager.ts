@@ -91,13 +91,11 @@ export class ScrollManager {
     this.observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.target instanceof HTMLElement) {
-            const targetId = entry.target.dataset.hitboxid;
+          const targetId = (entry.target as HTMLElement).dataset?.hitboxid;
 
-            if (targetId && this.observerHandlers.has(targetId)) {
-              const handler = this.observerHandlers.get(targetId);
-              handler && handler(entry);
-            }
+          if (targetId && this.observerHandlers.has(targetId)) {
+            const handler = this.observerHandlers.get(targetId);
+            handler && handler(entry);
           }
         });
       },

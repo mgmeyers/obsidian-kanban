@@ -72,7 +72,10 @@ const ItemInner = Preact.memo(function ItemInner({
   const onContextMenu: Preact.JSX.MouseEventHandler<HTMLDivElement> =
     Preact.useCallback(
       (e) => {
-        if (e.target instanceof HTMLTextAreaElement) {
+        if (
+          e.target instanceof
+          (e.view as Window & typeof globalThis).HTMLTextAreaElement
+        ) {
           return;
         }
 
@@ -80,7 +83,8 @@ const ItemInner = Preact.memo(function ItemInner({
         e.stopPropagation();
 
         const internalLinkPath =
-          e.target instanceof HTMLAnchorElement &&
+          e.target instanceof
+            (e.view as Window & typeof globalThis).HTMLAnchorElement &&
           e.target.hasClass('internal-link')
             ? e.target.dataset.href
             : undefined;
