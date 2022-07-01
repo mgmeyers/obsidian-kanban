@@ -166,6 +166,8 @@ export default {
   'Duplicate card': '复制卡片',
   'Split card': '分离卡片',
   'Copy link to card': '复制链接至卡片',
+  'Insert card before': '在上方插入卡片',
+  'Insert card after': '在下方插入卡片',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': '输入新的列标题',
@@ -191,8 +193,13 @@ export default {
   'Archive cards': '归档卡片',
   'Archive list': '归档列',
   'Delete list': '删除列',
+  'Insert list before': '在上方插入列',
+  'Insert list after': '在下方插入列',
 
   // components/helpers/renderMarkdown.ts
   'Unable to find': '无法找到',
   'Open in default app': '在默认应用中打开',
+
+  // components/Editor/MarkdownEditor.tsx
+  Submit: '提交',
 };
