@@ -119,6 +119,10 @@ export default class KanbanPlugin extends Plugin {
     // Mount an empty component to start; views will be added as we go
     this.mount(window);
 
+    (app.workspace as any).floatingSplit?.children?.forEach((c: any) => {
+      this.mount(c.win);
+    });
+
     window.addEventListener('keydown', this.handleShift);
     window.addEventListener('keyup', this.handleShift);
   }

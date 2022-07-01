@@ -50,6 +50,10 @@ export class StateManager {
     return this.viewSet.values().next().value;
   }
 
+  hasError(): boolean {
+    return !!this.state?.data?.errors?.length;
+  }
+
   newBoardPromise: Promise<void> | null = null;
   registerView(view: KanbanView, data: string, shouldParseData: boolean) {
     if (!this.viewSet.has(view)) {

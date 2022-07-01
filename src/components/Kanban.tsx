@@ -61,10 +61,10 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   }, [boardData?.children.length]);
 
   Preact.useEffect(() => {
-    if (boardData?.children.length === 0) {
+    if (boardData?.children.length === 0 && !stateManager.hasError()) {
       setIsLaneFormVisible(true);
     }
-  }, [boardData?.children.length]);
+  }, [boardData?.children.length, stateManager]);
 
   const onNewLane = Preact.useCallback(() => {
     setTimeout(() => {

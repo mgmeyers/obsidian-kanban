@@ -44,7 +44,7 @@ export class ListFormat implements BaseFormat {
       md
     );
 
-    if (this.stateManager.state) {
+    if (!this.stateManager.hasError() && this.stateManager.state) {
       const ops = compare(this.stateManager.state, newBoard);
       const filtered = ops.filter((op) =>
         ['/id', '/dom', '/date', '/time', '/titleSearch', '/file'].every(
