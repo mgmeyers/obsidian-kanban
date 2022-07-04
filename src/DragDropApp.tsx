@@ -14,6 +14,7 @@ import {
   insertEntity,
   moveEntity,
   removeEntity,
+  updateEntity,
 } from './dnd/util/data';
 import { getBoardModifiers } from './helpers/boardModifiers';
 import { KanbanView } from './KanbanView';
@@ -114,8 +115,11 @@ export function DragDropApp({
         );
 
         return stateManager.setState((board) => {
-          return moveEntity(board, dragPath, dropPath, (entity) => {
+          let didMoveItem = false;
+
+          const newBoard = moveEntity(board, dragPath, dropPath, (entity) => {
             if (entity.type === DataTypes.Item) {
+              didMoveItem = true;
               return maybeCompleteForMove(
                 board,
                 dragPath,
@@ -127,6 +131,27 @@ export function DragDropApp({
 
             return entity;
           });
+
+          if (!didMoveItem) {
+            return newBoard;
+          }
+
+          // Remove sorting in the destination lane
+          const destinationParentPath = dropPath.slice(0, -1);
+          const destinationParent = getEntityFromPath(
+            board,
+            destinationParentPath
+          );
+
+          if (destinationParent?.data?.sorted !== undefined) {
+            return updateEntity(newBoard, destinationParentPath, {
+              data: {
+                $unset: ['sorted'],
+              },
+            });
+          }
+
+          return newBoard;
         });
       }
 

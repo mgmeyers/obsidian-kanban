@@ -34,6 +34,7 @@ export const LaneHeader = Preact.memo(function LaneHeader({
   const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
     setIsEditing,
     path: lanePath,
+    lane,
   });
 
   Preact.useEffect(() => {

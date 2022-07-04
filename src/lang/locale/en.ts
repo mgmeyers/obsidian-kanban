@@ -201,6 +201,8 @@ export default {
   'Delete list': 'Delete list',
   'Insert list before': 'Insert list before',
   'Insert list after': 'Insert list after',
+  'Sort by card text': 'Sort by card text',
+  'Sort by date': 'Sort by date',
 
   // components/helpers/renderMarkdown.ts
   'Unable to find': 'Unable to find',

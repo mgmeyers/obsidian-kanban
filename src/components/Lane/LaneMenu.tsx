@@ -1,4 +1,5 @@
-import { Menu } from 'obsidian';
+import update from 'immutability-helper';
+import { Menu, moment } from 'obsidian';
 import Preact from 'preact/compat';
 
 import { Path } from 'src/dnd/types';
@@ -6,7 +7,7 @@ import { t } from 'src/lang/helpers';
 
 import { KanbanContext } from '../context';
 import { c, generateInstanceId } from '../helpers';
-import { Lane, LaneTemplate } from '../types';
+import { Lane, LaneSort, LaneTemplate } from '../types';
 
 export type LaneAction = 'delete' | 'archive' | 'archive-items' | null;
 
@@ -71,9 +72,14 @@ export function ConfirmAction({
 export interface UseSettingsMenuParams {
   setIsEditing: Preact.StateUpdater<boolean>;
   path: Path;
+  lane: Lane;
 }
 
-export function useSettingsMenu({ setIsEditing, path }: UseSettingsMenuParams) {
+export function useSettingsMenu({
+  setIsEditing,
+  path,
+  lane,
+}: UseSettingsMenuParams) {
   const { stateManager, boardModifiers } = Preact.useContext(KanbanContext);
   const [confirmAction, setConfirmAction] = Preact.useState<LaneAction>(null);
 
@@ -90,6 +96,80 @@ export function useSettingsMenu({ setIsEditing, path }: UseSettingsMenuParams) {
           .setIcon('documents')
           .setTitle(t('Archive cards'))
           .onClick(() => setConfirmAction('archive-items'));
+      })
+      .addSeparator()
+      .addItem((item) => {
+        item
+          .setIcon('up-and-down-arrows')
+          .setTitle(t('Sort by card text'))
+          .onClick(() => {
+            const children = lane.children.slice();
+            const isAsc = lane.data.sorted === LaneSort.TitleAsc;
+
+            children.sort((a, b) => {
+              if (isAsc) {
+                return b.data.titleSearch.localeCompare(a.data.titleSearch);
+              }
+
+              return a.data.titleSearch.localeCompare(b.data.titleSearch);
+            });
+
+            boardModifiers.updateLane(
+              path,
+              update(lane, {
+                children: {
+                  $set: children,
+                },
+                data: {
+                  sorted: {
+                    $set:
+                      lane.data.sorted === LaneSort.TitleAsc
+                        ? LaneSort.TitleDsc
+                        : LaneSort.TitleAsc,
+                  },
+                },
+              })
+            );
+          });
+      })
+      .addItem((item) => {
+        item
+          .setIcon('up-and-down-arrows')
+          .setTitle(t('Sort by date'))
+          .onClick(() => {
+            const children = lane.children.slice();
+            const mod = lane.data.sorted === LaneSort.DateAsc ? -1 : 1;
+
+            children.sort((a, b) => {
+              const aDate: moment.Moment | undefined =
+                a.data.metadata.time || a.data.metadata.date;
+              const bDate: moment.Moment | undefined =
+                b.data.metadata.time || b.data.metadata.date;
+
+              if (aDate && !bDate) return -1 * mod;
+              if (bDate && !aDate) return 1 * mod;
+              if (!aDate && !bDate) return 0;
+
+              return (aDate.isBefore(bDate) ? -1 : 1) * mod;
+            });
+
+            boardModifiers.updateLane(
+              path,
+              update(lane, {
+                children: {
+                  $set: children,
+                },
+                data: {
+                  sorted: {
+                    $set:
+                      lane.data.sorted === LaneSort.DateAsc
+                        ? LaneSort.DateDsc
+                        : LaneSort.DateAsc,
+                  },
+                },
+              })
+            );
+          });
       })
       .addSeparator()
       .addItem((i) => {
@@ -141,7 +221,7 @@ export function useSettingsMenu({ setIsEditing, path }: UseSettingsMenuParams) {
           .setTitle(t('Delete list'))
           .onClick(() => setConfirmAction('delete'));
       });
-  }, [stateManager, setConfirmAction, path]);
+  }, [stateManager, setConfirmAction, path, lane]);
 
   return {
     settingsMenu,
