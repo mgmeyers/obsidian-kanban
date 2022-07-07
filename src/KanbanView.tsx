@@ -181,6 +181,7 @@ export class KanbanView extends TextFileView implements HoverParent {
         item
           .setTitle(t('Open as markdown'))
           .setIcon('document')
+          .setSection('pane')
           .onClick(() => {
             this.plugin.kanbanFileModes[
               (this.leaf as any).id || this.file.path
@@ -192,6 +193,7 @@ export class KanbanView extends TextFileView implements HoverParent {
         item
           .setTitle(t('Open board settings'))
           .setIcon('gear')
+          .setSection('pane')
           .onClick(() => {
             const stateManager = this.plugin.stateManagers.get(this.file);
             const board = stateManager.state;
@@ -220,12 +222,12 @@ export class KanbanView extends TextFileView implements HoverParent {
         item
           .setTitle(t('Archive completed cards'))
           .setIcon('sheets-in-box')
+          .setSection('pane')
           .onClick(() => {
             const stateManager = this.plugin.stateManagers.get(this.file);
             stateManager.archiveCompletedCards();
           });
-      })
-      .addSeparator();
+      });
 
     if (callSuper) {
       super.onPaneMenu(menu, source);

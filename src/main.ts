@@ -6,7 +6,6 @@ import './main.css';
 import { around } from 'monkey-around';
 import {
   MarkdownView,
-  Menu,
   Plugin,
   TFile,
   TFolder,
@@ -352,6 +351,8 @@ export default class KanbanPlugin extends Plugin {
               .setIcon(kanbanIcon)
               .onClick(() => this.newKanban(file));
           });
+
+          return;
         }
 
         if (
@@ -379,13 +380,35 @@ export default class KanbanPlugin extends Plugin {
               item
                 .setTitle(t('Open as kanban board'))
                 .setIcon(kanbanIcon)
+                .setSection('pane')
                 .onClick(() => {
                   this.kanbanFileModes[(leaf as any).id || file.path] =
                     kanbanViewType;
                   this.setKanbanView(leaf);
                 });
             });
+
+            return;
           }
+        }
+
+        if (
+          leaf?.view instanceof MarkdownView &&
+          file instanceof TFile &&
+          source === 'pane-more-options' &&
+          hasFrontmatterKey(file)
+        ) {
+          menu.addItem((item) => {
+            item
+              .setTitle(t('Open as kanban board'))
+              .setIcon(kanbanIcon)
+              .setSection('pane')
+              .onClick(() => {
+                this.kanbanFileModes[(leaf as any).id || file.path] =
+                  kanbanViewType;
+                this.setKanbanView(leaf);
+              });
+          });
         }
       })
     );
@@ -606,36 +629,6 @@ export default class KanbanPlugin extends Plugin {
             }
 
             return next.apply(this, [state, ...rest]);
-          };
-        },
-      })
-    );
-
-    // Add a menu item to go back to kanban view
-    this.register(
-      around(MarkdownView.prototype, {
-        onPaneMenu(next) {
-          return function (menu: Menu, source: string) {
-            const file = this.file;
-
-            if (source !== 'more-options' || !hasFrontmatterKey(file)) {
-              return next.call(this, menu);
-            }
-
-            menu
-              .addItem((item) => {
-                item
-                  .setTitle(t('Open as kanban board'))
-                  .setIcon(kanbanIcon)
-                  .onClick(() => {
-                    self.kanbanFileModes[this.leaf.id || file.path] =
-                      kanbanViewType;
-                    self.setKanbanView(this.leaf);
-                  });
-              })
-              .addSeparator();
-
-            next.call(this, menu);
           };
         },
       })
