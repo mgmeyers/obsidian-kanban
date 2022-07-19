@@ -1,7 +1,6 @@
-import { DateOption, Options, ParsedOptions } from "./options";
-import { Locale, CustomLocale, key as LocaleKey } from "./locale";
-
-import { RevFormat, Formats, TokenRegex } from "../utils/formatting";
+import { Formats, RevFormat, TokenRegex } from '../utils/formatting';
+import { CustomLocale, Locale, key as LocaleKey } from './locale';
+import { DateOption, Options, ParsedOptions } from './options';
 
 export interface Elements {
   element: HTMLElement;

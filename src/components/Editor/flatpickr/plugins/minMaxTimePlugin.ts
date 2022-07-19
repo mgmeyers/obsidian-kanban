@@ -1,13 +1,12 @@
-import { Instance } from "../types/instance";
+import { Instance } from '../types/instance';
+import { Plugin } from '../types/options';
 import {
   calculateSecondsSinceMidnight,
   compareDates,
   compareTimes,
   createDateFormatter,
   parseSeconds,
-} from "../utils/dates";
-
-import { Plugin } from "../types/options";
+} from '../utils/dates';
 
 export interface MinMaxTime {
   minTime?: string;
@@ -29,7 +28,7 @@ export interface State {
 function minMaxTimePlugin(config: Config = {}): Plugin {
   const state: State = {
     formatDate: createDateFormatter({}),
-    tableDateFormat: config.tableDateFormat || "Y-m-d",
+    tableDateFormat: config.tableDateFormat || 'Y-m-d',
     defaults: {
       minTime: undefined,
       maxTime: undefined,
@@ -50,11 +49,11 @@ function minMaxTimePlugin(config: Config = {}): Plugin {
         state.formatDate = this.formatDate;
         state.defaults = {
           minTime:
-            this.config.minTime && state.formatDate(this.config.minTime, "H:i"),
+            this.config.minTime && state.formatDate(this.config.minTime, 'H:i'),
           maxTime:
-            this.config.maxTime && state.formatDate(this.config.maxTime, "H:i"),
+            this.config.maxTime && state.formatDate(this.config.maxTime, 'H:i'),
         };
-        fp.loadedPlugins.push("minMaxTime");
+        fp.loadedPlugins.push('minMaxTime');
       },
 
       onChange(this: Instance) {

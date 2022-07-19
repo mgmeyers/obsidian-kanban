@@ -1,31 +1,31 @@
-import { int, pad } from "../utils";
-import { Locale } from "../types/locale";
-import { ParsedOptions } from "../types/options";
+import { Locale } from '../types/locale';
+import { ParsedOptions } from '../types/options';
+import { int, pad } from '../utils';
 
 export type token =
-  | "D"
-  | "F"
-  | "G"
-  | "H"
-  | "J"
-  | "K"
-  | "M"
-  | "S"
-  | "U"
-  | "W"
-  | "Y"
-  | "Z"
-  | "d"
-  | "h"
-  | "i"
-  | "j"
-  | "l"
-  | "m"
-  | "n"
-  | "s"
-  | "u"
-  | "w"
-  | "y";
+  | 'D'
+  | 'F'
+  | 'G'
+  | 'H'
+  | 'J'
+  | 'K'
+  | 'M'
+  | 'S'
+  | 'U'
+  | 'W'
+  | 'Y'
+  | 'Z'
+  | 'd'
+  | 'h'
+  | 'i'
+  | 'j'
+  | 'l'
+  | 'm'
+  | 'n'
+  | 's'
+  | 'u'
+  | 'w'
+  | 'y';
 
 const doNothing = (): undefined => undefined;
 
@@ -33,7 +33,7 @@ export const monthToStr = (
   monthNumber: number,
   shorthand: boolean,
   locale: Locale
-) => locale.months[shorthand ? "shorthand" : "longhand"][monthNumber];
+) => locale.months[shorthand ? 'shorthand' : 'longhand'][monthNumber];
 
 export type RevFormatFn = (
   date: Date,
@@ -58,7 +58,7 @@ export const revFormat: RevFormat = {
   K: (dateObj: Date, amPM: string, locale: Locale) => {
     dateObj.setHours(
       (dateObj.getHours() % 12) +
-        12 * int(new RegExp(locale.amPM[1], "i").test(amPM))
+        12 * int(new RegExp(locale.amPM[1], 'i').test(amPM))
     );
   },
   M: function (dateObj: Date, shortMonth: string, locale: Locale) {
@@ -121,29 +121,29 @@ export const revFormat: RevFormat = {
 
 export type TokenRegex = { [k in token]: string };
 export const tokenRegex: TokenRegex = {
-  D: "", // locale-dependent, setup on runtime
-  F: "", // locale-dependent, setup on runtime
-  G: "(\\d\\d|\\d)",
-  H: "(\\d\\d|\\d)",
-  J: "(\\d\\d|\\d)\\w+",
-  K: "", // locale-dependent, setup on runtime
-  M: "", // locale-dependent, setup on runtime
-  S: "(\\d\\d|\\d)",
-  U: "(.+)",
-  W: "(\\d\\d|\\d)",
-  Y: "(\\d{4})",
-  Z: "(.+)",
-  d: "(\\d\\d|\\d)",
-  h: "(\\d\\d|\\d)",
-  i: "(\\d\\d|\\d)",
-  j: "(\\d\\d|\\d)",
-  l: "", // locale-dependent, setup on runtime
-  m: "(\\d\\d|\\d)",
-  n: "(\\d\\d|\\d)",
-  s: "(\\d\\d|\\d)",
-  u: "(.+)",
-  w: "(\\d\\d|\\d)",
-  y: "(\\d{2})",
+  D: '', // locale-dependent, setup on runtime
+  F: '', // locale-dependent, setup on runtime
+  G: '(\\d\\d|\\d)',
+  H: '(\\d\\d|\\d)',
+  J: '(\\d\\d|\\d)\\w+',
+  K: '', // locale-dependent, setup on runtime
+  M: '', // locale-dependent, setup on runtime
+  S: '(\\d\\d|\\d)',
+  U: '(.+)',
+  W: '(\\d\\d|\\d)',
+  Y: '(\\d{4})',
+  Z: '(.+)',
+  d: '(\\d\\d|\\d)',
+  h: '(\\d\\d|\\d)',
+  i: '(\\d\\d|\\d)',
+  j: '(\\d\\d|\\d)',
+  l: '', // locale-dependent, setup on runtime
+  m: '(\\d\\d|\\d)',
+  n: '(\\d\\d|\\d)',
+  s: '(\\d\\d|\\d)',
+  u: '(.+)',
+  w: '(\\d\\d|\\d)',
+  y: '(\\d{2})',
 };
 
 export type Formats = Record<

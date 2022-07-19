@@ -1,5 +1,5 @@
+import { FlatpickrFn, Instance } from './instance';
 import { Options } from './options';
-import { Instance, FlatpickrFn } from './instance';
 
 export interface FPHTMLElement extends HTMLElement {
   flatpickr: (config?: Options) => Instance;

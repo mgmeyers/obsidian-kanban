@@ -1,5 +1,5 @@
 import { Instance } from './instance';
-import { CustomLocale, key as LocaleKey, Locale } from './locale';
+import { CustomLocale, Locale, key as LocaleKey } from './locale';
 
 export type DateOption = Date | string | number;
 export type DateRangeLimit<D = DateOption> = { from: D; to: D };

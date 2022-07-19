@@ -1,7 +1,7 @@
+import { DayElement, Instance } from '../../types/instance';
 import { Plugin } from '../../types/options';
-import { Instance, DayElement } from '../../types/instance';
-import { monthToStr } from '../../utils/formatting';
 import { clearNode, getEventTarget } from '../../utils/dom';
+import { monthToStr } from '../../utils/formatting';
 
 export interface Config {
   shorthand: boolean;

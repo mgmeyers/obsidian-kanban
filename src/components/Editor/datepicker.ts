@@ -1,4 +1,3 @@
-import flatpickr from './flatpickr';
 import { moment } from 'obsidian';
 import Preact from 'preact';
 
@@ -9,9 +8,10 @@ import { StateManager } from 'src/StateManager';
 import { escapeRegExpStr } from '../helpers';
 import { buildTimeArray } from '../Item/helpers';
 import { getDefaultLocale } from './datePickerLocale';
+import flatpickr from './flatpickr';
+import { Instance } from './flatpickr/types/instance';
 import { replaceSelection } from './helpers';
 import { CursorOffset, StrategyProps } from './textcomplete/textcomplete-core';
-import { Instance } from './flatpickr/types/instance';
 
 export function applyDate(
   date: Date,

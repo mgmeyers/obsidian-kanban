@@ -1,5 +1,5 @@
-import { Plugin } from '../types/options';
 import { Instance } from '../types/instance';
+import { Plugin } from '../types/options';
 import { getEventTarget } from '../utils/dom';
 
 function delta(e: WheelEvent) {

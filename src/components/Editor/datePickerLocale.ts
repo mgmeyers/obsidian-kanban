@@ -1,8 +1,9 @@
-import l10n from './flatpickr/l10n';
-import { CustomLocale } from './flatpickr/types/locale';
 import { moment } from 'obsidian';
 
 import { StateManager } from 'src/StateManager';
+
+import l10n from './flatpickr/l10n';
+import { CustomLocale } from './flatpickr/types/locale';
 
 const localeMap: { [k: string]: CustomLocale } = {
   ar: l10n.ar,

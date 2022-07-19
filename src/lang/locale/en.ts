@@ -43,8 +43,8 @@ export default {
 
   // Settings.ts
   'New line trigger': 'New line trigger',
-  'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lanes.':
-    'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lanes.',
+  'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lists.':
+    'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lists.',
   'Shift + Enter': 'Shift + Enter',
   Enter: 'Enter',
   'Prepend / append new cards': 'Prepend / append new cards',
@@ -65,9 +65,9 @@ export default {
   'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.':
     'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.',
   'Default folder': 'Default folder',
-  'Lane width': 'Lane width',
-  'Enter a number to set the lane width in pixels.':
-    'Enter a number to set the lane width in pixels.',
+  'List width': 'List width',
+  'Enter a number to set the list width in pixels.':
+    'Enter a number to set the list width in pixels.',
   'Maximum number of archived cards': 'Maximum number of archived cards',
   "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
     "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.",
@@ -96,9 +96,9 @@ export default {
   "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'":
     "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'",
   'Hide card display dates': 'Hide card display dates',
-  'Show card counts in title': 'Show card counts in title',
-  'When toggled, card counts are displayed beside the list title.':
-    'When toggled, card counts are displayed beside the list title.',
+  'Hide card counts in list titles': 'Hide card counts in list titles',
+  'When toggled, card counts are hidden from the list title':
+    'When toggled, card counts are hidden from the list title',
   'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.':
     'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.',
   'Hide dates in card titles': 'Hide dates in card titles',

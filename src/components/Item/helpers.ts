@@ -1,5 +1,4 @@
 import { FileWithPath, fromEvent } from 'file-selector';
-import flatpickr from '../Editor/flatpickr';
 import {
   MarkdownSourceView,
   Platform,
@@ -17,9 +16,10 @@ import { StateManager } from 'src/StateManager';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { getDefaultLocale } from '../Editor/datePickerLocale';
+import flatpickr from '../Editor/flatpickr';
+import { Instance } from '../Editor/flatpickr/types/instance';
 import { c, escapeRegExpStr } from '../helpers';
 import { Item } from '../types';
-import { Instance } from '../Editor/flatpickr/types/instance';
 
 export function constructDatePicker(
   win: Window,

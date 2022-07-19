@@ -10,7 +10,6 @@ export interface LaneTitleProps {
   itemCount: number;
   title: string;
   isEditing: boolean;
-  showCount: boolean;
   setIsEditing: Preact.StateUpdater<boolean>;
   onChange: Preact.ChangeEventHandler<HTMLTextAreaElement>;
 }
@@ -21,10 +20,10 @@ export function LaneTitle({
   setIsEditing,
   title,
   onChange,
-  showCount
 }: LaneTitleProps) {
   const { stateManager } = Preact.useContext(KanbanContext);
   const inputRef = Preact.useRef<HTMLTextAreaElement>();
+  const hideCount = stateManager.getSetting('hide-card-count');
 
   const onEnter = (e: KeyboardEvent) => {
     if (!allowNewLine(e, stateManager)) {
@@ -92,7 +91,9 @@ export function LaneTitle({
           </>
         )}
       </div>
-      {(!isEditing && showCount) && <div className={c('lane-title-count')}>{itemCount}</div>}
+      {!isEditing && !hideCount && (
+        <div className={c('lane-title-count')}>{itemCount}</div>
+      )}
     </>
   );
 }
