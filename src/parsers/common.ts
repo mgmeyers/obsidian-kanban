@@ -214,7 +214,6 @@ export function shouldRefreshBoard(
     'time-format',
     'hide-date-in-title',
     'hide-tags-in-title',
-    'hide-tags-in-title',
     'hide-card-count',
   ];
 
