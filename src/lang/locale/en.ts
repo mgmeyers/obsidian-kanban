@@ -96,6 +96,9 @@ export default {
   "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'":
     "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'",
   'Hide card display dates': 'Hide card display dates',
+  'Show card counts in title': 'Show card counts in title',
+  'When toggled, card counts are displayed beside the list title.':
+    'When toggled, card counts are displayed beside the list title.',
   'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.':
     'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.',
   'Hide dates in card titles': 'Hide dates in card titles',

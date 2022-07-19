@@ -45,6 +45,7 @@ export interface KanbanSettings {
   'date-picker-week-start'?: number;
   'date-time-display-format'?: string;
   'date-trigger'?: string;
+  'show-cards-in-title'?: boolean;
   'hide-date-display'?: boolean;
   'hide-date-in-title'?: boolean;
   'hide-tags-display'?: boolean;
@@ -64,7 +65,6 @@ export interface KanbanSettings {
   'show-relative-date'?: boolean;
   'time-format'?: string;
   'time-trigger'?: string;
-
   'show-add-list'?: boolean;
   'show-archive-all'?: boolean;
   'show-view-as-markdown'?: boolean;
@@ -79,6 +79,7 @@ export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
   'date-picker-week-start': true,
   'date-time-display-format': true,
   'date-trigger': true,
+	'show-cards-in-title': true,
   'hide-date-display': true,
   'hide-date-in-title': true,
   'hide-tags-display': true,
@@ -176,7 +177,55 @@ export class SettingsManager {
         ),
       });
     }
-
+    
+    new Setting(contentEl)
+      .setName(t("Show card counts in title"))
+      .setDesc(t(
+        "When toggled, card counts are displayed beside the list title."
+      ))
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+    
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+        
+            const [value, globalValue] = this.getSetting(
+              'show-cards-in-title',
+              local
+            );
+        
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+        
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'show-cards-in-title': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('reset')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting(
+                  'show-cards-in-title',
+                  local
+                );
+                toggleComponent.setValue(!!globalValue);
+            
+                this.applySettingsUpdate({
+                  $unset: ['show-cards-in-title'],
+                });
+              });
+          });
+      });
+    
     new Setting(contentEl)
       .setName(t('New line trigger'))
       .setDesc(

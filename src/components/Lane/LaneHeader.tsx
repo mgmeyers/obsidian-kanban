@@ -36,7 +36,8 @@ export const LaneHeader = Preact.memo(function LaneHeader({
     path: lanePath,
     lane,
   });
-
+  const showCount = stateManager.useSetting("show-cards-in-title")
+  
   Preact.useEffect(() => {
     if (lane.data.forceEditMode) {
       setIsEditing(true);
@@ -54,6 +55,7 @@ export const LaneHeader = Preact.memo(function LaneHeader({
         </div>
 
         <LaneTitle
+          showCount={showCount}
           isEditing={isEditing}
           setIsEditing={setIsEditing}
           itemCount={lane.children.length}
