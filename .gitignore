@@ -12,3 +12,5 @@ package-lock.json
 .env
 yarn*
 dist
+
+test-vault/

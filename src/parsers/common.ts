@@ -123,7 +123,20 @@ export function getLinkedPageMetadata(
   const order: string[] = [];
 
   let haveData = false;
+  // reducer function to convert dot notation to nested values -- see
+  // 	https://stackoverflow.com/questions/6393943/convert-a-javascript-string-in-dot-notation-into-an-object-reference
 
+  function dotToObject(str: string, obj: any) {
+    // @ts-ignore
+    function dotReducer(h, i) {
+      if (!h[i]) return {};
+      return h[i];
+    }
+    if (!obj) {
+      return null;
+    }
+    return str.split('.').reduce(dotReducer, obj);
+  }
   metaKeys.forEach((k) => {
     if (seenKey[k.metadataKey]) return;
 
@@ -160,11 +173,22 @@ export function getLinkedPageMetadata(
       return;
     }
 
+    const serializedObject = dotToObject(k?.metadataKey, cache.frontmatter);
     if (cache?.frontmatter && cache.frontmatter[k.metadataKey]) {
       order.push(k.metadataKey);
       metadata[k.metadataKey] = {
         ...k,
         value: cache.frontmatter[k.metadataKey],
+      };
+      haveData = true;
+    } else if (
+      typeof serializedObject === 'string' ||
+      Array.isArray(serializedObject)
+    ) {
+      order.push(k.metadataKey);
+      metadata[k.metadataKey] = {
+        ...k,
+        value: serializedObject,
       };
       haveData = true;
     } else if (dataviewCache && dataviewCache[k.metadataKey]) {
