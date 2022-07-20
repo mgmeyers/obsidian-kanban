@@ -26,8 +26,16 @@ export interface DataKey {
   containsMarkdown: boolean;
 }
 
+export type PageDataValueType =
+  | string
+  | number
+  | Array<string | number>
+  | {
+      [key: string]: PageDataValueType;
+    };
+
 export interface PageData extends DataKey {
-  value: string | number | Array<string | number>;
+  value: PageDataValueType;
 }
 
 export interface FileMetadata {
