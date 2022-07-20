@@ -1,50 +1,46 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable no-empty */
-/* eslint-disable @typescript-eslint/ban-types */
-import { Instance, FlatpickrFn, DayElement } from './types/instance';
-import {
-  Options,
-  ParsedOptions,
-  DateLimit,
-  DateRangeLimit,
-  DateOption,
-  defaults as defaultOptions,
-  Hook,
-  HookKey,
-  HOOKS,
-} from './types/options';
-
+import English from './l10n/default';
 import {
   FPDate,
   FPHTMLCollection,
   FPHTMLElement,
   FPNodeList,
 } from './types/globals';
-
-import { Locale, CustomLocale, key as LocaleKey } from './types/locale';
-import English from './l10n/default';
-
-import { arrayify, debounce, int, pad, IncrementEvent } from './utils';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable no-empty */
+/* eslint-disable @typescript-eslint/ban-types */
+import { DayElement, FlatpickrFn, Instance } from './types/instance';
+import { CustomLocale, Locale, key as LocaleKey } from './types/locale';
+import {
+  DateLimit,
+  DateOption,
+  DateRangeLimit,
+  HOOKS,
+  Hook,
+  HookKey,
+  Options,
+  ParsedOptions,
+  defaults as defaultOptions,
+} from './types/options';
+import { IncrementEvent, arrayify, debounce, int, pad } from './utils';
+import {
+  calculateSecondsSinceMidnight,
+  compareDates,
+  createDateFormatter,
+  createDateParser,
+  duration,
+  getDefaultHours,
+  isBetween,
+  parseSeconds,
+} from './utils/dates';
 import {
   clearNode,
   createElement,
   createNumberInput,
   findParent,
-  toggleClass,
   getEventTarget,
+  toggleClass,
 } from './utils/dom';
-import {
-  compareDates,
-  createDateParser,
-  createDateFormatter,
-  duration,
-  isBetween,
-  getDefaultHours,
-  calculateSecondsSinceMidnight,
-  parseSeconds,
-} from './utils/dates';
-
-import { tokenRegex, monthToStr } from './utils/formatting';
+import { monthToStr, tokenRegex } from './utils/formatting';
 
 const DEBOUNCED_CHANGE_MS = 300;
 

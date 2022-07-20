@@ -1,6 +1,6 @@
+import { FlatpickrFn } from '../types/instance';
 /* Spanish locals for flatpickr */
 import { CustomLocale } from '../types/locale';
-import { FlatpickrFn } from '../types/instance';
 
 const fp =
   typeof window !== 'undefined' && (window as any).flatpickr !== undefined

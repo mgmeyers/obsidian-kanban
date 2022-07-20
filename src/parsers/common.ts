@@ -237,6 +237,7 @@ export function shouldRefreshBoard(
     'time-format',
     'hide-date-in-title',
     'hide-tags-in-title',
+    'hide-card-count',
   ];
 
   return !toCompare.every((k) => {

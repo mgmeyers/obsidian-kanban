@@ -1366,13 +1366,15 @@ button.kanban-plugin__cancel-action-button {
   width: 100%;
 }
 
-.kanban-plugin__scroll-container::-webkit-scrollbar {
+body:not(.native-scrollbars)
+  .kanban-plugin__scroll-container::-webkit-scrollbar {
   background-color: transparent;
   width: 16px;
   height: 16px;
 }
 
-.kanban-plugin__scroll-container::-webkit-scrollbar-thumb {
+body:not(.native-scrollbars)
+  .kanban-plugin__scroll-container::-webkit-scrollbar-thumb {
   border: 4px solid transparent;
   background-clip: content-box;
 }

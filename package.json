@@ -12,7 +12,7 @@
     "lint:fix": "eslint ./src --fix",
     "sort-imports": "import-sort --write \"./src/**/*.{ts,tsx}\"",
     "prettier": "prettier --write \"./src/**/*.{ts,tsx}\"",
-    "clean": "yarn sort-imports && yarn prettier && yarn lint:fix",
+    "clean": "yarn prettier && yarn lint:fix",
     "docs:clean": "rm -rf docs/docs && mkdir docs/docs",
     "docs:export": "obsidian-export src/docs docs/docs",
     "docs:img": "replace '!\\[(Screen Shot[^\\]]+)\\]\\(.+Assets\\/([^)]+)\\)' '<img alt=\"$1\" srcset=\"/obsidian-kanban/Assets/$2 2x\">' ./docs -r --include=\"*.md\" --quiet",

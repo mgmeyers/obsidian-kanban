@@ -1,4 +1,4 @@
-import { Plugin } from "../../types/options";
+import { Plugin } from '../../types/options';
 
 function labelPlugin(): Plugin {
   return function (fp) {
@@ -11,14 +11,14 @@ function labelPlugin(): Plugin {
         }
 
         if (fp.mobileInput) {
-          fp.input.removeAttribute("id");
+          fp.input.removeAttribute('id');
           fp.mobileInput.id = id;
         } else if (fp.altInput) {
-          fp.input.removeAttribute("id");
+          fp.input.removeAttribute('id');
           fp.altInput.id = id;
         }
 
-        fp.loadedPlugins.push("labelPlugin");
+        fp.loadedPlugins.push('labelPlugin');
       },
     };
   };

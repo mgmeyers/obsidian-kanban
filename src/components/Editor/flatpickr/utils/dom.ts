@@ -14,8 +14,8 @@ export function createElement<T extends HTMLElement>(
   content?: string
 ): T {
   const e = doc.createElement(tag) as T;
-  className = className || "";
-  content = content || "";
+  className = className || '';
+  content = content || '';
 
   e.className = className;
 
@@ -44,20 +44,20 @@ export function createNumberInput(
   inputClassName: string,
   opts?: Record<string, any>
 ) {
-  const wrapper = createElement<HTMLDivElement>(doc, "div", "numInputWrapper"),
+  const wrapper = createElement<HTMLDivElement>(doc, 'div', 'numInputWrapper'),
     numInput = createElement<HTMLInputElement>(
       doc,
-      "input",
-      "numInput " + inputClassName
+      'input',
+      'numInput ' + inputClassName
     ),
-    arrowUp = createElement<HTMLSpanElement>(doc, "span", "arrowUp"),
-    arrowDown = createElement<HTMLSpanElement>(doc, "span", "arrowDown");
+    arrowUp = createElement<HTMLSpanElement>(doc, 'span', 'arrowUp'),
+    arrowDown = createElement<HTMLSpanElement>(doc, 'span', 'arrowDown');
 
-  if (navigator.userAgent.indexOf("MSIE 9.0") === -1) {
-    numInput.type = "number";
+  if (navigator.userAgent.indexOf('MSIE 9.0') === -1) {
+    numInput.type = 'number';
   } else {
-    numInput.type = "text";
-    numInput.pattern = "\\d*";
+    numInput.type = 'text';
+    numInput.pattern = '\\d*';
   }
 
   if (opts !== undefined)
@@ -72,7 +72,7 @@ export function createNumberInput(
 
 export function getEventTarget(event: Event): EventTarget | null {
   try {
-    if (typeof event.composedPath === "function") {
+    if (typeof event.composedPath === 'function') {
       const path = event.composedPath();
       return path[0];
     }

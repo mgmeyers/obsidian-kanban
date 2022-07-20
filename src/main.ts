@@ -1,29 +1,29 @@
 import 'choices.js/public/assets/styles/choices.css';
-import './components/Editor/flatpickr/flatpickr.min.css';
 
+import './components/Editor/flatpickr/flatpickr.min.css';
 import './main.css';
 
 import { around } from 'monkey-around';
 import {
   MarkdownView,
+  Platform,
   Plugin,
   TFile,
   TFolder,
   ViewState,
   WorkspaceLeaf,
   debounce,
-  Platform,
 } from 'obsidian';
 import Preact from 'preact/compat';
 
+import { getParentWindow } from './dnd/util/getWindow';
 import { createApp } from './DragDropApp';
+import { hasFrontmatterKey } from './helpers';
 import { KanbanView, kanbanIcon, kanbanViewType } from './KanbanView';
 import { t } from './lang/helpers';
 import { basicFrontmatter, frontMatterKey } from './parsers/common';
 import { KanbanSettings, KanbanSettingsTab } from './Settings';
 import { StateManager } from './StateManager';
-import { hasFrontmatterKey } from './helpers';
-import { getParentWindow } from './dnd/util/getWindow';
 
 interface WindowRegistry {
   viewMap: Map<string, KanbanView>;
