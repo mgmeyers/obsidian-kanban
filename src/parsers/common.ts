@@ -182,7 +182,10 @@ export function getLinkedPageMetadata(
         value: cache.frontmatter[k.metadataKey],
       };
       haveData = true;
-    } else if (typeof serializedObject === 'string') {
+    } else if (
+      typeof serializedObject === 'string' ||
+      Array.isArray(serializedObject)
+    ) {
       console.log('dottoe', serializedObject);
       order.push(k.metadataKey);
       metadata[k.metadataKey] = {
