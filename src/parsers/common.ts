@@ -137,7 +137,6 @@ export function getLinkedPageMetadata(
     }
     return str.split('.').reduce(dotReducer, obj);
   }
-  console.debug('metakeys foreach', seenKey, order, metadata, metaKeys);
   metaKeys.forEach((k) => {
     if (seenKey[k.metadataKey]) return;
 
@@ -186,7 +185,6 @@ export function getLinkedPageMetadata(
       typeof serializedObject === 'string' ||
       Array.isArray(serializedObject)
     ) {
-      console.log('dottoe', serializedObject);
       order.push(k.metadataKey);
       metadata[k.metadataKey] = {
         ...k,
