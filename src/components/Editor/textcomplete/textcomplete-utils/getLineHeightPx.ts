@@ -23,20 +23,21 @@ export const getLineHeightPx = (el: HTMLElement): number => {
   }
   // Otherwise, the value is "normal".
   // If the line-height is "normal", calculate by font-size
-  return calculateLineHeightPx(el.nodeName, computedStyle);
+  return calculateLineHeightPx(el.doc, el.nodeName, computedStyle);
 };
 
 /**
  * Returns calculated line-height of the given node in pixels.
  */
 const calculateLineHeightPx = (
+  doc: Document,
   nodeName: string,
   computedStyle: CSSStyleDeclaration
 ): number => {
-  const body = document.body;
+  const body = doc.body;
   if (!body) return 0;
 
-  const tempNode = document.createElement(nodeName);
+  const tempNode = doc.createElement(nodeName);
   tempNode.innerHTML = '&nbsp;';
   Object.assign(tempNode.style, {
     fontSize: computedStyle.fontSize,

@@ -5,7 +5,7 @@ export const calculateElementOffset = (
   el: HTMLElement
 ): { top: number; left: number } => {
   const rect = el.getBoundingClientRect();
-  const owner = el.ownerDocument;
+  const owner = el.doc;
   if (owner == null) {
     throw new Error('Given element does not belong to document');
   }

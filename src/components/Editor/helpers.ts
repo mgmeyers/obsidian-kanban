@@ -1,4 +1,4 @@
-import insertText from 'insert-text-at-cursor';
+import { insertTextAtCursor } from './insertTextAtCursor';
 import { Platform } from 'obsidian';
 
 import { StateManager } from 'src/StateManager';
@@ -187,7 +187,7 @@ export function getStateFromTextarea(textarea: HTMLTextAreaElement): TextState {
 }
 
 export function replaceSelection(textarea: HTMLTextAreaElement, text: string) {
-  insertText(textarea, text);
+  insertTextAtCursor(textarea, text);
   return getStateFromTextarea(textarea);
 }
 

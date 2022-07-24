@@ -45,7 +45,7 @@ function confirmDatePlugin(pluginConfig: Config): Plugin {
 
       onReady() {
         confirmContainer = fp._createElement<HTMLDivElement>(
-          fp.calendarContainer.ownerDocument,
+          fp.calendarContainer.doc,
           'div',
           `${confirmButtonCSSClass} ${config.showAlways ? 'visible' : ''} ${
             config.theme

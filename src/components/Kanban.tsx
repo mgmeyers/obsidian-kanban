@@ -173,7 +173,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
 
   const onClick = Preact.useCallback(
     async (e: MouseEvent) => {
-      if (e.type === 'auxclick' && e.button == 2) {
+      if (e.type === 'auxclick' || e.button === 2) {
         return;
       }
 

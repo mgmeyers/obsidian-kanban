@@ -48,7 +48,7 @@ function FlatpickrInstance(
   element: HTMLElement,
   instanceConfig?: Options
 ): Instance {
-  const win = element.ownerDocument.defaultView || window;
+  const win = element.win || window;
   const self = {
     config: {
       ...defaultOptions,
@@ -139,7 +139,7 @@ function FlatpickrInstance(
   function getClosestActiveElement() {
     return (
       (self.calendarContainer?.getRootNode() as unknown as DocumentOrShadowRoot)
-        .activeElement || document.activeElement
+        .activeElement || self.element.doc.activeElement
     );
   }
 
@@ -834,7 +834,7 @@ function FlatpickrInstance(
   function focusOnDay(current: DayElement | undefined, offset: number) {
     const activeElement = getClosestActiveElement();
 
-    const dayFocused = isInView(activeElement || document.body);
+    const dayFocused = isInView(activeElement || self.element.doc.body);
     const startElem =
       current !== undefined
         ? current
@@ -936,7 +936,7 @@ function FlatpickrInstance(
     // TODO: week numbers for each month
     if (self.weekNumbers) clearNode(self.weekNumbers);
 
-    const frag = document.createDocumentFragment();
+    const frag = self.element.doc.createDocumentFragment();
 
     for (let i = 0; i < self.config.showMonths; i++) {
       const d = new Date(self.currentYear, self.currentMonth, 1);

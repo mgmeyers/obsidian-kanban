@@ -54,7 +54,7 @@ export function constructDatePicker({
           onChange: (dates) => {
             applyDate(dates[0], inputRef, stateManager);
           },
-          win: input.ownerDocument.defaultView,
+          win: input.win,
         })
       )
     );
