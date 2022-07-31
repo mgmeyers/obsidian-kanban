@@ -403,7 +403,8 @@ export async function renderMarkdown(
   view: KanbanView,
   markdownString: string
 ): Promise<HTMLDivElement> {
-  const dom = createDiv();
+  const dom = view.getWindow().document.body.createDiv();
+  dom.detach();
 
   try {
     await MarkdownRenderer.renderMarkdown(

@@ -75,6 +75,7 @@ export function constructAutocomplete({
     getHeadingSearchConfig(filePath, stateManager, willAutoPairBrackets, true),
     getHeadingSearchConfig(filePath, stateManager, willAutoPairBrackets, false),
     getFileSearchConfig(
+      view.getWindow(),
       linkSuggestions,
       fileSearch,
       filePath,
@@ -83,6 +84,7 @@ export function constructAutocomplete({
       true
     ),
     getFileSearchConfig(
+      view.getWindow(),
       linkSuggestions,
       fileSearch,
       filePath,
