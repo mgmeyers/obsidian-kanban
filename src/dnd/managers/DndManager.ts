@@ -47,7 +47,7 @@ export class DndManager {
       }
 
       if ((e.target as HTMLElement).dataset.scrollid) {
-        clearTimeout(this.scrollResizeDebounce);
+        win.clearTimeout(this.scrollResizeDebounce);
 
         this.scrollResizeDebounce = win.setTimeout(() => {
           if (this.emitter.events.scrollResize?.length) {

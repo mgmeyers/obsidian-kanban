@@ -185,7 +185,7 @@ export class DragManager {
 
   onHTMLDragLeave(callback: () => void) {
     clearTimeout(this.dragOverTimeout);
-    this.dragOverTimeout = window.setTimeout(callback, 351);
+    this.dragOverTimeout = (setTimeout as Window["setTimeout"])(callback, 351);
   }
 
   calculateDragIntersect() {
@@ -437,7 +437,7 @@ export function useDragHandle(
       if (isTouchEvent) {
         win.addEventListener('contextmenu', cancelEvent, true);
 
-        longPressTimeout = window.setTimeout(() => {
+        longPressTimeout = win.setTimeout(() => {
           dndManager.dragManager.dragStart(initialEvent, droppable);
           isDragging = true;
           win.addEventListener('touchmove', cancelEvent, {
@@ -455,7 +455,7 @@ export function useDragHandle(
                 y: e.pageY,
               }) > 5
             ) {
-              clearTimeout(longPressTimeout);
+              win.clearTimeout(longPressTimeout);
               win.removeEventListener('touchmove', cancelEvent);
               win.removeEventListener('contextmenu', cancelEvent, true);
               win.removeEventListener('pointermove', onMove);
@@ -483,7 +483,7 @@ export function useDragHandle(
       });
 
       const onEnd = (e: PointerEvent) => {
-        clearTimeout(longPressTimeout);
+        win.clearTimeout(longPressTimeout);
         isDragging = false;
 
         dndManager.dragManager.dragEnd(e);

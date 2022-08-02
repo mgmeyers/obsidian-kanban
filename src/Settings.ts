@@ -144,7 +144,7 @@ export class SettingsManager {
   applySettingsUpdate(spec: Spec<KanbanSettings>) {
     clearTimeout(this.applyDebounceTimer);
 
-    this.applyDebounceTimer = window.setTimeout(() => {
+    this.applyDebounceTimer = (setTimeout as Window["setTimeout"])(() => {
       this.settings = update(this.settings, spec);
       this.config.onSettingsChange(this.settings);
     }, 200);

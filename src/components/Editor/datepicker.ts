@@ -45,7 +45,7 @@ export function constructDatePicker({
   stateManager,
 }: ConstructDatePickerParams) {
   div.createEl('input', { type: 'text' }, (input) => {
-    setTimeout(() =>
+    input.win.setTimeout(() =>
       cb(
         flatpickr(input, {
           now: new Date(),

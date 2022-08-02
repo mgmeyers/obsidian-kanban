@@ -206,7 +206,7 @@ export class SortManager {
           },
         });
 
-        return window.setTimeout(() => {
+        return setTimeout(() => {
           this.resetSelf({ maintainHidden: false });
         }, dropDuration);
       }
@@ -230,7 +230,7 @@ export class SortManager {
             },
           });
 
-    this.dragEndTimeout = window.setTimeout(() => {
+    this.dragEndTimeout = (setTimeout as Window["setTimeout"])(() => {
       const dragEntityId = dragEntity.entityId.split(':::').pop();
       const primaryIntersectionId = primaryIntersection?.entityId
         .split(':::')
@@ -284,7 +284,7 @@ export class SortManager {
     clearTimeout(this.dragLeaveTimeout);
     clearTimeout(this.dragEnterTimeout);
 
-    this.dragEnterTimeout = window.setTimeout(() => {
+    this.dragEnterTimeout = (setTimeout as Window["setTimeout"])(() => {
       this.setSortState(true);
       this.hitboxDimensions = getHitboxDimensions(
         dragOriginHitbox,
@@ -322,7 +322,7 @@ export class SortManager {
 
     clearTimeout(this.dragLeaveTimeout);
     clearTimeout(this.dragEnterTimeout);
-    this.dragLeaveTimeout = window.setTimeout(() => {
+    this.dragLeaveTimeout = (setTimeout as Window["setTimeout"])(() => {
       this.resetSelf({ maintainHidden: true, maintainPlaceholder: true });
     }, dragLeaveDebounceLength);
 

@@ -114,7 +114,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     let id: number;
 
     if (trimmed) {
-      id = window.setTimeout(() => {
+      id = (setTimeout as Window["setTimeout"])(() => {
         setDebouncedSearchQuery(trimmed);
       }, 250);
     } else {
@@ -122,7 +122,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     }
 
     return () => {
-      window.clearTimeout(id);
+      clearTimeout(id);
     };
   }, [searchQuery]);
 

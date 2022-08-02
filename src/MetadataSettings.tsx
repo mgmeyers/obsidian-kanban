@@ -306,7 +306,7 @@ function RespondToScroll({
 
     const onScroll = () => {
       clearTimeout(debounce);
-      debounce = window.setTimeout(() => {
+      debounce = (setTimeout as Window["setTimeout"])(() => {
         dndManager.hitboxEntities
           .get(getParentWindow(scrollEl))
           ?.forEach((entity) => {
