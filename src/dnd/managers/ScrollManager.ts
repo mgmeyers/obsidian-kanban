@@ -68,7 +68,7 @@ export class ScrollManager {
   }
 
   pollForNodes(getScrollEl: () => HTMLElement | null) {
-    if (!getScrollEl()) {
+    if (!getScrollEl() || (this.parent && !this.parent.observerHandlers)) {
       this.dndManager.win.requestAnimationFrame(() =>
         this.pollForNodes(getScrollEl)
       );
