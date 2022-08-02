@@ -1,6 +1,42 @@
 import { Coordinates } from '../types';
 import { distanceBetween } from './hitbox';
 
+type ThrottledFn<T extends any[]> = {
+  (...args: T): void;
+  cancel: () => void;
+};
+
+/**
+ * Throttle a function so it only executes once per animation frame
+ *
+ * @param fn The function to throttle
+ * @returns a wrapped function trottled by requestAnimationFrame
+ */
+export function rafThrottle<T extends any[]>(
+  win: Window,
+  fn: (...args: T) => void
+): ThrottledFn<T> {
+  let lastArgs: T;
+  let frameId: number;
+
+  const wrapperFn: ThrottledFn<T> = (...args: T) => {
+    lastArgs = args;
+    if (frameId) return;
+    frameId = win.requestAnimationFrame(() => {
+      frameId = null;
+      fn(...lastArgs);
+    });
+  };
+
+  wrapperFn.cancel = () => {
+    if (!frameId) return;
+    win.cancelAnimationFrame(frameId);
+    frameId = null;
+  };
+
+  return wrapperFn;
+}
+
 export const curves = {
   outOfTheWay: 'cubic-bezier(0.2, 0, 0, 1)',
   drop: 'cubic-bezier(.2,1,.1,1)',

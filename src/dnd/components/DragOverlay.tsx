@@ -121,7 +121,7 @@ export function DragOverlay({ children }: DragOverlayProps) {
           )
         );
 
-        setTimeout(() => {
+        activeWindow.setTimeout(() => {
           setDragEntity(undefined);
           setStyles(undefined);
         }, dropDuration);
@@ -175,7 +175,7 @@ export function useIsAnythingDragging() {
         destination: dropDestination,
       });
 
-      setTimeout(() => {
+      activeWindow.setTimeout(() => {
         setIsDragging(false);
       }, dropDuration);
     };

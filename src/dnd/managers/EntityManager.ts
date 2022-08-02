@@ -68,7 +68,7 @@ export class EntityManager {
     getMeasureNode: () => HTMLElement | null
   ) {
     if (!getEntityNode() || !getMeasureNode()) {
-      requestAnimationFrame(() =>
+      this.dndManager.win.requestAnimationFrame(() =>
         this.pollForNodes(getEntityNode, getMeasureNode)
       );
     } else {

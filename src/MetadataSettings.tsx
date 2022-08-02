@@ -305,13 +305,11 @@ function RespondToScroll({
     let debounce = 0;
 
     const onScroll = () => {
-      clearTimeout(debounce);
-      debounce = window.setTimeout(() => {
-        dndManager.hitboxEntities
-          .get(getParentWindow(scrollEl))
-          ?.forEach((entity) => {
-            entity.recalcInitial();
-          });
+      scrollEl.win.clearTimeout(debounce);
+      debounce = scrollEl.win.setTimeout(() => {
+        dndManager.hitboxEntities.forEach((entity) => {
+          entity.recalcInitial();
+        });
       }, 100);
     };
 
@@ -332,6 +330,7 @@ function MetadataSettings(props: MetadataSettingsProps) {
   const [keys, setKeys] = Preact.useState(props.dataKeys);
   const [inputValue, setInputValue] = Preact.useState('');
   const { getShouldIMEBlockAction, ...inputProps } = useIMEInputProps();
+  const win = getParentWindow(props.scrollEl);
 
   const {
     updateKey,
@@ -346,12 +345,12 @@ function MetadataSettings(props: MetadataSettingsProps) {
     inputValue,
     keys,
     setKeys,
-    win: getParentWindow(props.scrollEl),
+    win,
   });
 
   return (
     <>
-      <DndContext onDrop={moveKey}>
+      <DndContext win={win} onDrop={moveKey}>
         <RespondToScroll scrollEl={props.scrollEl} />
         <DndScope>
           <Sortable axis="vertical">
@@ -388,7 +387,7 @@ function MetadataSettings(props: MetadataSettingsProps) {
               setInputValue('');
               const target = e.target as HTMLInputElement;
 
-              setTimeout(() => {
+              target.win.setTimeout(() => {
                 target.scrollIntoView();
               });
               return;
@@ -407,7 +406,7 @@ function MetadataSettings(props: MetadataSettingsProps) {
             setInputValue('');
             const target = e.target as HTMLElement;
 
-            setTimeout(() => {
+            target.win.setTimeout(() => {
               target.scrollIntoView();
             });
             return;

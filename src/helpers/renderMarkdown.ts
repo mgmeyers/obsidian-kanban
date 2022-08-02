@@ -241,7 +241,7 @@ function pollForCachedSubpath(
   view: KanbanView,
   remainingCount: number
 ) {
-  setTimeout(async () => {
+  view.getWindow().setTimeout(async () => {
     if (!view.plugin.windowRegistry.has(view.getWindow())) {
       return;
     }

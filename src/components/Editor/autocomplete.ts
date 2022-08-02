@@ -119,9 +119,13 @@ export function constructAutocomplete({
       isAutocompleteVisibleRef.current = false;
     }
 
+    const win = datePickerEl.win;
+
     datePickerInstance.destroy();
     datePickerEl.remove();
-    setTimeout(() => (datePickerEl = null));
+    win.setTimeout(() => {
+      datePickerEl = null;
+    });
   };
 
   autocomplete.on('show', () => {

@@ -67,10 +67,10 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   }, [boardData?.children.length, stateManager]);
 
   const onNewLane = Preact.useCallback(() => {
-    setTimeout(() => {
+    rootRef.current?.win.setTimeout(() => {
       const board = rootRef.current?.getElementsByClassName(c('board'));
 
-      if (board.length) {
+      if (board?.length) {
         animateScrollTo([board[0].scrollWidth, 0], {
           elementToScroll: board[0],
           speed: 300,
@@ -110,11 +110,12 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   }, [isSearching]);
 
   Preact.useEffect(() => {
+    const win = view.getWindow();
     const trimmed = searchQuery.trim();
     let id: number;
 
     if (trimmed) {
-      id = window.setTimeout(() => {
+      id = win.setTimeout(() => {
         setDebouncedSearchQuery(trimmed);
       }, 250);
     } else {
@@ -122,9 +123,9 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     }
 
     return () => {
-      window.clearTimeout(id);
+      win.clearTimeout(id);
     };
-  }, [searchQuery]);
+  }, [searchQuery, view]);
 
   Preact.useEffect(() => {
     if (maxArchiveLength === undefined || maxArchiveLength === -1) {

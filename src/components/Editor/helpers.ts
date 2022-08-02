@@ -334,12 +334,13 @@ export function getDropAction(
 
 export async function handlePaste(
   e: ClipboardEvent,
-  stateManager: StateManager
+  stateManager: StateManager,
+  win: Window & typeof globalThis
 ) {
   const html = e.clipboardData.getData('text/html');
   const hasFiles = e.clipboardData.types.includes('Files');
   const electronClipboardFiles = Platform.isDesktopApp
-    ? getFileListFromClipboard()
+    ? getFileListFromClipboard(win)
     : null;
 
   const shouldConsumePaste =
@@ -350,7 +351,7 @@ export async function handlePaste(
   }
 
   try {
-    const pasteLines = await handleDragOrPaste(stateManager, e);
+    const pasteLines = await handleDragOrPaste(stateManager, e, win);
 
     if (shouldConsumePaste) {
       const input = e.target as HTMLTextAreaElement;

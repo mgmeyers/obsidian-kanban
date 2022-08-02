@@ -61,8 +61,8 @@ export class SortManager {
   }
 
   destroy() {
-    clearTimeout(this.dragLeaveTimeout);
-    clearTimeout(this.dragEndTimeout);
+    this.dndManager.win.clearTimeout(this.dragLeaveTimeout);
+    this.dndManager.win.clearTimeout(this.dragEndTimeout);
 
     this.dndManager.dragManager.emitter.off('dragStart', this.handleDragStart);
     this.dndManager.dragManager.emitter.off('dragEnd', this.handleDragEnd);
@@ -206,7 +206,7 @@ export class SortManager {
           },
         });
 
-        return window.setTimeout(() => {
+        return this.dndManager.win.setTimeout(() => {
           this.resetSelf({ maintainHidden: false });
         }, dropDuration);
       }
@@ -214,9 +214,9 @@ export class SortManager {
       return this.resetSelf({ maintainHidden: true });
     }
 
-    clearTimeout(this.dragEnterTimeout);
-    clearTimeout(this.dragLeaveTimeout);
-    clearTimeout(this.dragEndTimeout);
+    this.dndManager.win.clearTimeout(this.dragEnterTimeout);
+    this.dndManager.win.clearTimeout(this.dragLeaveTimeout);
+    this.dndManager.win.clearTimeout(this.dragEndTimeout);
 
     const dropHitbox = primaryIntersection?.getHitbox() || dragOriginHitbox;
     const dropDuration =
@@ -230,7 +230,7 @@ export class SortManager {
             },
           });
 
-    this.dragEndTimeout = window.setTimeout(() => {
+    this.dragEndTimeout = this.dndManager.win.setTimeout(() => {
       const dragEntityId = dragEntity.entityId.split(':::').pop();
       const primaryIntersectionId = primaryIntersection?.entityId
         .split(':::')
@@ -281,10 +281,10 @@ export class SortManager {
       return;
     }
 
-    clearTimeout(this.dragLeaveTimeout);
-    clearTimeout(this.dragEnterTimeout);
+    this.dndManager.win.clearTimeout(this.dragLeaveTimeout);
+    this.dndManager.win.clearTimeout(this.dragEnterTimeout);
 
-    this.dragEnterTimeout = window.setTimeout(() => {
+    this.dragEnterTimeout = this.dndManager.win.setTimeout(() => {
       this.setSortState(true);
       this.hitboxDimensions = getHitboxDimensions(
         dragOriginHitbox,
@@ -320,9 +320,9 @@ export class SortManager {
   handleDragLeave = () => {
     if (!this.isSorting) return;
 
-    clearTimeout(this.dragLeaveTimeout);
-    clearTimeout(this.dragEnterTimeout);
-    this.dragLeaveTimeout = window.setTimeout(() => {
+    this.dndManager.win.clearTimeout(this.dragLeaveTimeout);
+    this.dndManager.win.clearTimeout(this.dragEnterTimeout);
+    this.dragLeaveTimeout = this.dndManager.win.setTimeout(() => {
       this.resetSelf({ maintainHidden: true, maintainPlaceholder: true });
     }, dragLeaveDebounceLength);
 

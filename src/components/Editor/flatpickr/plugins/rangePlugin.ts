@@ -1,3 +1,4 @@
+import {} from 'obsidian';
 import { Plugin } from '../types/options';
 
 export interface Config {
@@ -19,13 +20,13 @@ function rangePlugin(config: Config = {}): Plugin {
       _secondInputFocused: boolean,
       _prevDates: Date[];
 
+    const win = config.win || activeWindow;
+
     const createSecondInput = () => {
       if (config.input) {
         secondInput =
           typeof config.input === 'string'
-            ? ((config.win || window).document.querySelector(
-                config.input
-              ) as HTMLInputElement)
+            ? (win.document.querySelector(config.input) as HTMLInputElement)
             : config.input;
 
         if (!secondInput) {
@@ -136,7 +137,7 @@ function rangePlugin(config: Config = {}): Plugin {
       onPreCalendarPosition() {
         if (_secondInputFocused) {
           fp._positionElement = secondInput;
-          setTimeout(() => {
+          win.setTimeout(() => {
             fp._positionElement = fp._input;
           }, 0);
         }
@@ -144,7 +145,7 @@ function rangePlugin(config: Config = {}): Plugin {
 
       onChange() {
         if (!fp.selectedDates.length) {
-          setTimeout(() => {
+          win.setTimeout(() => {
             if (fp.selectedDates.length) return;
 
             secondInput.value = '';
@@ -153,7 +154,7 @@ function rangePlugin(config: Config = {}): Plugin {
         }
 
         if (_secondInputFocused) {
-          setTimeout(() => {
+          win.setTimeout(() => {
             secondInput.focus();
           }, 0);
         }

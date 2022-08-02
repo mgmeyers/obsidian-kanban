@@ -69,7 +69,6 @@
     "monkey-around": "^2.1.0",
     "obsidian-daily-notes-interface": "^0.9.4",
     "preact": "^10.8.2",
-    "raf-schd": "^4.0.3",
     "react": "npm:@preact/compat",
     "react-cool-onclickoutside": "^1.6.1",
     "react-dom": "npm:@preact/compat",

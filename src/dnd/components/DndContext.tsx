@@ -6,16 +6,17 @@ import { DndManagerContext } from './context';
 import { DndScrollState } from './ScrollStateContext';
 
 interface DndContextProps extends WithChildren {
+  win: Window;
   onDrop(dragEntity: Entity, dropEntity: Entity): void;
 }
 
-export function DndContext({ children, onDrop }: DndContextProps) {
+export function DndContext({ win, children, onDrop }: DndContextProps) {
   const onDropRef = Preact.useRef(onDrop);
 
   onDropRef.current = onDrop;
 
   const dndManager = Preact.useMemo(() => {
-    return new DndManager((dragEntity: Entity, dropEntity: Entity) => {
+    return new DndManager(win, (dragEntity: Entity, dropEntity: Entity) => {
       return onDropRef.current(dragEntity, dropEntity);
     });
   }, []);

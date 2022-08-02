@@ -433,8 +433,8 @@ function FlatpickrInstance(
       return;
     }
 
-    const debouncedResize = debounce(onResize, 50);
-    self._debouncedChange = debounce(triggerChange, DEBOUNCED_CHANGE_MS);
+    const debouncedResize = debounce(onResize, 50, win);
+    self._debouncedChange = debounce(triggerChange, DEBOUNCED_CHANGE_MS, win);
 
     if (self.daysContainer && !/iPhone|iPad|iPod/i.test(navigator.userAgent))
       bind(self.daysContainer, 'mouseover', (e: MouseEvent) => {
@@ -2004,7 +2004,10 @@ function FlatpickrInstance(
             e.relatedTarget as Node
           ))
       ) {
-        setTimeout(() => (self.hourElement as HTMLInputElement).select(), 50);
+        win.setTimeout(
+          () => (self.hourElement as HTMLInputElement).select(),
+          50
+        );
       }
     }
   }
@@ -2367,7 +2370,7 @@ function FlatpickrInstance(
       (navigator as any).msMaxTouchPoints !== undefined
     ) {
       // hack - bugs in the way IE handles focus keeps the calendar open
-      setTimeout(self.close, 0);
+      win.setTimeout(self.close, 0);
     } else {
       self.close();
     }

@@ -1,12 +1,12 @@
 import boxIntersect from 'box-intersect';
 import Preact from 'preact/compat';
-import rafSchd from 'raf-schd';
 
 import { handleDragOrPaste } from 'src/components/Item/helpers';
 import { StateManager } from 'src/StateManager';
 
 import { DndManagerContext } from '../components/context';
 import { Coordinates, Entity, Hitbox, Side } from '../types';
+import { rafThrottle } from '../util/animation';
 import { createHTMLDndEntity } from '../util/createHTMLDndEntity';
 import { Emitter } from '../util/emitter';
 import {
@@ -46,9 +46,10 @@ interface Events {
 }
 
 export class DragManager {
+  win: Window;
   emitter: Emitter<Events>;
-  hitboxEntities: Map<Window, Map<string, Entity>>;
-  scrollEntities: Map<Window, Map<string, Entity>>;
+  hitboxEntities: Map<string, Entity>;
+  scrollEntities: Map<string, Entity>;
 
   dragEntity?: Entity;
   dragEntityId?: string;
@@ -64,10 +65,12 @@ export class DragManager {
   dragOverTimeout: number = 0;
 
   constructor(
+    win: Window,
     emitter: Emitter,
-    hitboxEntities: Map<Window, Map<string, Entity>>,
-    scrollEntities: Map<Window, Map<string, Entity>>
+    hitboxEntities: Map<string, Entity>,
+    scrollEntities: Map<string, Entity>
   ) {
+    this.win = win;
     this.hitboxEntities = hitboxEntities;
     this.scrollEntities = scrollEntities;
     this.emitter = emitter;
@@ -100,7 +103,7 @@ export class DragManager {
     this.dragEntityId = id;
     this.dragOrigin = { x: e.pageX, y: e.pageY };
     this.dragPosition = { x: e.pageX, y: e.pageY };
-    this.dragEntity = this.hitboxEntities.get(e.view)?.get(id);
+    this.dragEntity = this.hitboxEntities.get(id);
     this.dragOriginHitbox = this.dragEntity?.getHitbox();
     this.dragEntityMargin = [
       parseFloat(styles.marginLeft) || 0,
@@ -184,8 +187,8 @@ export class DragManager {
   }
 
   onHTMLDragLeave(callback: () => void) {
-    clearTimeout(this.dragOverTimeout);
-    this.dragOverTimeout = window.setTimeout(callback, 351);
+    this.win.clearTimeout(this.dragOverTimeout);
+    this.dragOverTimeout = this.win.setTimeout(callback, 351);
   }
 
   calculateDragIntersect() {
@@ -205,27 +208,23 @@ export class DragManager {
     const scrollEntities: Entity[] = [];
     const scrollHitboxes: Hitbox[] = [];
 
-    if (this.hitboxEntities.has(win)) {
-      this.hitboxEntities.get(win).forEach((entity) => {
-        const data = entity.getData();
+    this.hitboxEntities.forEach((entity) => {
+      const data = entity.getData();
 
-        if (win === data.win && data.accepts.includes(type)) {
-          hitboxEntities.push(entity);
-          hitboxHitboxes.push(entity.getHitbox());
-        }
-      });
-    }
+      if (win === data.win && data.accepts.includes(type)) {
+        hitboxEntities.push(entity);
+        hitboxHitboxes.push(entity.getHitbox());
+      }
+    });
 
-    if (this.scrollEntities.has(win)) {
-      this.scrollEntities.get(win).forEach((entity) => {
-        const data = entity.getData();
+    this.scrollEntities.forEach((entity) => {
+      const data = entity.getData();
 
-        if (win === data.win && data.accepts.includes(type)) {
-          scrollEntities.push(entity);
-          scrollHitboxes.push(entity.getHitbox());
-        }
-      });
-    }
+      if (win === data.win && data.accepts.includes(type)) {
+        scrollEntities.push(entity);
+        scrollHitboxes.push(entity.getHitbox());
+      }
+    });
 
     if (hitboxEntities.length === 0 && scrollEntities.length === 0) {
       return;
@@ -437,7 +436,7 @@ export function useDragHandle(
       if (isTouchEvent) {
         win.addEventListener('contextmenu', cancelEvent, true);
 
-        longPressTimeout = window.setTimeout(() => {
+        longPressTimeout = win.setTimeout(() => {
           dndManager.dragManager.dragStart(initialEvent, droppable);
           isDragging = true;
           win.addEventListener('touchmove', cancelEvent, {
@@ -446,7 +445,7 @@ export function useDragHandle(
         }, 500);
       }
 
-      const onMove = rafSchd((e: PointerEvent) => {
+      const onMove = rafThrottle(win, (e: PointerEvent) => {
         if (isTouchEvent) {
           if (!isDragging) {
             if (
@@ -455,7 +454,7 @@ export function useDragHandle(
                 y: e.pageY,
               }) > 5
             ) {
-              clearTimeout(longPressTimeout);
+              win.clearTimeout(longPressTimeout);
               win.removeEventListener('touchmove', cancelEvent);
               win.removeEventListener('contextmenu', cancelEvent, true);
               win.removeEventListener('pointermove', onMove);
@@ -483,7 +482,7 @@ export function useDragHandle(
       });
 
       const onEnd = (e: PointerEvent) => {
-        clearTimeout(longPressTimeout);
+        win.clearTimeout(longPressTimeout);
         isDragging = false;
 
         dndManager.dragManager.dragEnd(e);
@@ -545,7 +544,11 @@ export function createHTMLDndHandlers(stateManager: StateManager) {
       dndManager.dragManager.dragEndHTML(
         e,
         stateManager.getAView().id,
-        await handleDragOrPaste(stateManager, e),
+        await handleDragOrPaste(
+          stateManager,
+          e,
+          activeWindow as Window & typeof globalThis
+        ),
         false
       );
     },
