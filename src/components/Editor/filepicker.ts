@@ -27,7 +27,7 @@ function getAliasMarkup(
   filePath: string,
   res: Fuse.FuseResult<LinkSuggestion>
 ) {
-  let container = win.document.createDiv(c('file-suggestion-wrapper'));
+  let container = win.document.body.createDiv(c('file-suggestion-wrapper'));
   container.detach();
 
   setIcon(container.createDiv(c('file-suggestion-icon')), 'forward-arrow', 12);
