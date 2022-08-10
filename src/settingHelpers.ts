@@ -89,7 +89,7 @@ export function createSearchSelect({
   return (setting: Setting) => {
     setting.controlEl.createEl('select', {}, (el) => {
       // el must be in the dom, so we setTimeout
-      setTimeout(() => {
+      el.win.setTimeout(() => {
         let list = choices;
 
         const [value, defaultVal] = manager.getSetting(key, local);

@@ -189,7 +189,7 @@ export function DragDropApp({
 
   if (portals.length)
     return (
-      <DndContext onDrop={handleDrop}>
+      <DndContext win={win} onDrop={handleDrop}>
         {...portals}
         <DragOverlay>
           {(entity, styles) => {

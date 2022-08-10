@@ -22,11 +22,13 @@ export interface LinkSuggestion {
 }
 
 function getAliasMarkup(
+  win: Window,
   stateManager: StateManager,
   filePath: string,
   res: Fuse.FuseResult<LinkSuggestion>
 ) {
-  let container = createDiv(c('file-suggestion-wrapper'));
+  let container = win.document.body.createDiv(c('file-suggestion-wrapper'));
+  container.detach();
 
   setIcon(container.createDiv(c('file-suggestion-icon')), 'forward-arrow', 12);
 
@@ -53,6 +55,7 @@ function getAliasMarkup(
 }
 
 export function getFileSearchConfig(
+  win: Window,
   files: LinkSuggestion[],
   fileSearch: Fuse<LinkSuggestion>,
   filePath: string,
@@ -72,7 +75,7 @@ export function getFileSearchConfig(
       }
 
       if (res.item.alias) {
-        return getAliasMarkup(stateManager, filePath, res);
+        return getAliasMarkup(win, stateManager, filePath, res);
       }
 
       return stateManager.app.metadataCache.fileToLinktext(

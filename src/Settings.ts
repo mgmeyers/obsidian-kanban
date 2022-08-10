@@ -123,6 +123,7 @@ export interface SettingsManagerConfig {
 }
 
 export class SettingsManager {
+  win: Window;
   app: App;
   plugin: KanbanPlugin;
   config: SettingsManagerConfig;
@@ -142,9 +143,9 @@ export class SettingsManager {
   }
 
   applySettingsUpdate(spec: Spec<KanbanSettings>) {
-    clearTimeout(this.applyDebounceTimer);
+    this.win.clearTimeout(this.applyDebounceTimer);
 
-    this.applyDebounceTimer = window.setTimeout(() => {
+    this.applyDebounceTimer = this.win.setTimeout(() => {
       this.settings = update(this.settings, spec);
       this.config.onSettingsChange(this.settings);
     }, 200);
@@ -159,6 +160,8 @@ export class SettingsManager {
   }
 
   constructUI(contentEl: HTMLElement, heading: string, local: boolean) {
+    this.win = contentEl.win;
+
     const { templateFiles, vaultFolders, templateWarning } = getListOptions(
       this.app
     );
@@ -1395,6 +1398,7 @@ export class SettingsManager {
   }
 
   cleanUp() {
+    this.win = null;
     this.cleanupFns.forEach((fn) => fn());
     this.cleanupFns = [];
   }

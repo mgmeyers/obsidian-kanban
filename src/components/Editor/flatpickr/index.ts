@@ -48,7 +48,7 @@ function FlatpickrInstance(
   element: HTMLElement,
   instanceConfig?: Options
 ): Instance {
-  const win = element.ownerDocument.defaultView || window;
+  const win = element.win || window;
   const self = {
     config: {
       ...defaultOptions,
@@ -139,7 +139,7 @@ function FlatpickrInstance(
   function getClosestActiveElement() {
     return (
       (self.calendarContainer?.getRootNode() as unknown as DocumentOrShadowRoot)
-        .activeElement || document.activeElement
+        .activeElement || self.element.doc.activeElement
     );
   }
 
@@ -433,8 +433,8 @@ function FlatpickrInstance(
       return;
     }
 
-    const debouncedResize = debounce(onResize, 50);
-    self._debouncedChange = debounce(triggerChange, DEBOUNCED_CHANGE_MS);
+    const debouncedResize = debounce(onResize, 50, win);
+    self._debouncedChange = debounce(triggerChange, DEBOUNCED_CHANGE_MS, win);
 
     if (self.daysContainer && !/iPhone|iPad|iPod/i.test(navigator.userAgent))
       bind(self.daysContainer, 'mouseover', (e: MouseEvent) => {
@@ -834,7 +834,7 @@ function FlatpickrInstance(
   function focusOnDay(current: DayElement | undefined, offset: number) {
     const activeElement = getClosestActiveElement();
 
-    const dayFocused = isInView(activeElement || document.body);
+    const dayFocused = isInView(activeElement || self.element.doc.body);
     const startElem =
       current !== undefined
         ? current
@@ -936,7 +936,7 @@ function FlatpickrInstance(
     // TODO: week numbers for each month
     if (self.weekNumbers) clearNode(self.weekNumbers);
 
-    const frag = document.createDocumentFragment();
+    const frag = self.element.doc.createDocumentFragment();
 
     for (let i = 0; i < self.config.showMonths; i++) {
       const d = new Date(self.currentYear, self.currentMonth, 1);
@@ -2004,7 +2004,10 @@ function FlatpickrInstance(
             e.relatedTarget as Node
           ))
       ) {
-        setTimeout(() => (self.hourElement as HTMLInputElement).select(), 50);
+        win.setTimeout(
+          () => (self.hourElement as HTMLInputElement).select(),
+          50
+        );
       }
     }
   }
@@ -2367,7 +2370,7 @@ function FlatpickrInstance(
       (navigator as any).msMaxTouchPoints !== undefined
     ) {
       // hack - bugs in the way IE handles focus keeps the calendar open
-      setTimeout(self.close, 0);
+      win.setTimeout(self.close, 0);
     } else {
       self.close();
     }

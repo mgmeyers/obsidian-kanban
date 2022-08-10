@@ -75,6 +75,7 @@ export function constructAutocomplete({
     getHeadingSearchConfig(filePath, stateManager, willAutoPairBrackets, true),
     getHeadingSearchConfig(filePath, stateManager, willAutoPairBrackets, false),
     getFileSearchConfig(
+      view.getWindow(),
       linkSuggestions,
       fileSearch,
       filePath,
@@ -83,6 +84,7 @@ export function constructAutocomplete({
       true
     ),
     getFileSearchConfig(
+      view.getWindow(),
       linkSuggestions,
       fileSearch,
       filePath,
@@ -117,9 +119,13 @@ export function constructAutocomplete({
       isAutocompleteVisibleRef.current = false;
     }
 
+    const win = datePickerEl.win;
+
     datePickerInstance.destroy();
     datePickerEl.remove();
-    setTimeout(() => (datePickerEl = null));
+    win.setTimeout(() => {
+      datePickerEl = null;
+    });
   };
 
   autocomplete.on('show', () => {
@@ -216,7 +222,7 @@ export function constructAutocomplete({
     };
 
     inputRef.current.addEventListener('keydown', keydownHandler);
-    const document = inputRef.current.ownerDocument;
+    const doc = inputRef.current.doc;
 
     editor.on('change', (e: CustomEvent) => {
       const beforeCursor = e.detail.beforeCursor as string;
@@ -229,7 +235,7 @@ export function constructAutocomplete({
           datePickerEl.style.top = `${position.top || 0}px`;
           ensureDatePickerIsOnScreen(position, datePickerEl);
         } else {
-          datePickerEl = document.body.createDiv(
+          datePickerEl = doc.body.createDiv(
             { cls: `${c('date-picker')} ${c('ignore-click-outside')}` },
             (div) => {
               div.style.left = `${position.left || 0}px`;

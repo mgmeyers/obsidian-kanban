@@ -1,4 +1,4 @@
-import insertText from 'insert-text-at-cursor';
+import { insertTextAtCursor } from './insertTextAtCursor';
 import { Platform } from 'obsidian';
 
 import { StateManager } from 'src/StateManager';
@@ -187,7 +187,7 @@ export function getStateFromTextarea(textarea: HTMLTextAreaElement): TextState {
 }
 
 export function replaceSelection(textarea: HTMLTextAreaElement, text: string) {
-  insertText(textarea, text);
+  insertTextAtCursor(textarea, text);
   return getStateFromTextarea(textarea);
 }
 
@@ -334,12 +334,13 @@ export function getDropAction(
 
 export async function handlePaste(
   e: ClipboardEvent,
-  stateManager: StateManager
+  stateManager: StateManager,
+  win: Window & typeof globalThis
 ) {
   const html = e.clipboardData.getData('text/html');
   const hasFiles = e.clipboardData.types.includes('Files');
   const electronClipboardFiles = Platform.isDesktopApp
-    ? getFileListFromClipboard()
+    ? getFileListFromClipboard(win)
     : null;
 
   const shouldConsumePaste =
@@ -350,7 +351,7 @@ export async function handlePaste(
   }
 
   try {
-    const pasteLines = await handleDragOrPaste(stateManager, e);
+    const pasteLines = await handleDragOrPaste(stateManager, e, win);
 
     if (shouldConsumePaste) {
       const input = e.target as HTMLTextAreaElement;

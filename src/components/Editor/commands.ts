@@ -1,5 +1,4 @@
-import insertTextAtCursor from 'insert-text-at-cursor';
-
+import { insertTextAtCursor } from './insertTextAtCursor';
 import {
   applyWrappingFormatting,
   expandSelectionToLineBoundaries,

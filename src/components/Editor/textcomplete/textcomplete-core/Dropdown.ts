@@ -39,8 +39,8 @@ export class Dropdown extends EventEmitter {
 
   static create(option: DropdownOption): Dropdown {
     const parent = option.parent || window.document.body;
-    const document = parent.ownerDocument;
-    const ul = document.createElement('ul');
+    const doc = parent.doc;
+    const ul = doc.createElement('ul');
     ul.className = option.className || DEFAULT_DROPDOWN_CLASS_NAME;
     Object.assign(
       ul.style,
@@ -72,7 +72,9 @@ export class Dropdown extends EventEmitter {
     searchResults: SearchResult<unknown>[],
     cursorOffset: CursorOffset
   ): this {
-    const event = createCustomEvent('render', { cancelable: true });
+    const event = createCustomEvent(this.el.doc, 'render', {
+      cancelable: true,
+    });
     this.emit('render', event);
     if (event.defaultPrevented) return this;
     this.clear();
@@ -89,7 +91,7 @@ export class Dropdown extends EventEmitter {
       .show()
       .setOffset(cursorOffset)
       .activate(0);
-    this.emit('rendered', createCustomEvent('rendered'));
+    this.emit('rendered', createCustomEvent(this.el.doc, 'rendered'));
     return this;
   }
 
@@ -107,11 +109,17 @@ export class Dropdown extends EventEmitter {
    */
   select(item: DropdownItem): this {
     const detail = { searchResult: item.searchResult };
-    const event = createCustomEvent('select', { cancelable: true, detail });
+    const event = createCustomEvent(this.el.doc, 'select', {
+      cancelable: true,
+      detail,
+    });
     this.emit('select', event);
     if (event.defaultPrevented) return this;
     this.hide();
-    this.emit('selected', createCustomEvent('selected', { detail }));
+    this.emit(
+      'selected',
+      createCustomEvent(this.el.doc, 'selected', { detail })
+    );
     return this;
   }
 
@@ -123,12 +131,14 @@ export class Dropdown extends EventEmitter {
    */
   show(): this {
     if (!this.shown) {
-      const event = createCustomEvent('show', { cancelable: true });
+      const event = createCustomEvent(this.el.doc, 'show', {
+        cancelable: true,
+      });
       this.emit('show', event);
       if (event.defaultPrevented) return this;
       this.el.style.display = 'block';
       this.shown = true;
-      this.emit('shown', createCustomEvent('shown'));
+      this.emit('shown', createCustomEvent(this.el.doc, 'shown'));
     }
     return this;
   }
@@ -141,13 +151,15 @@ export class Dropdown extends EventEmitter {
    */
   hide(): this {
     if (this.shown) {
-      const event = createCustomEvent('hide', { cancelable: true });
+      const event = createCustomEvent(this.el.doc, 'hide', {
+        cancelable: true,
+      });
       this.emit('hide', event);
       if (event.defaultPrevented) return this;
       this.el.style.display = 'none';
       this.shown = false;
       this.clear();
-      this.emit('hidden', createCustomEvent('hidden'));
+      this.emit('hidden', createCustomEvent(this.el.doc, 'hidden'));
     }
     return this;
   }
@@ -203,14 +215,14 @@ export class Dropdown extends EventEmitter {
   }
 
   setOffset(cursorOffset: CursorOffset): this {
-    const document = this.el.ownerDocument;
-    const doc = document.documentElement;
-    if (doc) {
+    const doc = this.el.doc;
+    const docEl = doc.documentElement;
+    if (docEl) {
       const elementWidth = this.el.offsetWidth;
       if (cursorOffset.left) {
         const browserWidth = this.option.dynamicWidth
-          ? doc.scrollWidth
-          : doc.clientWidth;
+          ? docEl.scrollWidth
+          : docEl.clientWidth;
         if (cursorOffset.left + elementWidth > browserWidth) {
           cursorOffset.left = browserWidth - elementWidth;
         }
@@ -230,12 +242,12 @@ export class Dropdown extends EventEmitter {
         const dropdownHeight = this.el.clientHeight;
         forceTop =
           cursorOffset.clientTop != null &&
-          cursorOffset.clientTop + dropdownHeight > doc.clientHeight;
+          cursorOffset.clientTop + dropdownHeight > docEl.clientHeight;
       }
 
       if (placement === 'top' || forceTop) {
         this.el.style.bottom = `${
-          doc.clientHeight - cursorOffset.top + cursorOffset.lineHeight
+          docEl.clientHeight - cursorOffset.top + cursorOffset.lineHeight
         }px`;
         this.el.style.top = 'auto';
       } else {
@@ -265,8 +277,8 @@ export class Dropdown extends EventEmitter {
   }
 
   private renderItems(): this {
-    const document = this.el.ownerDocument;
-    const fragment = document.createDocumentFragment();
+    const doc = this.el.doc;
+    const fragment = doc.createDocumentFragment();
     for (const item of this.items) {
       fragment.appendChild(item.el);
     }
@@ -288,8 +300,8 @@ export class Dropdown extends EventEmitter {
 
     if (!option) return this;
 
-    const document = this.el.ownerDocument;
-    const li = document.createElement('li');
+    const doc = this.el.doc;
+    const li = doc.createElement('li');
     li.className = `textcomplete-${type}`;
     li.innerHTML =
       typeof option === 'function'
@@ -316,11 +328,11 @@ class DropdownItem {
     this.activeClassName =
       this.props.activeClassName || DEFAULT_DROPDOWN_ITEM_ACTIVE_CLASS_NAME;
 
-    const document = dropdown.el.ownerDocument;
-    const li = document.createElement('li');
+    const doc = dropdown.el.doc;
+    const li = doc.createElement('li');
     li.className = this.active ? this.activeClassName : this.className;
 
-    const span = document.createElement('span');
+    const span = doc.createElement('span');
     span.tabIndex = -1;
     span.innerHTML = this.searchResult.render();
     li.appendChild(span);

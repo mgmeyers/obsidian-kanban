@@ -54,7 +54,7 @@ export abstract class Editor extends EventEmitter {
    * @see {@link Textarea} for live example.
    */
   emitMoveEvent(code: 'UP' | 'DOWN'): CustomEvent {
-    const moveEvent = createCustomEvent('move', {
+    const moveEvent = createCustomEvent(activeDocument, 'move', {
       cancelable: true,
       detail: {
         code: code,
@@ -71,7 +71,9 @@ export abstract class Editor extends EventEmitter {
    * @see {@link Textarea} for live example.
    */
   emitEnterEvent(): CustomEvent {
-    const enterEvent = createCustomEvent('enter', { cancelable: true });
+    const enterEvent = createCustomEvent(activeDocument, 'enter', {
+      cancelable: true,
+    });
     this.emit('enter', enterEvent);
     return enterEvent;
   }
@@ -83,7 +85,7 @@ export abstract class Editor extends EventEmitter {
    * @see {@link Textarea} for live example.
    */
   emitChangeEvent(): CustomEvent {
-    const changeEvent = createCustomEvent('change', {
+    const changeEvent = createCustomEvent(activeDocument, 'change', {
       detail: {
         beforeCursor: this.getBeforeCursor(),
       },
@@ -99,7 +101,9 @@ export abstract class Editor extends EventEmitter {
    * @see {@link Textarea} for live example.
    */
   emitEscEvent(): CustomEvent {
-    const escEvent = createCustomEvent('esc', { cancelable: true });
+    const escEvent = createCustomEvent(activeDocument, 'esc', {
+      cancelable: true,
+    });
     this.emit('esc', escEvent);
     return escEvent;
   }

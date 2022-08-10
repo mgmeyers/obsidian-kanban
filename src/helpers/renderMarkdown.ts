@@ -241,7 +241,7 @@ function pollForCachedSubpath(
   view: KanbanView,
   remainingCount: number
 ) {
-  setTimeout(async () => {
+  view.getWindow().setTimeout(async () => {
     if (!view.plugin.windowRegistry.has(view.getWindow())) {
       return;
     }
@@ -403,7 +403,8 @@ export async function renderMarkdown(
   view: KanbanView,
   markdownString: string
 ): Promise<HTMLDivElement> {
-  const dom = createDiv();
+  const dom = view.getWindow().document.body.createDiv();
+  dom.detach();
 
   try {
     await MarkdownRenderer.renderMarkdown(

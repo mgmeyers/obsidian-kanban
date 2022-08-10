@@ -1,8 +1,8 @@
 import Preact from 'preact/compat';
-import rafSchd from 'raf-schd';
 
 import { ScrollStateManager } from '../managers/ScrollStateManager';
 import { WithChildren } from '../types';
+import { rafThrottle } from '../util/animation';
 import { ScopeIdContext, ScrollStateContext } from './context';
 
 export function DndScrollState({ children }: WithChildren) {
@@ -26,7 +26,7 @@ export function useStoredScrollState(id: string, index: number | undefined) {
     scrollRef.current = el;
 
     if (scrollRef.current) {
-      requestAnimationFrame(() => {
+      el.win.requestAnimationFrame(() => {
         const state = scrollStateManager.getScrollState(id);
 
         if (state && (state.x !== 0 || state.y !== 0)) {
@@ -42,7 +42,7 @@ export function useStoredScrollState(id: string, index: number | undefined) {
 
     if (!el) return;
 
-    const onScroll = rafSchd((e: Event) => {
+    const onScroll = rafThrottle(el.win, (e: Event) => {
       const target = e.target as HTMLElement;
 
       scrollStateManager.setScrollState(scopeId, id, {

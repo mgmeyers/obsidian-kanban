@@ -35,7 +35,7 @@ export function constructDatePicker(
       div.style.top = `${coordinates.y || 0}px`;
 
       div.createEl('input', { type: 'text' }, (input) => {
-        setTimeout(() => {
+        div.win.setTimeout(() => {
           let picker: Instance | null = null;
 
           const clickHandler = (e: MouseEvent) => {
@@ -72,7 +72,7 @@ export function constructDatePicker(
             win,
           });
 
-          setTimeout(() => {
+          div.win.setTimeout(() => {
             const height = div.clientHeight;
             const width = div.clientWidth;
 
@@ -249,7 +249,7 @@ export function constructTimePicker(
         );
       });
 
-      setTimeout(() => {
+      div.win.setTimeout(() => {
         const height = div.clientHeight;
         const width = div.clientWidth;
 
@@ -390,8 +390,8 @@ interface FileData {
   originalName: string;
 }
 
-export function getFileListFromClipboard() {
-  const clipboard = window.require('electron').remote.clipboard;
+export function getFileListFromClipboard(win: Window & typeof globalThis) {
+  const clipboard = win.require('electron').remote.clipboard;
 
   if (process.platform === 'darwin') {
     // https://github.com/electron/electron/issues/9035#issuecomment-359554116
@@ -482,13 +482,16 @@ async function linkFromBuffer(
   return linkTo(stateManager, newFile, stateManager.file.path);
 }
 
-async function handleElectronPaste(stateManager: StateManager) {
-  const list = getFileListFromClipboard();
+async function handleElectronPaste(
+  stateManager: StateManager,
+  win: Window & typeof globalThis
+) {
+  const list = getFileListFromClipboard(win);
 
   if (!list || list.length === 0) return null;
 
-  const fs = window.require('fs/promises');
-  const nPath = window.require('path');
+  const fs = win.require('fs/promises');
+  const nPath = win.require('path');
 
   return (
     await Promise.all(
@@ -513,7 +516,7 @@ async function handleElectronPaste(stateManager: StateManager) {
           await fs.copyFile(file, nPath.join(basePath, path));
 
           // Wait for Obsidian to update
-          await new Promise((resolve) => setTimeout(resolve, 50));
+          await new Promise((resolve) => win.setTimeout(resolve, 50));
 
           const newFile = stateManager.app.vault.getAbstractFileByPath(
             path
@@ -590,7 +593,8 @@ function handleFiles(
 
 async function handleNullDraggable(
   stateManager: StateManager,
-  e: DragEvent | ClipboardEvent
+  e: DragEvent | ClipboardEvent,
+  win: Window & typeof globalThis
 ) {
   const isClipboardEvent = (e as DragEvent).view ? false : true;
   const forcePlaintext = isClipboardEvent
@@ -601,7 +605,7 @@ async function handleNullDraggable(
     : (e as DragEvent).dataTransfer;
   const clipboard =
     isClipboardEvent && Platform.isDesktopApp
-      ? window.require('electron').remote.clipboard
+      ? win.require('electron').remote.clipboard
       : null;
   const formats = clipboard ? clipboard.availableFormats() : [];
 
@@ -616,7 +620,7 @@ async function handleNullDraggable(
     !formats.includes('text/rtf')
   ) {
     if (Platform.isDesktopApp) {
-      const links = await handleElectronPaste(stateManager);
+      const links = await handleElectronPaste(stateManager, win);
 
       if (links?.length) {
         return links;
@@ -651,7 +655,8 @@ async function handleNullDraggable(
 
 export async function handleDragOrPaste(
   stateManager: StateManager,
-  e: DragEvent | ClipboardEvent
+  e: DragEvent | ClipboardEvent,
+  win: Window & typeof globalThis
 ): Promise<string[]> {
   const draggable = (stateManager.app as any).dragManager.draggable;
   const transfer = (e as DragEvent).view
@@ -694,7 +699,7 @@ export async function handleDragOrPaste(
       return [link];
     }
     default: {
-      return await handleNullDraggable(stateManager, e);
+      return await handleNullDraggable(stateManager, e, win);
     }
   }
 }

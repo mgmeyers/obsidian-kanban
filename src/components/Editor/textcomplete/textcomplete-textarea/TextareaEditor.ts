@@ -1,5 +1,5 @@
-import getCaretCoordinates from 'textarea-caret';
-import { update } from 'undate';
+import { getCaretCoordinates } from './textareaCaret';
+import { update } from '../undate/update';
 
 import {
   CursorOffset,
@@ -32,7 +32,7 @@ export class TextareaEditor extends Editor {
       if (Array.isArray(replace)) {
         update(this.el, replace[0], replace[1]);
         if (this.el) {
-          this.el.dispatchEvent(createCustomEvent('input'));
+          this.el.dispatchEvent(createCustomEvent(this.el.doc, 'input'));
         }
       }
     }
@@ -49,12 +49,12 @@ export class TextareaEditor extends Editor {
     const top = elOffset.top - elScroll.top + cursorPosition.top + lineHeight;
     const left = elOffset.left - elScroll.left + cursorPosition.left;
     const clientTop = this.el.getBoundingClientRect().top;
-    const document = this.el.ownerDocument;
+    const doc = this.el.doc;
     if (this.el.dir !== 'rtl') {
       return { top, left, lineHeight, clientTop };
     } else {
-      const right = document.documentElement
-        ? document.documentElement.clientWidth - left
+      const right = doc.documentElement
+        ? doc.documentElement.clientWidth - left
         : 0;
       return { top, right, lineHeight, clientTop };
     }

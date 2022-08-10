@@ -126,7 +126,7 @@ export const ItemContent = Preact.memo(function ItemContent({
   searchQuery,
 }: ItemContentProps) {
   const [editState, setEditState] = Preact.useState(item.data.titleRaw);
-  const { stateManager, filePath, boardModifiers } =
+  const { stateManager, filePath, boardModifiers, view } =
     Preact.useContext(KanbanContext);
 
   const hideTagsDisplay = stateManager.useSetting('hide-tags-display');
@@ -223,7 +223,7 @@ export const ItemContent = Preact.memo(function ItemContent({
           onSubmit={onSubmit}
           value={editState}
           onPaste={(e) => {
-            handlePaste(e, stateManager);
+            handlePaste(e, stateManager, view.getWindow());
           }}
         />
       </div>

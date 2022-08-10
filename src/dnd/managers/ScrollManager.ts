@@ -68,8 +68,10 @@ export class ScrollManager {
   }
 
   pollForNodes(getScrollEl: () => HTMLElement | null) {
-    if (!getScrollEl()) {
-      requestAnimationFrame(() => this.pollForNodes(getScrollEl));
+    if (!getScrollEl() || (this.parent && !this.parent.observerHandlers)) {
+      this.dndManager.win.requestAnimationFrame(() =>
+        this.pollForNodes(getScrollEl)
+      );
     } else {
       this.initNodes(getScrollEl());
     }
@@ -112,7 +114,7 @@ export class ScrollManager {
 
     this.dndManager.emitter.on('scrollResize', this.onScroll);
 
-    setTimeout(() => {
+    this.scrollEl.win.setTimeout(() => {
       this.onScroll();
     });
 
@@ -150,9 +152,7 @@ export class ScrollManager {
       const win = getParentWindow(this.scrollEl);
       const id = this.getId(side);
 
-      const hasId =
-        this.dndManager.scrollEntities.has(win) &&
-        this.dndManager.scrollEntities.get(win).has(id);
+      const hasId = this.dndManager.scrollEntities.has(id);
       const isDoneScrolling = this.isDoneScrolling(side);
 
       if (!isDoneScrolling && !hasId) {
@@ -281,7 +281,7 @@ export class ScrollManager {
       return;
     }
 
-    requestAnimationFrame(() => {
+    this.scrollEl.win.requestAnimationFrame(() => {
       const scrollBy = {
         left: 0,
         top: 0,

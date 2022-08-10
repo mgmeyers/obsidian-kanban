@@ -29,7 +29,8 @@ export const DraggableLane = Preact.memo(function DraggableLane({
   lane,
   laneIndex,
 }: DraggableLaneProps) {
-  const { stateManager, boardModifiers } = Preact.useContext(KanbanContext);
+  const { stateManager, boardModifiers, view } =
+    Preact.useContext(KanbanContext);
   const [isItemInputVisible, setIsItemInputVisible] = Preact.useState(false);
 
   const path = useNestedEntityPath(laneIndex);
@@ -65,7 +66,7 @@ export const DraggableLane = Preact.memo(function DraggableLane({
     );
 
     // TODO: can we find a less brute force way to do this?
-    setTimeout(() => {
+    view.getWindow().setTimeout(() => {
       const laneItems = elementRef.current?.getElementsByClassName(
         c('lane-items')
       );

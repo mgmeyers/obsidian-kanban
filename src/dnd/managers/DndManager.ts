@@ -8,14 +8,16 @@ import { DragManager } from './DragManager';
 export type DropHandler = (dragEntity: Entity, dropEntity: Entity) => void;
 
 export class DndManager {
+  win: Window;
   emitter: Emitter;
-  hitboxEntities: Map<Window, Map<string, Entity>>;
-  scrollEntities: Map<Window, Map<string, Entity>>;
+  hitboxEntities: Map<string, Entity>;
+  scrollEntities: Map<string, Entity>;
   resizeObserver: ResizeObserver;
   dragManager: DragManager;
   onDrop: DropHandler;
 
-  constructor(onDrop: DropHandler) {
+  constructor(win: Window, onDrop: DropHandler) {
+    this.win = win;
     this.emitter = createEmitter();
     this.hitboxEntities = new Map();
     this.scrollEntities = new Map();
@@ -25,6 +27,7 @@ export class DndManager {
       debounce(this.handleResize, 100, true)
     );
     this.dragManager = new DragManager(
+      win,
       this.emitter,
       this.hitboxEntities,
       this.scrollEntities
@@ -37,39 +40,34 @@ export class DndManager {
 
   scrollResizeDebounce = 0;
   handleResize: ResizeObserverCallback = (entries) => {
-    const resizedWindows = new Set<Window>();
-
+    let thisDidResize = false;
     entries.forEach((e) => {
       const win = getParentWindow(e.target);
 
-      if (!resizedWindows.has(win)) {
-        resizedWindows.add(win);
-      }
+      if (this.win !== win) return;
+
+      thisDidResize = true;
 
       if ((e.target as HTMLElement).dataset.scrollid) {
-        clearTimeout(this.scrollResizeDebounce);
+        this.win.clearTimeout(this.scrollResizeDebounce);
 
-        this.scrollResizeDebounce = window.setTimeout(() => {
-          this.emitter.emit('scrollResize', null);
+        this.scrollResizeDebounce = this.win.setTimeout(() => {
+          if (this.emitter.events.scrollResize?.length) {
+            this.emitter.emit('scrollResize', null);
+          }
         }, 50);
       }
     });
 
-    resizedWindows.forEach((win) => {
-      if (this.hitboxEntities.has(win)) {
-        this.hitboxEntities.get(win).forEach((entity) => {
-          entity.recalcInitial();
-        });
-      }
+    if (!thisDidResize) return;
 
-      if (this.scrollEntities.has(win)) {
-        this.scrollEntities.get(win).forEach((entity) => {
-          entity.recalcInitial();
-        });
-      }
+    this.hitboxEntities.forEach((entity) => {
+      entity.recalcInitial();
     });
 
-    resizedWindows.clear();
+    this.scrollEntities.forEach((entity) => {
+      entity.recalcInitial();
+    });
   };
 
   observeResize(element: HTMLElement) {
@@ -81,46 +79,22 @@ export class DndManager {
   }
 
   registerHitboxEntity(id: string, entity: Entity, win: Window) {
-    if (!this.hitboxEntities.has(win)) {
-      this.hitboxEntities.set(win, new Map());
-    }
-
-    this.hitboxEntities.get(win).set(id, entity);
+    if (win !== this.win) return;
+    this.hitboxEntities.set(id, entity);
   }
 
   registerScrollEntity(id: string, entity: Entity, win: Window) {
-    if (!this.scrollEntities.has(win)) {
-      this.scrollEntities.set(win, new Map());
-    }
-
-    this.scrollEntities.get(win).set(id, entity);
+    if (win !== this.win) return;
+    this.scrollEntities.set(id, entity);
   }
 
   unregisterHitboxEntity(id: string, win: Window) {
-    if (!this.hitboxEntities.has(win)) {
-      return;
-    }
-
-    const entities = this.hitboxEntities.get(win);
-
-    entities.delete(id);
-
-    if (entities.size === 0) {
-      this.hitboxEntities.delete(win);
-    }
+    if (win !== this.win) return;
+    this.hitboxEntities.delete(id);
   }
 
   unregisterScrollEntity(id: string, win: Window) {
-    if (!this.scrollEntities.has(win)) {
-      return;
-    }
-
-    const entities = this.scrollEntities.get(win);
-
-    entities.delete(id);
-
-    if (entities.size === 0) {
-      this.scrollEntities.delete(win);
-    }
+    if (win !== this.win) return;
+    this.scrollEntities.delete(id);
   }
 }

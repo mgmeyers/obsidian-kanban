@@ -23,7 +23,7 @@ export function ItemForm({
   hideButton,
 }: ItemFormProps) {
   const [itemTitle, setItemTitle] = Preact.useState('');
-  const { stateManager } = Preact.useContext(KanbanContext);
+  const { stateManager, view } = Preact.useContext(KanbanContext);
   const inputRef = Preact.useRef<HTMLTextAreaElement>();
 
   const clickOutsideRef = useOnclickOutside(
@@ -92,7 +92,7 @@ export function ItemForm({
               setItemTitle((e.target as HTMLTextAreaElement).value);
             }}
             onPaste={(e) => {
-              handlePaste(e, stateManager);
+              handlePaste(e, stateManager, view.getWindow());
             }}
           />
         </div>
