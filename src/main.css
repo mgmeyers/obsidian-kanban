@@ -213,6 +213,10 @@ div.kanban-plugin__lane-title-count {
   margin-left: 5px;
 }
 
+div.kanban-plugin__lane-title-count-wip-exceeded {
+  font-weight: bold;
+}
+
 .kanban-plugin__item button.kanban-plugin__item-prefix-button,
 .kanban-plugin__item button.kanban-plugin__item-postfix-button,
 .kanban-plugin__lane button.kanban-plugin__lane-settings-button {

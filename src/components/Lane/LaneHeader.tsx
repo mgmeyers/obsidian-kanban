@@ -58,8 +58,9 @@ export const LaneHeader = Preact.memo(function LaneHeader({
           isEditing={isEditing}
           setIsEditing={setIsEditing}
           itemCount={lane.children.length}
-          title={lane.data.title}
           maxItems={lane.data.maxItems}
+          wipLimitReached={lane.data.maxItems > 0 && lane.children.length > lane.data.maxItems}
+          title={lane.data.title}
           onChange={(e) => {
             const { title, maxItems } = parseLaneTitle((e.target as HTMLTextAreaElement).value);
             boardModifiers.updateLane(

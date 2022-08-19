@@ -1,5 +1,6 @@
 import { getLinkpath } from 'obsidian';
 import Preact from 'preact/compat';
+import classcat from 'classcat';
 
 import { KanbanContext } from '../context';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
@@ -18,10 +19,11 @@ export interface LaneTitleProps {
 
 export function LaneTitle({
   itemCount,
+  maxItems,
+  wipLimitReached,
   isEditing,
   setIsEditing,
   title,
-  maxItems,
   onChange,
 }: LaneTitleProps) {
   const { stateManager } = Preact.useContext(KanbanContext);
@@ -51,6 +53,11 @@ export function LaneTitle({
       input.selectionStart = input.selectionEnd = input.value.length;
     }
   }, [isEditing]);
+
+  const counterClasses = [c('lane-title-count')];
+  if (wipLimitReached) {
+    counterClasses.push(c('lane-title-count-wip-exceeded'));
+  }
 
   return (
     <>
@@ -95,7 +102,7 @@ export function LaneTitle({
         )}
       </div>
       {!isEditing && !hideCount && (
-        <div className={c('lane-title-count')}>{itemCount}{maxItems > 0 && `/${maxItems}`}</div>
+        <div className={classcat(counterClasses)}>{itemCount}{maxItems > 0 && `/${maxItems}`}</div>
       )}
     </>
   );
