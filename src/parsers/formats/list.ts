@@ -33,6 +33,7 @@ import {
   markRangeForDeletion,
   replaceBrs,
   replaceNewLines,
+  parseLaneTitle,
 } from '../helpers/parser';
 import { parseFragment } from '../parseMarkdown';
 
@@ -236,7 +237,7 @@ export function astToUnhydratedBoard(
           children: [],
           id: generateInstanceId(),
           data: {
-            title: replaceBrs(title),
+            ...parseLaneTitle(title),
             shouldMarkItemsComplete,
           },
         });
@@ -252,7 +253,7 @@ export function astToUnhydratedBoard(
           }),
           id: generateInstanceId(),
           data: {
-            title: replaceBrs(title),
+            ...parseLaneTitle(title),
             shouldMarkItemsComplete,
           },
         });
