@@ -5,6 +5,7 @@ import { KanbanContext } from '../context';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { MarkdownRenderer } from '../MarkdownRenderer';
+import { laneTitleWithMaxItems } from 'src/helpers'
 
 export interface LaneTitleProps {
   itemCount: number;
@@ -62,7 +63,7 @@ export function LaneTitle({
             onEnter={onEnter}
             onEscape={onEscape}
             onSubmit={onSubmit}
-            value={title}
+            value={laneTitleWithMaxItems(title, maxItems)}
           />
         ) : (
           <>

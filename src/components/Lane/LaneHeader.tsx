@@ -13,6 +13,7 @@ import { Lane } from '../types';
 import { ConfirmAction, useSettingsMenu } from './LaneMenu';
 import { LaneSettings } from './LaneSettings';
 import { LaneTitle } from './LaneTitle';
+import { parseLaneTitle } from 'src/parsers/helpers/parser'
 
 interface LaneHeaderProps {
   lane: Lane;
@@ -58,12 +59,15 @@ export const LaneHeader = Preact.memo(function LaneHeader({
           setIsEditing={setIsEditing}
           itemCount={lane.children.length}
           title={lane.data.title}
+          maxItems={lane.data.maxItems}
           onChange={(e) => {
+            const { title, maxItems } = parseLaneTitle((e.target as HTMLTextAreaElement).value);
             boardModifiers.updateLane(
               lanePath,
               update(lane, {
                 data: {
-                  title: { $set: (e.target as HTMLTextAreaElement).value },
+                  title: { $set: title },
+                  maxItems: { $set: maxItems },
                 },
               })
             );
