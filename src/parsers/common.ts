@@ -92,6 +92,25 @@ export function getDataViewCache(
   }
 }
 
+function getPageData(obj: any, path: string) {
+  if (!obj) return null;
+  if (obj[path]) return obj[path];
+
+  const split = path.split('.');
+  let ctx = obj;
+
+  for (const p of split) {
+    if (typeof ctx === 'object' && p in ctx) {
+      ctx = ctx[p];
+    } else {
+      ctx = null;
+      break;
+    }
+  }
+
+  return ctx;
+}
+
 export function getLinkedPageMetadata(
   stateManager: StateManager,
   linkedFile: TFile | null | undefined
@@ -160,14 +179,17 @@ export function getLinkedPageMetadata(
       return;
     }
 
-    if (cache?.frontmatter && cache.frontmatter[k.metadataKey]) {
+    const cacheVal = getPageData(cache?.frontmatter, k.metadataKey);
+    const dataviewVal = getPageData(dataviewCache, k.metadataKey);
+
+    if (cacheVal) {
       order.push(k.metadataKey);
       metadata[k.metadataKey] = {
         ...k,
-        value: cache.frontmatter[k.metadataKey],
+        value: cacheVal,
       };
       haveData = true;
-    } else if (dataviewCache && dataviewCache[k.metadataKey]) {
+    } else if (dataviewVal) {
       const cachedValue = dataviewCache[k.metadataKey];
       let val = cachedValue.values || cachedValue.val || cachedValue;
 
