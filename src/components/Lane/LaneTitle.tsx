@@ -9,6 +9,7 @@ import { MarkdownRenderer } from '../MarkdownRenderer';
 export interface LaneTitleProps {
   itemCount: number;
   title: string;
+  maxItems: number;
   isEditing: boolean;
   setIsEditing: Preact.StateUpdater<boolean>;
   onChange: Preact.ChangeEventHandler<HTMLTextAreaElement>;
@@ -19,6 +20,7 @@ export function LaneTitle({
   isEditing,
   setIsEditing,
   title,
+  maxItems,
   onChange,
 }: LaneTitleProps) {
   const { stateManager } = Preact.useContext(KanbanContext);
@@ -92,7 +94,7 @@ export function LaneTitle({
         )}
       </div>
       {!isEditing && !hideCount && (
-        <div className={c('lane-title-count')}>{itemCount}</div>
+        <div className={c('lane-title-count')}>{itemCount}{maxItems > 0 && `/${maxItems}`}</div>
       )}
     </>
   );
