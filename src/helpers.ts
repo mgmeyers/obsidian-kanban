@@ -70,3 +70,9 @@ export function hasFrontmatterKey(file: TFile) {
 
   return !!cache?.frontmatter && !!cache?.frontmatter['kanban-plugin'];
 }
+
+export function laneTitleWithMaxItems(title: string, maxItems: number) {
+  if (maxItems <= 0) return title;
+
+  return `${title} (${maxItems})`;
+}
