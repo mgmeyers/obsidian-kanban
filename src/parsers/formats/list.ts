@@ -384,7 +384,11 @@ function itemToMd(item: Item) {
 function laneToMd(lane: Lane) {
   const lines: string[] = [];
 
-  lines.push(`## ${replaceNewLines(laneTitleWithMaxItems(lane.data.title, lane.data.maxItems))}`);
+  lines.push(
+    `## ${replaceNewLines(
+      laneTitleWithMaxItems(lane.data.title, lane.data.maxItems)
+    )}`
+  );
 
   lines.push('');
 

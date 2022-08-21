@@ -1,7 +1,7 @@
 {
   "id": "obsidian-kanban",
   "name": "Kanban",
-  "version": "1.3.16",
+  "version": "1.3.17",
   "minAppVersion": "0.15.3",
   "description": "Create markdown-backed Kanban boards in Obsidian.",
   "author": "mgmeyers",

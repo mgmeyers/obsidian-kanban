@@ -32,8 +32,8 @@ export function replaceBrs(str: string) {
 export function parseLaneTitle(str: string) {
   str = replaceBrs(str);
 
-  const m = /^(.*?)\s*\((\d+)\)$/.exec(str);
-  if (m == null) return { title: str, maxItems: 0 }
+  const match = str.match(/^(.*?)\s*\((\d+)\)$/);
+  if (match == null) return { title: str, maxItems: 0 };
 
-  return { title: m[1], maxItems: Number(m[2]) };
+  return { title: match[1], maxItems: Number(match[2]) };
 }
