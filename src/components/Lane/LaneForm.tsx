@@ -7,6 +7,7 @@ import { KanbanContext } from '../context';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c, generateInstanceId } from '../helpers';
 import { LaneTemplate } from '../types';
+import { parseLaneTitle } from 'src/parsers/helpers/parser';
 
 export function LaneForm({
   onNewLane,
@@ -40,7 +41,7 @@ export function LaneForm({
       id: generateInstanceId(),
       children: [],
       data: {
-        title: laneTitle,
+        ...parseLaneTitle(laneTitle),
         shouldMarkItemsComplete: shouldMarkAsComplete,
       },
     });

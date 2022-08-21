@@ -1,14 +1,17 @@
 import { getLinkpath } from 'obsidian';
 import Preact from 'preact/compat';
+import classcat from 'classcat';
 
 import { KanbanContext } from '../context';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { MarkdownRenderer } from '../MarkdownRenderer';
+import { laneTitleWithMaxItems } from 'src/helpers'
 
 export interface LaneTitleProps {
   itemCount: number;
   title: string;
+  maxItems: number;
   isEditing: boolean;
   setIsEditing: Preact.StateUpdater<boolean>;
   onChange: Preact.ChangeEventHandler<HTMLTextAreaElement>;
@@ -16,6 +19,8 @@ export interface LaneTitleProps {
 
 export function LaneTitle({
   itemCount,
+  maxItems,
+  wipLimitReached,
   isEditing,
   setIsEditing,
   title,
@@ -49,6 +54,11 @@ export function LaneTitle({
     }
   }, [isEditing]);
 
+  const counterClasses = [c('lane-title-count')];
+  if (wipLimitReached) {
+    counterClasses.push(c('lane-title-count-wip-exceeded'));
+  }
+
   return (
     <>
       <div className={c('lane-title')}>
@@ -60,7 +70,7 @@ export function LaneTitle({
             onEnter={onEnter}
             onEscape={onEscape}
             onSubmit={onSubmit}
-            value={title}
+            value={laneTitleWithMaxItems(title, maxItems)}
           />
         ) : (
           <>
@@ -92,7 +102,7 @@ export function LaneTitle({
         )}
       </div>
       {!isEditing && !hideCount && (
-        <div className={c('lane-title-count')}>{itemCount}</div>
+        <div className={classcat(counterClasses)}>{itemCount}{maxItems > 0 && `/${maxItems}`}</div>
       )}
     </>
   );

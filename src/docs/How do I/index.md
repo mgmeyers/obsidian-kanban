@@ -6,3 +6,4 @@
 - [[How do I/Install the plugin|Install the plugin]]
 - [[How do I/Search a Kanban board|Search a Kanban board]]
 - [[How do I/View a Kanban's archive|View a Kanban's archive]]
+- [[How do I/Set a WIP Limit.md|Set a WIP limit for a lane]]

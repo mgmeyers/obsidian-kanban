@@ -33,8 +33,10 @@ import {
   markRangeForDeletion,
   replaceBrs,
   replaceNewLines,
+  parseLaneTitle,
 } from '../helpers/parser';
 import { parseFragment } from '../parseMarkdown';
+import { laneTitleWithMaxItems } from 'src/helpers';
 
 export function listItemToItemData(
   stateManager: StateManager,
@@ -236,7 +238,7 @@ export function astToUnhydratedBoard(
           children: [],
           id: generateInstanceId(),
           data: {
-            title: replaceBrs(title),
+            ...parseLaneTitle(title),
             shouldMarkItemsComplete,
           },
         });
@@ -252,7 +254,7 @@ export function astToUnhydratedBoard(
           }),
           id: generateInstanceId(),
           data: {
-            title: replaceBrs(title),
+            ...parseLaneTitle(title),
             shouldMarkItemsComplete,
           },
         });
@@ -382,7 +384,7 @@ function itemToMd(item: Item) {
 function laneToMd(lane: Lane) {
   const lines: string[] = [];
 
-  lines.push(`## ${replaceNewLines(lane.data.title)}`);
+  lines.push(`## ${replaceNewLines(laneTitleWithMaxItems(lane.data.title, lane.data.maxItems))}`);
 
   lines.push('');
 
