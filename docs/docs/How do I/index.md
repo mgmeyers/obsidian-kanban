@@ -6,3 +6,4 @@
 * [Install the plugin](Install%20the%20plugin.md)
 * [Search a Kanban board](Search%20a%20Kanban%20board.md)
 * [View a Kanban's archive](View%20a%20Kanban's%20archive.md)
+* [Set a WIP limit for a lane](Set%20a%20WIP%20Limit.md)

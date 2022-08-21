@@ -19,6 +19,7 @@ Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
 * [Install the plugin](How%20do%20I/Install%20the%20plugin.md)
 * [Search a Kanban board](How%20do%20I/Search%20a%20Kanban%20board.md)
 * [View a Kanban's archive](How%20do%20I/View%20a%20Kanban's%20archive.md)
+* [Set a WIP limit for a lane](How%20do%20I/Set%20a%20WIP%20Limit.md)
 
 ## [Settings](Settings/index.md)
 

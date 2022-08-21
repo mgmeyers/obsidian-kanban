@@ -7,9 +7,11 @@
         "id": "0bafdba9f9fff2bf",
         "type": "leaf",
         "state": {
-          "type": "kanban",
+          "type": "markdown",
           "state": {
-            "file": "! Documentation board.md"
+            "file": "How do I/index.md",
+            "mode": "source",
+            "source": false
           }
         }
       }
@@ -67,7 +69,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "! Documentation board.md",
+                "file": "How do I/index.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -87,8 +89,8 @@
   },
   "active": "0bafdba9f9fff2bf",
   "lastOpenFiles": [
-    "! Documentation board.md",
     "index.md",
+    "! Documentation board.md",
     "Settings/index.md",
     "Settings/__Settings.md",
     "FAQs/index.md",
