@@ -1334,6 +1334,25 @@ button.kanban-plugin__cancel-action-button {
   margin-right: 10px;
 }
 
+.kanban-plugin__tag-color-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 1rem;
+}
+
+.kanban-plugin__add-tag-color-button {
+  align-self: baseline;
+  margin: 0;
+}
+
+.kanban-plugin__tag-color-input {
+  gap: 1rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
 .kanban-plugin__metadata-setting-desc {
   font-size: 14px;
 }

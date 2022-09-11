@@ -121,6 +121,9 @@ export default {
   'Hide card display tags': 'Hide card display tags',
   'When toggled, tags will not be displayed below the card title.':
     'When toggled, tags will not be displayed below the card title.',
+  'Display tag colors': 'Display tag colors',
+  'Set colors for the tags displayed below the card title.':
+    'Set colors for the tags displayed below the card title.',
   'Linked Page Metadata': 'Linked Page Metadata',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.',
@@ -144,6 +147,9 @@ export default {
   Delete: 'Delete',
   'Add key': 'Add key',
   'Field contains markdown': 'Field contains markdown',
+
+  // TagColorSettings.tsx
+  'Add tag color': 'Add tag color',
 
   // components/Item/Item.tsx
   'More options': 'More options',
@@ -177,6 +183,7 @@ export default {
   'Copy link to card': 'Copy link to card',
   'Insert card before': 'Insert card before',
   'Insert card after': 'Insert card after',
+  'Add label': 'Add label',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Enter list title...',
