@@ -4,11 +4,13 @@ export default {
   // main.ts
   'Open as kanban board': '打开为看板',
   'Create new board': '创建新看板',
-  'Archive completed cards in active board': '在当前看板中归档已完成卡片',
-  'Error: current file is not a Kanban board': '错误：当前文件不是看板文件',
-  'Convert empty note to Kanban': '转换空白文档为看板',
+  'Archive completed cards in active board':
+    '在当前看板中归档已完成卡片',
+  'Error: current file is not a Kanban board':
+    '错误：当前文件不是看板文件',
+  'Convert empty note to Kanban': '转换空白笔记为看板',
   'Error: cannot create Kanban, the current note is not empty':
-    '错误：无法转换当前文件，当前文件不是空白文档',
+    '错误：无法转换当前文件，当前笔记不是空白笔记',
   'New kanban board': '新看板',
   'Untitled Kanban': '未命名看板',
   'Toggle between Kanban and markdown mode':
@@ -18,7 +20,7 @@ export default {
   'Open as markdown': '打开为 Markdown 文件',
   'Open board settings': '打开看板设置',
   'Archive completed cards': '归档已完成卡片',
-  'Something went wrong': '出了点问题 `(*>﹏<*)′ ',
+  'Something went wrong': '出了点问题',
   'You may wish to open as markdown and inspect or edit the file.':
     '你可能希望以 Markdown 方式打开，并检查或编辑该文件。',
   'Are you sure you want to archive all completed cards on this board?':
@@ -28,47 +30,50 @@ export default {
   Complete: '完成',
   Archive: '归档',
   'Invalid Kanban file: problems parsing frontmatter':
-    '无效的看板文件：解析前端内容时出现问题',
-  "I don't know how to interpret this line:": '我不知道如何解读这句话: ',
+    '无效的看板文件：解析 frontmatter 时出现问题',
+  "I don't know how to interpret this line:":
+    "我不知道如何解读这句话：",
   Untitled: '未命名', // auto-created column
 
   // settingHelpers.ts
   'Note: No template plugins are currently enabled.':
-    '注意：当前模板插件没有运行',
+    '注意：当前没有启用模板插件',
   default: '默认',
-  'Search...': '搜索...',
+  'Search...': '搜索……',
 
   // Settings.ts
   'New line trigger': '换行触发器',
-  'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lanes.':
-    '选择 Enter 或是 Shift+Enter 来创建新行, 你没有选择的将用来创建和完成卡片',
-  'Prepend / append new cards': '追加新卡',
+  'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lists.':
+    '选择 Enter 或是 Shift+Enter 来创建新行, 未选用的快捷键将被用于创建卡片和列，以及完成卡片、列的编辑。',
+  'Shift + Enter': 'Shift + Enter',
+  Enter: 'Enter',
+  'Prepend / append new cards': '追加新卡片',
   'This setting controls whether new cards are added to the beginning or end of the list.':
-    '设置新卡片添加到列表头部或尾部。',
+    '设置新卡片追加到列头部或尾部。,
   Prepend: '头部',
   'Prepend (compact)': '头部 (紧凑)',
   Append: '尾部',
   'These settings will take precedence over the default Kanban board settings.':
-    '当前看板设置将会覆盖默认的看板设置',
+    '当前看板设置将会覆盖默认的看板设置。',
   'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.':
-    '设置看板的默认设置。设置可以每个看板单独设置。',
+    '更改默认的看板设置。为每个看板单独进行设置将覆盖默认设置。',
   'Note template': '笔记模板',
   'This template will be used when creating new notes from Kanban cards.':
-    '创建新看板卡片时会使用该模板',
+    '从看板卡片创建新笔记时会使用该模板。',
   'No template': '没有模板',
   'Note folder': '笔记存放位置',
   'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.':
-    '从看板卡片创建的笔记会放置到该文件夹中，如果这里为空，在看板创建的笔记会放置到 Obsidian 的默认文件存放位置。',
+    '从看板卡片创建的笔记会放置到该文件夹中。如果为空，笔记将会放置到 Obsidian 的默认文件存放位置。',
   'Default folder': '默认文件夹',
-  'Lane width': '卡片宽度',
-  'Enter a number to set the lane width in pixels.':
-    '输入一个数字来设置看板的卡片宽度',
-  'Maximum number of archived cards': '单个看板的归档卡片的最大数量',
+  'List width': '列宽',
+  'Enter a number to set the list width in pixels.':
+    '输入一个像素值来设置列的宽度',
+  'Maximum number of archived cards': '单个看板内已归档卡片的最大数量',
   "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
-    '已归档的卡片可以在 Markdown 模式下查看。这个设置会导致插件在已归档的卡片数量抵达限制值时开始删除卡片。当前值设置为 -1 的话可以永久保留所有归档卡片。',
+    "已归档卡片可以在 Markdown 模式下查看。该设置将使已归档卡片在达到最大数量时删除旧卡。设置为 -1 可以永久保留所有归档卡片。",
   'Display card checkbox': '展示卡片复选框',
   'When toggled, a checkbox will be displayed with each card':
-    '当打开这个，复选框会出现在每个卡片上',
+    '打开时，复选框会出现在每张卡片上',
   'Reset to default': '还原初始设置',
   'Date & Time': '日期和时间',
   'Date trigger': '日期触发指令',
@@ -86,39 +91,43 @@ export default {
   'Time format': '时间格式',
   'Date display format': '日期展示格式',
   'This format will be used when displaying dates in Kanban cards.':
-    '在看板卡片中，会基于该格式展示日期',
+    '看板卡片会以该格式展示日期。',
   'Show relative date': '展示相对日期',
   "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'":
-    '当打开这个，卡片会展示其设置的日期与今天的日期的差值，例如三天内、一个月内等。',
+    "打开时，卡片会展示其所设日期与当前日期的差值，例如“3天内”“一个月前”等",
   'Hide card display dates': '隐藏卡片日期',
+  'Hide card counts in list titles': '在列标题上隐藏卡片计数',
+  'When toggled, card counts are hidden from the list title':
+    '打开时，列标题上的卡片计数将隐藏',
   'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.':
-    '当打开这个，格式化的日期不会展示，但是如果你开启了相对日期的功能，相对日期还是会继续展示。',
+    '打开时，格式化日期不会在卡片上展示。如果开启了相对日期功能，相对日期还是会继续展示。',
   'Hide dates in card titles': '在卡片标题中隐藏日期',
   'When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes.':
-    '当打开这个，卡片标题中的日期会隐藏，当基于卡片创建新笔记的时候可以避免日期混杂其中。',
+    '打开时，卡片标题中的日期将会隐藏。当基于卡片创建新笔记时可以避免日期混杂其中。',
   'Link dates to daily notes': '链接日期到日记',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
-    '当打开这个，日期会自动链接到日记页面，例如 [[2021-04-26]]',
+    '打开时，日期会自动链接到日记页面，例如[[2021-04-26]]',
   'Add date and time to archived cards': '添加日期和时间到归档卡片',
   'When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
-    '当打开这个，当前的日期和时间会被添加到归档的卡片的前端上，例如“- [ ] 2021-05-14 10:00am 我的卡片标题”',
-  'Archive date/time separator': '日期或时间分隔符',
+    '打开时，当前日期和时间会被添加到归档卡片的 frontmatter 上，例如“- [ ] 2021-05-14 10:00am 我的卡片标题”',
+  'Archive date/time separator': '归档日期或时间分隔符Archive date/time separator',
   'This will be used to separate the archived date/time from the title':
-    '用于从分隔归档卡片的日期或时间',
+    '用于分隔标题与归档卡片的日期或时间',
   'Archive date/time format': '归档日期或时间格式',
   'Kanban Plugin': '看板插件',
   'Hide tags in card titles': '隐藏卡片标题中的标签',
   'When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.':
-    '当打开这个，卡片标题中的标签将会被隐藏，来避免生成卡片笔记的时候附带上标签',
+    '打开时，卡片标题中的标签将会被隐藏。当基于卡片创建新笔记时可以避免标签混杂其中。',
   'Hide card display tags': '隐藏卡片上的标签',
   'When toggled, tags will not be displayed below the card title.':
-    '当打开这个，卡片标题下方的标签将不会展示',
+    '打开时，卡片标题下方的标签将不会展示。',
   'Linked Page Metadata': '连接的页面元数据',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
-    '展示卡片中第一个连接所对应的笔记元数据，请在下方指定哪些元数据可以展示。你可以选择展示标志，标志可以都被隐藏。',
+    '展示卡片中第一个连接所对应的笔记元数据。请在下方指定哪些元数据可以展示。你可以选择展示哪些标志，所有标志都可以被隐藏。',
   'Board Header Buttons': '板头按钮',
   'Calendar: first day of week': '日历：一周的第一天',
-  'Override which day is used as the start of the week': '哪一天作为一周的开始',
+  'Override which day is used as the start of the week':
+    '设置哪一天作为一周的开始',
   Sunday: '周日',
   Monday: '周一',
   Tuesday: '周二',
@@ -131,7 +140,7 @@ export default {
   'Metadata key': '元数据参数名',
   'Display label': '展示标志',
   'Hide label': '隐藏标志',
-  'Drag to rearrange': '拖动来重排顺序',
+  'Drag to rearrange': '拖动以重排顺序',
   Delete: '删除',
   'Add key': '添加参数名',
   'Field contains markdown': '字段包含 Markdown',
@@ -148,7 +157,7 @@ export default {
   'Change time': '更改时间',
 
   // components/Item/ItemForm.tsx
-  'Card title...': '卡片标题',
+  'Card title...': '卡片标题……',
   'Add card': '添加',
   'Add a card': '添加卡片',
 
@@ -170,7 +179,7 @@ export default {
   'Insert card after': '在下方插入卡片',
 
   // components/Lane/LaneForm.tsx
-  'Enter list title...': '输入新的列标题',
+  'Enter list title...': '输入新的列标题……',
   'Mark cards in this list as complete': '将该列设置为完成列',
   'Add list': '添加',
   'Add a list': '添加列',
@@ -195,6 +204,8 @@ export default {
   'Delete list': '删除列',
   'Insert list before': '在上方插入列',
   'Insert list after': '在下方插入列',
+  'Sort by card text': '以卡片文本排序',
+  'Sort by date': '以日期排序',
 
   // components/helpers/renderMarkdown.ts
   'Unable to find': '无法找到',
