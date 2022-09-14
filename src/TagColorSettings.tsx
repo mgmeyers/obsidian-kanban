@@ -17,7 +17,6 @@ interface ItemProps {
 }
 
 function Item({ tagColorKey, deleteKey, updateKey }: ItemProps) {
-  console.log(tagColorKey);
   return (
     <div className={c('setting-item-wrapper')}>
       <div className={c('setting-item')}>
