@@ -50,6 +50,7 @@
     "box-intersect": "^1.0.2",
     "choices.js": "9.0.1",
     "classcat": "^5.0.3",
+    "colord": "^2.9.3",
     "deepmerge": "^4.2.2",
     "eventemitter3": "^4.0.7",
     "fast-json-patch": "^3.1.0",
@@ -70,6 +71,7 @@
     "obsidian-daily-notes-interface": "^0.9.4",
     "preact": "^10.8.2",
     "react": "npm:@preact/compat",
+    "react-colorful": "^5.6.1",
     "react-cool-onclickoutside": "^1.6.1",
     "react-dom": "npm:@preact/compat",
     "unist-util-visit": "^4.1.0"

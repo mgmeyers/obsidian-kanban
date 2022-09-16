@@ -6,24 +6,24 @@ import {
   generateInstanceId,
   noop,
   useIMEInputProps,
-} from './components/helpers';
-import { Icon } from './components/Icon/Icon';
+} from '../components/helpers';
+import { Icon } from '../components/Icon/Icon';
 import {
   DataTypes,
   MetadataSetting,
   MetadataSettingTemplate,
-} from './components/types';
-import { DndManagerContext } from './dnd/components/context';
-import { DndContext } from './dnd/components/DndContext';
-import { DragOverlay } from './dnd/components/DragOverlay';
-import { Droppable } from './dnd/components/Droppable';
-import { DndScope } from './dnd/components/Scope';
-import { Sortable } from './dnd/components/Sortable';
-import { SortPlaceholder } from './dnd/components/SortPlaceholder';
-import { useDragHandle } from './dnd/managers/DragManager';
-import { Entity } from './dnd/types';
-import { getParentBodyElement, getParentWindow } from './dnd/util/getWindow';
-import { t } from './lang/helpers';
+} from '../components/types';
+import { DndManagerContext } from '../dnd/components/context';
+import { DndContext } from '../dnd/components/DndContext';
+import { DragOverlay } from '../dnd/components/DragOverlay';
+import { Droppable } from '../dnd/components/Droppable';
+import { DndScope } from '../dnd/components/Scope';
+import { Sortable } from '../dnd/components/Sortable';
+import { SortPlaceholder } from '../dnd/components/SortPlaceholder';
+import { useDragHandle } from '../dnd/managers/DragManager';
+import { Entity } from '../dnd/types';
+import { getParentBodyElement, getParentWindow } from '../dnd/util/getWindow';
+import { t } from '../lang/helpers';
 
 interface ItemProps {
   itemIndex: number;
