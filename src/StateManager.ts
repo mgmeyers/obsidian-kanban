@@ -111,13 +111,15 @@ export class StateManager {
     }
 
     const view = this.getAView();
-    const fileStr = this.parser.boardToMd(this.state);
 
-    view.requestSaveToDisk(fileStr);
+    if (view) {
+      const fileStr = this.parser.boardToMd(this.state);
+      view.requestSaveToDisk(fileStr);
 
-    this.viewSet.forEach((view) => {
-      view.data = fileStr;
-    });
+      this.viewSet.forEach((view) => {
+        view.data = fileStr;
+      });
+    }
   }
 
   softRefresh() {

@@ -28,7 +28,7 @@ import KanbanPlugin from './main';
 import {
   cleanupMetadataSettings,
   renderMetadataSettings,
-} from './MetadataSettings';
+} from './settings/MetadataSettings';
 import { frontMatterKey } from './parsers/common';
 import {
   createSearchSelect,
@@ -36,7 +36,10 @@ import {
   defaultTimeTrigger,
   getListOptions,
 } from './settingHelpers';
-import { cleanUpTagSettings, renderTagSettings } from './TagColorSettings';
+import {
+  cleanUpTagSettings,
+  renderTagSettings,
+} from './settings/TagColorSettings';
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 

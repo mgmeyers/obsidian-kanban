@@ -30,6 +30,7 @@ export interface DataKey {
 export interface TagColorKey {
   tagKey: string;
   color: string;
+  backgroundColor: string;
 }
 
 export type PageDataValue =

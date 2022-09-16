@@ -9,7 +9,7 @@ import { handlePaste } from '../Editor/helpers';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { MarkdownDomRenderer } from '../MarkdownRenderer';
-import { Item } from '../types';
+import { Item, TagColorKey } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
 import {
   constructDatePicker,
@@ -62,19 +62,18 @@ function useDatePickers(item: Item) {
   }, [boardModifiers, path, item, stateManager]);
 }
 
-function useTagColors(stateManager: StateManager): { [tag: string]: string } {
+function useTagColors(stateManager: StateManager): Record<string, TagColorKey> {
   const tagColors = stateManager.useSetting('tag-colors');
 
   return (tagColors || []).reduce((total, current) => {
-    if (!current.tagKey || !current.color) {
+    if (!current.tagKey) {
       return total;
     }
 
-    return {
-      ...total,
-      [current.tagKey]: current.color,
-    };
-  }, {});
+    total[current.tagKey] = current;
+
+    return total;
+  }, {} as Record<string, TagColorKey>);
 }
 
 export interface ItemContentProps {
@@ -146,9 +145,7 @@ export const ItemContent = Preact.memo(function ItemContent({
     Preact.useContext(KanbanContext);
 
   const hideTagsDisplay = stateManager.useSetting('hide-tags-display');
-
   const tagColorMap = useTagColors(stateManager);
-
   const path = useNestedEntityPath();
 
   const { onEditDate, onEditTime } = useDatePickers(item);
@@ -280,8 +277,9 @@ export const ItemContent = Preact.memo(function ItemContent({
                   }`}
                   style={
                     !!tagColorMap[tag] && {
-                      backgroundColor: tagColorMap[tag],
-                      color: 'white',
+                      '--tag-color': tagColorMap[tag].color,
+                      '--tag-background-color':
+                        tagColorMap[tag].backgroundColor,
                     }
                   }
                 >

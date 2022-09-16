@@ -138,6 +138,9 @@ export default {
   Thursday: 'Thursday',
   Friday: 'Friday',
   Saturday: 'Saturday',
+  'Background color': 'Background color',
+  Tag: 'Tag',
+  'Text color': 'Text color',
 
   // MetadataSettings.tsx
   'Metadata key': 'Metadata key',

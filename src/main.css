@@ -552,7 +552,11 @@ button.kanban-plugin__new-item-button {
 }
 
 .kanban-plugin__item-tags .kanban-plugin__item-tag {
-  background-color: rgba(var(--interactive-accent-rgb), 0.1);
+  background-color: var(
+    --tag-background-color,
+    rgba(var(--interactive-accent-rgb), 0.1)
+  );
+  color: var(--tag-color, var(--text-accent));
   padding: 1px 4px;
   border-radius: 6px;
   margin: 3px 3px 0 0;
@@ -1346,11 +1350,18 @@ button.kanban-plugin__cancel-action-button {
   margin: 0;
 }
 
-.kanban-plugin__tag-color-input {
-  gap: 1rem;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+.kanban-plugin__tag-color-input .kanban-plugin__item-tags {
+  background-color: var(--background-primary);
+  padding: 10px;
+  margin: 0;
+  border-radius: 4px;
+}
+
+.kanban-plugin__tag-color-input .kanban-plugin__item-tag {
+  margin-top: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
 }
 
 .kanban-plugin__metadata-setting-desc {
@@ -1452,4 +1463,15 @@ body:not(.native-scrollbars)
     transform: scale(1);
     opacity: 0;
   }
+}
+
+.kanban-plugin__color-picker-wrapper {
+  position: relative;
+}
+
+.kanban-plugin__color-picker {
+  position: absolute;
+  top: -5px;
+  left: 0;
+  transform: translate(0, -100%);
 }
