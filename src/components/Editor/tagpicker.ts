@@ -30,6 +30,8 @@ export function getTagSearchConfig(
     template: (result: Fuse.FuseResult<string>) => {
       return result.item;
     },
-    replace: (result: Fuse.FuseResult<string>): string => `${result.item} `,
+    replace: (result: Fuse.FuseResult<string>): string => {
+      return `${result.item.replace(/<\/?em>/g, '')} `;
+    },
   };
 }
