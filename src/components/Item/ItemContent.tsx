@@ -2,6 +2,7 @@ import { TFile } from 'obsidian';
 import Preact from 'preact/compat';
 
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
+import { StateManager } from 'src/StateManager';
 
 import { KanbanContext } from '../context';
 import { handlePaste } from '../Editor/helpers';
@@ -59,6 +60,21 @@ function useDatePickers(item: Item) {
       onEditTime,
     };
   }, [boardModifiers, path, item, stateManager]);
+}
+
+function useTagColors(stateManager: StateManager): { [tag: string]: string } {
+  const tagColors = stateManager.useSetting('tag-colors');
+
+  return (tagColors || []).reduce((total, current) => {
+    if (!current.tagKey || !current.color) {
+      return total;
+    }
+
+    return {
+      ...total,
+      [current.tagKey]: current.color,
+    };
+  }, {});
 }
 
 export interface ItemContentProps {
@@ -130,6 +146,9 @@ export const ItemContent = Preact.memo(function ItemContent({
     Preact.useContext(KanbanContext);
 
   const hideTagsDisplay = stateManager.useSetting('hide-tags-display');
+
+  const tagColorMap = useTagColors(stateManager);
+
   const path = useNestedEntityPath();
 
   const { onEditDate, onEditTime } = useDatePickers(item);
@@ -259,6 +278,12 @@ export const ItemContent = Preact.memo(function ItemContent({
                       ? 'is-search-match'
                       : ''
                   }`}
+                  style={
+                    !!tagColorMap[tag] && {
+                      backgroundColor: tagColorMap[tag],
+                      color: 'white',
+                    }
+                  }
                 >
                   <span>{tag[0]}</span>
                   {tag.slice(1)}

@@ -27,6 +27,11 @@ export interface DataKey {
   containsMarkdown: boolean;
 }
 
+export interface TagColorKey {
+  tagKey: string;
+  color: string;
+}
+
 export type PageDataValue =
   | string
   | number
@@ -81,12 +86,14 @@ export type Item = Nestable<ItemData>;
 export type Lane = Nestable<LaneData, Item>;
 export type Board = Nestable<BoardData, Lane>;
 export type MetadataSetting = Nestable<DataKey>;
+export type TagColorSetting = Nestable<TagColorKey>;
 
 export const DataTypes = {
   Item: 'item',
   Lane: 'lane',
   Board: 'board',
   MetadataSetting: 'metadata-setting',
+  TagColorSetting: 'tag-color',
 };
 
 export const ItemTemplate = {
@@ -108,5 +115,11 @@ export const BoardTemplate = {
 export const MetadataSettingTemplate = {
   accepts: [DataTypes.MetadataSetting],
   type: DataTypes.MetadataSetting,
+  children: [] as any[],
+};
+
+export const TagColorSettingTemplate = {
+  accepts: [] as string[],
+  type: DataTypes.TagColorSetting,
   children: [] as any[],
 };

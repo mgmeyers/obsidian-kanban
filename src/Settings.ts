@@ -17,6 +17,9 @@ import {
   DataKey,
   MetadataSetting,
   MetadataSettingTemplate,
+  TagColorSetting,
+  TagColorKey,
+  TagColorSettingTemplate,
 } from './components/types';
 import { getParentWindow } from './dnd/util/getWindow';
 import { KanbanView } from './KanbanView';
@@ -33,6 +36,7 @@ import {
   defaultTimeTrigger,
   getListOptions,
 } from './settingHelpers';
+import { cleanUpTagSettings, renderTagSettings } from './TagColorSettings';
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
@@ -71,6 +75,7 @@ export interface KanbanSettings {
   'show-view-as-markdown'?: boolean;
   'show-board-settings'?: boolean;
   'show-search'?: boolean;
+  'tag-colors'?: TagColorKey[];
 }
 
 export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
@@ -105,6 +110,7 @@ export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
   'show-view-as-markdown': true,
   'show-board-settings': true,
   'show-search': true,
+  'tag-colors': true,
 };
 
 export type SettingRetriever = <K extends keyof KanbanSettings>(
@@ -533,6 +539,37 @@ export class SettingsManager {
                 });
               });
           });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Display tag colors'))
+      .setDesc(t('Set colors for the tags displayed below the card title.'))
+      .then((setting) => {
+        const [value] = this.getSetting('tag-colors', local);
+
+        const keys: TagColorSetting[] = ((value || []) as TagColorKey[]).map(
+          (k) => {
+            return {
+              ...TagColorSettingTemplate,
+              id: generateInstanceId(),
+              data: k,
+            };
+          }
+        );
+
+        renderTagSettings(setting.settingEl, keys, (keys: TagColorSetting[]) =>
+          this.applySettingsUpdate({
+            'tag-colors': {
+              $set: keys.map((k) => k.data),
+            },
+          })
+        );
+
+        this.cleanupFns.push(() => {
+          if (setting.settingEl) {
+            cleanUpTagSettings(setting.settingEl);
+          }
+        });
       });
 
     contentEl.createEl('h4', { text: t('Board Header Buttons') });
