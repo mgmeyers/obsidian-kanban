@@ -1,4 +1,3 @@
-import { insertTextAtCursor } from './insertTextAtCursor';
 import {
   applyWrappingFormatting,
   expandSelectionToLineBoundaries,
@@ -8,6 +7,7 @@ import {
   toggleLineFormatting,
   toggleWrappingFormattingCommand,
 } from './helpers';
+import { insertTextAtCursor } from './insertTextAtCursor';
 
 export const commandIds = [
   'editor:toggle-blockquote',

@@ -1,4 +1,5 @@
 import {} from 'obsidian';
+
 import { Plugin } from '../types/options';
 
 export interface Config {

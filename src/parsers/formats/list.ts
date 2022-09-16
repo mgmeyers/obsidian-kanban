@@ -15,6 +15,7 @@ import {
   Lane,
   LaneTemplate,
 } from 'src/components/types';
+import { laneTitleWithMaxItems } from 'src/helpers';
 import { t } from 'src/lang/helpers';
 import { KanbanSettings } from 'src/Settings';
 import { StateManager } from 'src/StateManager';
@@ -31,12 +32,11 @@ import { hydrateItem } from '../helpers/hydrateBoard';
 import {
   executeDeletion,
   markRangeForDeletion,
+  parseLaneTitle,
   replaceBrs,
   replaceNewLines,
-  parseLaneTitle,
 } from '../helpers/parser';
 import { parseFragment } from '../parseMarkdown';
-import { laneTitleWithMaxItems } from 'src/helpers';
 
 export function listItemToItemData(
   stateManager: StateManager,

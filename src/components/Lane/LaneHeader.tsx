@@ -3,6 +3,7 @@ import Preact from 'preact/compat';
 
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { t } from 'src/lang/helpers';
+import { parseLaneTitle } from 'src/parsers/helpers/parser';
 
 import { KanbanContext } from '../context';
 import { getDropAction } from '../Editor/helpers';
@@ -13,7 +14,6 @@ import { Lane } from '../types';
 import { ConfirmAction, useSettingsMenu } from './LaneMenu';
 import { LaneSettings } from './LaneSettings';
 import { LaneTitle } from './LaneTitle';
-import { parseLaneTitle } from 'src/parsers/helpers/parser';
 
 interface LaneHeaderProps {
   lane: Lane;

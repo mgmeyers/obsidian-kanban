@@ -17,18 +17,14 @@ import {
   DataKey,
   MetadataSetting,
   MetadataSettingTemplate,
-  TagColorSetting,
   TagColorKey,
+  TagColorSetting,
   TagColorSettingTemplate,
 } from './components/types';
 import { getParentWindow } from './dnd/util/getWindow';
 import { KanbanView } from './KanbanView';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
-import {
-  cleanupMetadataSettings,
-  renderMetadataSettings,
-} from './settings/MetadataSettings';
 import { frontMatterKey } from './parsers/common';
 import {
   createSearchSelect,
@@ -36,6 +32,10 @@ import {
   defaultTimeTrigger,
   getListOptions,
 } from './settingHelpers';
+import {
+  cleanupMetadataSettings,
+  renderMetadataSettings,
+} from './settings/MetadataSettings';
 import {
   cleanUpTagSettings,
   renderTagSettings,

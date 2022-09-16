@@ -1,9 +1,9 @@
-import { insertTextAtCursor } from './insertTextAtCursor';
 import { Platform } from 'obsidian';
 
 import { StateManager } from 'src/StateManager';
 
 import { getFileListFromClipboard, handleDragOrPaste } from '../Item/helpers';
+import { insertTextAtCursor } from './insertTextAtCursor';
 
 export interface TextRange {
   start: number;

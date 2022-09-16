@@ -2,12 +2,12 @@ import Preact from 'preact/compat';
 import useOnclickOutside from 'react-cool-onclickoutside';
 
 import { t } from 'src/lang/helpers';
+import { parseLaneTitle } from 'src/parsers/helpers/parser';
 
 import { KanbanContext } from '../context';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c, generateInstanceId } from '../helpers';
 import { LaneTemplate } from '../types';
-import { parseLaneTitle } from 'src/parsers/helpers/parser';
 
 export function LaneForm({
   onNewLane,

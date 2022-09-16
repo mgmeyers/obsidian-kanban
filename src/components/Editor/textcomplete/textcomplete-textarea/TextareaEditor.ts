@@ -1,6 +1,3 @@
-import { getCaretCoordinates } from './textareaCaret';
-import { update } from '../undate/update';
-
 import {
   CursorOffset,
   Editor,
@@ -8,6 +5,8 @@ import {
   createCustomEvent,
 } from '../textcomplete-core';
 import { calculateElementOffset, getLineHeightPx } from '../textcomplete-utils';
+import { update } from '../undate/update';
+import { getCaretCoordinates } from './textareaCaret';
 
 export class TextareaEditor extends Editor {
   constructor(private readonly el: HTMLTextAreaElement) {

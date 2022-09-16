@@ -4,10 +4,8 @@ export default {
   // main.ts
   'Open as kanban board': '打开为看板',
   'Create new board': '创建新看板',
-  'Archive completed cards in active board':
-    '在当前看板中归档已完成卡片',
-  'Error: current file is not a Kanban board':
-    '错误：当前文件不是看板文件',
+  'Archive completed cards in active board': '在当前看板中归档已完成卡片',
+  'Error: current file is not a Kanban board': '错误：当前文件不是看板文件',
   'Convert empty note to Kanban': '转换空白笔记为看板',
   'Error: cannot create Kanban, the current note is not empty':
     '错误：无法转换当前文件，当前笔记不是空白笔记',
@@ -31,8 +29,7 @@ export default {
   Archive: '归档',
   'Invalid Kanban file: problems parsing frontmatter':
     '无效的看板文件：解析 frontmatter 时出现问题',
-  "I don't know how to interpret this line:":
-    "我不知道如何解读这句话：",
+  "I don't know how to interpret this line:": '我不知道如何解读这句话：',
   Untitled: '未命名', // auto-created column
 
   // settingHelpers.ts
@@ -49,7 +46,7 @@ export default {
   Enter: 'Enter',
   'Prepend / append new cards': '追加新卡片',
   'This setting controls whether new cards are added to the beginning or end of the list.':
-    '设置新卡片追加到列头部或尾部。,
+    '设置新卡片追加到列头部或尾部。',
   Prepend: '头部',
   'Prepend (compact)': '头部 (紧凑)',
   Append: '尾部',
@@ -70,7 +67,7 @@ export default {
     '输入一个像素值来设置列的宽度',
   'Maximum number of archived cards': '单个看板内已归档卡片的最大数量',
   "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
-    "已归档卡片可以在 Markdown 模式下查看。该设置将使已归档卡片在达到最大数量时删除旧卡。设置为 -1 可以永久保留所有归档卡片。",
+    '已归档卡片可以在 Markdown 模式下查看。该设置将使已归档卡片在达到最大数量时删除旧卡。设置为 -1 可以永久保留所有归档卡片。',
   'Display card checkbox': '展示卡片复选框',
   'When toggled, a checkbox will be displayed with each card':
     '打开时，复选框会出现在每张卡片上',
@@ -94,7 +91,7 @@ export default {
     '看板卡片会以该格式展示日期。',
   'Show relative date': '展示相对日期',
   "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'":
-    "打开时，卡片会展示其所设日期与当前日期的差值，例如“3天内”“一个月前”等",
+    '打开时，卡片会展示其所设日期与当前日期的差值，例如“3天内”“一个月前”等',
   'Hide card display dates': '隐藏卡片日期',
   'Hide card counts in list titles': '在列标题上隐藏卡片计数',
   'When toggled, card counts are hidden from the list title':
@@ -110,7 +107,8 @@ export default {
   'Add date and time to archived cards': '添加日期和时间到归档卡片',
   'When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     '打开时，当前日期和时间会被添加到归档卡片的 frontmatter 上，例如“- [ ] 2021-05-14 10:00am 我的卡片标题”',
-  'Archive date/time separator': '归档日期或时间分隔符Archive date/time separator',
+  'Archive date/time separator':
+    '归档日期或时间分隔符Archive date/time separator',
   'This will be used to separate the archived date/time from the title':
     '用于分隔标题与归档卡片的日期或时间',
   'Archive date/time format': '归档日期或时间格式',

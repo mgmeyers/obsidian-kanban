@@ -1,6 +1,11 @@
-import Preact from 'preact/compat';
+import { colord } from 'colord';
 import update from 'immutability-helper';
+import Preact from 'preact/compat';
+import { RgbaStringColorPicker } from 'react-colorful';
+import useOnclickOutside from 'react-cool-onclickoutside';
+
 import { c, generateInstanceId } from '../components/helpers';
+import { Icon } from '../components/Icon/Icon';
 import {
   TagColorKey,
   TagColorSetting,
@@ -8,10 +13,6 @@ import {
 } from '../components/types';
 import { getParentBodyElement } from '../dnd/util/getWindow';
 import { t } from '../lang/helpers';
-import { Icon } from '../components/Icon/Icon';
-import { RgbaStringColorPicker } from 'react-colorful';
-import useOnclickOutside from 'react-cool-onclickoutside';
-import { colord } from 'colord';
 
 interface ItemProps {
   tagColorKey: TagColorKey;

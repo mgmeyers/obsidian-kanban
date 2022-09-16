@@ -1,12 +1,13 @@
+import classcat from 'classcat';
 import { getLinkpath } from 'obsidian';
 import Preact from 'preact/compat';
-import classcat from 'classcat';
+
+import { laneTitleWithMaxItems } from 'src/helpers';
 
 import { KanbanContext } from '../context';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { MarkdownRenderer } from '../MarkdownRenderer';
-import { laneTitleWithMaxItems } from 'src/helpers';
 
 export interface LaneTitleProps {
   itemCount: number;
