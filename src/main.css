@@ -927,8 +927,15 @@ button.kanban-plugin__cancel-action-button {
   margin: 0;
 }
 
+.kanban-plugin__board-settings-modal .setting-item {
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
 .kanban-plugin__board-settings-modal .setting-item-info {
-  width: 100%;
+  max-width: 400px;
+  min-width: 300px;
+  width: 50%;
 }
 
 .kanban-plugin__board-settings-modal .setting-item-control {
@@ -1296,11 +1303,12 @@ button.kanban-plugin__cancel-action-button {
 
 .kanban-plugin__setting-controls-wrapper {
   flex-grow: 1;
-  flex-shrink: 0;
+  flex-shrink: 1;
 }
 
 .kanban-plugin__setting-input-wrapper {
   display: flex;
+  flex-wrap: wrap;
   margin-bottom: 1rem;
 }
 
@@ -1324,6 +1332,7 @@ button.kanban-plugin__cancel-action-button {
   justify-content: flex-end;
   flex-grow: 1;
   flex-shrink: 0;
+  max-width: 25px;
 }
 
 .kanban-plugin__setting-button-wrapper > div {

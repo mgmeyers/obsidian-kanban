@@ -60,7 +60,7 @@ function getLinkFromObj(v: any, view: KanbanView) {
       v.display
     );
 
-    return `${v.embed ? '!' : ''}${link}`;
+    return `${v.embed && link[0] !== '!' ? '!' : ''}${link}`;
   }
 
   return `${v.embed ? '!' : ''}[[${v.path}${
