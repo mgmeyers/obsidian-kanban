@@ -526,16 +526,21 @@ button.kanban-plugin__new-item-button {
   text-transform: uppercase;
 }
 
-.kanban-plugin__item-metadata-date-relative-passed {
-  color: red;
+
+.kanban-plugin__item-metadata-date-relative-upcoming {
+  color: green;
 }
 
-.kanban-plugin__item-metadata-date-relative-future {
-  color: blue;
+.kanban-plugin__item-metadata-date-relative-soon {
+  color: orange
 }
 
 .kanban-plugin__item-metadata-date-relative-today {
-  color: green;
+  color: red;
+}
+
+.kanban-plugin__item-metadata-date-relative-overdue {
+  color: magenta;
 }
 
 .kanban-plugin__item-metadata a {

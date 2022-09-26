@@ -48,16 +48,28 @@ export function RelativeDate({ item, stateManager }: DateProps) {
     item.data.metadata.time
   );
 
+  let className = "item-metadata-date-relative-";
+  const diff = item.data.metadata.date.diff(moment(), 'day');
+  const needsColoring = !item.data.isComplete && diff <= 6;
+  // Only make changes if item is incomplete and due within the next week
+  if (needsColoring) {
+    if (diff >= 4) {
+      // Between 7 - 5 days
+      className += "upcoming";
+    } else if (diff >= 2) {
+      // Between 5 - 3 days
+      className += "soon";
+    } else if (diff >= 0) {
+      // Between 3 - 1 days
+      className += "today";
+    } else {
+      className += "overdue";
+    }
+  }
+
   return (
     <span
-      className={`${c('item-metadata-date-relative')} ${
-        (relativeDate.includes('ago') || relativeDate.includes('yesterday')) &&
-        c('item-metadata-date-relative-passed')
-      } ${
-        relativeDate.includes('in') && c('item-metadata-date-relative-future')
-      } ${
-        relativeDate.includes('oday') && c('item-metadata-date-relative-today')
-      }`}
+      className={`${c('item-metadata-date-relative')} ${needsColoring && c(className)}`}
     >
       {relativeDate}
     </span>
