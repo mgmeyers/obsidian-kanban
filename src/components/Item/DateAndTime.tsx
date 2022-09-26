@@ -49,7 +49,18 @@ export function RelativeDate({ item, stateManager }: DateProps) {
   );
 
   return (
-    <span className={c('item-metadata-date-relative')}>{relativeDate}</span>
+    <span
+      className={`${c('item-metadata-date-relative')} ${
+        (relativeDate.includes('ago') || relativeDate.includes('yesterday')) &&
+        c('item-metadata-date-relative-passed')
+      } ${
+        relativeDate.includes('in') && c('item-metadata-date-relative-future')
+      } ${
+        relativeDate.includes('oday') && c('item-metadata-date-relative-today')
+      }`}
+    >
+      {relativeDate}
+    </span>
   );
 }
 
