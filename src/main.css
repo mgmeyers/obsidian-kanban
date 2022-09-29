@@ -532,15 +532,22 @@ button.kanban-plugin__new-item-button {
 }
 
 .kanban-plugin__item-metadata-date-relative-soon {
-  color: orange
+  color: orange;
 }
 
 .kanban-plugin__item-metadata-date-relative-today {
   color: red;
+  font-weight: bold;
 }
 
-.kanban-plugin__item-metadata-date-relative-overdue {
+.kanban-plugin__item.is-past:not(.is-complete) .kanban-plugin__item-metadata-date-relative {
   color: magenta;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.kanban-plugin__item.is-complete .kanban-plugin__item-markdown {
+  text-decoration: line-through;
 }
 
 .kanban-plugin__item-metadata a {

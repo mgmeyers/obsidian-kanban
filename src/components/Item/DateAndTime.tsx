@@ -55,17 +55,15 @@ export function RelativeDate({ item, stateManager }: DateProps) {
 
   // Only make changes if item is incomplete and due within the next week
   if (needsColoring) {
-    if (diff >= 4) {
-      // Between 7 - 5 days
-      className += 'upcoming';
-    } else if (diff >= 2) {
-      // Between 5 - 3 days
-      className += 'soon';
-    } else if (diff >= 0) {
-      // Between 3 - 1 days
+    if (diff == 0) {
+      // Within the next day
       className += 'today';
+    } else if (diff <= 2) {
+      // Within the next 3 days
+      className += 'soon';
     } else {
-      className += 'overdue';
+      // Within the next week
+      className += 'upcoming';
     }
   }
 
