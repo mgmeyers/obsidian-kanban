@@ -201,12 +201,12 @@ export function useItemMenu({
           .addItem((i) => {
             i.setIcon('up-arrow-with-tail')
               .setTitle(t('Move to top'))
-              .onClick(async () => boardModifiers.moveItemToTop(path));
+              .onClick(() => boardModifiers.moveItemToTop(path));
           })
           .addItem((i) => {
             i.setIcon('down-arrow-with-tail')
               .setTitle(t('Move to bottom'))
-              .onClick(async () => boardModifiers.moveItemToBottom(path));
+              .onClick(() => boardModifiers.moveItemToBottom(path));
           })
           .addItem((i) => {
             i.setIcon('sheets-in-box')
