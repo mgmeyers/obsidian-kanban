@@ -228,9 +228,8 @@ export function getTagColorFn(
 export function getDateColorFn(
   stateManager: StateManager
 ): (date: moment.Moment) => DateColorKey | null {
-  const dateColors = stateManager.useSetting('date-colors');
-
-  const orders = dateColors.map<
+  const dateColors = stateManager.getSetting('date-colors');
+  const orders = (dateColors || []).map<
     [moment.Moment | 'today' | 'before' | 'after', DateColorKey]
   >((c) => {
     if (c.isToday) {
