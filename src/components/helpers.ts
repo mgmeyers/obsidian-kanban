@@ -207,7 +207,7 @@ export function getTemplatePlugins(app: App) {
 export function getTagColorFn(
   stateManager: StateManager
 ): (tag: string) => TagColorKey {
-  const tagColors = stateManager.useSetting('tag-colors');
+  const tagColors = stateManager.getSetting('tag-colors');
 
   const tagMap = (tagColors || []).reduce((total, current) => {
     if (!current.tagKey) {

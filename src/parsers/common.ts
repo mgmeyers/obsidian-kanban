@@ -237,6 +237,8 @@ export function shouldRefreshBoard(
     'hide-date-in-title',
     'hide-tags-in-title',
     'hide-card-count',
+    'tag-colors',
+    'date-colors',
   ];
 
   return !toCompare.every((k) => {

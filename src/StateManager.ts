@@ -133,6 +133,9 @@ export class StateManager {
         this.state = await this.parser.reparseBoard();
 
         this.stateReceivers.forEach((receiver) => receiver(this.state));
+        this.settingsNotifiers.forEach((notifiers) => {
+          notifiers.forEach((fn) => fn());
+        });
         this.viewSet.forEach((view) => view.initHeaderButtons());
       } catch (e) {
         console.error(e);
@@ -294,6 +297,8 @@ export class StateManager {
         this.getSettingRaw('show-board-settings', suppliedSettings) ?? true,
       'show-search':
         this.getSettingRaw('show-search', suppliedSettings) ?? true,
+      'tag-colors': this.getSettingRaw('tag-colors', suppliedSettings) ?? [],
+      'date-colors': this.getSettingRaw('date-colors', suppliedSettings) ?? [],
     };
   }
 
