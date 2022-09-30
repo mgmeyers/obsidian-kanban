@@ -22,7 +22,7 @@ import { DndScope } from '../dnd/components/Scope';
 import { getBoardModifiers } from '../helpers/boardModifiers';
 import { frontMatterKey } from '../parsers/common';
 import { KanbanContext, SearchContext } from './context';
-import { baseClassName, c } from './helpers';
+import { baseClassName, c, getDateColorFn, getTagColorFn } from './helpers';
 import { Icon } from './Icon/Icon';
 import { Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
@@ -53,6 +53,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
 
   const filePath = stateManager.file.path;
   const maxArchiveLength = stateManager.useSetting('max-archive-size');
+  const dateColors = stateManager.useSetting('date-colors');
+  const tagColors = stateManager.useSetting('tag-colors');
 
   const closeLaneForm = Preact.useCallback(() => {
     if (boardData?.children.length > 0) {
@@ -263,8 +265,10 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       stateManager,
       boardModifiers,
       filePath,
+      getTagColor: getTagColorFn(stateManager),
+      getDateColor: getDateColorFn(stateManager),
     };
-  }, [view, stateManager, boardModifiers, filePath]);
+  }, [view, stateManager, boardModifiers, filePath, dateColors, tagColors]);
 
   const html5DragHandlers = createHTMLDndHandlers(stateManager);
 

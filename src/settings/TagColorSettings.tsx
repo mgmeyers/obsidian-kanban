@@ -21,7 +21,7 @@ interface ItemProps {
   defaultColors: { color: string; backgroundColor: string };
 }
 
-function colorToRgbaString(color: string) {
+export function colorToRgbaString(color: string) {
   const parsed = colord(color);
 
   if (!parsed.isValid()) {
@@ -35,13 +35,13 @@ function colorToRgbaString(color: string) {
   };
 }
 
-interface ColorPickerInputProps {
+export interface ColorPickerInputProps {
   color?: string;
   setColor: (color: string) => void;
   defaultColor: string;
 }
 
-function ColorPickerInput({
+export function ColorPickerInput({
   color,
   setColor,
   defaultColor,
@@ -155,7 +155,7 @@ function Item({ tagColorKey, deleteKey, updateKey, defaultColors }: ItemProps) {
                     '--tag-background-color': tagColorKey.backgroundColor,
                   }}
                 >
-                  {tagColorKey.tagKey}
+                  {tagColorKey.tagKey || '#tag'}
                 </a>
                 <a className={`tag ${c('item-tag')}`}>#tag2</a>
               </div>

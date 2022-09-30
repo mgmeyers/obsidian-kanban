@@ -2,7 +2,12 @@ import update from 'immutability-helper';
 import Preact from 'preact/compat';
 
 import { KanbanContext } from './components/context';
-import { c, maybeCompleteForMove } from './components/helpers';
+import {
+  c,
+  getDateColorFn,
+  getTagColorFn,
+  maybeCompleteForMove,
+} from './components/helpers';
 import { DraggableItem } from './components/Item/Item';
 import { DraggableLane } from './components/Lane/Lane';
 import { DataTypes, Item, Lane } from './components/types';
@@ -219,6 +224,8 @@ export function DragDropApp({
                   stateManager,
                   boardModifiers,
                   filePath,
+                  getTagColor: getTagColorFn(stateManager),
+                  getDateColor: getDateColorFn(stateManager),
                 },
               ];
             }, [entity]);

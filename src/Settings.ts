@@ -15,6 +15,9 @@ import {
 } from './components/helpers';
 import {
   DataKey,
+  DateColorKey,
+  DateColorSetting,
+  DateColorSettingTemplate,
   MetadataSetting,
   MetadataSettingTemplate,
   TagColorKey,
@@ -40,6 +43,10 @@ import {
   cleanUpTagSettings,
   renderTagSettings,
 } from './settings/TagColorSettings';
+import {
+  cleanUpDateSettings,
+  renderDateSettings,
+} from './settings/DateColorSettings';
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
@@ -78,7 +85,9 @@ export interface KanbanSettings {
   'show-view-as-markdown'?: boolean;
   'show-board-settings'?: boolean;
   'show-search'?: boolean;
+
   'tag-colors'?: TagColorKey[];
+  'date-colors'?: DateColorKey[];
 }
 
 export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
@@ -114,6 +123,7 @@ export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
   'show-board-settings': true,
   'show-search': true,
   'tag-colors': true,
+  'date-colors': true,
 };
 
 export type SettingRetriever = <K extends keyof KanbanSettings>(
@@ -1158,6 +1168,57 @@ export class SettingsManager {
                 });
               });
           });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Date display colors'))
+      .setDesc(
+        t(
+          'Set colors for the date displayed below the card based on the rules below'
+        )
+      )
+      .then((setting) => {
+        const [value] = this.getSetting('date-colors', local);
+
+        const keys: DateColorSetting[] = ((value || []) as DateColorKey[]).map(
+          (k) => {
+            return {
+              ...DateColorSettingTemplate,
+              id: generateInstanceId(),
+              data: k,
+            };
+          }
+        );
+
+        renderDateSettings(
+          setting.settingEl,
+          keys,
+          (keys: DateColorSetting[]) =>
+            this.applySettingsUpdate({
+              'date-colors': {
+                $set: keys.map((k) => k.data),
+              },
+            }),
+          () => {
+            const [value, globalValue] = this.getSetting(
+              'date-display-format',
+              local
+            );
+            const defaultFormat = getDefaultDateFormat(this.app);
+            return value || globalValue || defaultFormat;
+          },
+          () => {
+            const [value, globalValue] = this.getSetting('time-format', local);
+            const defaultFormat = getDefaultTimeFormat(this.app);
+            return value || globalValue || defaultFormat;
+          }
+        );
+
+        this.cleanupFns.push(() => {
+          if (setting.settingEl) {
+            cleanUpDateSettings(setting.settingEl);
+          }
+        });
       });
 
     new Setting(contentEl)

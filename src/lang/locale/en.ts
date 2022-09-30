@@ -141,6 +141,15 @@ export default {
   'Background color': 'Background color',
   Tag: 'Tag',
   'Text color': 'Text color',
+  'Date is': 'Date is',
+  Today: 'Today',
+  'After now': 'After now',
+  'Before now': 'Before now',
+  'Between now and': 'Between now and',
+  'Date display colors': 'Date display colors',
+  'Set colors for the date displayed below the card based on the rules below':
+    'Set colors for the date displayed below the card based on the rules below',
+  'Add date color': 'Add date color',
 
   // MetadataSettings.tsx
   'Metadata key': 'Metadata key',

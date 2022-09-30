@@ -1,3 +1,4 @@
+import classcat from 'classcat';
 import { getLinkpath, moment } from 'obsidian';
 import Preact from 'preact/compat';
 
@@ -5,7 +6,7 @@ import { t } from 'src/lang/helpers';
 import { StateManager } from 'src/StateManager';
 
 import { c } from '../helpers';
-import { Item } from '../types';
+import { DateColorKey, Item } from '../types';
 
 export function getRelativeDate(date: moment.Moment, time: moment.Moment) {
   if (time) {
@@ -57,6 +58,7 @@ interface DateAndTimeProps {
   onEditDate?: Preact.JSX.MouseEventHandler<HTMLSpanElement>;
   onEditTime?: Preact.JSX.MouseEventHandler<HTMLSpanElement>;
   filePath: string;
+  getDateColor: (date: moment.Moment) => DateColorKey;
 }
 
 export function DateAndTime({
@@ -65,12 +67,18 @@ export function DateAndTime({
   filePath,
   onEditDate,
   onEditTime,
+  getDateColor,
 }: DateProps & DateAndTimeProps) {
   const hideDateDisplay = stateManager.useSetting('hide-date-display');
   const dateFormat = stateManager.useSetting('date-format');
   const timeFormat = stateManager.useSetting('time-format');
   const dateDisplayFormat = stateManager.useSetting('date-display-format');
   const shouldLinkDate = stateManager.useSetting('link-date-to-daily-note');
+
+  const dateColor = Preact.useMemo(() => {
+    if (!item.data.metadata.date) return null;
+    return getDateColor(item.data.metadata.date);
+  }, [item.data.metadata.date, getDateColor]);
 
   if (hideDateDisplay || !item.data.metadata.date) return null;
 
@@ -111,7 +119,20 @@ export function DateAndTime({
   }
 
   return (
-    <span aria-label="hello" className={c('item-metadata-date-wrapper')}>
+    <span
+      style={
+        dateColor && {
+          '--date-color': dateColor.color,
+          '--date-background-color': dateColor.backgroundColor,
+        }
+      }
+      className={classcat([
+        c('item-metadata-date-wrapper'),
+        {
+          'has-background': !!dateColor?.backgroundColor,
+        },
+      ])}
+    >
       <span
         {...dateProps}
         className={`${c('item-metadata-date')} ${

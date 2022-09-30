@@ -1,12 +1,12 @@
 import update from 'immutability-helper';
-import { App, MarkdownView, TFile } from 'obsidian';
+import { App, MarkdownView, TFile, moment } from 'obsidian';
 import Preact from 'preact/compat';
 
 import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
 import { StateManager } from 'src/StateManager';
 
-import { Board, Item } from './types';
+import { Board, DateColorKey, Item, TagColorKey } from './types';
 
 export const baseClassName = 'kanban-plugin';
 
@@ -201,5 +201,94 @@ export function getTemplatePlugins(app: App) {
     templaterEnabled,
     templaterEmptyFileTemplate,
     templateFolder,
+  };
+}
+
+export function getTagColorFn(
+  stateManager: StateManager
+): (tag: string) => TagColorKey {
+  const tagColors = stateManager.useSetting('tag-colors');
+
+  const tagMap = (tagColors || []).reduce((total, current) => {
+    if (!current.tagKey) {
+      return total;
+    }
+
+    total[current.tagKey] = current;
+
+    return total;
+  }, {} as Record<string, TagColorKey>);
+
+  return (tag: string) => {
+    if (tagMap[tag]) return tagMap[tag];
+    return null;
+  };
+}
+
+export function getDateColorFn(
+  stateManager: StateManager
+): (date: moment.Moment) => DateColorKey | null {
+  const dateColors = stateManager.useSetting('date-colors');
+
+  const orders = dateColors.map<
+    [moment.Moment | 'today' | 'before' | 'after', DateColorKey]
+  >((c) => {
+    if (c.isToday) {
+      return ['today', c];
+    }
+
+    if (c.isBefore) {
+      return ['before', c];
+    }
+
+    if (c.isAfter) {
+      return ['after', c];
+    }
+
+    const modifier = c.direction === 'after' ? 1 : -1;
+    const date = moment();
+
+    date.add(c.distance * modifier, c.unit);
+
+    return [date, c];
+  });
+
+  const now = moment();
+  orders.sort((a, b) => {
+    if (a[0] === 'today') {
+      return typeof b[0] === 'string' ? -1 : b[0].isSame(now, 'day') ? 1 : -1;
+    }
+    if (b[0] === 'today') {
+      return typeof a[0] === 'string' ? 1 : a[0].isSame(now, 'day') ? -1 : 1;
+    }
+
+    if (a[0] === 'after') return 1;
+    if (a[0] === 'before') return 1;
+    if (b[0] === 'after') return -1;
+    if (b[0] === 'before') return -1;
+
+    return a[0].isBefore(b[0]) ? -1 : 1;
+  });
+
+  return (date: moment.Moment) => {
+    const now = moment();
+    const result = orders.find((o) => {
+      const key = o[1];
+      if (key.isToday) return date.isSame(now, 'day');
+      if (key.isAfter) return date.isAfter(now);
+      if (key.isBefore) return date.isBefore(now);
+
+      if (key.direction === 'before') {
+        return date.isBetween(o[0], now, 'day', '[]');
+      }
+
+      return date.isBetween(now, o[0], key.unit, '[]');
+    });
+
+    if (result) {
+      return result[1];
+    }
+
+    return null;
   };
 }

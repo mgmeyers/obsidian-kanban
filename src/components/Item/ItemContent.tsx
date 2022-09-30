@@ -2,14 +2,13 @@ import { TFile } from 'obsidian';
 import Preact from 'preact/compat';
 
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
-import { StateManager } from 'src/StateManager';
 
 import { KanbanContext } from '../context';
 import { handlePaste } from '../Editor/helpers';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { MarkdownDomRenderer } from '../MarkdownRenderer';
-import { Item, TagColorKey } from '../types';
+import { Item } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
 import {
   constructDatePicker,
@@ -60,20 +59,6 @@ function useDatePickers(item: Item) {
       onEditTime,
     };
   }, [boardModifiers, path, item, stateManager]);
-}
-
-function useTagColors(stateManager: StateManager): Record<string, TagColorKey> {
-  const tagColors = stateManager.useSetting('tag-colors');
-
-  return (tagColors || []).reduce((total, current) => {
-    if (!current.tagKey) {
-      return total;
-    }
-
-    total[current.tagKey] = current;
-
-    return total;
-  }, {} as Record<string, TagColorKey>);
 }
 
 export interface ItemContentProps {
@@ -141,11 +126,16 @@ export const ItemContent = Preact.memo(function ItemContent({
   searchQuery,
 }: ItemContentProps) {
   const [editState, setEditState] = Preact.useState(item.data.titleRaw);
-  const { stateManager, filePath, boardModifiers, view } =
-    Preact.useContext(KanbanContext);
+  const {
+    stateManager,
+    filePath,
+    boardModifiers,
+    view,
+    getTagColor,
+    getDateColor,
+  } = Preact.useContext(KanbanContext);
 
   const hideTagsDisplay = stateManager.useSetting('hide-tags-display');
-  const tagColorMap = useTagColors(stateManager);
   const path = useNestedEntityPath();
 
   const { onEditDate, onEditTime } = useDatePickers(item);
@@ -262,10 +252,13 @@ export const ItemContent = Preact.memo(function ItemContent({
           filePath={filePath}
           onEditDate={onEditDate}
           onEditTime={onEditTime}
+          getDateColor={getDateColor}
         />
         {!hideTagsDisplay && !!item.data.metadata.tags?.length && (
           <div className={c('item-tags')}>
             {item.data.metadata.tags.map((tag, i) => {
+              const tagColor = getTagColor(tag);
+
               return (
                 <a
                   href={tag}
@@ -276,10 +269,9 @@ export const ItemContent = Preact.memo(function ItemContent({
                       : ''
                   }`}
                   style={
-                    !!tagColorMap[tag] && {
-                      '--tag-color': tagColorMap[tag].color,
-                      '--tag-background-color':
-                        tagColorMap[tag].backgroundColor,
+                    tagColor && {
+                      '--tag-color': tagColor.color,
+                      '--tag-background-color': tagColor.backgroundColor,
                     }
                   }
                 >

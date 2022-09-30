@@ -538,10 +538,6 @@ button.kanban-plugin__new-item-button {
   color: var(--text-muted);
 }
 
-.kanban-plugin__item-metadata-date-wrapper {
-  padding-top: 2px;
-}
-
 .kanban-plugin__item-tags:not(:empty) {
   padding-top: 2px;
 }
@@ -1347,6 +1343,7 @@ button.kanban-plugin__cancel-action-button {
   margin-right: 10px;
 }
 
+.kanban-plugin__date-color-input-wrapper,
 .kanban-plugin__tag-color-input-wrapper {
   display: flex;
   flex-direction: column;
@@ -1359,6 +1356,7 @@ button.kanban-plugin__cancel-action-button {
   margin: 0;
 }
 
+.kanban-plugin__date-color-wrapper,
 .kanban-plugin__tag-color-input .kanban-plugin__item-tags {
   background-color: var(--background-primary);
   padding: 10px;
@@ -1371,6 +1369,50 @@ button.kanban-plugin__cancel-action-button {
   font-size: 13px;
   font-weight: 500;
   line-height: 1.5;
+}
+
+.kanban-plugin__item-metadata
+  > .kanban-plugin__item-metadata-date-wrapper
+  .is-button:hover,
+.kanban-plugin__item-metadata > .kanban-plugin__item-metadata-date-wrapper {
+  display: inline-block;
+  color: var(--date-color, var(--text-muted));
+}
+
+.kanban-plugin__item-metadata
+  > .kanban-plugin__item-metadata-date-wrapper.has-background {
+  background-color: var(--date-background-color, transparent);
+  padding: 1px 6px;
+  margin-top: 4px;
+  border-radius: 6px;
+}
+
+.kanban-plugin__date-color-input-wrapper input[type='number'] {
+  width: 75px;
+  padding: 0.6em 0.8em;
+  height: auto;
+  border-radius: 0.5em;
+}
+
+.kanban-plugin__date-color-input-wrapper .kanban-plugin__setting-item-label {
+  margin-bottom: 0;
+}
+
+.kanban-plugin__date-color-config {
+  padding: 0 0 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+
+.kanban-plugin__date-color-wrapper {
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.kanban-plugin__date-color-wrapper .kanban-plugin__item-metadata {
+  padding: 0;
 }
 
 .kanban-plugin__metadata-setting-desc {

@@ -33,6 +33,17 @@ export interface TagColorKey {
   backgroundColor: string;
 }
 
+export interface DateColorKey {
+  isToday?: boolean;
+  isBefore?: boolean;
+  isAfter?: boolean;
+  distance?: number;
+  unit?: 'hours' | 'days' | 'weeks' | 'months';
+  direction?: 'before' | 'after';
+  color?: string;
+  backgroundColor?: string;
+}
+
 export type PageDataValue =
   | string
   | number
@@ -88,6 +99,7 @@ export type Lane = Nestable<LaneData, Item>;
 export type Board = Nestable<BoardData, Lane>;
 export type MetadataSetting = Nestable<DataKey>;
 export type TagColorSetting = Nestable<TagColorKey>;
+export type DateColorSetting = Nestable<DateColorKey>;
 
 export const DataTypes = {
   Item: 'item',
@@ -95,6 +107,7 @@ export const DataTypes = {
   Board: 'board',
   MetadataSetting: 'metadata-setting',
   TagColorSetting: 'tag-color',
+  DateColorSetting: 'date-color',
 };
 
 export const ItemTemplate = {
@@ -119,8 +132,16 @@ export const MetadataSettingTemplate = {
   children: [] as any[],
 };
 
+// TODO: all this is unecessary because these aren't sortable
 export const TagColorSettingTemplate = {
   accepts: [] as string[],
   type: DataTypes.TagColorSetting,
+  children: [] as any[],
+};
+
+// TODO: all this is unecessary because these aren't sortable
+export const DateColorSettingTemplate = {
+  accepts: [] as string[],
+  type: DataTypes.DateColorSetting,
   children: [] as any[],
 };
