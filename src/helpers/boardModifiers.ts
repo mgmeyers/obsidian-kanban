@@ -6,6 +6,7 @@ import {
   appendEntities,
   getEntityFromPath,
   insertEntity,
+  moveEntity,
   prependEntities,
   removeEntity,
   updateEntity,
@@ -21,6 +22,8 @@ export interface BoardModifiers {
   prependItems: (path: Path, items: Item[]) => void;
   insertItems: (path: Path, items: Item[]) => void;
   splitItem: (path: Path, items: Item[]) => void;
+  moveItemToTop: (path: Path) => void;
+  moveItemToBottom: (path: Path) => void;
   addLane: (lane: Lane) => void;
   insertLane: (path: Path, lane: Lane) => void;
   updateLane: (path: Path, lane: Lane) => void;
@@ -102,6 +105,20 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
 
       stateManager.setState((boardData) => {
         return insertEntity(removeEntity(boardData, path), path, items);
+      });
+    },
+
+    moveItemToTop: (path: Path) => {
+      stateManager.setState((boardData) =>
+        moveEntity(boardData, path, [path[0], 0])
+      );
+    },
+
+    moveItemToBottom: (path: Path) => {
+      stateManager.setState((boardData) => {
+        const laneIndex = path[0];
+        const lane = boardData.children[laneIndex];
+        return moveEntity(boardData, path, [laneIndex, lane.children.length]);
       });
     },
 

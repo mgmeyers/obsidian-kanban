@@ -196,6 +196,8 @@ export default {
   'Insert card before': 'Insert card before',
   'Insert card after': 'Insert card after',
   'Add label': 'Add label',
+  'Move to top': 'Move to top',
+  'Move to bottom': 'Move to bottom',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Enter list title...',

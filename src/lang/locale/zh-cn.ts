@@ -175,6 +175,8 @@ export default {
   'Copy link to card': '复制链接至卡片',
   'Insert card before': '在上方插入卡片',
   'Insert card after': '在下方插入卡片',
+  'Move to top': '移到顶部',
+  'Move to bottom': '移至底部',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': '输入新的列标题……',
