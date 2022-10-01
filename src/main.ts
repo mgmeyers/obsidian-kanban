@@ -1,7 +1,7 @@
 import 'choices.js/public/assets/styles/choices.css';
 
 import './components/Editor/flatpickr/flatpickr.min.css';
-import './main.css';
+import './main.less';
 
 import { around } from 'monkey-around';
 import {
