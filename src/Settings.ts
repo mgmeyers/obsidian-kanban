@@ -1171,7 +1171,7 @@ export class SettingsManager {
       });
 
     new Setting(contentEl)
-      .setName(t('Date display colors'))
+      .setName(t('Display date colors'))
       .setDesc(
         t(
           'Set colors for the date displayed below the card based on the rules below'

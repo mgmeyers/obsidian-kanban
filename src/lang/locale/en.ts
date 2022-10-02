@@ -146,7 +146,7 @@ export default {
   'After now': 'After now',
   'Before now': 'Before now',
   'Between now and': 'Between now and',
-  'Date display colors': 'Date display colors',
+  'Display date colors': 'Display date colors',
   'Set colors for the date displayed below the card based on the rules below':
     'Set colors for the date displayed below the card based on the rules below',
   'Add date color': 'Add date color',

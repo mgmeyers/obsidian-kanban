@@ -276,7 +276,7 @@ function DateSettings({
   return (
     <div className={c('date-color-input-wrapper')}>
       <div className="setting-item-info">
-        <div className="setting-item-name">{t('Date display colors')}</div>
+        <div className="setting-item-name">{t('Display date colors')}</div>
         <div className="setting-item-description">
           {t(
             'Set colors for the date displayed below the card based on the rules below'
