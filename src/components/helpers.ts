@@ -277,11 +277,17 @@ export function getDateColorFn(
       if (key.isAfter) return date.isAfter(now);
       if (key.isBefore) return date.isBefore(now);
 
-      if (key.direction === 'before') {
-        return date.isBetween(o[0], now, 'day', '[]');
+      let granularity: moment.unitOfTime.StartOf = 'days';
+
+      if (key.unit === 'hours') {
+        granularity = 'hours';
       }
 
-      return date.isBetween(now, o[0], key.unit, '[]');
+      if (key.direction === 'before') {
+        return date.isBetween(o[0], now, granularity, '[]');
+      }
+
+      return date.isBetween(now, o[0], granularity, '[]');
     });
 
     if (result) {
