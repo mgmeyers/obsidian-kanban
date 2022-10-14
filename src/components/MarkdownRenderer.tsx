@@ -91,7 +91,7 @@ export const MarkdownDomRenderer = Preact.memo(function MarkdownDomRenderer({
   const { stateManager } = Preact.useContext(KanbanContext);
 
   const contentEl = Preact.useMemo(() => {
-    return dom.cloneNode(true) as HTMLDivElement;
+    return dom ? (dom.cloneNode(true) as HTMLDivElement) : createDiv();
   }, [dom, stateManager]);
 
   const marker = Preact.useMemo(() => {

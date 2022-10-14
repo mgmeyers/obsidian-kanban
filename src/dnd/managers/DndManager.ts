@@ -71,10 +71,12 @@ export class DndManager {
   };
 
   observeResize(element: HTMLElement) {
+    if (!element.instanceOf(HTMLElement)) return;
     this.resizeObserver.observe(element, { box: 'border-box' });
   }
 
   unobserveResize(element: HTMLElement) {
+    if (!element.instanceOf(HTMLElement)) return;
     this.resizeObserver.unobserve(element);
   }
 
