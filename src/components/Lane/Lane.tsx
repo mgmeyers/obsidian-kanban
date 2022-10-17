@@ -47,6 +47,7 @@ export const DraggableLane = Preact.memo(function DraggableLane({
 
   const isCompactPrepend = insertionMethod === 'prepend-compact';
   const shouldPrepend = isCompactPrepend || insertionMethod === 'prepend';
+  const addCardCommand = stateManager.useSetting('new-card-command');
 
   useDragHandle(measureRef, dragHandleRef);
 
@@ -148,6 +149,7 @@ export const DraggableLane = Preact.memo(function DraggableLane({
             hideButton={isCompactPrepend}
             isInputVisible={isItemInputVisible}
             setIsInputVisible={setIsItemInputVisible}
+            addCardCommand={addCardCommand}
           />
         )}
 

@@ -150,6 +150,9 @@ export default {
   'Set colors for the date displayed below the card based on the rules below':
     'Set colors for the date displayed below the card based on the rules below',
   'Add date color': 'Add date color',
+  'Add Card Command': 'Add Card Command',
+  'No Action': 'No Action',
+  'This setting issues a command when clicking on Add New Card': 'This setting issues a command when clicking on Add New Card',
 
   // MetadataSettings.tsx
   'Metadata key': 'Metadata key',
@@ -178,6 +181,7 @@ export default {
   'Card title...': 'Card title...',
   'Add card': 'Add card',
   'Add a card': 'Add a card',
+
 
   // components/Item/ItemMenu.ts
   'Edit card': 'Edit card',

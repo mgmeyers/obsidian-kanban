@@ -14,6 +14,7 @@ interface ItemFormProps {
   isInputVisible: boolean;
   setIsInputVisible: Preact.StateUpdater<boolean>;
   hideButton?: boolean;
+  addCardCommand?: string;
 }
 
 export function ItemForm({
@@ -21,6 +22,7 @@ export function ItemForm({
   isInputVisible,
   setIsInputVisible,
   hideButton,
+  addCardCommand,
 }: ItemFormProps) {
   const [itemTitle, setItemTitle] = Preact.useState('');
   const { stateManager, view } = Preact.useContext(KanbanContext);
@@ -101,6 +103,22 @@ export function ItemForm({
   }
 
   if (hideButton) return null;
+  if (addCardCommand) {
+    return (
+      <div className={c('item-button-wrapper')}>
+        <button
+          className={c('new-item-button')}
+          onClick={() => this.app.commands.executeCommandById("quickadd:choice:" + addCardCommand)}
+          onDragDrop={(e) => {
+            if (getDropAction(stateManager, e.dataTransfrer)) {
+              setIsInputVisible(true);
+            }
+          }}>
+          <span className={c('item-button-plus')}+</span> {t('Add a card')}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className={c('item-button-wrapper')}>

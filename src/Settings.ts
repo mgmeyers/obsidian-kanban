@@ -107,6 +107,7 @@ export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
   'max-archive-size': true,
   'metadata-keys': true,
   'new-card-insertion-method': true,
+  'new-card-command': true,
   'new-line-trigger': true,
   'new-note-folder': true,
   'new-note-template': true,
@@ -253,6 +254,20 @@ export class SettingsManager {
             },
           });
         });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Add Card Command'))
+      .setDesc(t('This setting issues a command when clicking on Add New Card'))
+      .addDropdown((dropdown) => {
+        dropdown.addOption('', t('No Action'));
+
+        if (this.app.plugins.plugins['quickadd']) {
+          for (let i = 0; i < this.app.plugins.plugins['quickadd'].settings.choices.length; i++) {
+            let c = this.app.plugins.plugins['quickadd'].settings.choices[i]
+            dropdown.addOption(c.id, c.name);
+          }
+        }
       });
 
     new Setting(contentEl)
