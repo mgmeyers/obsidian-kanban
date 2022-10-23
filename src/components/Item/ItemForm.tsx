@@ -103,18 +103,19 @@ export function ItemForm({
   }
 
   if (hideButton) return null;
-  if (addCardCommand) {
+
+  if (addCardCommand && addCardCommand !== '') {
     return (
       <div className={c('item-button-wrapper')}>
         <button
           className={c('new-item-button')}
-          onClick={() => this.app.commands.executeCommandById("quickadd:choice:" + addCardCommand)}
-          onDragDrop={(e) => {
-            if (getDropAction(stateManager, e.dataTransfrer)) {
+          onClick={() => stateManager.app.commands.executeCommandById("quickadd:choice:" + addCardCommand)}
+          onDragOver={(e) => {
+            if (getDropAction(stateManager, e.dataTransfer)) {
               setIsInputVisible(true);
             }
           }}>
-          <span className={c('item-button-plus')}+</span> {t('Add a card')}
+          <span className={c('item-button-plus')}>+</span> {t('Add a card')}
         </button>
       </div>
     );
