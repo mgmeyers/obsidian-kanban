@@ -18,9 +18,10 @@
 .kanban-plugin.something-is-dragging {
   cursor:grabbing;
   cursor:-webkit-grabbing;
-}
-.kanban-plugin.something-is-dragging * {
-  pointer-events: none;
+
+  * {
+    pointer-events: none;
+  }
 }
 
 .kanban-plugin__item button,
@@ -64,26 +65,24 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
 .kanban-plugin__icon {
   display: inline-block;
   line-height: 1;
-}
-
-.kanban-plugin__icon > svg {
-  width: 1em;
-  height: 1em;
+  > svg {
+    width: 1em;
+    height: 1em;
+  }
 }
 
 .kanban-plugin__board {
   display: flex;
   width: 100%;
   height: 100%;
-}
-
-.kanban-plugin__board > div {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding: 1rem;
-  width: fit-content;
-  height: 100%;
+  > div {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 1rem;
+    width: fit-content;
+    height: 100%;
+  }
 }
 
 .kanban-plugin__board.is-adding-lane > div {
@@ -144,23 +143,19 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   align-items: flex-start;
   justify-content: flex-start;
   padding: 0 10px 10px;
-}
-
-.kanban-plugin__item-input-actions button,
-.kanban-plugin__lane-input-actions button {
-  display: block;
-  margin-right: 5px;
+  button {
+    display: block;
+    margin-right: 5px;
+  }
 }
 
 .kanban-plugin__item-action-add,
 .kanban-plugin__lane-action-add {
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
-}
-
-.kanban-plugin__item-action-add:hover,
-.kanban-plugin__lane-action-add:hover {
-  background-color: var(--interactive-accent-hover);
+  &:hover {
+    background-color: var(--interactive-accent-hover);
+  }
 }
 
 .kanban-plugin__lane-header-wrapper {
@@ -235,24 +230,20 @@ div.kanban-plugin__lane-title-count.wip-exceeded {
   margin-left: 5px;
   background-color: transparent;
   margin-right: -4px;
+
+  &.is-enabled {
+    color: var(--text-accent);
+  }
+
+  &:hover {
+    background-color: transparent;
+    color: var(--text-normal);
+  }
 }
 
 .kanban-plugin__item button.kanban-plugin__item-prefix-button {
   margin: 4px 7px 4px 0px;
   padding: 0;
-}
-
-.kanban-plugin__item button.kanban-plugin__item-prefix-button.is-enabled,
-.kanban-plugin__item button.kanban-plugin__item-postfix-button.is-enabled,
-.kanban-plugin__lane button.kanban-plugin__lane-settings-button.is-enabled {
-  color: var(--text-accent);
-}
-
-.kanban-plugin__item button.kanban-plugin__item-prefix-button:hover,
-.kanban-plugin__item button.kanban-plugin__item-postfix-button:hover,
-.kanban-plugin__lane button.kanban-plugin__lane-settings-button:hover {
-  background-color: transparent;
-  color: var(--text-normal);
 }
 
 .kanban-plugin__lane-action-wrapper,
@@ -289,18 +280,20 @@ button.kanban-plugin__lane-settings-button
   margin: 0 4px;
   display: flex;
   flex-direction: column;
+  > div {
+    margin-top: 4px;
+  }
 }
 
 .kanban-plugin__lane-items > .kanban-plugin__placeholder {
   flex-grow: 1;
-}
-
-.kanban-plugin__lane-items > .kanban-plugin__placeholder:only-child {
-  height: 2.55em;
-  border: 3px dashed rgba(var(--text-muted-rgb), 0.1);
-  margin-bottom: 4px;
-  border-radius: 6px;
-  transition: border 200ms ease;
+  &:only-child {
+    height: 2.55em;
+    border: 3px dashed rgba(var(--text-muted-rgb), 0.1);
+    margin-bottom: 4px;
+    border-radius: 6px;
+    transition: border 200ms ease;
+  }
 }
 
 .is-sorting
@@ -309,26 +302,21 @@ button.kanban-plugin__lane-settings-button
   border-color: rgba(var(--interactive-accent-rgb), 0.6);
 }
 
-.kanban-plugin__lane-items > div {
-  margin-top: 4px;
-}
-
 .kanban-plugin__item-button-wrapper {
   border-top: 1px solid var(--background-modifier-border);
   padding: 8px;
   flex-shrink: 0;
   flex-grow: 0;
+  > button {
+    text-align: left;
+    width: 100%;
+  }
 }
 
 .kanban-plugin__lane-header-wrapper + .kanban-plugin__item-button-wrapper {
   border-top: none;
   border-bottom: 1px solid var(--background-modifier-border);
   padding: 4px 8px 8px;
-}
-
-.kanban-plugin__item-button-wrapper > button {
-  text-align: left;
-  width: 100%;
 }
 
 .kanban-plugin__item-form {
@@ -391,10 +379,10 @@ button.kanban-plugin__new-item-button {
 .kanban-plugin__item.is-search-miss {
   font-size: 0.75rem;
   opacity: 0.5;
-}
 
-.kanban-plugin__item.is-search-miss .kanban-plugin__item-metadata-wrapper {
-  display: none;
+  .kanban-plugin__item-metadata-wrapper {
+    display: none;
+  }
 }
 
 .kanban-plugin__item-content-wrapper {
@@ -405,10 +393,10 @@ button.kanban-plugin__new-item-button {
   background: var(--background-primary);
   display: flex;
   padding: 6px 8px;
-}
 
-.kanban-plugin__item-title-wrapper:not(:only-child) {
-  border-bottom: 1px solid var(--background-modifier-border);
+  &:not(:only-child) {
+    border-bottom: 1px solid var(--background-modifier-border);
+  }
 }
 
 .kanban-plugin__item-title {
@@ -520,11 +508,9 @@ button.kanban-plugin__new-item-button {
 }
 
 .kanban-plugin__item-metadata .is-button {
-  cursor: pointer;
-}
-
-.kanban-plugin__item-metadata .is-button:hover {
-  color: var(--text-normal);
+  cursor: var(--cursor);
+  &:hover {
+    color: var(--text-normal);
 }
 
 .kanban-plugin__item-metadata-date-relative::first-letter {
@@ -574,20 +560,20 @@ button.kanban-plugin__new-item-button {
   margin: 0;
   line-height: 1.5;
   font-size: 0.75rem;
-}
 
-.kanban-plugin__meta-table td {
-  vertical-align: top;
-  padding: 3px 0;
-  width: 10%;
-}
+  td {
+    vertical-align: top;
+    padding: 3px 0;
+    width: 10%;
+  }
 
-.kanban-plugin__meta-table td + td {
-  width: 90%;
-}
+  td + td {
+    width: 90%;
+  }
 
-.kanban-plugin__meta-table td:only-child {
-  width: 100%;
+  td:only-child {
+    width: 100%;
+  }
 }
 
 .kanban-plugin__meta-table td.kanban-plugin__meta-key {
@@ -628,10 +614,9 @@ button.kanban-plugin__new-item-button {
   width: 15px;
   height: 15px;
   filter: hue-rotate(42deg);
-}
-
-.kanban-plugin__item-prefix-button-wrapper input[type='checkbox'] + button {
-  margin-top: 10px;
+  + button {
+    margin-top: 10px;
+  }
 }
 
 button.kanban-plugin__item-postfix-button {
@@ -794,10 +779,10 @@ button.kanban-plugin__confirm-action-button {
   border: 1px solid rgba(var(--background-modifier-error-rgb), 0.2);
   margin-right: 5px;
   color: var(--text-error);
-}
 
-button.kanban-plugin__confirm-action-button:hover {
-  background-color: rgba(var(--background-modifier-error-rgb), 0.5);
+  &:hover {
+    background-color: rgba(var(--background-modifier-error-rgb), 0.5);
+  }
 }
 
 button.kanban-plugin__cancel-action-button {
@@ -857,10 +842,9 @@ button.kanban-plugin__cancel-action-button {
 
 .kanban-plugin__autocomplete li {
   margin: 0;
-}
-
-.kanban-plugin__autocomplete li em {
-  opacity: 0.6;
+  & em {
+    opacity: 0.6;
+  }
 }
 
 .kanban-plugin .textcomplete-footer,
@@ -872,7 +856,7 @@ button.kanban-plugin__cancel-action-button {
 .kanban-plugin__autocomplete-item {
   border-top: 1px solid var(--background-modifier-border);
   padding: 4px 6px;
-  cursor: pointer;
+  cursor: var(--cursor);
 }
 
 .kanban-plugin__autocomplete
@@ -1238,7 +1222,7 @@ button.kanban-plugin__cancel-action-button {
   display: flex;
   align-items: center;
   color: var(--text-muted);
-  cursor: pointer;
+  cursor: var(--cursor);
   line-height: 1;
   padding: 6px 8px;
 }
@@ -1271,11 +1255,10 @@ button.kanban-plugin__cancel-action-button {
   border-top: 0;
   padding: 0;
   flex-direction: column;
-}
-
-.kanban-plugin__draggable-setting-container > div {
-  width: 100%;
-  margin-right: 0 !important;
+  > div {
+    width: 100%;
+    margin-right: 0 !important;
+  }
 }
 
 .kanban-plugin__setting-item-wrapper {
@@ -1311,21 +1294,22 @@ button.kanban-plugin__cancel-action-button {
   display: flex;
   flex-wrap: wrap;
   margin-bottom: 1rem;
+
+  > div {
+    margin-right: 10px;
+  }
 }
 
-.kanban-plugin__setting-input-wrapper > div {
-  margin-right: 10px;
-}
-
-.kanban-plugin__setting-toggle-wrapper > div {
-  display: flex;
-  align-items: center;
-  line-height: 1;
-  margin-bottom: 10px;
-}
-
-.kanban-plugin__setting-toggle-wrapper .checkbox-container {
-  margin-right: 10px;
+.kanban-plugin__setting-toggle-wrapper {
+  > div {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+  .checkbox-container {
+    margin-right: 10px;
+  }
 }
 
 .kanban-plugin__setting-button-wrapper {
@@ -1334,18 +1318,16 @@ button.kanban-plugin__cancel-action-button {
   flex-grow: 1;
   flex-shrink: 0;
   max-width: 25px;
-}
-
-.kanban-plugin__setting-button-wrapper > div {
-  margin-left: 12px;
+  > div {
+    margin-left: 12px;
+  }
 }
 
 .kanban-plugin__setting-key-input-wrapper {
   margin: 1rem 0;
-}
-
-.kanban-plugin__setting-key-input-wrapper > input {
-  margin-right: 10px;
+  > input {
+    margin-right: 10px;
+  }
 }
 
 .kanban-plugin__date-color-input-wrapper,
@@ -1495,7 +1477,6 @@ body:not(.native-scrollbars)
 }
 
 .kanban-plugin__loading {
-  background-color: var(--background-secondary-alt);
   width: 100%;
   height: 100%;
   display: flex;
