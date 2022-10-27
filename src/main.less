@@ -333,6 +333,7 @@ button.kanban-plugin__lane-settings-button
 .kanban-plugin__item-input-wrapper {
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
 }
 
 .kanban-plugin button.kanban-plugin__item-submit-button {
@@ -392,7 +393,8 @@ button.kanban-plugin__new-item-button {
 .kanban-plugin__item-title-wrapper {
   background: var(--background-primary);
   display: flex;
-  padding: 6px 8px;
+  padding: 4px 8px;
+  align-items: center;
 
   &:not(:only-child) {
     border-bottom: 1px solid var(--background-modifier-border);
@@ -401,13 +403,14 @@ button.kanban-plugin__new-item-button {
 
 .kanban-plugin__item-title {
   width: 100%;
-  line-height: 1.5;
+  line-height: var(--line-height-tight);
   overflow: hidden;
 }
 
 .kanban-plugin__markdown-preview-view {
   font-family: var(--font-text, var(--default-font));
   font-size: 0.875rem;
+  line-height: var(--line-height-tight);
   padding: unset;
   width: unset;
   height: unset;
@@ -604,6 +607,7 @@ button.kanban-plugin__new-item-button {
   display: flex;
   flex-grow: 0;
   flex-shrink: 0;
+  align-self: start;
 }
 
 .kanban-plugin__item-prefix-button-wrapper {
@@ -808,16 +812,17 @@ button.kanban-plugin__cancel-action-button {
 }
 
 .kanban-plugin__grow-wrap > textarea:focus {
-  border-color: var(--interactive-accent);
+  border: none;
+  box-shadow: none;
 }
 
 .kanban-plugin__grow-wrap > textarea,
 .kanban-plugin__grow-wrap::after {
   /* Identical styling required! */
-  border: 1px solid var(--background-modifier-border);
-  padding: 5px 7px;
+  border: none;
+  padding: 0;
   font: inherit;
-  line-height: 1.5;
+  line-height: var(--line-height-tight);
   grid-area: 1 / 1 / 2 / 2;
   font-size: 0.875rem;
   overflow: hidden;
