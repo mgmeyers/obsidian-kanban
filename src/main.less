@@ -322,6 +322,13 @@ button.kanban-plugin__lane-settings-button
 .kanban-plugin__item-form {
   border-top: 1px solid var(--background-modifier-border);
   padding: 8px;
+  .kanban-plugin__item-input-wrapper {
+    padding: 6px 8px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+    border-radius: var(--input-radius);
+    min-height: var(--input-height);
+  }
 }
 
 .kanban-plugin__lane-header-wrapper + .kanban-plugin__item-form {
@@ -359,7 +366,7 @@ button.kanban-plugin__new-item-button {
 .kanban-plugin__item {
   font-size: 0.875rem;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--input-radius);
   overflow: hidden;
   transition: 300ms opacity cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -393,7 +400,7 @@ button.kanban-plugin__new-item-button {
 .kanban-plugin__item-title-wrapper {
   background: var(--background-primary);
   display: flex;
-  padding: 4px 8px;
+  padding: 6px 8px;
   align-items: center;
 
   &:not(:only-child) {
@@ -820,6 +827,7 @@ button.kanban-plugin__cancel-action-button {
 .kanban-plugin__grow-wrap::after {
   /* Identical styling required! */
   border: none;
+  border-radius: 0;
   padding: 0;
   font: inherit;
   line-height: var(--line-height-tight);
