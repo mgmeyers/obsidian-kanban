@@ -121,14 +121,14 @@ function Item({
             onClick={deleteKey}
             aria-label={t('Delete')}
           >
-            <Icon name="cross" />
+            <Icon name="lucide-trash-2" />
           </div>
           <div
             className="mobile-option-setting-drag-icon clickable-icon"
             aria-label={t('Drag to rearrange')}
             ref={dragHandleRef}
           >
-            <Icon name="three-horizontal-bars" />
+            <Icon name="lucide-grip-horizontal" />
           </div>
         </div>
       </div>

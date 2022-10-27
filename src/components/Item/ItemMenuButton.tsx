@@ -40,7 +40,7 @@ export const ItemMenuButton = Preact.memo(function ItemMenuButton({
           className={`${c('item-postfix-button')} is-enabled clickable-icon`}
           aria-label={t('Cancel')}
         >
-          <Icon name="cross" />
+          <Icon name="lucide-x" />
         </a>
       ) : (
         <a
@@ -50,7 +50,7 @@ export const ItemMenuButton = Preact.memo(function ItemMenuButton({
           className={`${c('item-postfix-button')} clickable-icon`}
           aria-label={t('More options')}
         >
-          <Icon name="vertical-three-dots" />
+          <Icon name="lucide-more-vertical" />
         </a>
       )}
     </div>

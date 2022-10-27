@@ -353,7 +353,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                   }}
                   aria-label={t('Cancel')}
                 >
-                  <Icon name="cross" />
+                  <Icon name="lucide-x" />
                 </a>
               </div>
             )}

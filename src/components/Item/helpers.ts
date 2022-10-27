@@ -231,7 +231,7 @@ export function constructTimePicker(
               'span',
               { cls: c('time-picker-check'), prepend: true },
               (span) => {
-                setIcon(span, 'checkmark');
+                setIcon(span, 'lucide-check');
               }
             );
 

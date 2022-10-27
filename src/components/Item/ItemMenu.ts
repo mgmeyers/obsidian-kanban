@@ -49,14 +49,14 @@ export function useItemMenu({
         const hasTime = !!item.data.metadata.time;
 
         const menu = new Menu().addItem((i) => {
-          i.setIcon('pencil')
+          i.setIcon('lucide-edit')
             .setTitle(t('Edit card'))
             .onClick(() => setIsEditing(true));
         });
 
         menu
           .addItem((i) => {
-            i.setIcon('create-new')
+            i.setIcon('lucide-file-plus-2')
               .setTitle(t('New note from card'))
               .onClick(async () => {
                 const prevTitle = item.data.title.split('\n')[0].trim();
@@ -115,7 +115,7 @@ export function useItemMenu({
               });
           })
           .addItem((i) => {
-            i.setIcon('links-coming-in')
+            i.setIcon('lucide-link')
               .setTitle(t('Copy link to card'))
               .onClick(() => {
                 if (item.data.blockId) {
@@ -153,7 +153,7 @@ export function useItemMenu({
 
         if (/\n/.test(item.data.titleRaw)) {
           menu.addItem((i) => {
-            i.setIcon('split')
+            i.setIcon('lucide-wrap-text')
               .setTitle(t('Split card'))
               .onClick(async () => {
                 const titles = item.data.titleRaw
@@ -172,12 +172,12 @@ export function useItemMenu({
 
         menu
           .addItem((i) => {
-            i.setIcon('documents')
+            i.setIcon('lucide-copy')
               .setTitle(t('Duplicate card'))
               .onClick(() => boardModifiers.duplicateEntity(path));
           })
           .addItem((i) => {
-            i.setIcon('plus-with-circle')
+            i.setIcon('lucide-list-start')
               .setTitle(t('Insert card before'))
               .onClick(async () =>
                 boardModifiers.insertItems(path, [
@@ -186,7 +186,7 @@ export function useItemMenu({
               );
           })
           .addItem((i) => {
-            i.setIcon('plus-with-circle')
+            i.setIcon('lucide-list-end')
               .setTitle(t('Insert card after'))
               .onClick(async () => {
                 const newPath = [...path];
@@ -199,28 +199,28 @@ export function useItemMenu({
               });
           })
           .addItem((i) => {
-            i.setIcon('up-arrow-with-tail')
+            i.setIcon('lucide-arrow-up')
               .setTitle(t('Move to top'))
               .onClick(() => boardModifiers.moveItemToTop(path));
           })
           .addItem((i) => {
-            i.setIcon('down-arrow-with-tail')
+            i.setIcon('lucide-arrow-down')
               .setTitle(t('Move to bottom'))
               .onClick(() => boardModifiers.moveItemToBottom(path));
           })
           .addItem((i) => {
-            i.setIcon('sheets-in-box')
+            i.setIcon('lucide-archive')
               .setTitle(t('Archive card'))
               .onClick(() => boardModifiers.archiveItem(path));
           })
           .addItem((i) => {
-            i.setIcon('trash')
+            i.setIcon('lucide-trash-2')
               .setTitle(t('Delete card'))
               .onClick(() => boardModifiers.deleteEntity(path));
           })
           .addSeparator()
           .addItem((i) => {
-            i.setIcon('calendar-with-checkmark')
+            i.setIcon('lucide-calendar-check')
               .setTitle(hasDate ? t('Edit date') : t('Add date'))
               .onClick(() => {
                 constructDatePicker(
@@ -241,7 +241,7 @@ export function useItemMenu({
 
         if (hasDate) {
           menu.addItem((i) => {
-            i.setIcon('cross')
+            i.setIcon('lucide-x')
               .setTitle(t('Remove date'))
               .onClick(() => {
                 const shouldLinkDates = stateManager.getSetting(
@@ -274,7 +274,7 @@ export function useItemMenu({
           });
 
           menu.addItem((i) => {
-            i.setIcon('clock')
+            i.setIcon('lucide-clock')
               .setTitle(hasTime ? t('Edit time') : t('Add time'))
               .onClick(() => {
                 constructTimePicker(
@@ -295,7 +295,7 @@ export function useItemMenu({
 
           if (hasTime) {
             menu.addItem((i) => {
-              i.setIcon('cross')
+              i.setIcon('lucide-x')
                 .setTitle(t('Remove time'))
                 .onClick(() => {
                   const timeTrigger = stateManager.getSetting('time-trigger');

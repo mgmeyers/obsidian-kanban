@@ -23,7 +23,7 @@ import KanbanPlugin from './main';
 import { SettingsModal } from './Settings';
 
 export const kanbanViewType = 'kanban';
-export const kanbanIcon = 'blocks';
+export const kanbanIcon = 'lucide-trello';
 
 interface ViewEvents {
   showLaneForm: () => void;
@@ -180,7 +180,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       .addItem((item) => {
         item
           .setTitle(t('Open as markdown'))
-          .setIcon('document')
+          .setIcon('lucide-file-text')
           .setSection('pane')
           .onClick(() => {
             this.plugin.kanbanFileModes[
@@ -192,7 +192,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       .addItem((item) => {
         item
           .setTitle(t('Open board settings'))
-          .setIcon('gear')
+          .setIcon('lucide-settings')
           .setSection('pane')
           .onClick(() => {
             const stateManager = this.plugin.stateManagers.get(this.file);
@@ -221,7 +221,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       .addItem((item) => {
         item
           .setTitle(t('Archive completed cards'))
-          .setIcon('sheets-in-box')
+          .setIcon('lucide-archive')
           .setSection('pane')
           .onClick(() => {
             const stateManager = this.plugin.stateManagers.get(this.file);
@@ -244,7 +244,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       !this.actionButtons['show-board-settings']
     ) {
       this.actionButtons['show-board-settings'] = this.addAction(
-        'gear',
+        'lucide-settings',
         t('Open board settings'),
         () => {
           const stateManager = this.plugin.stateManagers.get(this.file);
@@ -283,7 +283,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       !this.actionButtons['show-search']
     ) {
       this.actionButtons['show-search'] = this.addAction(
-        'search',
+        'lucide-search',
         t('Search...'),
         () => {
           this.emitter.emit('hotkey', 'editor:open-search');
@@ -302,7 +302,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       !this.actionButtons['show-view-as-markdown']
     ) {
       this.actionButtons['show-view-as-markdown'] = this.addAction(
-        'document',
+        'lucide-file-text',
         t('Open as markdown'),
         () => {
           this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] =
@@ -323,7 +323,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       !this.actionButtons['show-archive-all']
     ) {
       this.actionButtons['show-archive-all'] = this.addAction(
-        'sheets-in-box',
+        'lucide-archive',
         t('Archive completed cards'),
         () => {
           const stateManager = this.plugin.stateManagers.get(this.file);
@@ -342,7 +342,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       stateManager.getSetting('show-add-list') &&
       !this.actionButtons['show-add-list']
     ) {
-      const btn = this.addAction('plus-with-circle', t('Add a list'), () => {
+      const btn = this.addAction('lucide-plus-circle', t('Add a list'), () => {
         this.emitter.emit('showLaneForm', undefined);
       });
 

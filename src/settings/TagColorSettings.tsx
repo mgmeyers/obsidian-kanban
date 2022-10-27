@@ -168,7 +168,7 @@ function Item({ tagColorKey, deleteKey, updateKey, defaultColors }: ItemProps) {
             onClick={deleteKey}
             aria-label={t('Delete')}
           >
-            <Icon name="cross" />
+            <Icon name="lucide-trash-2" />
           </div>
         </div>
       </div>

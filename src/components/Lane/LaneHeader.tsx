@@ -86,7 +86,7 @@ export const LaneHeader = Preact.memo(function LaneHeader({
                 'lane-settings-button'
               )} is-enabled clickable-icon`}
             >
-              <Icon name="cross" />
+              <Icon name="lucide-x" />
             </a>
           ) : (
             <>
@@ -103,7 +103,7 @@ export const LaneHeader = Preact.memo(function LaneHeader({
                     }
                   }}
                 >
-                  <Icon name="plus-with-circle" />
+                  <Icon name="lucide-plus-circle" />
                 </a>
               )}
               <a
@@ -113,7 +113,7 @@ export const LaneHeader = Preact.memo(function LaneHeader({
                   settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
                 }}
               >
-                <Icon name="vertical-three-dots" />
+                <Icon name="lucide-more-vertical" />
               </a>
             </>
           )}

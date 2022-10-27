@@ -357,7 +357,7 @@ function handleUnknownFile(el: HTMLElement, file: TFile) {
     },
     (a) => {
       a.setAttribute('aria-label', t('Open in default app'));
-      a.createSpan({}, (span) => setIcon(span, 'open-elsewhere-glyph'));
+      a.createSpan({}, (span) => setIcon(span, 'lucide-arrow-up-right'));
     }
   );
 }
