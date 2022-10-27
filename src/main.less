@@ -8,7 +8,6 @@
 
 .kanban-plugin {
   contain: content;
-  background-color: var(--background-secondary-alt);
   height: 100%;
   width: 100%;
   position: relative;
@@ -16,6 +15,10 @@
   flex-direction: column;
 }
 
+.kanban-plugin.something-is-dragging {
+  cursor:grabbing;
+  cursor:-webkit-grabbing;
+}
 .kanban-plugin.something-is-dragging * {
   pointer-events: none;
 }
@@ -178,6 +181,9 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   flex-grow: 0;
   margin-right: 5px;
   color: var(--text-faint);
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 .kanban-plugin__lane-grip > svg {
@@ -203,7 +209,6 @@ div.kanban-plugin__markdown-preview-view > div > * {
 }
 
 div.kanban-plugin__lane-title-count {
-  background-color: var(--background-secondary-alt);
   border-radius: 3px;
   color: var(--text-muted);
   display: block;
