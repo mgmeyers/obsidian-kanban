@@ -91,15 +91,15 @@ export const ItemCheckbox = Preact.memo(function ItemCheckbox({
       )}
       {(isCtrlHoveringCheckbox ||
         (!shouldShowCheckbox && shouldMarkItemsComplete)) && (
-        <button
+        <a
           onClick={() => {
             boardModifiers.archiveItem(path);
           }}
-          className={c('item-prefix-button')}
+          className={`${c('item-prefix-button')} clickable-icon`}
           aria-label={isCtrlHoveringCheckbox ? undefined : 'Archive card'}
         >
           <Icon name="sheets-in-box" />
-        </button>
+        </a>
       )}
     </div>
   );

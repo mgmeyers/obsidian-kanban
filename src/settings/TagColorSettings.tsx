@@ -163,7 +163,11 @@ function Item({ tagColorKey, deleteKey, updateKey, defaultColors }: ItemProps) {
           </div>
         </div>
         <div className={c('setting-button-wrapper')}>
-          <div onClick={deleteKey} aria-label={t('Delete')}>
+          <div
+            className="clickable-icon"
+            onClick={deleteKey}
+            aria-label={t('Delete')}
+          >
             <Icon name="cross" />
           </div>
         </div>

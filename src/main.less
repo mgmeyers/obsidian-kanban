@@ -1,5 +1,11 @@
-.workspace-leaf-content[data-type='kanban'] .view-content {
-  padding: 0;
+.workspace-leaf-content[data-type='kanban'] {
+  .view-content {
+    padding: 0;
+  }
+
+  > .view-header {
+    display: flex;
+  }
 }
 
 .kanban-plugin {
@@ -16,8 +22,8 @@
 }
 
 .kanban-plugin.something-is-dragging {
-  cursor:grabbing;
-  cursor:-webkit-grabbing;
+  cursor: grabbing;
+  cursor: -webkit-grabbing;
 
   * {
     pointer-events: none;
@@ -367,7 +373,8 @@ button.kanban-plugin__new-item-button {
   > .kanban-plugin__item-wrapper
   .kanban-plugin__item {
   border-color: var(--interactive-accent);
-  box-shadow: var(--shadow-s), 0 0 0 2px hsla(var(--interactive-accent-hsl), 0.2);
+  box-shadow: var(--shadow-s),
+    0 0 0 2px hsla(var(--interactive-accent-hsl), 0.2);
 }
 
 .kanban-plugin__item {
@@ -549,13 +556,12 @@ button.kanban-plugin__new-item-button {
 }
 
 .kanban-plugin__item-tags .kanban-plugin__item-tag {
+  font-size: 12px;
   background-color: var(
     --tag-background-color,
     hsla(var(--interactive-accent-hsl), 0.1)
   );
   color: var(--tag-color, var(--text-accent));
-  padding: 1px 4px;
-  border-radius: 6px;
   margin: 3px 3px 0 0;
 }
 
@@ -911,7 +917,10 @@ button.kanban-plugin__cancel-action-button {
 }
 
 .modal.kanban-plugin__board-settings-modal {
-  max-height: 90vh;
+  width: var(--modal-width);
+  height: var(--modal-height);
+  max-height: var(--modal-max-height);
+  max-width: var(--modal-max-width);
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -1377,14 +1386,15 @@ button.kanban-plugin__cancel-action-button {
 .kanban-plugin__item-metadata > .kanban-plugin__item-metadata-date-wrapper {
   display: inline-block;
   color: var(--date-color, var(--text-muted));
+  line-height: 1;
 }
 
 .kanban-plugin__item-metadata
   > .kanban-plugin__item-metadata-date-wrapper.has-background {
   background-color: var(--date-background-color, transparent);
-  padding: 1px 6px;
   margin-top: 4px;
-  border-radius: 6px;
+  border-radius: var(--tag-radius);
+  padding: var(--tag-padding-y) var(--tag-padding-x);
 }
 
 .kanban-plugin__date-color-input-wrapper input[type='number'] {
