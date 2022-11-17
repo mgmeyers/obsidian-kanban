@@ -257,29 +257,27 @@ export class SettingsManager {
         });
       });
 
-    new Setting(contentEl)
-      .setName(t('Add Card Command'))
-      .setDesc(t('This setting issues a command when clicking on Add New Card'))
-      .addDropdown((dropdown) => {
-        dropdown.addOption('', t('No Action'));
-
-        if (this.app.plugins.plugins['quickadd']) {
+    if (this.app.plugins.plugins['quickadd']) {
+      new Setting(contentEl)
+        .setName(t('Add Card Command'))
+        .setDesc(t('This setting issues a command when clicking on Add New Card'))
+        .addDropdown((dropdown) => {
+          dropdown.addOption('', t('No Action'));
           for (let i = 0; i < this.app.plugins.plugins['quickadd'].settings.choices.length; i++) {
             let c = this.app.plugins.plugins['quickadd'].settings.choices[i]
             dropdown.addOption(c.id, c.name);
           }
-        }
-
-        const [value, globalValue] = this.getSetting('add-card-command', local);
-        dropdown.setValue(value as string || (globalValue as string));
-        dropdown.onChange((value) => {
-          this.applySettingsUpdate({
-            'add-card-command': {
-              $set: value as string,
-            },
+          const [value, globalValue] = this.getSetting('add-card-command', local);
+          dropdown.setValue(value as string || (globalValue as string));
+          dropdown.onChange((value) => {
+            this.applySettingsUpdate({
+              'add-card-command': {
+                $set: value as string,
+              },
+            });
           });
         });
-      });
+    }
 
     new Setting(contentEl)
       .setName(t('Note template'))
