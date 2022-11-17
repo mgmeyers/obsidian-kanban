@@ -29,7 +29,7 @@ export const ItemMenuButton = Preact.memo(function ItemMenuButton({
   return (
     <div {...ignoreAttr} className={c('item-postfix-button-wrapper')}>
       {isEditing ? (
-        <button
+        <a
           data-ignore-drag={true}
           onPointerDown={(e) => {
             e.preventDefault();
@@ -37,23 +37,21 @@ export const ItemMenuButton = Preact.memo(function ItemMenuButton({
           onClick={() => {
             setIsEditing(false);
           }}
-          className={`${c('item-postfix-button')} is-enabled`}
+          className={`${c('item-postfix-button')} is-enabled clickable-icon`}
           aria-label={t('Cancel')}
         >
-          <Icon name="cross" />
-        </button>
+          <Icon name="lucide-x" />
+        </a>
       ) : (
-        <button
+        <a
           data-ignore-drag={true}
           onPointerDown={(e) => e.preventDefault()}
-          onClick={
-            showMenu as unknown as Preact.JSX.MouseEventHandler<HTMLButtonElement>
-          }
-          className={c('item-postfix-button')}
+          onClick={showMenu as any}
+          className={`${c('item-postfix-button')} clickable-icon`}
           aria-label={t('More options')}
         >
-          <Icon name="vertical-three-dots" />
-        </button>
+          <Icon name="lucide-more-vertical" />
+        </a>
       )}
     </div>
   );

@@ -30,7 +30,7 @@ function getAliasMarkup(
   let container = win.document.body.createDiv(c('file-suggestion-wrapper'));
   container.detach();
 
-  setIcon(container.createDiv(c('file-suggestion-icon')), 'forward-arrow', 12);
+  setIcon(container.createDiv(c('file-suggestion-icon')), 'lucide-forward', 12);
 
   container.createDiv({}, (div) => {
     div.createDiv({

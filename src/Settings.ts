@@ -346,7 +346,7 @@ export class SettingsManager {
             });
           })
           .addExtraButton((b) => {
-            b.setIcon('reset')
+            b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
                 const [, globalValue] = this.getSetting(
@@ -466,7 +466,7 @@ export class SettingsManager {
             });
           })
           .addExtraButton((b) => {
-            b.setIcon('reset')
+            b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
                 const [, globalValue] = this.getSetting(
@@ -516,7 +516,7 @@ export class SettingsManager {
             });
           })
           .addExtraButton((b) => {
-            b.setIcon('reset')
+            b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
                 const [, globalValue] = this.getSetting(
@@ -564,7 +564,7 @@ export class SettingsManager {
             });
           })
           .addExtraButton((b) => {
-            b.setIcon('reset')
+            b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
                 const [, globalValue] = this.getSetting(
@@ -640,7 +640,7 @@ export class SettingsManager {
           });
         })
         .addExtraButton((b) => {
-          b.setIcon('reset')
+          b.setIcon('lucide-rotate-ccw')
             .setTooltip(t('Reset to default'))
             .onClick(() => {
               const [, globalValue] = this.getSetting('show-add-list', local);
@@ -685,7 +685,7 @@ export class SettingsManager {
             });
           })
           .addExtraButton((b) => {
-            b.setIcon('reset')
+            b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
                 const [, globalValue] = this.getSetting(
@@ -731,7 +731,7 @@ export class SettingsManager {
           });
         })
         .addExtraButton((b) => {
-          b.setIcon('reset')
+          b.setIcon('lucide-rotate-ccw')
             .setTooltip(t('Reset to default'))
             .onClick(() => {
               const [, globalValue] = this.getSetting(
@@ -777,7 +777,7 @@ export class SettingsManager {
           });
         })
         .addExtraButton((b) => {
-          b.setIcon('reset')
+          b.setIcon('lucide-rotate-ccw')
             .setTooltip(t('Reset to default'))
             .onClick(() => {
               const [, globalValue] = this.getSetting(
@@ -820,7 +820,7 @@ export class SettingsManager {
           });
         })
         .addExtraButton((b) => {
-          b.setIcon('reset')
+          b.setIcon('lucide-rotate-ccw')
             .setTooltip(t('Reset to default'))
             .onClick(() => {
               const [, globalValue] = this.getSetting('show-search', local);
@@ -1080,7 +1080,7 @@ export class SettingsManager {
             });
           })
           .addExtraButton((b) => {
-            b.setIcon('reset')
+            b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
                 const [, globalValue] = this.getSetting(
@@ -1130,7 +1130,7 @@ export class SettingsManager {
             });
           })
           .addExtraButton((b) => {
-            b.setIcon('reset')
+            b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
                 const [, globalValue] = this.getSetting(
@@ -1180,7 +1180,7 @@ export class SettingsManager {
             });
           })
           .addExtraButton((b) => {
-            b.setIcon('reset')
+            b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
                 const [, globalValue] = this.getSetting(
@@ -1279,7 +1279,7 @@ export class SettingsManager {
             });
           })
           .addExtraButton((b) => {
-            b.setIcon('reset')
+            b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
                 const [, globalValue] = this.getSetting(
@@ -1329,7 +1329,7 @@ export class SettingsManager {
             });
           })
           .addExtraButton((b) => {
-            b.setIcon('reset')
+            b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
                 const [, globalValue] = this.getSetting(

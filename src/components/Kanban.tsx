@@ -344,8 +344,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                   className={c('filter-input')}
                   placeholder={t('Search...')}
                 />
-                <button
-                  className={c('search-cancel-button')}
+                <a
+                  className={`${c('search-cancel-button')} clickable-icon`}
                   onClick={() => {
                     setSearchQuery('');
                     setDebouncedSearchQuery('');
@@ -353,8 +353,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                   }}
                   aria-label={t('Cancel')}
                 >
-                  <Icon name="cross" />
-                </button>
+                  <Icon name="lucide-x" />
+                </a>
               </div>
             )}
             <ScrollContainer

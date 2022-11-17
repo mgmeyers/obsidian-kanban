@@ -87,20 +87,20 @@ export function useSettingsMenu({
     return new Menu()
       .addItem((item) => {
         item
-          .setIcon('pencil')
+          .setIcon('lucide-edit-3')
           .setTitle(t('Edit list'))
           .onClick(() => setIsEditing(true));
       })
       .addItem((item) => {
         item
-          .setIcon('documents')
+          .setIcon('lucide-archive')
           .setTitle(t('Archive cards'))
           .onClick(() => setConfirmAction('archive-items'));
       })
       .addSeparator()
       .addItem((item) => {
         item
-          .setIcon('up-and-down-arrows')
+          .setIcon('lucide-move-vertical')
           .setTitle(t('Sort by card text'))
           .onClick(() => {
             const children = lane.children.slice();
@@ -134,7 +134,7 @@ export function useSettingsMenu({
       })
       .addItem((item) => {
         item
-          .setIcon('up-and-down-arrows')
+          .setIcon('lucide-move-vertical')
           .setTitle(t('Sort by date'))
           .onClick(() => {
             const children = lane.children.slice();
@@ -173,7 +173,7 @@ export function useSettingsMenu({
       })
       .addSeparator()
       .addItem((i) => {
-        i.setIcon('plus-with-circle')
+        i.setIcon('corner-left-down')
           .setTitle(t('Insert list before'))
           .onClick(() =>
             boardModifiers.insertLane(path, {
@@ -189,7 +189,7 @@ export function useSettingsMenu({
           );
       })
       .addItem((i) => {
-        i.setIcon('plus-with-circle')
+        i.setIcon('lucide-corner-right-down')
           .setTitle(t('Insert list after'))
           .onClick(() => {
             const newPath = [...path];
@@ -211,13 +211,13 @@ export function useSettingsMenu({
       .addSeparator()
       .addItem((item) => {
         item
-          .setIcon('sheets-in-box')
+          .setIcon('lucide-archive')
           .setTitle(t('Archive list'))
           .onClick(() => setConfirmAction('archive'));
       })
       .addItem((item) => {
         item
-          .setIcon('trash')
+          .setIcon('lucide-trash-2')
           .setTitle(t('Delete list'))
           .onClick(() => setConfirmAction('delete'));
       });

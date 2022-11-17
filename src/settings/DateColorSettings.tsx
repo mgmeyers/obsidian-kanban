@@ -184,8 +184,12 @@ function Item({
           </div>
         </div>
         <div className={c('setting-button-wrapper')}>
-          <div onClick={deleteKey} aria-label={t('Delete')}>
-            <Icon name="cross" />
+          <div
+            className="clickable-icon"
+            onClick={deleteKey}
+            aria-label={t('Delete')}
+          >
+            <Icon name="lucide-trash-2" />
           </div>
         </div>
       </div>

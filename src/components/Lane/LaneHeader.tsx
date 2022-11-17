@@ -77,21 +77,23 @@ export const LaneHeader = Preact.memo(function LaneHeader({
         />
         <div className={c('lane-settings-button-wrapper')}>
           {isEditing ? (
-            <button
+            <a
               onClick={() => {
                 setIsEditing(false);
               }}
-              aria-label="Close"
-              className={`${c('lane-settings-button')} is-enabled`}
+              aria-label={t('Close')}
+              className={`${c(
+                'lane-settings-button'
+              )} is-enabled clickable-icon`}
             >
-              <Icon name="cross" />
-            </button>
+              <Icon name="lucide-x" />
+            </a>
           ) : (
             <>
               {setIsItemInputVisible && (
-                <button
+                <a
                   aria-label={t('Add a card')}
-                  className={c('lane-settings-button')}
+                  className={`${c('lane-settings-button')} clickable-icon`}
                   onClick={() => {
                     setIsItemInputVisible(true);
                   }}
@@ -101,18 +103,18 @@ export const LaneHeader = Preact.memo(function LaneHeader({
                     }
                   }}
                 >
-                  <Icon name="plus-with-circle" />
-                </button>
+                  <Icon name="lucide-plus-circle" />
+                </a>
               )}
-              <button
+              <a
                 aria-label={t('More options')}
-                className={c('lane-settings-button')}
+                className={`${c('lane-settings-button')} clickable-icon`}
                 onClick={(e) => {
                   settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
                 }}
               >
-                <Icon name="vertical-three-dots" />
-              </button>
+                <Icon name="lucide-more-vertical" />
+              </a>
             </>
           )}
         </div>
