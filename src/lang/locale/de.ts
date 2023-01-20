@@ -95,7 +95,7 @@ export default {
     'Wenn aktiviert, werden Daten mit Daily Notes verbunden. Zum Beispiel [[26.4.2021]]',
   'Add date and time to archived cards':
     'Füge Datum und Uhrzeit zu archivierten Notizen hinzu',
-  'When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
+  'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     'Wenn aktiviert, wird das momentane Datum und die momentane Zeit am Anfang einer Karte hinzugefügt, wenn sie archiviert wird. Zum Beispiel: - [ ] 14.05.2021 10:00 Mein Karten Titel',
   'Archive date/time separator': 'Datum/Uhrzeit Trenner für das Archiv',
   'This will be used to separate the archived date/time from the title':

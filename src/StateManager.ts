@@ -414,6 +414,7 @@ export class StateManager {
     const shouldAppendArchiveDate = !!this.getSetting('archive-with-date');
     const archiveDateSeparator = this.getSetting('archive-date-separator');
     const archiveDateFormat = this.getSetting('archive-date-format');
+    const archiveDateAfterTitle = this.getSetting('append-archive-date');
 
     const appendArchiveDate = (item: Item) => {
       const newTitle = [moment().format(archiveDateFormat)];
@@ -421,6 +422,8 @@ export class StateManager {
       if (archiveDateSeparator) newTitle.push(archiveDateSeparator);
 
       newTitle.push(item.data.titleRaw);
+
+      if (archiveDateAfterTitle) newTitle.reverse()
 
       const titleRaw = newTitle.join(' ');
 

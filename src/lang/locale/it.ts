@@ -83,7 +83,7 @@ export default {
     'Se attiva, le date verranno collegate alle Note del giorno. Eg. [[2021-04-26]]',
   'Add date and time to archived cards':
     'Aggiungi data e ora alle schede archiviate',
-  'When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
+  'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     "Se attiva, la data e l'ora corrente verranno aggiunte all'inizio della scheda quando viene archiviata. Eg. - [ ] 2021-05-14 10:00am Mia scheda",
   'Archive date/time separator': "Separatore data/ora dell'archivio",
   'This will be used to separate the archived date/time from the title':

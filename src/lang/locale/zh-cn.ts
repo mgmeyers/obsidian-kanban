@@ -105,7 +105,7 @@ export default {
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     '打开时，日期会自动链接到日记页面，例如[[2021-04-26]]',
   'Add date and time to archived cards': '添加日期和时间到归档卡片',
-  'When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
+  'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     '打开时，当前日期和时间会被添加到归档卡片的 frontmatter 上，例如“- [ ] 2021-05-14 10:00am 我的卡片标题”',
   'Archive date/time separator':
     '归档日期或时间分隔符Archive date/time separator',
