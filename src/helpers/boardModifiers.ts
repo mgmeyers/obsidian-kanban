@@ -37,9 +37,9 @@ export interface BoardModifiers {
 
 export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
   const appendArchiveDate = (item: Item) => {
-    const archiveDateFormat = stateManager.getSetting('prepend-archive-format');
+    const archiveDateFormat = stateManager.getSetting('archive-date-format');
     const archiveDateSeparator = stateManager.getSetting(
-      'prepend-archive-separator'
+      'archive-date-separator'
     );
     const newTitle = [moment().format(archiveDateFormat)];
 
@@ -179,7 +179,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
           return update(removeEntity(boardData, path), {
             data: {
               archive: {
-                $unshift: stateManager.getSetting('prepend-archive-date')
+                $unshift: stateManager.getSetting('archive-with-date')
                   ? await Promise.all(items.map(appendArchiveDate))
                   : items,
               },
@@ -213,7 +213,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
             {
               data: {
                 archive: {
-                  $unshift: stateManager.getSetting('prepend-archive-date')
+                  $unshift: stateManager.getSetting('archive-with-date')
                     ? await Promise.all(items.map(appendArchiveDate))
                     : items,
                 },
@@ -278,7 +278,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
             data: {
               archive: {
                 $push: [
-                  stateManager.getSetting('prepend-archive-date')
+                  stateManager.getSetting('archive-with-date')
                     ? await appendArchiveDate(item)
                     : item,
                 ],

@@ -72,9 +72,10 @@ export interface KanbanSettings {
   'new-line-trigger'?: 'enter' | 'shift-enter';
   'new-note-folder'?: string;
   'new-note-template'?: string;
-  'prepend-archive-date'?: boolean;
-  'prepend-archive-format'?: string;
-  'prepend-archive-separator'?: string;
+  'archive-with-date'?: boolean;
+  'append-archive-date' ?: boolean;
+  'archive-date-format'?: string;
+  'archive-date-separator'?: string;
   'show-checkboxes'?: boolean;
   'show-relative-date'?: boolean;
   'time-format'?: string;
@@ -110,9 +111,10 @@ export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
   'new-line-trigger': true,
   'new-note-folder': true,
   'new-note-template': true,
-  'prepend-archive-date': true,
-  'prepend-archive-format': true,
-  'prepend-archive-separator': true,
+  'archive-with-date': true,
+  'append-archive-date': true,
+  'archive-date-format': true,
+  'archive-date-separator': true,
   'show-checkboxes': true,
   'show-relative-date': true,
   'time-format': true,
@@ -1273,7 +1275,7 @@ export class SettingsManager {
       .setName(t('Add date and time to archived cards'))
       .setDesc(
         t(
-          'When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title'
+          'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title'
         )
       )
       .then((setting) => {
@@ -1284,7 +1286,7 @@ export class SettingsManager {
             toggleComponent = toggle;
 
             const [value, globalValue] = this.getSetting(
-              'prepend-archive-date',
+              'archive-with-date',
               local
             );
 
@@ -1296,7 +1298,7 @@ export class SettingsManager {
 
             toggle.onChange((newValue) => {
               this.applySettingsUpdate({
-                'prepend-archive-date': {
+                'archive-with-date': {
                   $set: newValue,
                 },
               });
@@ -1307,13 +1309,63 @@ export class SettingsManager {
               .setTooltip(t('Reset to default'))
               .onClick(() => {
                 const [, globalValue] = this.getSetting(
-                  'prepend-archive-date',
+                  'archive-with-date',
                   local
                 );
                 toggleComponent.setValue(!!globalValue);
 
                 this.applySettingsUpdate({
-                  $unset: ['prepend-archive-date'],
+                  $unset: ['archive-with-date'],
+                });
+              });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Add archive date/time after card title'))
+      .setDesc(
+        t(
+          'When toggled, the archived date/time will be added after the card title, e.g.- [ ] My card title 2021-05-14 10:00am. By default, it is inserted before the title.'
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting(
+              'append-archive-date',
+              local
+            );
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'append-archive-date': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting(
+                  'append-archive-date',
+                  local
+                );
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ['append-archive-date'],
                 });
               });
           });
@@ -1326,7 +1378,7 @@ export class SettingsManager {
       )
       .addText((text) => {
         const [value, globalValue] = this.getSetting(
-          'prepend-archive-separator',
+          'archive-date-separator',
           local
         );
 
@@ -1338,7 +1390,7 @@ export class SettingsManager {
         text.onChange((val) => {
           if (val) {
             this.applySettingsUpdate({
-              'prepend-archive-separator': {
+              'archive-date-separator': {
                 $set: val,
               },
             });
@@ -1347,7 +1399,7 @@ export class SettingsManager {
           }
 
           this.applySettingsUpdate({
-            $unset: ['prepend-archive-separator'],
+            $unset: ['archive-date-separator'],
           });
         });
       });
@@ -1377,7 +1429,7 @@ export class SettingsManager {
           );
 
           const [value, globalValue] = this.getSetting(
-            'prepend-archive-format',
+            'archive-date-format',
             local
           );
 
@@ -1406,13 +1458,13 @@ export class SettingsManager {
           mf.onChange((newValue) => {
             if (newValue) {
               this.applySettingsUpdate({
-                'prepend-archive-format': {
+                'archive-date-format': {
                   $set: newValue,
                 },
               });
             } else {
               this.applySettingsUpdate({
-                $unset: ['prepend-archive-format'],
+                $unset: ['archive-date-format'],
               });
             }
           });
