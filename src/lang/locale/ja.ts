@@ -107,7 +107,7 @@ export default {
     '有効化すると日付がデイリーノートにリンクされます。 例: [[2021-04-26]]',
   'Add date and time to archived cards':
     'アーカイブされたカードに日付と時間を追加',
-  'When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
+  'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     '有効化するとカードがアーカイブされた際に現在の日付と時間がカードの最初に追記されるようになります。例: - [ ] 2021-05-14 10:00am カードタイトル',
   'Archive date/time separator': '日付・時間セパレーターをアーカイブ',
   'This will be used to separate the archived date/time from the title':

@@ -87,7 +87,7 @@ export default {
     'Ao ativar, as datas serão vinculadas às notas diárias. Ex.: [[2021-04-26]]',
   'Add date and time to archived cards':
     'Adicionar data e hora aos cartões arquivados',
-  'When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
+  'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     'Quando ativada, a data e a hora atuais serão adicionadas ao início de um cartão quando ele for arquivado. Ex.: - [] 2021-05-14 10:00 Título do meu cartão',
   'Archive date/time separator': 'Separador de data/hora do arquivo',
   'This will be used to separate the archived date/time from the title':

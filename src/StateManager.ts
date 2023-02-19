@@ -256,7 +256,7 @@ export class StateManager {
       getDefaultTimeFormat(this.app);
 
     const archiveDateFormat =
-      this.getSettingRaw('prepend-archive-format', suppliedSettings) ||
+      this.getSettingRaw('archive-date-format', suppliedSettings) ||
       `${dateFormat} ${timeFormat}`;
 
     this.compiledSettings = {
@@ -284,9 +284,9 @@ export class StateManager {
         suppliedSettings
       ),
       'metadata-keys': [...globalKeys, ...localKeys],
-      'prepend-archive-separator':
-        this.getSettingRaw('prepend-archive-separator') || '',
-      'prepend-archive-format': archiveDateFormat,
+      'archive-date-separator':
+        this.getSettingRaw('archive-date-separator') || '',
+      'archive-date-format': archiveDateFormat,
       'show-add-list':
         this.getSettingRaw('show-add-list', suppliedSettings) ?? true,
       'show-archive-all':
@@ -411,9 +411,10 @@ export class StateManager {
     const board = this.state;
 
     const archived: Item[] = [];
-    const shouldAppendArchiveDate = !!this.getSetting('prepend-archive-date');
-    const archiveDateSeparator = this.getSetting('prepend-archive-separator');
-    const archiveDateFormat = this.getSetting('prepend-archive-format');
+    const shouldAppendArchiveDate = !!this.getSetting('archive-with-date');
+    const archiveDateSeparator = this.getSetting('archive-date-separator');
+    const archiveDateFormat = this.getSetting('archive-date-format');
+    const archiveDateAfterTitle = this.getSetting('append-archive-date');
 
     const appendArchiveDate = (item: Item) => {
       const newTitle = [moment().format(archiveDateFormat)];
@@ -421,6 +422,8 @@ export class StateManager {
       if (archiveDateSeparator) newTitle.push(archiveDateSeparator);
 
       newTitle.push(item.data.titleRaw);
+
+      if (archiveDateAfterTitle) newTitle.reverse()
 
       const titleRaw = newTitle.join(' ');
 

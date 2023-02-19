@@ -108,8 +108,10 @@ export default {
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]',
   'Add date and time to archived cards': 'Add date and time to archived cards',
-  'When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
-    'When toggled, the current date and time will be added to the beginning of a card when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title',
+  'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
+    'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title',
+  'Add archive date/time after card title': 'Add archive date/time after card title',
+  'When toggled, the archived date/time will be added after the card title, e.g.- [ ] My card title 2021-05-14 10:00am. By default, it is inserted before the title.': 'When toggled, the archived date/time will be added after the card title, e.g.- [ ] My card title 2021-05-14 10:00am. By default, it is inserted before the title.',
   'Archive date/time separator': 'Archive date/time separator',
   'This will be used to separate the archived date/time from the title':
     'This will be used to separate the archived date/time from the title',

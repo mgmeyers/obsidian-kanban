@@ -1,5 +1,6 @@
 ![[Settings/Add date and time to archived cards|Add date and time to archived cards]]
 ![[Settings/Archive date time format|Archive date time format]]
+![[Settings/Archive date time position|Archive date time position]]
 ![[Settings/Archive date time separator|Archive date time separator]]
 ![[Settings/Board header buttons|Board header buttons]]
 ![[Settings/Date display format|Date display format]]
