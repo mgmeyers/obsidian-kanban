@@ -1,0 +1,985 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../How%20do%20I/">
+      
+      
+        <link rel="next" href="../FAQs/">
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.13">
+    
+    
+      
+        <title>Settings - Obsidian Kanban</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ffa9267a.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="indigo">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#add-date-and-time-to-archived-cards" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Obsidian Kanban" class="md-header__button md-logo" aria-label="Obsidian Kanban" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Obsidian Kanban
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Settings
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mgmeyers/obsidian-kanban" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Obsidian Kanban" class="md-nav__button md-logo" aria-label="Obsidian Kanban" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Obsidian Kanban
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mgmeyers/obsidian-kanban" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../How%20do%20I/" class="md-nav__link">
+        How do I
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Settings
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Settings
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#add-date-and-time-to-archived-cards" class="md-nav__link">
+    Add date and time to archived cards
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#archive-date-time-format" class="md-nav__link">
+    Archive date time format
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add-archive-datetime-after-card-title" class="md-nav__link">
+    Add archive date/time after card title
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#archive-date-time-separator" class="md-nav__link">
+    Archive date time separator
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#board-header-buttons" class="md-nav__link">
+    Board header buttons
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#date-display-format" class="md-nav__link">
+    Date display format
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#date-format" class="md-nav__link">
+    Date format
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#date-trigger" class="md-nav__link">
+    Date trigger
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#display-card-checkbox" class="md-nav__link">
+    Display card checkbox
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hide-card-display-dates" class="md-nav__link">
+    Hide card display dates
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hide-card-display-tags" class="md-nav__link">
+    Hide card display tags
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hide-dates-in-card-titles" class="md-nav__link">
+    Hide dates in card titles
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hide-tags-in-card-titles" class="md-nav__link">
+    Hide tags in card titles
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lane-width" class="md-nav__link">
+    Lane width
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#link-dates-to-daily-notes" class="md-nav__link">
+    Link dates to daily notes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linked-page-metadata" class="md-nav__link">
+    Linked Page Metadata
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-vs-global-settings" class="md-nav__link">
+    Local vs. global settings
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maximum-number-of-archived-cards" class="md-nav__link">
+    Maximum number of archived cards
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#new-line-trigger" class="md-nav__link">
+    New line trigger
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#note-folder" class="md-nav__link">
+    Note folder
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#note-template" class="md-nav__link">
+    Note template
+  </a>
+  
+    <nav class="md-nav" aria-label="Note template">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prepend-append-new-cards" class="md-nav__link">
+    Prepend / append new cards
+  </a>
+  
+    <nav class="md-nav" aria-label="Prepend / append new cards">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#append" class="md-nav__link">
+    Append
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepend" class="md-nav__link">
+    Prepend
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepend-compact" class="md-nav__link">
+    Prepend (compact)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#show-relative-date" class="md-nav__link">
+    Show relative date
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#time-format" class="md-nav__link">
+    Time format
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#time-trigger" class="md-nav__link">
+    Time trigger
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FAQs/" class="md-nav__link">
+        FAQs
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#add-date-and-time-to-archived-cards" class="md-nav__link">
+    Add date and time to archived cards
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#archive-date-time-format" class="md-nav__link">
+    Archive date time format
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add-archive-datetime-after-card-title" class="md-nav__link">
+    Add archive date/time after card title
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#archive-date-time-separator" class="md-nav__link">
+    Archive date time separator
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#board-header-buttons" class="md-nav__link">
+    Board header buttons
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#date-display-format" class="md-nav__link">
+    Date display format
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#date-format" class="md-nav__link">
+    Date format
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#date-trigger" class="md-nav__link">
+    Date trigger
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#display-card-checkbox" class="md-nav__link">
+    Display card checkbox
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hide-card-display-dates" class="md-nav__link">
+    Hide card display dates
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hide-card-display-tags" class="md-nav__link">
+    Hide card display tags
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hide-dates-in-card-titles" class="md-nav__link">
+    Hide dates in card titles
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hide-tags-in-card-titles" class="md-nav__link">
+    Hide tags in card titles
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lane-width" class="md-nav__link">
+    Lane width
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#link-dates-to-daily-notes" class="md-nav__link">
+    Link dates to daily notes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linked-page-metadata" class="md-nav__link">
+    Linked Page Metadata
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-vs-global-settings" class="md-nav__link">
+    Local vs. global settings
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maximum-number-of-archived-cards" class="md-nav__link">
+    Maximum number of archived cards
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#new-line-trigger" class="md-nav__link">
+    New line trigger
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#note-folder" class="md-nav__link">
+    Note folder
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#note-template" class="md-nav__link">
+    Note template
+  </a>
+  
+    <nav class="md-nav" aria-label="Note template">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prepend-append-new-cards" class="md-nav__link">
+    Prepend / append new cards
+  </a>
+  
+    <nav class="md-nav" aria-label="Prepend / append new cards">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#append" class="md-nav__link">
+    Append
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepend" class="md-nav__link">
+    Prepend
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepend-compact" class="md-nav__link">
+    Prepend (compact)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#show-relative-date" class="md-nav__link">
+    Show relative date
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#time-format" class="md-nav__link">
+    Time format
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#time-trigger" class="md-nav__link">
+    Time trigger
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>Settings</h1>
+
+<h2 id="add-date-and-time-to-archived-cards">Add date and time to archived cards</h2>
+<p>When active, a time stamp will be added to cards when they are archived. By default, this is placed at the beginning of the card, but it can be placed at the end using the <em>Add archive date/time after card title</em> setting. The timestamp can be separated from the card's content using the <a href="Archive%20date%20time%20separator/">Archive date time separator</a> setting. The date format can be controlled with the <a href="Archive%20date%20time%20format/">Archive date time format</a> setting.</p>
+<p><img alt="Screen Shot 2021-09-15 at 7.04.26 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.04.26%20PM.png 2x"></p>
+<h2 id="archive-date-time-format">Archive date time format</h2>
+<p>This will set the format of the <a href="Add%20date%20and%20time%20to%20archived%20cards/">archive timestamp</a>. Available formatting options can be found <a href="https://momentjs.com/docs/#/displaying/format/">here</a></p>
+<p><img alt="Screen Shot 2021-09-15 at 7.08.08 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.08.08%20PM.png 2x"></p>
+<p><img alt="Screen Shot 2021-09-15 at 7.09.08 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.09.08%20PM.png 2x"></p>
+<h2 id="add-archive-datetime-after-card-title">Add archive date/time after card title</h2>
+<p>This toggle controls the position of the <a href="Add%20date%20and%20time%20to%20archived%20cards/">archive timestamp</a>. When enabled, the timestamp will be appended after the card title:</p>
+<p><img alt="Screen Shot appending-archive-datetime.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%20appending-archive-datetime.png 2x"></p>
+<h2 id="archive-date-time-separator">Archive date time separator</h2>
+<p>This will be used to separate the <a href="Add%20date%20and%20time%20to%20archived%20cards/">archive timestamp</a> from a card's content.</p>
+<p>Setting the separator:</p>
+<p><img alt="Screen Shot 2021-09-15 at 7.06.15 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.06.15%20PM.png 2x"></p>
+<p>Resulting archived card:</p>
+<p><img alt="Screen Shot 2021-09-15 at 7.06.48 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.06.48%20PM.png 2x"></p>
+<h2 id="board-header-buttons">Board header buttons</h2>
+<p>These settings allow hiding buttons from a Kanban board's header.</p>
+<p>Default:</p>
+<p><img alt="Screen Shot 2021-09-14 at 11.55.06 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.55.06%20AM.png 2x"></p>
+<p>With the "Add a list" button hidden:</p>
+<p><img alt="Screen Shot 2021-09-14 at 11.56.01 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.56.01%20AM.png 2x"></p>
+<h2 id="date-display-format">Date display format</h2>
+<p>The date display format is similar to the <a href="Date%20format/">Date format</a> except that it controls the format of the date shown at the bottom of a card. This date can be hidden using the <a href="Hide%20card%20display%20dates/">Hide card display dates</a> setting. Available formatting options can be found <a href="https://momentjs.com/docs/#/displaying/format/">here</a></p>
+<p>Setting the date display format:</p>
+<p><img alt="Screen Shot 2021-09-15 at 5.46.58 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.46.58%20PM.png 2x"></p>
+<p>Creating a card with a date in the current <a href="Date%20format/">Date format</a>:</p>
+<p><img alt="Screen Shot 2021-09-15 at 5.48.37 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.48.37%20PM.png 2x"></p>
+<p>By default, the date is hidden from the card text (see: <a href="Hide%20dates%20in%20card%20titles/">Hide dates in card titles</a>) and displayed using the date display format below:</p>
+<p><img alt="Screen Shot 2021-09-15 at 5.48.16 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.48.16%20PM.png 2x"></p>
+<h2 id="date-format">Date format</h2>
+<p>Allows specifying the output of the <a href="Date%20trigger/">calendar popup</a>. Available formatting options can be found <a href="https://momentjs.com/docs/#/displaying/format/">here</a></p>
+<p><code>YYYY-MM-DD</code>:</p>
+<p><img alt="Screen Shot 2021-09-14 at 12.08.25 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.08.25%20PM.png 2x"></p>
+<p><code>ddd, MMM Do, YYYY</code>:</p>
+<p><img alt="Screen Shot 2021-09-14 at 12.09.20 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.09.20%20PM.png 2x"></p>
+<h2 id="date-trigger">Date trigger</h2>
+<p>When creating or editing a card, this character—<code>@</code> by default—or sequence of characters will trigger the calendar popup.</p>
+<p><img alt="Screen Shot 2021-09-14 at 12.01.07 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.01.07%20PM.png 2x"></p>
+<h2 id="display-card-checkbox">Display card checkbox</h2>
+<p>This setting enables or disables displaying checkboxes on cards. <code>Command</code> or <code>CTRL</code> clicking on the checkbox will <a href="../How%20do%20I/View%20a%20Kanban%27s%20archive/">archive</a> the card.</p>
+<p>No checkbox (default):</p>
+<p><img alt="Screen Shot 2021-09-13 at 4.02.49 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%204.02.49%20PM.png 2x"></p>
+<p>With checkbox:</p>
+<p><img alt="Screen Shot 2021-09-13 at 4.00.18 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%204.00.18%20PM.png 2x"></p>
+<h2 id="hide-card-display-dates">Hide card display dates</h2>
+<p>This setting hides display dates (see: <a href="Date%20display%20format/">Date display format</a>). This setting is designed to be used in conjuction with <a href="Hide%20dates%20in%20card%20titles/">Hide dates in card titles</a>.</p>
+<p>Off: </p>
+<p><img alt="Screen Shot 2021-09-15 at 5.48.16 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.48.16%20PM.png 2x"></p>
+<p>On:</p>
+<p><img alt="Screen Shot 2021-09-15 at 5.51.36 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.51.36%20PM.png 2x"></p>
+<h2 id="hide-card-display-tags">Hide card display tags</h2>
+<p>This setting will display any tags within a card's content at the bottom of the card. It can be used in conjunction with <a href="Hide%20tags%20in%20card%20titles/">Hide tags in card titles</a> for improved organization and aesthetics.</p>
+<p>Off:</p>
+<p><img alt="Screen Shot 2021-09-15 at 6.04.57 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%206.04.57%20PM.png 2x"></p>
+<p>On:</p>
+<p><img alt="Screen Shot 2021-09-15 at 6.05.21 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%206.05.21%20PM.png 2x"></p>
+<h2 id="hide-dates-in-card-titles">Hide dates in card titles</h2>
+<p>Hide dates from the main card text. This setting is designed to be used in conjunction with <a href="Hide%20card%20display%20dates/">Hide card display dates</a>. It can also be used to show links to <a href="Link%20dates%20to%20daily%20notes/">daily notes</a> in the card's text.</p>
+<p>Off:</p>
+<p><img alt="Screen Shot 2021-09-15 at 5.54.15 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.54.15%20PM.png 2x"></p>
+<p>On (default):</p>
+<p><img alt="Screen Shot 2021-09-15 at 5.48.16 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%205.48.16%20PM.png 2x"></p>
+<h2 id="hide-tags-in-card-titles">Hide tags in card titles</h2>
+<p>By default, tags will display in a card's main text. This setting allows you to visually remove tags from this text. Tags still remain, but are not displayed. This setting is meant to be used in conjunction with the <a href="Hide%20card%20display%20tags/">Hide card display tags</a> setting.</p>
+<p>Setting off:</p>
+<p><img alt="Screen Shot 2021-09-14 at 11.44.32 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.44.32%20AM.png 2x"></p>
+<p>Setting on:</p>
+<p><img alt="Screen Shot 2021-09-14 at 11.49.10 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2011.49.10%20AM.png 2x"></p>
+<h2 id="lane-width">Lane width</h2>
+<p>This setting controls the width of a Kanban board's columns. By default, the columns are 272 pixels wide.</p>
+<p><img alt="Screen Shot 2021-09-13 at 3.46.53 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%203.46.53%20PM.png 2x"></p>
+<p>Changing this setting to 400 will result in:</p>
+<p><img alt="Screen Shot 2021-09-13 at 3.48.15 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%203.48.15%20PM.png 2x"></p>
+<h2 id="link-dates-to-daily-notes">Link dates to daily notes</h2>
+<p>When this setting is active, dates and <a href="Date%20display%20format/">display dates</a> will link to the corresponding daily note.</p>
+<p><img alt="Screen Shot 2021-09-15 at 6.53.47 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%206.53.47%20PM.png 2x"></p>
+<p><img alt="Screen Shot 2021-09-15 at 6.54.29 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%206.54.29%20PM.png 2x"></p>
+<h2 id="linked-page-metadata">Linked Page Metadata</h2>
+<p>This setting allows displaying <a href="https://help.obsidian.md/Advanced+topics/YAML+front+matter">frontmatter</a> and <a href="https://blacksmithgu.github.io/obsidian-dataview/data-annotation/">Dataview</a> metadata of the first page linked within a card. Note, there are <a href="../FAQs/Frontmatter%20limitations%20%26%20gotchas/">Frontmatter limitations &amp; gotchas</a>.</p>
+<p>For example, say you have this note in your vault:</p>
+<pre><code>---
+demo-field: This is a demo frontmatter field
+---
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc eu posuere dolor. Proin ut tortor sagittis, auctor est non, varius nibh. Proin varius leo ac convallis dapibus.
+
+inline-field:: This is a demo inline Dataview field that **contains markdown**
+
+Nullam non efficitur ante. Donec convallis nibh ante, eu auctor felis aliquam id.
+</code></pre>
+<p>The metadata keys <code>demo-field</code> and <code>inline-field</code> can then be added under <code>Linked Page Metadata</code></p>
+<p><img alt="Screen Shot 2021-09-16 at 10.09.02 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%2010.09.02%20AM.png 2x"></p>
+<p>If the metadata field contains markdown, it must be specified by toggling <code>Field contains markdown</code></p>
+<p><img alt="Screen Shot 2021-09-16 at 10.09.50 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%2010.09.50%20AM.png 2x"></p>
+<p><img alt="Screen Shot 2021-09-16 at 10.10.15 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%2010.10.15%20AM.png 2x"></p>
+<p>The metadata will then be displayed below the card.</p>
+<p><img alt="Screen Shot 2021-09-16 at 10.10.47 AM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%2010.10.47%20AM.png 2x"></p>
+<h2 id="local-vs-global-settings">Local vs. global settings</h2>
+<p>The settings for the Kanban plugin can be set globally, as well as on a per-board basis. Global settings can be found in <code>Settings &gt; Kanban</code>.</p>
+<p><img alt="Screen Shot 2021-09-16 at 1.04.58 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%201.04.58%20PM.png 2x"></p>
+<p>Global settings can be overridden on a per-board basis by modifying the board's settings, which can be accessed through the <a href="Board%20header%20buttons.md">Board header buttons</a> or the <code>More options menu</code>.</p>
+<p><img alt="Screen Shot 2021-09-16 at 1.06.02 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%201.06.02%20PM.png 2x"></p>
+<p><img alt="Screen Shot 2021-09-16 at 1.06.27 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-16%20at%201.06.27%20PM.png 2x"></p>
+<h2 id="maximum-number-of-archived-cards">Maximum number of archived cards</h2>
+<p>By default, a Kanban board's <a href="../How%20do%20I/View%20a%20Kanban%27s%20archive/">archive</a> will grow infinitely. Setting the maximum number of archived cards will cap the archive at the specified number. </p>
+<p>For example, if <code>Maximum number of archived cards</code> is set to <code>100</code>, the archive will never contain more than 100 cards. When the archive reaches its maximum, old cards will be deleted as new cards are added.</p>
+<h2 id="new-line-trigger">New line trigger</h2>
+<p>By default, <code>enter</code> creates a new card, and <code>shift + enter</code> creates a new line within a card. This can be changed so that <code>enter</code> creates new lines and <code>shift + enter</code> creates new cards.</p>
+<h2 id="note-folder">Note folder</h2>
+<p>When <a href="../How%20do%20I/Create%20notes%20from%20cards/">Create notes from cards</a>, the <code>Note template</code> setting determines the folder in which new notes are created.</p>
+<h2 id="note-template">Note template</h2>
+<p>When <a href="../How%20do%20I/Create%20notes%20from%20cards/">Create notes from cards</a>, new notes will be pre-populated with the specified note template.</p>
+<p>Supported template formats:</p>
+<ul>
+<li><a href="https://help.obsidian.md/Plugins/Templates">Obsidian Templates</a></li>
+<li><a href="https://silentvoid13.github.io/Templater/">Templater</a></li>
+</ul>
+<h3 id="example">Example</h3>
+<p>With the Obsidian core template plugin active (<code>Settings &gt; Core plugins &gt; Templates</code>) create a new note called <code>Demo Template</code> in your vault containing:</p>
+<pre><code># {{title}}
+
+This file was created on {{date}} {{time}}.
+</code></pre>
+<p>Then select the template in your Kanban board's settings:</p>
+<p><img alt="Screen Shot 2021-09-13 at 3.32.18 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%203.32.18%20PM.png 2x"></p>
+<p><img alt="Screen Shot 2021-09-13 at 3.35.03 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%203.35.03%20PM.png 2x"></p>
+<p><img alt="Screen Shot 2021-09-13 at 3.35.17 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%203.35.17%20PM.png 2x"></p>
+<h2 id="prepend-append-new-cards">Prepend / append new cards</h2>
+<p>This setting changes where new cards are inserted into a list, and also where the <code>Add a card</code> button is placed. New cards are appended to the list by default.</p>
+<h3 id="append">Append</h3>
+<p><img alt="Screen Shot 2021-09-13 at 12.22.08 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%2012.22.08%20PM.png 2x"></p>
+<h3 id="prepend">Prepend</h3>
+<p><img alt="Screen Shot 2021-09-13 at 12.22.57 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%2012.22.57%20PM.png 2x"></p>
+<h3 id="prepend-compact">Prepend (compact)</h3>
+<p><img alt="Screen Shot 2021-09-13 at 12.23.35 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-13%20at%2012.23.35%20PM.png 2x"></p>
+<h2 id="show-relative-date">Show relative date</h2>
+<p>When this setting is active, cards will display the number of days between the current date and the date contained in a card. </p>
+<p><img alt="Screen Shot 2021-09-15 at 6.59.29 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%206.59.29%20PM.png 2x"></p>
+<h2 id="time-format">Time format</h2>
+<p>Allows specifying the output of the <a href="Time%20trigger/">time selection popup</a>. Available formatting options can be found <a href="https://momentjs.com/docs/#/displaying/format/">here</a></p>
+<p><code>HH:mm</code>:</p>
+<p><img alt="Screen Shot 2021-09-14 at 12.12.29 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.12.29%20PM.png 2x"></p>
+<p><code>h:mm a</code>:</p>
+<p><img alt="Screen Shot 2021-09-14 at 12.13.07 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.13.07%20PM.png 2x"></p>
+<h2 id="time-trigger">Time trigger</h2>
+<p>When creating or editing a card, this character or sequence of characters—<code>@@</code> by default—will trigger the time selection popup.</p>
+<p><img alt="Screen Shot 2021-09-14 at 12.03.06 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-14%20at%2012.03.06%20PM.png 2x"></p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.2a6f1dda.min.js"></script>
+      
+    
+  </body>
+</html>
