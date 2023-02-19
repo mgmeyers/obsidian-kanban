@@ -1,6 +1,6 @@
 ## Add date and time to archived cards
 
-When active, a time stamp will be added to cards when they are archived. This will be added to the beginning of the card, and can be separated from the card's content using the [Archive date time separator](Archive%20date%20time%20separator.md) setting. The date format can be controlled with the [Archive date time format](Archive%20date%20time%20format.md) setting.
+When active, a time stamp will be added to cards when they are archived. By default, this is placed at the beginning of the card, but it can be placed at the end using the *Add archive date/time after card title* setting. The timestamp can be separated from the card's content using the [Archive date time separator](Archive%20date%20time%20separator.md) setting. The date format can be controlled with the [Archive date time format](Archive%20date%20time%20format.md) setting.
 
 <img alt="Screen Shot 2021-09-15 at 7.04.26 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.04.26%20PM.png 2x">
 
@@ -12,6 +12,13 @@ This will set the format of the [archive timestamp](Add%20date%20and%20time%20to
 <img alt="Screen Shot 2021-09-15 at 7.08.08 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.08.08%20PM.png 2x">
 
 <img alt="Screen Shot 2021-09-15 at 7.09.08 PM.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%202021-09-15%20at%207.09.08%20PM.png 2x">
+
+
+## Add archive date/time after card title
+
+This toggle controls the position of the [archive timestamp](Add%20date%20and%20time%20to%20archived%20cards.md). When enabled, the timestamp will be appended after the card title:
+
+<img alt="Screen Shot appending-archive-datetime.png" srcset="/obsidian-kanban/Assets/Screen%20Shot%20appending-archive-datetime.png 2x">
 
 
 ## Archive date time separator

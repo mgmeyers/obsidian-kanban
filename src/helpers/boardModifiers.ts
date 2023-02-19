@@ -41,7 +41,9 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     const archiveDateSeparator = stateManager.getSetting(
       'archive-date-separator'
     );
-    const archiveDateAfterTitle = stateManager.getSetting('append-archive-date');
+    const archiveDateAfterTitle = stateManager.getSetting(
+      'append-archive-date'
+    );
 
     const newTitle = [moment().format(archiveDateFormat)];
 
@@ -49,7 +51,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
 
     newTitle.push(item.data.titleRaw);
 
-    if (archiveDateAfterTitle) newTitle.reverse()
+    if (archiveDateAfterTitle) newTitle.reverse();
 
     const titleRaw = newTitle.join(' ');
     return stateManager.updateItemContent(item, titleRaw);

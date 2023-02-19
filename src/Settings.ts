@@ -73,7 +73,7 @@ export interface KanbanSettings {
   'new-note-folder'?: string;
   'new-note-template'?: string;
   'archive-with-date'?: boolean;
-  'append-archive-date' ?: boolean;
+  'append-archive-date'?: boolean;
   'archive-date-format'?: string;
   'archive-date-separator'?: string;
   'show-checkboxes'?: boolean;

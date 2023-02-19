@@ -191,10 +191,16 @@ export function getLinkedPageMetadata(
       haveData = true;
     } else if (dataviewVal) {
       const cachedValue = dataviewCache[k.metadataKey];
-      let val = Array.isArray(cachedValue) ? cachedValue : cachedValue.values || cachedValue.val || cachedValue;
+      let val = Array.isArray(cachedValue)
+        ? cachedValue
+        : cachedValue.values || cachedValue.val || cachedValue;
 
       // Protect against proxy values
-      if (val === cachedValue && !Array.isArray(cachedValue) && typeof val === 'object') {
+      if (
+        val === cachedValue &&
+        !Array.isArray(cachedValue) &&
+        typeof val === 'object'
+      ) {
         val = { ...cachedValue };
       } else if (
         !Array.isArray(val) &&

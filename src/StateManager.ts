@@ -423,7 +423,7 @@ export class StateManager {
 
       newTitle.push(item.data.titleRaw);
 
-      if (archiveDateAfterTitle) newTitle.reverse()
+      if (archiveDateAfterTitle) newTitle.reverse();
 
       const titleRaw = newTitle.join(' ');
 
