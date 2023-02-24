@@ -1,4 +1,3 @@
-## Create a Kanban board
 
 To create a new Kanban board, you can:
 

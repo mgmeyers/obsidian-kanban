@@ -1,4 +1,3 @@
-## Link dates to daily notes
 
 When this setting is active, dates and [[Date display format|display dates]] will link to the corresponding daily note.
 

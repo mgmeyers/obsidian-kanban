@@ -1,4 +1,3 @@
-## Prepend / append new cards
 
 This setting changes where new cards are inserted into a list, and also where the `Add a card` button is placed. New cards are appended to the list by default.
 

@@ -1,4 +1,3 @@
-## Add an image to a card
 
 Images can be added to cards in two ways.
 

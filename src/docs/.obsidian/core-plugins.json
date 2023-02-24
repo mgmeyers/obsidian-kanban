@@ -4,11 +4,12 @@
   "switcher",
   "graph",
   "backlink",
-  "page-preview",
+  "canvas",
   "templates",
   "note-composer",
   "command-palette",
   "markdown-importer",
   "word-count",
-  "file-recovery"
+  "file-recovery",
+  "publish"
 ]

@@ -1,4 +1,3 @@
-## Search a Kanban board
 
 You can search a Kanban board like you would any other file in Obsidian. By default, the hotkey is  `Command` or `CTRL` + `F`.
 

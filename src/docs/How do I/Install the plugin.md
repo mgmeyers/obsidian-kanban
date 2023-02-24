@@ -1,4 +1,3 @@
-## Install the plugin
 
 The Kanban plugin can be found in [Obsidian's](https://obsidian.md/) community plugins library, `Settings > Community Plugins > Browse`. Once installed, the plugin must also be activated. See here for [[Create a Kanban board|instructions on creating Kanban boards]].
 

@@ -1,4 +1,3 @@
-## Add a date to a card
 
 Dates can be added to cards in two ways.
 

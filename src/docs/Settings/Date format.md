@@ -1,4 +1,3 @@
-## Date format
 
 Allows specifying the output of the [[Date trigger|calendar popup]]. Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
 

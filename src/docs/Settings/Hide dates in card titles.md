@@ -1,4 +1,3 @@
-## Hide dates in card titles
 
 Hide dates from the main card text. This setting is designed to be used in conjunction with [[Hide card display dates]]. It can also be used to show links to [[Link dates to daily notes|daily notes]] in the card's text.
 

@@ -1,4 +1,3 @@
-## Note template
 
 When [[Create notes from cards]], new notes will be pre-populated with the specified note template.
 

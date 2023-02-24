@@ -1,4 +1,3 @@
-## Local vs. global settings
 
 The settings for the Kanban plugin can be set globally, as well as on a per-board basis. Global settings can be found in `Settings > Kanban`.
 

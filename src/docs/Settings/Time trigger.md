@@ -1,4 +1,3 @@
-## Time trigger
 
 When creating or editing a card, this character or sequence of characters—`@@` by default—will trigger the time selection popup.
 

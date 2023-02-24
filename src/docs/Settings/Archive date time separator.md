@@ -1,4 +1,3 @@
-## Archive date time separator
 
 This will be used to separate the [[Add date and time to archived cards|archive timestamp]] from a card's content.
 

@@ -1,4 +1,3 @@
-## Show relative date
 
 When this setting is active, cards will display the number of days between the current date and the date contained in a card. 
 

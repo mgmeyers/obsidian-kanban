@@ -1,4 +1,3 @@
-## Date trigger
 
 When creating or editing a card, this character—`@` by default—or sequence of characters will trigger the calendar popup.
 

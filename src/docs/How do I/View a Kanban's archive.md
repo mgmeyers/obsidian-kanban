@@ -1,4 +1,3 @@
-## View a Kanban's archive
 
 Currenly, a Kanban's archive can only be viewed by viewing the board as markdown.
 

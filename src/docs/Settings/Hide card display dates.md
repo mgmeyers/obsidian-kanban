@@ -1,4 +1,3 @@
-## Hide card display dates
 
 This setting hides display dates (see: [[Date display format]]). This setting is designed to be used in conjuction with [[Hide dates in card titles]].
 

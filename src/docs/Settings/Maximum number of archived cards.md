@@ -1,4 +1,3 @@
-## Maximum number of archived cards
 
 By default, a Kanban board's [[View a Kanban's archive|archive]] will grow infinitely. Setting the maximum number of archived cards will cap the archive at the specified number. 
 

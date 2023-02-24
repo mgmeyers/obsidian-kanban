@@ -1,4 +1,3 @@
-## Add a time to a card
 
 Times can be added to cards in two ways.
 

@@ -1,4 +1,3 @@
-## Time format
 
 Allows specifying the output of the [[Time trigger|time selection popup]]. Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
 

@@ -1,4 +1,3 @@
-## Archive date time format
 
 This will set the format of the [[Add date and time to archived cards|archive timestamp]]. Available formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/)
 

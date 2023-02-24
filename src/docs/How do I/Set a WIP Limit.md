@@ -1,4 +1,3 @@
-## Set a WIP Limit for a Lane
 
 To set a WIP (work in progress) limit for a lane, specify it in parentheses after the lane title
 when creating or renaming it. For example, to set the limit cards amount in the existing "In Progress"
