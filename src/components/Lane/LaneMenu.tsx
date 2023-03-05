@@ -171,6 +171,52 @@ export function useSettingsMenu({
             );
           });
       })
+      .addItem((item) => {
+        item
+          .setIcon('lucide-move-vertical')
+          .setTitle(t('Sort by tags'))
+          .onClick(() => {
+            const children = lane.children.slice();
+            const isAsc = lane.data.sorted === LaneSort.TagsAsc;
+
+            //`Sort` children by the item's tags
+            //I wish I was using ruby right now
+            children.sort((a, b) => {
+              //Join tags into a string
+              const tagsA = a.data.metadata.tags.join(' ');
+              const tagsB = b.data.metadata.tags.join(' ');
+
+              //Compare the strings, using isAsc to determine the order
+              if (tagsA > tagsB) {
+                return isAsc ? 1 : -1;
+              }
+
+              if (tagsA < tagsB) {
+                return isAsc ? -1 : 1;
+              }
+
+              //If they are the same, return 0
+              return 0;
+            });
+
+            boardModifiers.updateLane(
+              path,
+              update(lane, {
+                children: {
+                  $set: children,
+                },
+                data: {
+                  sorted: {
+                    $set:
+                      lane.data.sorted === LaneSort.TagsAsc
+                        ? LaneSort.TagsDsc
+                        : LaneSort.TagsAsc,
+                  },
+                },
+              })
+            );
+          });
+      })
       .addSeparator()
       .addItem((i) => {
         i.setIcon('corner-left-down')
