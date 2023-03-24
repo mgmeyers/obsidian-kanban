@@ -1,5 +1,5 @@
 
-Currenly, a Kanban's archive can only be viewed by viewing the board as markdown.
+Currently, a Kanban's archive can only be viewed by viewing the board as markdown.
 
 ![[Screen Shot 2021-09-13 at 4.04.40 PM.png]]
 

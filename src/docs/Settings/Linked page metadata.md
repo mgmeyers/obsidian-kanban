@@ -3,7 +3,7 @@ This setting allows displaying [frontmatter](https://help.obsidian.md/Advanced+t
 
 For example, say you have this note in your vault:
 
-```
+```markdown
 ---
 demo-field: This is a demo frontmatter field
 ---
