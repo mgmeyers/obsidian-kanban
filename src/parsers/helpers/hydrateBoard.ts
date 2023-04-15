@@ -61,6 +61,7 @@ export async function hydrateItem(stateManager: StateManager, item: Item) {
 
       date.hour(time.hour());
       date.minute(time.minute());
+      date.second(time.second());
 
       time = date.clone();
     }
