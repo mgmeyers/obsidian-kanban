@@ -11,7 +11,7 @@ Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
 
 ## Documentation
 
-Find the plugin documentation here: [https://publish.obsidian.md/kanban](https://publish.obsidian.md/kanban)
+Find the plugin documentation here: [Obsidian Kanban Plugin Documentation](https://publish.obsidian.md/kanban/Obsidian+Kanban+Plugin)
 
 ## Support
 
