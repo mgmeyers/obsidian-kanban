@@ -561,6 +561,18 @@ export default class KanbanPlugin extends Plugin {
         }
       },
     });
+    this.addCommand({
+      id: 'open-board-settings',
+      name: t('Open board settings'),
+      checkCallback: (checking) => {
+        const view = app.workspace.getActiveViewOfType(KanbanView);
+
+        if (!view) return false;
+        if (checking) return true;
+
+        view.getBoardSettings();
+      },
+    });
   }
 
   registerMonkeyPatches() {

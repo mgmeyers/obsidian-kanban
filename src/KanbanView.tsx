@@ -170,6 +170,31 @@ export class KanbanView extends TextFileView implements HoverParent {
     return <Kanban stateManager={stateManager} view={this} />;
   }
 
+  getBoardSettings() {
+    const stateManager = this.plugin.stateManagers.get(this.file);
+    const board = stateManager.state;
+
+    new SettingsModal(
+      this,
+      {
+        onSettingsChange: (settings) => {
+          const updatedBoard = update(board, {
+            data: {
+              settings: {
+                $set: settings,
+              },
+            },
+          });
+
+          // Save to disk, compute text of new board
+          stateManager.setState(updatedBoard);
+        },
+      },
+      board.data.settings
+    ).open();
+  }
+
+
   onPaneMenu(menu: Menu, source: string, callSuper: boolean = true) {
     if (source !== 'more-options') {
       super.onPaneMenu(menu, source);
@@ -195,27 +220,7 @@ export class KanbanView extends TextFileView implements HoverParent {
           .setIcon('lucide-settings')
           .setSection('pane')
           .onClick(() => {
-            const stateManager = this.plugin.stateManagers.get(this.file);
-            const board = stateManager.state;
-
-            new SettingsModal(
-              this,
-              {
-                onSettingsChange: (settings) => {
-                  const updatedBoard = update(board, {
-                    data: {
-                      settings: {
-                        $set: settings,
-                      },
-                    },
-                  });
-
-                  // Save to disk, compute text of new board
-                  stateManager.setState(updatedBoard);
-                },
-              },
-              board.data.settings
-            ).open();
+            this.getBoardSettings();
           });
       })
       .addItem((item) => {
@@ -247,27 +252,7 @@ export class KanbanView extends TextFileView implements HoverParent {
         'lucide-settings',
         t('Open board settings'),
         () => {
-          const stateManager = this.plugin.stateManagers.get(this.file);
-          const board = stateManager.state;
-
-          new SettingsModal(
-            this,
-            {
-              onSettingsChange: (settings) => {
-                const updatedBoard = update(board, {
-                  data: {
-                    settings: {
-                      $set: settings,
-                    },
-                  },
-                });
-
-                // Save to disk, compute text of new board
-                stateManager.setState(updatedBoard);
-              },
-            },
-            board.data.settings
-          ).open();
+          this.getBoardSettings();
         }
       );
     } else if (
