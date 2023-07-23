@@ -16,6 +16,7 @@ import {
   constructMenuTimePickerOnChange,
   constructTimePicker,
 } from './helpers';
+import { Icon } from '../Icon/Icon';
 
 function useDatePickers(item: Item) {
   const { stateManager, boardModifiers } = Preact.useContext(KanbanContext);
@@ -254,6 +255,22 @@ export const ItemContent = Preact.memo(function ItemContent({
           onEditTime={onEditTime}
           getDateColor={getDateColor}
         />
+
+        <div className={c('item-points-list')}>
+          {item.data.completedPoints != undefined && (
+            <div className={c('item-points-completed')}>
+              <Icon name="lightbulb" />
+              <span>{item.data.completedPoints}</span>
+            </div>
+          )}
+          {item.data.points != undefined && (
+            <div>
+              <Icon name="lightbulb" />
+              <span>{item.data.points}</span>
+            </div>
+          )}
+        </div>
+
         {!hideTagsDisplay && !!item.data.metadata.tags?.length && (
           <div className={c('item-tags')}>
             {item.data.metadata.tags.map((tag, i) => {

@@ -16,6 +16,8 @@ export interface LaneTitleProps {
   isEditing: boolean;
   setIsEditing: Preact.StateUpdater<boolean>;
   onChange: Preact.ChangeEventHandler<HTMLTextAreaElement>;
+  points: number;
+  completedPoints: number;
 }
 
 export function LaneTitle({
@@ -25,6 +27,8 @@ export function LaneTitle({
   setIsEditing,
   title,
   onChange,
+  points,
+  completedPoints,
 }: LaneTitleProps) {
   const { stateManager } = Preact.useContext(KanbanContext);
   const inputRef = Preact.useRef<HTMLTextAreaElement>();
@@ -84,7 +88,7 @@ export function LaneTitle({
                 const internalLinkPath =
                   e.target instanceof
                     (e.view as Window & typeof globalThis).HTMLAnchorElement &&
-                  e.target.hasClass('internal-link')
+                    e.target.hasClass('internal-link')
                     ? e.target.dataset.href
                     : undefined;
 
@@ -113,6 +117,13 @@ export function LaneTitle({
           )}
         </div>
       )}
+
+      {completedPoints != 0 && (
+        <div className={c('lane-title-points-completed')}>
+          {completedPoints}
+        </div>
+      )}
+      {points != 0 && <div className={c('lane-title-points')}>{points}</div>}
     </>
   );
 }
