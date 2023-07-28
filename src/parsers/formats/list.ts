@@ -71,6 +71,10 @@ export function listItemToItemData(
       file: undefined,
       fileMetadata: undefined,
       fileMetadataOrder: undefined,
+      tasks: {
+        completed: 0,
+        incomplete: 0,
+      },
     },
     dom: undefined,
     isComplete: !!item.checked,
@@ -160,6 +164,10 @@ export function listItemToItemData(
   );
 
   itemData.title = replaceBrs(executeDeletion(title));
+
+  itemData.metadata.tasks.completed = itemData.titleRaw.split('[x]').length - 1;
+  itemData.metadata.tasks.incomplete =
+    itemData.titleRaw.split('[ ]').length - 1;
 
   return itemData;
 }
