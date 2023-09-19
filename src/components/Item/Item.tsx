@@ -148,16 +148,22 @@ const ItemInner = Preact.memo(function ItemInner({
 export const DraggableItem = Preact.memo(function DraggableItem(
   props: DraggableItemProps
 ) {
+  const { stateManager } = Preact.useContext(KanbanContext);
   const elementRef = Preact.useRef<HTMLDivElement>(null);
   const measureRef = Preact.useRef<HTMLDivElement>(null);
   const searchQuery = Preact.useContext(SearchContext);
+  const cardsBehaviorOnSearch = stateManager.useSetting(
+    'cards-behavior-on-search'
+  );
 
   const { itemIndex, ...innerProps } = props;
 
   useDragHandle(measureRef, measureRef);
 
   const isMatch = searchQuery
-    ? innerProps.item.data.titleSearch.toLowerCase().contains(searchQuery.toLowerCase())
+    ? innerProps.item.data.titleSearch
+        .toLowerCase()
+        .contains(searchQuery.toLowerCase())
     : false;
 
   const classModifiers: string[] = getItemClassModifiers(innerProps.item);
@@ -165,13 +171,23 @@ export const DraggableItem = Preact.memo(function DraggableItem(
   if (searchQuery) {
     if (isMatch) {
       classModifiers.push('is-search-hit');
+    } else if (!isMatch && cardsBehaviorOnSearch === 'hide') {
+      classModifiers.push('is-search-miss-hide');
     } else {
       classModifiers.push('is-search-miss');
     }
   }
 
   return (
-    <div ref={measureRef} className={c('item-wrapper')}>
+    <div
+      ref={measureRef}
+      className={classcat([
+        c('item-wrapper'),
+        ...(classModifiers.includes('is-search-miss-hide')
+          ? ['no-margin']
+          : []),
+      ])}
+    >
       <div
         ref={elementRef}
         className={classcat([c('item'), ...classModifiers])}

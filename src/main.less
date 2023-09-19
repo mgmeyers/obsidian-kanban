@@ -286,9 +286,6 @@ button.kanban-plugin__lane-settings-button
   margin: 0 4px;
   display: flex;
   flex-direction: column;
-  > div {
-    margin-top: 4px;
-  }
 }
 
 .kanban-plugin__lane-items > .kanban-plugin__placeholder {
@@ -377,6 +374,14 @@ button.kanban-plugin__new-item-button {
     0 0 0 2px hsla(var(--interactive-accent-hsl), 0.2);
 }
 
+.kanban-plugin__item-wrapper {
+  margin-top: 4px;
+
+  &.no-margin {
+    margin-top: 0;
+  }
+}
+
 .kanban-plugin__item {
   font-size: 0.875rem;
   border: 1px solid var(--background-modifier-border);
@@ -392,6 +397,16 @@ button.kanban-plugin__new-item-button {
   &.is-search-miss {
     font-size: 0.75rem;
     opacity: 0.5;
+
+    .kanban-plugin__item-metadata-wrapper {
+      display: none;
+    }
+  }
+
+  &.is-search-miss-hide {
+    visibility: hidden;
+    height: 0;
+    border: none;
 
     .kanban-plugin__item-metadata-wrapper {
       display: none;
