@@ -193,7 +193,6 @@ export class KanbanView extends TextFileView implements HoverParent {
       board.data.settings
     ).open();
   }
-
   onPaneMenu(menu: Menu, source: string, callSuper: boolean = true) {
     if (source !== 'more-options') {
       super.onPaneMenu(menu, source);
