@@ -157,7 +157,7 @@ export const DraggableItem = Preact.memo(function DraggableItem(
   useDragHandle(measureRef, measureRef);
 
   const isMatch = searchQuery
-    ? innerProps.item.data.titleSearch.contains(searchQuery)
+    ? innerProps.item.data.titleSearch.toLowerCase().contains(searchQuery.toLowerCase())
     : false;
 
   const classModifiers: string[] = getItemClassModifiers(innerProps.item);
