@@ -52,7 +52,7 @@ export const DraggableLane = Preact.memo(function DraggableLane({
     if (cardsBehaviorOnSearch !== 'hide' || !searchQuery) return lane.children;
     const searchQueryLowercase = searchQuery.toLowerCase();
     return lane.children.filter((child) =>
-      child.data.titleSearch.toLowerCase().includes(searchQueryLowercase)
+      child.data.titleSearch.toLowerCase().contains(searchQueryLowercase)
     );
   }, [cardsBehaviorOnSearch, searchQuery, lane.children]);
 
