@@ -9,7 +9,7 @@ import { Sortable } from 'src/dnd/components/Sortable';
 import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
 import { useDragHandle } from 'src/dnd/managers/DragManager';
 
-import { KanbanContext } from '../context';
+import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
 import { Items } from '../Item/Item';
 import { ItemForm } from '../Item/ItemForm';
@@ -23,7 +23,6 @@ export interface DraggableLaneProps {
   laneIndex: number;
   isStatic?: boolean;
 }
-
 export const DraggableLane = Preact.memo(function DraggableLane({
   isStatic,
   lane,
@@ -31,11 +30,15 @@ export const DraggableLane = Preact.memo(function DraggableLane({
 }: DraggableLaneProps) {
   const { stateManager, boardModifiers, view } =
     Preact.useContext(KanbanContext);
+  const searchQuery = Preact.useContext(SearchContext);
   const [isItemInputVisible, setIsItemInputVisible] = Preact.useState(false);
 
   const path = useNestedEntityPath(laneIndex);
   const laneWidth = stateManager.useSetting('lane-width');
   const insertionMethod = stateManager.useSetting('new-card-insertion-method');
+  const cardsBehaviorOnSearch = stateManager.useSetting(
+    'cards-behavior-on-search'
+  );
   const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
 
   const laneStyles = laneWidth ? { width: `${laneWidth}px` } : undefined;
@@ -44,6 +47,14 @@ export const DraggableLane = Preact.memo(function DraggableLane({
   const measureRef = Preact.useRef<HTMLDivElement>(null);
   const dragHandleRef = Preact.useRef<HTMLDivElement>(null);
   const [isSorting, setIsSorting] = Preact.useState(false);
+
+  const childrenAfterFiltering = Preact.useMemo(() => {
+    if (cardsBehaviorOnSearch !== 'hide' || !searchQuery) return lane.children;
+    const searchQueryLowercase = searchQuery.toLowerCase();
+    return lane.children.filter((child) =>
+      child.data.title.toLowerCase().includes(searchQueryLowercase)
+    );
+  }, [cardsBehaviorOnSearch, searchQuery, lane.children]);
 
   const isCompactPrepend = insertionMethod === 'prepend-compact';
   const shouldPrepend = isCompactPrepend || insertionMethod === 'prepend';
@@ -87,7 +98,7 @@ export const DraggableLane = Preact.memo(function DraggableLane({
   const laneContent = (
     <>
       <Items
-        items={lane.children}
+        items={childrenAfterFiltering}
         isStatic={isStatic}
         shouldMarkItemsComplete={shouldMarkItemsComplete}
       />

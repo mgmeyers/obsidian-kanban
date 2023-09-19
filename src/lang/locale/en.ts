@@ -154,6 +154,9 @@ export default {
   'Set colors for the date displayed below the card based on the rules below':
     'Set colors for the date displayed below the card based on the rules below',
   'Add date color': 'Add date color',
+  'Cards behavior on search': 'Cards behavior on search',
+  'Highlight relevant': 'Highlight relevant',
+  'Hide irrelevant': 'Hide irrelevant',
 
   // MetadataSettings.tsx
   'Metadata key': 'Metadata key',
