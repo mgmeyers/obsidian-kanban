@@ -179,7 +179,7 @@ export default {
     'Change time': 'Изменить время',
   
     // components/Item/ItemForm.tsx
-    'Card title...': 'Заголовк карточки...',
+    'Card title...': 'Заголовок карточки...',
     'Add card': 'Добавить карточку',
     'Add a card': 'Добавить карточку',
   
