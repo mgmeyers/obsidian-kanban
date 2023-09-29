@@ -314,7 +314,11 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
               },
             ])}
             onMouseOver={onMouseOver}
-            onPointerDown={onClick}
+            onDragStart={(e: DragEvent) => {
+              const targetEl = e.target as HTMLElement;
+              if (targetEl.tagName !== 'A') return;
+              e.preventDefault();
+            }}
             onClick={onClick}
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
