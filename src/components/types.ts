@@ -79,6 +79,8 @@ export interface ItemData {
   metadata: ItemMetaData;
   dom?: HTMLDivElement;
   forceEditMode?: boolean;
+  points?: number;
+  completedPoints?: number;
 }
 
 export interface ErrorReport {

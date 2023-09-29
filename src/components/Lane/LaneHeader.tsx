@@ -44,6 +44,16 @@ export const LaneHeader = Preact.memo(function LaneHeader({
     }
   }, [lane.data.forceEditMode]);
 
+  const [points, completedPoints] = lane.children.reduce(
+    ([points, completedPoints], child) => {
+      return [
+        points + (child.data.points ?? 0),
+        completedPoints + (child.data.completedPoints ?? 0),
+      ];
+    },
+    [0, 0]
+  );
+
   return (
     <>
       <div
@@ -53,13 +63,14 @@ export const LaneHeader = Preact.memo(function LaneHeader({
         <div className={c('lane-grip')} ref={dragHandleRef}>
           <GripIcon />
         </div>
-
         <LaneTitle
           isEditing={isEditing}
           setIsEditing={setIsEditing}
           itemCount={lane.children.length}
           maxItems={lane.data.maxItems}
           title={lane.data.title}
+          points={points}
+          completedPoints={completedPoints}
           onChange={(e) => {
             const { title, maxItems } = parseLaneTitle(
               (e.target as HTMLTextAreaElement).value

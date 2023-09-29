@@ -161,6 +161,18 @@ export function listItemToItemData(
 
   itemData.title = replaceBrs(executeDeletion(title));
 
+  const extractPoints = (regex: RegExp) => {
+    const match = itemData.titleRaw.match(regex);
+    const result = parseFloat(match?.[1]);
+    if (!isNaN(result)) {
+      itemData.title = itemData.title.replace(match?.[0], '');
+      return result;
+    }
+  };
+
+  itemData.points = extractPoints(/\((\d+\.?\d*)\)/);
+  itemData.completedPoints = extractPoints(/(?<!\[)\[(\d+\.?\d*)\](?!\[)/);
+
   return itemData;
 }
 

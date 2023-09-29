@@ -1535,3 +1535,46 @@ body:not(.native-scrollbars)
   left: 0;
   transform: translate(0, -100%);
 }
+
+.kanban-plugin__item-points-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.kanban-plugin__item-points-list > .kanban-plugin__item-points-completed {
+  background-color: var(--color-accent);
+}
+
+.kanban-plugin__item-points-list .kanban-plugin__icon   {
+  --icon-stroke: 3;
+  line-height: var(--line-height-tight);
+}
+
+
+.kanban-plugin__item-points-list > *   {
+  background-color: var(--color-accent-2);
+  padding: 2px;
+  border-radius: 4px;
+  color: var(--text-on-accent);
+}
+
+.kanban-plugin__lane-title-points-completed  {
+  color: var(--color-accent);
+  display: block;
+  padding: 4;
+  line-height: 1;
+  margin-left: 5px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.kanban-plugin__lane-title-points  {
+  color: var(--color-accent-2);
+  display: block;
+  padding: 4;
+  line-height: 1;
+  margin-left: 5px;
+  font-size: 13px;
+  font-weight: 600;
+}
