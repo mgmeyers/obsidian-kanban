@@ -86,6 +86,7 @@ export interface KanbanSettings {
   'show-view-as-markdown'?: boolean;
   'show-board-settings'?: boolean;
   'show-search'?: boolean;
+  'cards-behavior-on-search'?: 'highlight' | 'hide';
 
   'tag-colors'?: TagColorKey[];
   'date-colors'?: DateColorKey[];
@@ -126,6 +127,7 @@ export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
   'show-search': true,
   'tag-colors': true,
   'date-colors': true,
+  'cards-behavior-on-search': true,
 };
 
 export type SettingRetriever = <K extends keyof KanbanSettings>(
@@ -554,6 +556,31 @@ export class SettingsManager {
                 });
               });
           });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Cards behavior on search'))
+      .then((setting) => {
+        setting.addDropdown((dropdown) => {
+          dropdown.addOption('highlight', t('Highlight relevant'));
+          dropdown.addOption('hide', t('Hide irrelevant'));
+
+          const [value, globalValue] = this.getSetting(
+            'cards-behavior-on-search',
+            local
+          );
+
+          dropdown.setValue(
+            (value as string) || (globalValue as string) || 'highlight'
+          );
+          dropdown.onChange((value) => {
+            this.applySettingsUpdate({
+              'cards-behavior-on-search': {
+                $set: value as 'highlight' | 'hide',
+              },
+            });
+          });
+        });
       });
 
     new Setting(contentEl)

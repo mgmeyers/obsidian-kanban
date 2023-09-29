@@ -297,6 +297,9 @@ export class StateManager {
         this.getSettingRaw('show-board-settings', suppliedSettings) ?? true,
       'show-search':
         this.getSettingRaw('show-search', suppliedSettings) ?? true,
+      'cards-behavior-on-search':
+        this.getSettingRaw('cards-behavior-on-search', suppliedSettings) ??
+        'highlight',
       'tag-colors': this.getSettingRaw('tag-colors', suppliedSettings) ?? [],
       'date-colors': this.getSettingRaw('date-colors', suppliedSettings) ?? [],
     };

@@ -9,7 +9,7 @@ import { Sortable } from 'src/dnd/components/Sortable';
 import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
 import { useDragHandle } from 'src/dnd/managers/DragManager';
 
-import { KanbanContext } from '../context';
+import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
 import { Items } from '../Item/Item';
 import { ItemForm } from '../Item/ItemForm';
@@ -23,7 +23,6 @@ export interface DraggableLaneProps {
   laneIndex: number;
   isStatic?: boolean;
 }
-
 export const DraggableLane = Preact.memo(function DraggableLane({
   isStatic,
   lane,
