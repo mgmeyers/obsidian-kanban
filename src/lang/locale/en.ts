@@ -231,6 +231,7 @@ export default {
   'Insert list after': 'Insert list after',
   'Sort by card text': 'Sort by card text',
   'Sort by date': 'Sort by date',
+  'Sort by tags': 'Sort by tags',
 
   // components/helpers/renderMarkdown.ts
   'Unable to find': 'Unable to find',
