@@ -142,58 +142,56 @@ export const MetadataTable = Preact.memo(function MetadataTable({
   if (!metadata || !order || order.length === 0) return null;
 
   return (
-    <table className={c('meta-table')}>
-      <tbody>
-        {order.map((k) => {
-          const data = metadata[k];
-          return (
-            <tr key={k} className={c('meta-row')}>
-              {!data.shouldHideLabel && (
-                <td
-                  className={`${c('meta-key')} ${
-                    (data.label || k).toLocaleLowerCase().contains(searchQuery)
-                      ? 'is-search-match'
-                      : ''
-                  }`}
-                  data-key={k}
-                >
-                  <span>{data.label || k}</span>
-                </td>
-              )}
-              <td
-                colSpan={data.shouldHideLabel ? 2 : 1}
-                className={c('meta-value-wrapper')}
-                data-value={
-                  Array.isArray(data.value)
-                    ? data.value.join(', ')
-                    : `${data.value}`
-                }
+    <dl className={c('meta-table')}>
+      {order.map((k) => {
+        const data = metadata[k];
+        return (
+          <Preact.Fragment key={k}>
+            {!data.shouldHideLabel && (
+              <dt
+                className={`${c('meta-key')} ${
+                  (data.label || k).toLocaleLowerCase().contains(searchQuery)
+                    ? 'is-search-match'
+                    : ''
+                }`}
+                data-key={k}
               >
-                {k === 'tags' ? (
-                  (data.value as string[]).map((tag, i) => {
-                    return (
-                      <a
-                        href={tag}
-                        key={i}
-                        className={`tag ${c('item-tag')} ${
-                          tag.toLocaleLowerCase().contains(searchQuery)
-                            ? 'is-search-match'
-                            : ''
-                        }`}
-                      >
-                        <span>{tag[0]}</span>
-                        {tag.slice(1)}
-                      </a>
-                    );
-                  })
-                ) : (
-                  <MetadataValue data={data} searchQuery={searchQuery} />
-                )}
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+                <span>{data.label || k}</span>
+              </dt>
+          )}
+          <dd
+            colSpan={data.shouldHideLabel ? 2 : 1}
+            className={c('meta-value-wrapper')}
+            data-value={
+              Array.isArray(data.value)
+              ? data.value.join(', ')
+              : `${data.value}`
+            }
+          >
+            {k === 'tags' ? (
+              (data.value as string[]).map((tag, i) => {
+                return (
+                  <a
+                    href={tag}
+                    key={i}
+                    className={`tag ${c('item-tag')} ${
+                      tag.toLocaleLowerCase().contains(searchQuery)
+                        ? 'is-search-match'
+                        : ''
+                    }`}
+                  >
+                    <span>{tag[0]}</span>
+                  {tag.slice(1)}
+                </a>
+              );
+              })
+            ) : (
+              <MetadataValue data={data} searchQuery={searchQuery} />
+            )}
+          </dd>
+          </Preact.Fragment>
+        );
+      })}
+    </dl>
   );
 });
