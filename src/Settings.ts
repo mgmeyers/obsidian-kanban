@@ -89,6 +89,7 @@ export interface KanbanSettings {
 
   'tag-colors'?: TagColorKey[];
   'date-colors'?: DateColorKey[];
+  'add-card-command'?: string;
 }
 
 export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
@@ -108,6 +109,7 @@ export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
   'max-archive-size': true,
   'metadata-keys': true,
   'new-card-insertion-method': true,
+  'add-card-command': true,
   'new-line-trigger': true,
   'new-note-folder': true,
   'new-note-template': true,
@@ -256,6 +258,28 @@ export class SettingsManager {
           });
         });
       });
+
+    if (this.app.plugins.plugins['quickadd']) {
+      new Setting(contentEl)
+        .setName(t('Add Card Command'))
+        .setDesc(t('This setting issues a command when clicking on Add New Card'))
+        .addDropdown((dropdown) => {
+          dropdown.addOption('', t('No Action'));
+          for (let i = 0; i < this.app.plugins.plugins['quickadd'].settings.choices.length; i++) {
+            let c = this.app.plugins.plugins['quickadd'].settings.choices[i]
+            dropdown.addOption(c.id, c.name);
+          }
+          const [value, globalValue] = this.getSetting('add-card-command', local);
+          dropdown.setValue(value as string || (globalValue as string));
+          dropdown.onChange((value) => {
+            this.applySettingsUpdate({
+              'add-card-command': {
+                $set: value as string,
+              },
+            });
+          });
+        });
+    }
 
     new Setting(contentEl)
       .setName(t('Note template'))
