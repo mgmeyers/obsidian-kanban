@@ -1535,3 +1535,16 @@ body:not(.native-scrollbars)
   left: 0;
   transform: translate(0, -100%);
 }
+
+.kanban-plugin__task-progress > *,
+.kanban-plugin__task-progress {
+  height: 6px;
+  border-radius: 10px;
+  background-color: var(--background-secondary);
+}
+
+.kanban-plugin__task-progress > * {
+  background-color: var(--color-accent);
+  width: var(--progress-width);
+  transition: 400ms ease-out;
+}

@@ -68,6 +68,10 @@ export interface ItemMetaData {
   file?: TFile | null;
   fileMetadata?: FileMetadata;
   fileMetadataOrder?: string[];
+  tasks?: {
+    completed?: number;
+    incomplete?: number;
+  };
 }
 
 export interface ItemData {

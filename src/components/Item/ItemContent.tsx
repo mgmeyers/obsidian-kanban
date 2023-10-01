@@ -236,8 +236,15 @@ export const ItemContent = Preact.memo(function ItemContent({
     );
   }
 
+  const { completed, incomplete } = item.data.metadata.tasks
+
   return (
     <div className={c('item-title')}>
+      {(!!completed || !!incomplete) && (
+        <div className={c("task-progress")}>
+          <div className={c("task-progress-bar")} style={{ "--progress-width": (completed / (completed + incomplete)) * 100 + "%" }}></div>
+        </div>
+      )}
       <MarkdownDomRenderer
         className={c('item-markdown')}
         dom={item.data.dom}
@@ -263,11 +270,10 @@ export const ItemContent = Preact.memo(function ItemContent({
                 <a
                   href={tag}
                   key={i}
-                  className={`tag ${c('item-tag')} ${
-                    tag.toLocaleLowerCase().contains(searchQuery)
-                      ? 'is-search-match'
-                      : ''
-                  }`}
+                  className={`tag ${c('item-tag')} ${tag.toLocaleLowerCase().contains(searchQuery)
+                    ? 'is-search-match'
+                    : ''
+                    }`}
                   style={
                     tagColor && {
                       '--tag-color': tagColor.color,
