@@ -2,25 +2,25 @@
 
 export default {
     // main.ts
-    'Open as kanban board': 'Open as kanban board', // TODO
+    'Open as kanban board': 'Ouvrir en tant que tableau kanban',
     'Create new board': 'Créer un nouveau tableau',
-    'Archive completed cards in active board': // TODO
-        'Archive completed cards in active board', // TODO
-    'Error: current file is not a Kanban board': // TODO
-        'Error: current file is not a Kanban board', // TODO
-    'Convert empty note to Kanban': 'Convert empty note to Kanban', // TODO
-    'Error: cannot create Kanban, the current note is not empty': // TODO
-        'Error: cannot create Kanban, the current note is not empty', // TODO
-    'New kanban board': 'New kanban board', // TODO
-    'Untitled Kanban': 'Untitled Kanban', // TODO
-    'Toggle between Kanban and markdown mode': // TODO
-        'Toggle between Kanban and markdown mode', // TODO
+    'Archive completed cards in active board':
+        'Archiver les cartes dans le tableau actif',
+    'Error: current file is not a Kanban board':
+        'Erreur: Le fichier actif n\'est pas un tableau kanban',
+    'Convert empty note to Kanban': 'Convertir la note vide en Kanban',
+    'Error: cannot create Kanban, the current note is not empty':
+        'Erreur: impossible de créer le Kanban, la note actuelle n\'est pas vide',
+    'New kanban board': 'Nouveau tableau kanban',
+    'Untitled Kanban': 'Kanban sans titre',
+    'Toggle between Kanban and markdown mode':
+        'Basculer entre tableau Kanban & Markdown',
 
     // KanbanView.tsx
     'Open as markdown': 'Ouvrir au format Markdown',
     'Open board settings': 'Ouvrir les paramètres du tableau',
     'Archive completed cards': 'Archiver les cartes complétées',
-    'Something went wrong': 'Something went wrong', // TODO
+    'Something went wrong': 'Une erreur s\'est porduite',
     'You may wish to open as markdown and inspect or edit the file.': // TODO
         'You may wish to open as markdown and inspect or edit the file.', // TODO
     'Are you sure you want to archive all completed cards on this board?': // TODO
@@ -31,14 +31,14 @@ export default {
     Archive: 'Archive', // TODO
     'Invalid Kanban file: problems parsing frontmatter': // TODO
         'Invalid Kanban file: problems parsing frontmatter', // TODO
-    "I don't know how to interpret this line:": // TODO
-        "I don't know how to interpret this line:", // TODO
+    "I don't know how to interpret this line:":
+        "Je ne sais pas comment interpréter cette ligne:",
     Untitled: 'Sans titre', // auto-created column
 
     // settingHelpers.ts
     'Note: No template plugins are currently enabled.': // TODO
         'Note: No template plugins are currently enabled.', // TODO
-    default: 'default', // TODO
+    default: 'par défaut',
     'Search...': 'Rechercher...',
 
     // Settings.ts
@@ -54,10 +54,10 @@ export default {
     'Prepend (compact)': 'Prepend (compact)', // TODO
     Append: 'Append', // TODO
     'These settings will take precedence over the default Kanban board settings.':
-        'Ces paramètres seront prédominants sur les paramètres de la page de paramètres globaux de l\'extension Kanban.', //! CHECK BEFORE PR
+        'Ces paramètres seront prédominants sur les paramètres de la page de paramètres globaux de l\'extension Kanban.',
     'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.': // TODO
         'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.', // TODO
-    'Note template': 'Modèle de note', // TODO
+    'Note template': 'Modèle de note',
     'This template will be used when creating new notes from Kanban cards.': // TODO
         'This template will be used when creating new notes from Kanban cards.', // TODO
     'No template': 'Aucun modèle sélectionné',
@@ -65,29 +65,29 @@ export default {
     'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.': // TODO
         'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.', // TODO
     'Default folder': 'Default folder', // TODO
-    'List width': 'List width', // TODO
-    'Enter a number to set the list width in pixels.': // TODO
-        'Enter a number to set the list width in pixels.', // TODO
-    'Maximum number of archived cards': 'Maximum number of archived cards', // TODO
-    "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.": // TODO
-        "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.", // TODO
+    'List width': 'Largeur des listes',
+    'Enter a number to set the list width in pixels.':
+        'Entrez un nombre pour fixer la largeur des listes en pixels.',
+    'Maximum number of archived cards': 'Nombre maximum de cartes archivées',
+    "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
+        "Les cartes archivées peuvent être visionnées en mode markdown. Ce paramètre supprimera les cartes les plus anciennes lorsque la limite sera atteinte. Définir ce paramètre à -1 permet d'avoir un nombre infini de cartes en archive.",
     'Display card checkbox': 'Display card checkbox', // TODO
     'When toggled, a checkbox will be displayed with each card': // TODO
         'When toggled, a checkbox will be displayed with each card', // TODO
-    'Reset to default': 'Reset to default', // TODO
-    'Date & Time': 'Date & Time', // TODO
+    'Reset to default': 'Réinitialiser les paramètres par défaut',
+    'Date & Time': 'Date & Heure',
     'Date trigger': 'Date trigger', // TODO
-    'When this is typed, it will trigger the date selector': // TODO
-        'When this is typed, it will trigger the date selector', // TODO
+    'When this is typed, it will trigger the date selector':
+        'Lorsqu\'il est tapé, il déclenchera le sélecteur de date',
     'Time trigger': 'Time trigger', // TODO
-    'When this is typed, it will trigger the time selector': // TODO
-        'When this is typed, it will trigger the time selector', // TODO
-    'Date format': 'Date format', // TODO
-    'This format will be used when saving dates in markdown.': // TODO
-        'This format will be used when saving dates in markdown.', // TODO
-    'For more syntax, refer to': 'For more syntax, refer to', // TODO
-    'format reference': 'format reference', // TODO
-    'Your current syntax looks like this': 'Your current syntax looks like this', // TODO
+    'When this is typed, it will trigger the time selector':
+        'Lorsqu\'il est tapé, il déclenchera le sélecteur d\'heure',
+    'Date format': 'Format des dates',
+    'This format will be used when saving dates in markdown.':
+        'Ce format sera utilisé lors de la sauvegarde de dates en markdown.',
+    'For more syntax, refer to': 'Pour plus de syntaxes, référez-vous à',
+    'format reference': 'cette documentation',
+    'Your current syntax looks like this': 'La syntaxe actuelle s\'affiche de cette façon', // TODO
     'Time format': 'Time format', // TODO
     'Date display format': 'Date display format', // TODO
     'This format will be used when displaying dates in Kanban cards.': // TODO
@@ -168,11 +168,11 @@ export default {
     'Add tag color': 'Add tag color', // TODO
 
     // components/Item/Item.tsx
-    'More options': 'More options', // TODO
-    Cancel: 'Cancel', // TODO
+    'More options': 'Plus d\'options',
+    Cancel: 'Annuler',
 
     // components/Item/ItemContent.tsx
-    today: 'aujourd\'hui', //! CHECK BEFORE PR
+    today: 'aujourd\'hui',
     yesterday: 'hier',
     tomorrow: 'demain',
     'Change date': 'Change date', // TODO
@@ -188,12 +188,12 @@ export default {
     'New note from card': 'Nouvelle note à partir de la carte',
     'Archive card': 'Archiver la carte',
     'Delete card': 'Supprimer la carte',
-    'Edit date': 'Edit date', // TODO
-    'Add date': 'Add date', // TODO
-    'Remove date': 'Remove date', // TODO
-    'Edit time': 'Edit time', // TODO
-    'Add time': 'Add time', // TODO
-    'Remove time': 'Remove time', // TODO
+    'Edit date': 'Modifier la date',
+    'Add date': 'Ajouter une date',
+    'Remove date': 'Suprimer la date',
+    'Edit time': 'Modifier l\'heure',
+    'Add time': 'Ajouter une heure',
+    'Remove time': 'Supprimer l\'heure',
     'Duplicate card': 'Dupliquer la carte',
     'Split card': 'Split card', // TODO
     'Copy link to card': 'Copier le lien vers carte',
@@ -210,8 +210,8 @@ export default {
     'Add a list': 'Ajouter une liste',
 
     // components/Lane/LaneHeader.tsx
-    'Move list': 'Move list', // TODO
-    Close: 'Close', // TODO
+    'Move list': 'Déplacer la liste',
+    Close: 'Fermer',
 
     // components/Lane/LaneMenu.tsx
     'Are you sure you want to delete this list and all its cards?': // TODO
@@ -225,12 +225,12 @@ export default {
     'Yes, archive cards': 'Yes, archive cards', // TODO
     'Edit list': 'Edit list', // TODO
     'Archive cards': 'Archive cards', // TODO
-    'Archive list': 'Archive list', // TODO
-    'Delete list': 'Delete list', // TODO
+    'Archive list': 'Archiver la liste',
+    'Delete list': 'Supprimer la liste',
     'Insert list before': 'Insert list before', // TODO
     'Insert list after': 'Insert list after', // TODO
     'Sort by card text': 'Sort by card text', // TODO
-    'Sort by date': 'Sort by date', // TODO
+    'Sort by date': 'Trier par date',
 
     // components/helpers/renderMarkdown.ts
     'Unable to find': 'Unable to find', // TODO
