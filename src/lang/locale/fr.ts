@@ -3,7 +3,7 @@
 export default {
     // main.ts
     'Open as kanban board': 'Open as kanban board', // TODO
-    'Create new board': 'Create new board', // TODO
+    'Create new board': 'Créer un nouveau tableau',
     'Archive completed cards in active board': // TODO
         'Archive completed cards in active board', // TODO
     'Error: current file is not a Kanban board': // TODO
@@ -17,9 +17,9 @@ export default {
         'Toggle between Kanban and markdown mode', // TODO
 
     // KanbanView.tsx
-    'Open as markdown': 'Open as markdown', // TODO
-    'Open board settings': 'Open board settings', // TODO
-    'Archive completed cards': 'Archive completed cards', // TODO
+    'Open as markdown': 'Ouvrir au format Markdown',
+    'Open board settings': 'Ouvrir les paramètres du tableau',
+    'Archive completed cards': 'Archiver les cartes complétées',
     'Something went wrong': 'Something went wrong', // TODO
     'You may wish to open as markdown and inspect or edit the file.': // TODO
         'You may wish to open as markdown and inspect or edit the file.', // TODO
@@ -39,28 +39,28 @@ export default {
     'Note: No template plugins are currently enabled.': // TODO
         'Note: No template plugins are currently enabled.', // TODO
     default: 'default', // TODO
-    'Search...': 'Search...', // TODO
+    'Search...': 'Rechercher...',
 
     // Settings.ts
-    'New line trigger': 'New line trigger', // TODO
-    'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lists.': // TODO
-        'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lists.', // TODO
-    'Shift + Enter': 'Shift + Enter', // TODO
-    Enter: 'Enter', // TODO
+    'New line trigger': 'Créer une nouvelle ligne',
+    'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lists.':
+        'Choisir entre la touche Entrée ou le combo Shift+Entrée pour créer une nouvelle ligne. Le choix non selectionné créera valider la création ou l\'édition de la carte ou la liste.',
+    'Shift + Enter': 'Shift + Entrée',
+    Enter: 'Entrée',
     'Prepend / append new cards': 'Prepend / append new cards', // TODO
     'This setting controls whether new cards are added to the beginning or end of the list.': // TODO
         'This setting controls whether new cards are added to the beginning or end of the list.', // TODO
     Prepend: 'Prepend', // TODO
     'Prepend (compact)': 'Prepend (compact)', // TODO
     Append: 'Append', // TODO
-    'These settings will take precedence over the default Kanban board settings.': // TODO
-        'These settings will take precedence over the default Kanban board settings.', // TODO
+    'These settings will take precedence over the default Kanban board settings.':
+        'Ces paramètres seront prédominants sur les paramètres de la page de paramètres globaux de l\'extension Kanban.', //! CHECK BEFORE PR
     'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.': // TODO
         'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.', // TODO
-    'Note template': 'Note template', // TODO
+    'Note template': 'Modèle de note', // TODO
     'This template will be used when creating new notes from Kanban cards.': // TODO
         'This template will be used when creating new notes from Kanban cards.', // TODO
-    'No template': 'No template', // TODO
+    'No template': 'Aucun modèle sélectionné',
     'Note folder': 'Note folder', // TODO
     'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.': // TODO
         'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.', // TODO
@@ -172,42 +172,42 @@ export default {
     Cancel: 'Cancel', // TODO
 
     // components/Item/ItemContent.tsx
-    today: 'aujourd\'hui',
+    today: 'aujourd\'hui', //! CHECK BEFORE PR
     yesterday: 'hier',
     tomorrow: 'demain',
     'Change date': 'Change date', // TODO
     'Change time': 'Change time', // TODO
 
     // components/Item/ItemForm.tsx
-    'Card title...': 'Card title...', // TODO
+    'Card title...': 'Titre de la carte...', // TODO
     'Add card': 'Add card', // TODO
-    'Add a card': 'Add a card', // TODO
+    'Add a card': 'Ajouter une carte',
 
     // components/Item/ItemMenu.ts
-    'Edit card': 'Edit card', // TODO
-    'New note from card': 'New note from card', // TODO
-    'Archive card': 'Archive card', // TODO
-    'Delete card': 'Delete card', // TODO
+    'Edit card': 'Éditer la carte',
+    'New note from card': 'Nouvelle note à partir de la carte',
+    'Archive card': 'Archiver la carte',
+    'Delete card': 'Supprimer la carte',
     'Edit date': 'Edit date', // TODO
     'Add date': 'Add date', // TODO
     'Remove date': 'Remove date', // TODO
     'Edit time': 'Edit time', // TODO
     'Add time': 'Add time', // TODO
     'Remove time': 'Remove time', // TODO
-    'Duplicate card': 'Duplicate card', // TODO
+    'Duplicate card': 'Dupliquer la carte',
     'Split card': 'Split card', // TODO
-    'Copy link to card': 'Copy link to card', // TODO
-    'Insert card before': 'Insert card before', // TODO
-    'Insert card after': 'Insert card after', // TODO
+    'Copy link to card': 'Copier le lien vers carte',
+    'Insert card before': 'Insérer une carte au-dessus',
+    'Insert card after': 'Insérer une carte en dessous',
     'Add label': 'Add label', // TODO
-    'Move to top': 'Move to top', // TODO
-    'Move to bottom': 'Move to bottom', // TODO
+    'Move to top': 'Mettre en premier',
+    'Move to bottom': 'Mettre en dernier',
 
     // components/Lane/LaneForm.tsx
-    'Enter list title...': 'Enter list title...', // TODO
-    'Mark cards in this list as complete': 'Mark cards in this list as complete', // TODO
-    'Add list': 'Add list', // TODO
-    'Add a list': 'Add a list', // TODO
+    'Enter list title...': 'Entrer le titre de la liste...',
+    'Mark cards in this list as complete': 'Marquer les cartes de cette liste comme complétées',
+    'Add list': 'Ajouter la liste',
+    'Add a list': 'Ajouter une liste',
 
     // components/Lane/LaneHeader.tsx
     'Move list': 'Move list', // TODO
