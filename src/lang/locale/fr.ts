@@ -142,9 +142,9 @@ export default {
     Thursday: 'Jeudi',
     Friday: 'Vendredi',
     Saturday: 'Samedi',
-    'Background color': 'Background color', // TODO
+    'Background color': 'Couleur d\'arrière-plan',
     Tag: 'Tag', // TODO
-    'Text color': 'Text color', // TODO
+    'Text color': 'Couleur du texte',
     'Date is': 'Date is', // TODO
     Today: 'Aujourd\'hui',
     'After now': 'After now', // TODO
@@ -175,12 +175,12 @@ export default {
     today: 'aujourd\'hui',
     yesterday: 'hier',
     tomorrow: 'demain',
-    'Change date': 'Change date', // TODO
-    'Change time': 'Change time', // TODO
+    'Change date': 'Modifier la date',
+    'Change time': 'Modifier l\'heure',
 
     // components/Item/ItemForm.tsx
-    'Card title...': 'Titre de la carte...', // TODO
-    'Add card': 'Add card', // TODO
+    'Card title...': 'Titre de la carte...',
+    'Add card': 'Ajouter la carte',
     'Add a card': 'Ajouter une carte',
 
     // components/Item/ItemMenu.ts
