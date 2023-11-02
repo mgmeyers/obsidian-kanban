@@ -143,7 +143,7 @@ export default {
     Friday: 'Vendredi',
     Saturday: 'Samedi',
     'Background color': 'Couleur d\'arrière-plan',
-    Tag: 'Tag', // TODO
+    Tag: 'Étiquette',
     'Text color': 'Couleur du texte',
     'Date is': 'Date is', // TODO
     Today: 'Aujourd\'hui',
@@ -195,7 +195,7 @@ export default {
     'Add time': 'Ajouter une heure',
     'Remove time': 'Supprimer l\'heure',
     'Duplicate card': 'Dupliquer la carte',
-    'Split card': 'Split card', // TODO
+    'Split card': 'Diviser la carte',
     'Copy link to card': 'Copier le lien vers carte',
     'Insert card before': 'Insérer une carte au-dessus',
     'Insert card after': 'Insérer une carte en dessous',
