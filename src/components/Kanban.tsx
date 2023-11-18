@@ -309,6 +309,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
             ref={rootRef}
             className={classcat([
               baseClassName,
+              ...(app.metadataCache.getFileCache(app.workspace.getActiveFile()).frontmatter.cssclasses ?? []),
               {
                 'something-is-dragging': isAnythingDragging,
               },
