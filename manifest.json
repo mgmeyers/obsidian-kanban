@@ -6,5 +6,6 @@
   "description": "Create markdown-backed Kanban boards in Obsidian.",
   "author": "mgmeyers",
   "authorUrl": "https://github.com/mgmeyers/obsidian-kanban",
+  "helpUrl": "https://publish.obsidian.md/kanban/Obsidian+Kanban+Plugin",
   "isDesktopOnly": false
 }
