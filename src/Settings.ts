@@ -71,6 +71,7 @@ export interface KanbanSettings {
   'new-card-insertion-method'?: 'prepend' | 'prepend-compact' | 'append';
   'new-line-trigger'?: 'enter' | 'shift-enter';
   'new-note-folder'?: string;
+  'new-card-template'?: string;
   'new-note-template'?: string;
   'archive-with-date'?: boolean;
   'append-archive-date'?: boolean;
@@ -109,6 +110,7 @@ export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
   'metadata-keys': true,
   'new-card-insertion-method': true,
   'new-line-trigger': true,
+    'new-card-template': true,
   'new-note-folder': true,
   'new-note-template': true,
   'archive-with-date': true,
@@ -256,6 +258,24 @@ export class SettingsManager {
           });
         });
       });
+
+  new Setting(contentEl)
+      .setName(t('Card template'))
+      .setDesc(
+          t(
+              'This template will be used when creating new Kanban cards.'
+          )
+      )
+      .then(
+          createSearchSelect({
+              choices: templateFiles,
+              key: 'new-card-template',
+              warningText: templateWarning,
+              local,
+              placeHolderStr: t('No template'),
+              manager: this,
+          })
+      );
 
     new Setting(contentEl)
       .setName(t('Note template'))

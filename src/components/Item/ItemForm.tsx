@@ -8,6 +8,7 @@ import { getDropAction, handlePaste } from '../Editor/helpers';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { Item } from '../types';
+import { TFile } from "obsidian";
 
 interface ItemFormProps {
   addItems: (items: Item[]) => void;
@@ -26,6 +27,8 @@ export function ItemForm({
   const { stateManager, view } = Preact.useContext(KanbanContext);
   const inputRef = Preact.useRef<HTMLTextAreaElement>();
 
+  const templateCard = stateManager.useSetting("new-card-template");
+
   const clickOutsideRef = useOnclickOutside(
     () => {
       setIsInputVisible(false);
@@ -35,8 +38,22 @@ export function ItemForm({
     }
   );
 
+  const checkTemplate = () => {
+    const templateFile = templateCard
+        ? stateManager.app.vault.getAbstractFileByPath(templateCard)
+        : null;
+
+    if (templateFile instanceof TFile) {
+      stateManager.app.vault.read(templateFile).then((data) => {
+        setItemTitle(data)
+      })
+    } else {
+      setItemTitle("")
+    }
+  }
+
   const clear = Preact.useCallback(() => {
-    setItemTitle('');
+    checkTemplate();
     setIsInputVisible(false);
   }, []);
 
@@ -62,7 +79,7 @@ export function ItemForm({
 
       if (title) {
         addItemsFromStrings([title]);
-        setItemTitle('');
+        checkTemplate();
       }
     }
   };
@@ -72,7 +89,7 @@ export function ItemForm({
 
     if (title) {
       addItemsFromStrings([title]);
-      setItemTitle('');
+      checkTemplate();
     }
   };
 
@@ -106,7 +123,10 @@ export function ItemForm({
     <div className={c('item-button-wrapper')}>
       <button
         className={c('new-item-button')}
-        onClick={() => setIsInputVisible(true)}
+        onClick={() => {
+          checkTemplate();
+          setIsInputVisible(true);
+        }}
         onDragOver={(e) => {
           if (getDropAction(stateManager, e.dataTransfer)) {
             setIsInputVisible(true);
