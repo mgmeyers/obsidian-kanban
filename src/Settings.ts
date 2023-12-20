@@ -110,7 +110,7 @@ export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
   'metadata-keys': true,
   'new-card-insertion-method': true,
   'new-line-trigger': true,
-    'new-card-template': true,
+  'new-card-template': true,
   'new-note-folder': true,
   'new-note-template': true,
   'archive-with-date': true,
