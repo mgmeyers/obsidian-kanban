@@ -38,22 +38,28 @@ export function ItemForm({
     }
   );
 
-  const checkTemplate = () => {
+  const readAndSetItemTitleFromTemplate = () => {
     const templateFile = templateCard
         ? stateManager.app.vault.getAbstractFileByPath(templateCard)
         : null;
 
     if (templateFile instanceof TFile) {
-      stateManager.app.vault.read(templateFile).then((data) => {
-        setItemTitle(data)
-      })
+      try {
+        stateManager.app.vault.read(templateFile).then((data) => {
+          setItemTitle(data)
+        })
+      } catch (e) {
+        console.log(e);
+        stateManager.setError(e);
+        setItemTitle("");
+      }
     } else {
       setItemTitle("")
     }
   }
 
   const clear = Preact.useCallback(() => {
-    checkTemplate();
+    readAndSetItemTitleFromTemplate();
     setIsInputVisible(false);
   }, []);
 
@@ -79,7 +85,7 @@ export function ItemForm({
 
       if (title) {
         addItemsFromStrings([title]);
-        checkTemplate();
+        readAndSetItemTitleFromTemplate();
       }
     }
   };
@@ -89,7 +95,7 @@ export function ItemForm({
 
     if (title) {
       addItemsFromStrings([title]);
-      checkTemplate();
+      readAndSetItemTitleFromTemplate();
     }
   };
 
@@ -124,7 +130,7 @@ export function ItemForm({
       <button
         className={c('new-item-button')}
         onClick={() => {
-          checkTemplate();
+          readAndSetItemTitleFromTemplate();
           setIsInputVisible(true);
         }}
         onDragOver={(e) => {
