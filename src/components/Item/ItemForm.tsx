@@ -8,7 +8,7 @@ import { getDropAction, handlePaste } from '../Editor/helpers';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { c } from '../helpers';
 import { Item } from '../types';
-import { TFile } from "obsidian";
+import { TFile } from 'obsidian';
 
 interface ItemFormProps {
   addItems: (items: Item[]) => void;
@@ -27,7 +27,7 @@ export function ItemForm({
   const { stateManager, view } = Preact.useContext(KanbanContext);
   const inputRef = Preact.useRef<HTMLTextAreaElement>();
 
-  const templateCard = stateManager.useSetting("new-card-template");
+  const templateCard = stateManager.useSetting('new-card-template');
 
   const clickOutsideRef = useOnclickOutside(
     () => {
@@ -40,23 +40,23 @@ export function ItemForm({
 
   const readAndSetItemTitleFromTemplate = () => {
     const templateFile = templateCard
-        ? stateManager.app.vault.getAbstractFileByPath(templateCard)
-        : null;
+      ? stateManager.app.vault.getAbstractFileByPath(templateCard)
+      : null;
 
     if (templateFile instanceof TFile) {
       try {
         stateManager.app.vault.read(templateFile).then((data) => {
-          setItemTitle(data)
-        })
+          setItemTitle(data);
+        });
       } catch (e) {
         console.log(e);
         stateManager.setError(e);
-        setItemTitle("");
+        setItemTitle('');
       }
     } else {
-      setItemTitle("")
+      setItemTitle('');
     }
-  }
+  };
 
   const clear = Preact.useCallback(() => {
     readAndSetItemTitleFromTemplate();
