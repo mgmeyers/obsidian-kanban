@@ -57,6 +57,8 @@ export default {
     'These settings will take precedence over the default Kanban board settings.',
   'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.':
     'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.',
+  'Card template': 'Card template',
+  'This template will be used when creating new Kanban cards.' : 'This template will be used when creating new Kanban cards.',
   'Note template': 'Note template',
   'This template will be used when creating new notes from Kanban cards.':
     'This template will be used when creating new notes from Kanban cards.',
