@@ -125,6 +125,11 @@ export default {
   'Hide card display tags': 'Hide card display tags',
   'When toggled, tags will not be displayed below the card title.':
     'When toggled, tags will not be displayed below the card title.',
+  'Tag action': 'Tag action',
+  'Search Kanban Board': 'Search Kanban Board',
+  'Search Obsidian Vault': 'Search Obsidian Vault',
+  'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.':
+    'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.',
   'Display tag colors': 'Display tag colors',
   'Set colors for the tags displayed below the card title.':
     'Set colors for the tags displayed below the card title.',
