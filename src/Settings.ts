@@ -20,6 +20,9 @@ import {
   DateColorSettingTemplate,
   MetadataSetting,
   MetadataSettingTemplate,
+  PriorityKey,
+  PrioritySetting,
+  PrioritySettingTemplate,
   TagColorKey,
   TagColorSetting,
   TagColorSettingTemplate,
@@ -47,6 +50,10 @@ import {
   cleanUpDateSettings,
   renderDateSettings,
 } from './settings/DateColorSettings';
+import {
+  cleanupPrioritySettings,
+  renderPrioritySettings,
+} from './settings/PrioritySettings';
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
@@ -89,6 +96,8 @@ export interface KanbanSettings {
 
   'tag-colors'?: TagColorKey[];
   'date-colors'?: DateColorKey[];
+
+  'priority-tags'?: PriorityKey[];
 }
 
 export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
@@ -126,6 +135,7 @@ export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
   'show-search': true,
   'tag-colors': true,
   'date-colors': true,
+  'priority-tags': true,
 };
 
 export type SettingRetriever = <K extends keyof KanbanSettings>(
@@ -1504,6 +1514,48 @@ export class SettingsManager {
           }
         });
       });
+
+    contentEl.createEl('br');
+    contentEl.createEl('h4', { text: t('Priorities') });
+    contentEl.createEl('p', {
+      cls: c('priority-setting-desc'),
+      text: t(
+        'Set the priority tag list and colors for the priority labels displayed below the card title.'
+      ),
+    });
+
+    new Setting(contentEl).then((setting) => {
+      setting.settingEl.addClass(c('draggable-setting-container'));
+
+      const [value] = this.getSetting('priority-tags', local);
+
+      const keys: PrioritySetting[] = ((value || []) as PriorityKey[]).map(
+        (k) => {
+          return {
+            ...PrioritySettingTemplate,
+            id: generateInstanceId(),
+            data: k,
+          };
+        }
+      );
+
+      renderPrioritySettings(
+        setting.settingEl,
+        keys,
+        (keys: PrioritySetting[]) =>
+          this.applySettingsUpdate({
+            'priority-tags': {
+              $set: keys.map((k) => k.data),
+            },
+          })
+      );
+
+      this.cleanupFns.push(() => {
+        if (setting.settingEl) {
+          cleanupPrioritySettings(setting.settingEl);
+        }
+      });
+    });
 
     contentEl.createEl('br');
     contentEl.createEl('h4', { text: t('Linked Page Metadata') });

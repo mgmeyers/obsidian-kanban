@@ -126,6 +126,15 @@ export function listItemToItemData(
         return true;
       }
 
+      if (genericNode.type === 'priority') {
+        itemData.metadata.priority = (genericNode as ValueNode).value;
+        title = markRangeForDeletion(title, {
+          start: node.position.start.offset - itemBoundary.start,
+          end: node.position.end.offset - itemBoundary.start,
+        });
+        return true;
+      }
+
       if (genericNode.type === 'embedWikilink') {
         itemData.metadata.fileAccessor = (genericNode as FileNode).fileAccessor;
         return true;

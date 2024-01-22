@@ -21,6 +21,110 @@ import { Instance } from '../Editor/flatpickr/types/instance';
 import { c, escapeRegExpStr } from '../helpers';
 import { Item } from '../types';
 
+export function constructPriorityPicker(
+  win: Window,
+  stateManager: StateManager,
+  coordinates: { x: number; y: number },
+  onSelect: (opt: string) => void,
+  priority?: string
+) {
+  const pickerClassName = c('priority-picker');
+  const priorities = stateManager.getSetting('priority-tags');
+  const selected = priority || priorities[0];
+
+  win.document.body.createDiv(
+    { cls: `${pickerClassName} ${c('ignore-click-outside')}` },
+    (div) => {
+      const clickHandler = (e: MouseEvent) => {
+        if (
+          e.target instanceof
+            (e.view as Window & typeof globalThis).HTMLElement &&
+          e.target.hasClass(c('priority-picker-item')) &&
+          e.target.dataset.value
+        ) {
+          onSelect(e.target.dataset.value);
+          selfDestruct();
+        }
+      };
+
+      const clickOutsideHandler = (e: MouseEvent) => {
+        if (
+          e.target instanceof
+            (e.view as Window & typeof globalThis).HTMLElement &&
+          e.target.closest(`.${pickerClassName}`) === null
+        ) {
+          selfDestruct();
+        }
+      };
+
+      const escHandler = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          selfDestruct();
+        }
+      };
+
+      const selfDestruct = () => {
+        div.remove();
+        div.removeEventListener('click', clickHandler);
+        win.document.body.removeEventListener('click', clickOutsideHandler);
+        win.document.removeEventListener('keydown', escHandler);
+      };
+
+      div.style.left = `${coordinates.x || 0}px`;
+      div.style.top = `${coordinates.y || 0}px`;
+
+      let selectedItem: HTMLDivElement = null;
+
+      priorities.forEach((opt) => {
+        const isSelected = opt === selected;
+        div.createDiv(
+          {
+            cls: `${c('priority-picker-item')} ${
+              isSelected ? 'is-selected' : ''
+            }`,
+            text: opt.priority,
+          },
+          (item) => {
+            item.createEl(
+              'span',
+              { cls: c('priority-picker-check'), prepend: true },
+              (span) => {
+                setIcon(span, 'lucide-check');
+              }
+            );
+
+            item.dataset.value = opt.priority;
+
+            if (isSelected) selectedItem = item;
+          }
+        );
+      });
+
+      div.win.setTimeout(() => {
+        const height = div.clientHeight;
+        const width = div.clientWidth;
+
+        if (coordinates.y + height > win.innerHeight) {
+          div.style.top = `${(coordinates.y || 0) - height}px`;
+        }
+
+        if (coordinates.x + width > win.innerWidth) {
+          div.style.left = `${(coordinates.x || 0) - width}px`;
+        }
+
+        selectedItem?.scrollIntoView({
+          block: 'center',
+          inline: 'nearest',
+        });
+
+        div.addEventListener('click', clickHandler);
+        win.document.body.addEventListener('click', clickOutsideHandler);
+        win.document.addEventListener('keydown', escHandler);
+      });
+    }
+  );
+}
+
 export function constructDatePicker(
   win: Window,
   stateManager: StateManager,

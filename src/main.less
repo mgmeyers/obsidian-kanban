@@ -546,16 +546,19 @@ button.kanban-plugin__new-item-button {
   color: var(--text-muted);
 }
 
-.kanban-plugin__item-tags:not(:empty) {
+.kanban-plugin__item-tags:not(:empty),
+.kanban-plugin__item-priority:not(:empty) {
   padding-top: 2px;
 }
 
-.kanban-plugin__item-tag {
+.kanban-plugin__item-tag,
+.kanban-plugin__item-priority-tag {
   display: inline-block;
   margin-right: 4px;
 }
 
-.kanban-plugin__item-tags .kanban-plugin__item-tag {
+.kanban-plugin__item-tags .kanban-plugin__item-tag,
+.kanban-plugin__item-priority .kanban-plugin__item-priority-tag {
   font-size: 12px;
   background-color: var(
     --tag-background-color,
@@ -563,6 +566,11 @@ button.kanban-plugin__new-item-button {
   );
   color: var(--tag-color, var(--text-accent));
   margin: 3px 3px 0 0;
+}
+
+.kanban-plugin__item-priority .kanban-plugin__item-priority-tag {
+  border-radius: 4px;
+  padding: 2px 4px;
 }
 
 .kanban-plugin__item-tag.is-search-match,
@@ -1227,7 +1235,8 @@ button.kanban-plugin__cancel-action-button {
   color: var(--text-faint);
 }
 
-.kanban-plugin__time-picker {
+.kanban-plugin__time-picker,
+.kanban-plugin__priority-picker {
   position: absolute;
   max-height: 250px;
   overflow: auto;
@@ -1240,7 +1249,8 @@ button.kanban-plugin__cancel-action-button {
   z-index: var(--layer-menu);
 }
 
-.kanban-plugin__time-picker-item {
+.kanban-plugin__time-picker-item,
+.kanban-plugin__priority-picker-item {
   display: flex;
   align-items: center;
   color: var(--text-muted);
@@ -1249,7 +1259,8 @@ button.kanban-plugin__cancel-action-button {
   padding: 6px 8px;
 }
 
-.kanban-plugin__time-picker-check {
+.kanban-plugin__time-picker-check,
+.kanban-plugin__priority-picker-check {
   visibility: hidden;
   display: inline-flex;
   margin-right: 5px;
@@ -1260,12 +1271,16 @@ button.kanban-plugin__cancel-action-button {
   font-weight: 600;
 }
 
-.kanban-plugin__time-picker-item.is-selected .kanban-plugin__time-picker-check {
+.kanban-plugin__time-picker-item.is-selected .kanban-plugin__time-picker-check,
+.kanban-plugin__priority-picker-item.is-selected
+  .kanban-plugin__priority-picker-check {
   visibility: visible;
 }
 
 .kanban-plugin__time-picker-item:hover,
-.kanban-plugin__time-picker-item.is-selected {
+.kanban-plugin__time-picker-item.is-selected,
+.kanban-plugin__priority-picker-item:hover,
+.kanban-plugin__priority-picker-item.is-selected {
   background: var(--background-secondary);
 }
 

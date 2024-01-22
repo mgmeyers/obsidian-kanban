@@ -144,6 +144,7 @@ export default {
   Saturday: 'Saturday',
   'Background color': 'Background color',
   Tag: 'Tag',
+  Priority: 'Priority',
   'Text color': 'Text color',
   'Date is': 'Date is',
   Today: 'Today',
@@ -154,6 +155,9 @@ export default {
   'Set colors for the date displayed below the card based on the rules below':
     'Set colors for the date displayed below the card based on the rules below',
   'Add date color': 'Add date color',
+  Priorities: 'Priorities',
+  'Set the priority tag list and colors for the priority labels displayed below the card title.':
+    'Set the priority tag list and colors for the priority labels displayed below the card title.',
 
   // MetadataSettings.tsx
   'Metadata key': 'Metadata key',
@@ -202,6 +206,8 @@ export default {
   'Add label': 'Add label',
   'Move to top': 'Move to top',
   'Move to bottom': 'Move to bottom',
+  'Add priority': 'Add priority',
+  'Edit Priority': 'Edit priority',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Enter list title...',
@@ -238,4 +244,7 @@ export default {
 
   // components/Editor/MarkdownEditor.tsx
   Submit: 'Submit',
+
+  // settings/PrioritySettings.tsx
+  'Add priority tag': 'Add priority tag',
 };

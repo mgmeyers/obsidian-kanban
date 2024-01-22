@@ -5,6 +5,7 @@ import { KanbanContext } from './components/context';
 import {
   c,
   getDateColorFn,
+  getPriorityColorFn,
   getTagColorFn,
   maybeCompleteForMove,
 } from './components/helpers';
@@ -176,12 +177,12 @@ export function DragDropApp({
           const toInsert =
             entity.type === DataTypes.Item
               ? maybeCompleteForMove(
-                  sourceBoard,
-                  dragPath,
-                  destinationBoard,
-                  dropPath,
-                  entity
-                )
+                sourceBoard,
+                dragPath,
+                destinationBoard,
+                dropPath,
+                entity
+              )
               : entity;
           return insertEntity(destinationBoard, dropPath, [toInsert]);
         });
@@ -226,6 +227,7 @@ export function DragDropApp({
                   filePath,
                   getTagColor: getTagColorFn(stateManager),
                   getDateColor: getDateColorFn(stateManager),
+                  getPriorityColor: getPriorityColorFn(stateManager)
                 },
               ];
             }, [entity]);
