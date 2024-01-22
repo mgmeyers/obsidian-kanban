@@ -22,7 +22,7 @@ import { DndScope } from '../dnd/components/Scope';
 import { getBoardModifiers } from '../helpers/boardModifiers';
 import { frontMatterKey } from '../parsers/common';
 import { KanbanContext, SearchContext } from './context';
-import { baseClassName, c, getDateColorFn, getTagColorFn } from './helpers';
+import { baseClassName, c, getDateColorFn, getPriorityColorFn, getTagColorFn } from './helpers';
 import { Icon } from './Icon/Icon';
 import { Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
@@ -267,6 +267,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       filePath,
       getTagColor: getTagColorFn(stateManager),
       getDateColor: getDateColorFn(stateManager),
+      getPriorityColor: getPriorityColorFn(stateManager),
     };
   }, [view, stateManager, boardModifiers, filePath, dateColors, tagColors]);
 

@@ -25,6 +25,7 @@ import { replaceSelection } from './helpers';
 import { getTagSearchConfig } from './tagpicker';
 import { StrategyProps, Textcomplete } from './textcomplete/textcomplete-core';
 import { TextareaEditor } from './textcomplete/textcomplete-textarea';
+import { getPrioritySearchConfig } from './priorityPicker';
 
 export interface ConstructAutocompleteParams {
   inputRef: Preact.RefObject<HTMLTextAreaElement>;
@@ -53,6 +54,11 @@ export function constructAutocomplete({
     (stateManager.app.metadataCache as any).getTags()
   ).sort();
   const tagSearch = new Fuse(tags);
+
+  const priorityTags = stateManager
+    .getSetting('priority-tags')
+    .map((t) => `!{${t.priority}}`);
+  const priorityTagSearch = new Fuse(priorityTags);
 
   const linkSuggestions = (stateManager.app.metadataCache as any)
     .getLinkSuggestions()
@@ -92,6 +98,7 @@ export function constructAutocomplete({
       willAutoPairBrackets,
       false
     ),
+    getPrioritySearchConfig(priorityTags, priorityTagSearch),
   ];
 
   if (!excludeDatePicker) {

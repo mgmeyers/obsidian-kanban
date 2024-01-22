@@ -33,6 +33,12 @@ export interface TagColorKey {
   backgroundColor: string;
 }
 
+export interface PriorityKey {
+  priority: string;
+  color: string;
+  backgroundColor: string;
+}
+
 export interface DateColorKey {
   isToday?: boolean;
   isBefore?: boolean;
@@ -68,6 +74,7 @@ export interface ItemMetaData {
   file?: TFile | null;
   fileMetadata?: FileMetadata;
   fileMetadataOrder?: string[];
+  priority?: string;
 }
 
 export interface ItemData {
@@ -100,6 +107,7 @@ export type Board = Nestable<BoardData, Lane>;
 export type MetadataSetting = Nestable<DataKey>;
 export type TagColorSetting = Nestable<TagColorKey>;
 export type DateColorSetting = Nestable<DateColorKey>;
+export type PrioritySetting = Nestable<PriorityKey>;
 
 export const DataTypes = {
   Item: 'item',
@@ -108,6 +116,7 @@ export const DataTypes = {
   MetadataSetting: 'metadata-setting',
   TagColorSetting: 'tag-color',
   DateColorSetting: 'date-color',
+  PrioritySetting: 'priority-tags',
 };
 
 export const ItemTemplate = {
@@ -143,5 +152,11 @@ export const TagColorSettingTemplate = {
 export const DateColorSettingTemplate = {
   accepts: [] as string[],
   type: DataTypes.DateColorSetting,
+  children: [] as any[],
+};
+
+export const PrioritySettingTemplate = {
+  accepts: [] as string[],
+  type: DataTypes.PrioritySetting,
   children: [] as any[],
 };

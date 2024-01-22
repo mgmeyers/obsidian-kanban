@@ -13,6 +13,7 @@ import {
   constructMenuDatePickerOnChange,
   constructMenuTimePickerOnChange,
   constructTimePicker,
+  constructPriorityPicker,
 } from './helpers';
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
@@ -235,6 +236,31 @@ export function useItemMenu({
                     path,
                   }),
                   item.data.metadata.date?.toDate()
+                );
+              });
+          })
+          .addItem((i) => {
+            i.setIcon('lucide-award')
+              .setTitle(t('Add priority'))
+              .onClick(() => {
+                constructPriorityPicker(
+                  e.view,
+                  stateManager,
+                  coordinates,
+                  (priority) => {
+                    stateManager
+                      .updateItemContent(
+                        item,
+                        `${item.data.titleRaw} !${priority}`
+                      )
+                      .then((item) => {
+                        boardModifiers.updateItem(path, item);
+                      })
+                      .catch((e) => {
+                        stateManager.setError(e);
+                        console.error(e);
+                      });
+                  }
                 );
               });
           });

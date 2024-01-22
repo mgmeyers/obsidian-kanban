@@ -255,6 +255,17 @@ export class StateManager {
       this.getSettingRaw('time-format', suppliedSettings) ||
       getDefaultTimeFormat(this.app);
 
+    const priorityTags = this.getSettingRaw(
+      'priority-tags',
+      suppliedSettings
+    ) || [
+      { priority: 'None', backgroundColor: '#f1f1f1', color: '#1a1a1a' },
+      { priority: 'Low', backgroundColor: '#dbeddb', color: '#274233' },
+      { priority: 'Medium', backgroundColor: '#fdedc8', color: '#4c3926' },
+      { priority: 'High', backgroundColor: '#ffe2dd', color: '#5d1715' },
+      { priority: 'Urgent', backgroundColor: '#ff0000', color: '#ffffff' },
+    ];
+
     const archiveDateFormat =
       this.getSettingRaw('archive-date-format', suppliedSettings) ||
       `${dateFormat} ${timeFormat}`;
@@ -299,6 +310,7 @@ export class StateManager {
         this.getSettingRaw('show-search', suppliedSettings) ?? true,
       'tag-colors': this.getSettingRaw('tag-colors', suppliedSettings) ?? [],
       'date-colors': this.getSettingRaw('date-colors', suppliedSettings) ?? [],
+      'priority-tags': priorityTags,
     };
   }
 

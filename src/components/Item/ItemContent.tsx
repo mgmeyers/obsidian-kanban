@@ -133,6 +133,7 @@ export const ItemContent = Preact.memo(function ItemContent({
     view,
     getTagColor,
     getDateColor,
+    getPriorityColor,
   } = Preact.useContext(KanbanContext);
 
   const hideTagsDisplay = stateManager.useSetting('hide-tags-display');
@@ -246,6 +247,29 @@ export const ItemContent = Preact.memo(function ItemContent({
       />
       <div className={c('item-metadata')}>
         <RelativeDate item={item} stateManager={stateManager} />
+
+        {!!item.data.metadata.priority?.length && (
+          <div className={c('item-priority')}> {
+            (() => {
+              const priority = item.data.metadata.priority;
+              const priorityColor = getPriorityColor(priority);
+              return (
+                <span
+                  className={`tag ${c('item-priority-tag')}`}
+                  style={
+                    priorityColor && {
+                      '--tag-color': priorityColor.color,
+                      '--tag-background-color': priorityColor.backgroundColor,
+                    }
+                  }
+                >
+                  <span>{priority}</span>
+                </span>
+              );
+            })()
+          }
+          </div>
+        )}
         <DateAndTime
           item={item}
           stateManager={stateManager}
@@ -263,11 +287,10 @@ export const ItemContent = Preact.memo(function ItemContent({
                 <a
                   href={tag}
                   key={i}
-                  className={`tag ${c('item-tag')} ${
-                    tag.toLocaleLowerCase().contains(searchQuery)
-                      ? 'is-search-match'
-                      : ''
-                  }`}
+                  className={`tag ${c('item-tag')} ${tag.toLocaleLowerCase().contains(searchQuery)
+                    ? 'is-search-match'
+                    : ''
+                    }`}
                   style={
                     tagColor && {
                       '--tag-color': tagColor.color,

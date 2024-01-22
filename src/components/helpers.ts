@@ -6,7 +6,7 @@ import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
 import { StateManager } from 'src/StateManager';
 
-import { Board, DateColorKey, Item, TagColorKey } from './types';
+import { Board, DateColorKey, Item, PriorityKey, TagColorKey } from './types';
 
 export const baseClassName = 'kanban-plugin';
 
@@ -201,6 +201,18 @@ export function getTemplatePlugins(app: App) {
     templaterEnabled,
     templaterEmptyFileTemplate,
     templateFolder,
+  };
+}
+
+export function getPriorityColorFn(
+  stateManager: StateManager
+): (priority: string) => PriorityKey {
+  const priorityColors = stateManager.getSetting('priority-tags');
+
+  return (priority: string) => {
+    const active = priorityColors.find((p) => p.priority === priority);
+    if (active) return active;
+    return null;
   };
 }
 

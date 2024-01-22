@@ -7,7 +7,11 @@ import { getNormalizedPath } from 'src/helpers/renderMarkdown';
 import { KanbanSettings, settingKeyLookup } from 'src/Settings';
 import { StateManager } from 'src/StateManager';
 
-import { frontMatterKey, getLinkedPageMetadata } from './common';
+import {
+  completeString,
+  frontMatterKey,
+  getLinkedPageMetadata,
+} from './common';
 import { blockidExtension, blockidFromMarkdown } from './extensions/blockid';
 import {
   genericWrappedExtension,
@@ -82,6 +86,7 @@ function extractSettingsFooter(md: string) {
 function getExtensions(stateManager: StateManager) {
   return [
     gfmTaskListItem,
+    genericWrappedExtension('priority', `!{`, '}'),
     genericWrappedExtension(
       'date',
       `${stateManager.getSetting('date-trigger')}{`,
@@ -107,6 +112,10 @@ function getExtensions(stateManager: StateManager) {
 function getMdastExtensions(stateManager: StateManager) {
   return [
     gfmTaskListItemFromMarkdown,
+    genericWrappedFromMarkdown('priority', (text, node) => {
+      if (!text) return;
+      node.priority = text;
+    }),
     genericWrappedFromMarkdown('date', (text, node) => {
       if (!text) return;
       node.date = text;
