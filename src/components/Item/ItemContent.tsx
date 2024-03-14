@@ -276,6 +276,11 @@ export const ItemContent = memo(function ItemContent({
 
   return (
     <div onClick={onWrapperClick} className={c('item-title')}>
+      {item.data.metadata.tasks && (
+        <div className={c('item-tasks-count')}>
+          {item.data.metadata.tasks.completed}/{item.data.metadata.tasks.total}
+        </div>
+      )}
       {isStatic ? (
         <MarkdownClonedPreviewRenderer
           entityId={item.id}
