@@ -24,6 +24,7 @@ import { c, useGetDateColorFn, useGetTagColorFn } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
 import { InlineMetadata } from './InlineMetadata';
+import { TaskCounter } from './TaskCounter';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
@@ -276,11 +277,7 @@ export const ItemContent = memo(function ItemContent({
 
   return (
     <div onClick={onWrapperClick} className={c('item-title')}>
-      {item.data.metadata.tasks && (
-        <div className={c('item-tasks-count')}>
-          {item.data.metadata.tasks.completed}/{item.data.metadata.tasks.total}
-        </div>
-      )}
+      <TaskCounter item={item} />
       {isStatic ? (
         <MarkdownClonedPreviewRenderer
           entityId={item.id}
