@@ -1,12 +1,17 @@
+import { StateManager } from 'src/StateManager';
+
 import { c } from '../helpers';
 import { Item } from '../types';
 
 export interface TaskCounterProps {
     item: Item;
+    stateManager: StateManager;
 }
 
-export function TaskCounter({ item }: TaskCounterProps) {
-    if (!item.data.metadata.tasks) {
+export function TaskCounter({ item, stateManager }: TaskCounterProps) {
+    const hideTaskCount = stateManager.useSetting('hide-task-count');
+
+    if (hideTaskCount || !item.data.metadata.tasks) {
         return null;
     }
 

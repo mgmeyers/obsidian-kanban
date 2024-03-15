@@ -277,7 +277,10 @@ export const ItemContent = memo(function ItemContent({
 
   return (
     <div onClick={onWrapperClick} className={c('item-title')}>
-      <TaskCounter item={item} />
+      <TaskCounter
+        item={item}
+        stateManager={stateManager}
+      />
       {isStatic ? (
         <MarkdownClonedPreviewRenderer
           entityId={item.id}
