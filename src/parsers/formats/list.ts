@@ -156,6 +156,20 @@ export function listItemToItemData(
         itemData.metadata.fileAccessor = (genericNode as FileNode).fileAccessor;
         return true;
       }
+
+      if (genericNode.type === 'text') {
+        const listItem = genericNode.value.match(/^\s*[-\*\+] \[(?<state> |x)\]\s/);
+
+        if (listItem) {
+          itemData.metadata.tasks ||= { total: 0, completed: 0 };
+          itemData.metadata.tasks.total++;
+
+          if (listItem.groups?.state === 'x') {
+            itemData.metadata.tasks.completed++;
+          }
+          return true;
+        }
+      }
     }
   );
 

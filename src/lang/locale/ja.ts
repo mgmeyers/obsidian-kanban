@@ -127,6 +127,10 @@ export default {
   'Calendar: first day of week': 'カレンダー: 週の始まり',
   'Override which day is used as the start of the week':
     '週の始まりとして使用する曜日を変更します。',
+  'Hide task counter in card titles': 'カードタイトルにタスクカウンターを隠す',
+  'When toggled, this will hide the number of tasks total and completed in the card.':
+    'トグルすると、カード内のタスクの合計数と完了数が非表示になります。',
+
   Sunday: '日曜日',
   Monday: '月曜日',
   Tuesday: '火曜日',

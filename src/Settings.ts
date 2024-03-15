@@ -64,6 +64,7 @@ export interface KanbanSettings {
   'hide-date-in-title'?: boolean;
   'hide-tags-display'?: boolean;
   'hide-tags-in-title'?: boolean;
+  'hide-task-count'?: boolean;
   'lane-width'?: number;
   'link-date-to-daily-note'?: boolean;
   'max-archive-size'?: number;
@@ -103,6 +104,7 @@ export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
   'hide-date-in-title': true,
   'hide-tags-display': true,
   'hide-tags-in-title': true,
+  'hide-task-count': true,
   'lane-width': true,
   'link-date-to-daily-note': true,
   'max-archive-size': true,
@@ -453,6 +455,52 @@ export class SettingsManager {
 
                 this.applySettingsUpdate({
                   $unset: ['show-checkboxes'],
+                });
+              });
+          });
+      });
+
+      new Setting(contentEl)
+      .setName(t('Hide task counter in card titles'))
+      .setDesc(t('When toggled, this will hide the number of tasks total and completed in the card.'))
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting(
+              'hide-task-count',
+              local
+            );
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'hide-task-count': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting(
+                  'hide-task-count',
+                  local
+                );
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ['hide-task-count'],
                 });
               });
           });

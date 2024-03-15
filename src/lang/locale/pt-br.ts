@@ -103,6 +103,9 @@ export default {
   'Linked Page Metadata': "Metadados de páginas 'lincadas'",
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     "Exibe metadados para a primeira nota 'lincada' em um cartão. Especifique abaixo quais metadados serão exibidos. Um rótulo opcional pode ser fornecido e os rótulos podem ser ocultados completamente.",
+  'Hide task counter in card titles': 'Ocultar o contador de tarefas nos títulos dos cartões',
+  'When toggled, this will hide the number of tasks total and completed in the card.':
+    'Quando ativada, essa opção oculta o número de tarefas totais e concluídas no cartão.',
 
   // MetadataSettings.tsx
   'Metadata key': 'Metadado',

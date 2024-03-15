@@ -122,6 +122,9 @@ export default {
   'Linked Page Metadata': 'Metadaten für verknüpfte (verlinkte) Notizen',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     'Zeigen Sie Metadaten für die erste Notiz an, die innerhalb einer Karte verknüpft ist. Geben Sie an, welche Metadatenschlüssel unten angezeigt werden sollen. Ein optionales Label kann hinzugefügt werden, es kann aber auch vollständig ausgeblendet werden.',
+  'Hide task counter in card titles': 'Aufgabenzähler in Kartentiteln ausblenden',
+  'When toggled, this will hide the number of tasks total and completed in the card.':
+      'Wenn diese Option aktiviert ist, wird die Anzahl der gesamten und abgeschlossenen Aufgaben auf der Karte ausgeblendet.',
 
   // MetadataSettings.tsx
   'Metadata key': 'Metadatenschlüssel',

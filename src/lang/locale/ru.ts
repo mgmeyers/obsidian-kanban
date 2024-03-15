@@ -15,7 +15,7 @@ export default {
     'Untitled Kanban': 'Безымянная Kanban-доска',
     'Toggle between Kanban and markdown mode':
       'Переключиться между Kanban и markdown режимами',
-  
+
     // KanbanView.tsx
     'Open as markdown': 'Открыть как markdown',
     'Open board settings': 'Открыть настройки доски',
@@ -25,7 +25,7 @@ export default {
       'Вы можете открыть файл как markdown и проверить или отредактировать его.',
     'Are you sure you want to archive all completed cards on this board?':
       'Вы уверены, что хотите архивировать все завершёённые карточки в этой доске?',
-  
+
     // parser.ts
     Complete: 'Выполнено',
     Archive: 'Архивировать',
@@ -34,13 +34,13 @@ export default {
     "I don't know how to interpret this line:":
       "Я не знаю, как интерпретировать эту строку:",
     Untitled: 'Без имени', // auto-created column
-  
+
     // settingHelpers.ts
     'Note: No template plugins are currently enabled.':
       'Примечание: В настоящее время ни один плагин шаблона не включен.',
     default: 'по умолчанию',
     'Search...': 'Найти...',
-  
+
     // Settings.ts
     'New line trigger': 'Триггер новой строки',
     'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lists.':
@@ -135,6 +135,9 @@ export default {
     'Calendar: first day of week': 'Календарь: первый день недели',
     'Override which day is used as the start of the week':
       'Укажите, какой день должен использоваться как начало недели',
+    'Hide task counter in card titles': 'Скрывать счетчик задач в заголовках карточек',
+    'When toggled, this will hide the number of tasks total and completed in the card.':
+        'Когда включено, общее количество и количество выполненных задач в карточке будет скрыто.',
     Sunday: 'Воскресенье',
     Monday: 'Понедельник',
     Tuesday: 'Вторник',
@@ -154,7 +157,7 @@ export default {
     'Set colors for the date displayed below the card based on the rules below':
       'Установить цвета для даты, отображаемой под карточкой, базируясь на правилах ниже',
     'Add date color': 'Добавить цвет даты',
-  
+
     // MetadataSettings.tsx
     'Metadata key': 'Ключ метаданных',
     'Display label': 'Показать ярылк',
@@ -163,26 +166,26 @@ export default {
     Delete: 'Удалить',
     'Add key': 'Добавить ключ',
     'Field contains markdown': 'Поле содержит markdown',
-  
+
     // TagColorSettings.tsx
     'Add tag color': 'Добавить цвет метки',
-  
+
     // components/Item/Item.tsx
     'More options': 'Больше настроек',
     Cancel: 'Отмена',
-  
+
     // components/Item/ItemContent.tsx
     today: 'сегодня',
     yesterday: 'вчера',
     tomorrow: 'завтра',
     'Change date': 'Изменить дату',
     'Change time': 'Изменить время',
-  
+
     // components/Item/ItemForm.tsx
     'Card title...': 'Заголовок карточки...',
     'Add card': 'Добавить карточку',
     'Add a card': 'Добавить карточку',
-  
+
     // components/Item/ItemMenu.ts
     'Edit card': 'Редактировать карточку',
     'New note from card': 'Новая заметка из карточки',
@@ -202,17 +205,17 @@ export default {
     'Add label': 'Добавить ярлык',
     'Move to top': 'Переместить вверх',
     'Move to bottom': 'Переместить вниз',
-  
+
     // components/Lane/LaneForm.tsx
     'Enter list title...': 'Введите заголовок списка...',
     'Mark cards in this list as complete': 'Отметить карточки в этом списке как завершённые',
     'Add list': 'Добавить список',
     'Add a list': 'Добавить список',
-  
+
     // components/Lane/LaneHeader.tsx
     'Move list': 'Переместить список',
     Close: 'Закрыть',
-  
+
     // components/Lane/LaneMenu.tsx
     'Are you sure you want to delete this list and all its cards?':
       'Вы уверены, что хотите удалить этот список и все его карточки?',
@@ -231,12 +234,12 @@ export default {
     'Insert list after': 'Вставить список после',
     'Sort by card text': 'Сортировать по тексту карточки',
     'Sort by date': 'Сортировать по дате',
-  
+
     // components/helpers/renderMarkdown.ts
     'Unable to find': 'Невозможно найти',
     'Open in default app': 'Открыть в приложении по умолчанию',
-  
+
     // components/Editor/MarkdownEditor.tsx
     Submit: 'Сохранить',
   };
-  
+

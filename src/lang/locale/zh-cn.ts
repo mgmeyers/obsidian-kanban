@@ -126,6 +126,9 @@ export default {
   'Calendar: first day of week': '日历：一周的第一天',
   'Override which day is used as the start of the week':
     '设置哪一天作为一周的开始',
+  'Hide task counter in card titles': '在卡片标题中隐藏任务计数器',
+  'When toggled, this will hide the number of tasks total and completed in the card.':
+      '切换后，将隐藏卡片中已完成任务的总数。',
   Sunday: '周日',
   Monday: '周一',
   Tuesday: '周二',

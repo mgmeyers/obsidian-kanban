@@ -58,11 +58,17 @@ export interface FileMetadata {
   [k: string]: PageData;
 }
 
+export interface TasksMetadata {
+  total?: number;
+  completed?: number;
+}
+
 export interface ItemMetaData {
   dateStr?: string;
   date?: moment.Moment;
   timeStr?: string;
   time?: moment.Moment;
+  tasks?: TasksMetadata;
   tags?: string[];
   fileAccessor?: FileAccessor;
   file?: TFile | null;

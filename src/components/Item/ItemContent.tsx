@@ -10,6 +10,7 @@ import { c } from '../helpers';
 import { MarkdownDomRenderer } from '../MarkdownRenderer';
 import { Item } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
+import { TaskCounter } from './TaskCounter';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
@@ -238,6 +239,10 @@ export const ItemContent = Preact.memo(function ItemContent({
 
   return (
     <div className={c('item-title')}>
+      <TaskCounter
+        item={item}
+        stateManager={stateManager}
+      />
       <MarkdownDomRenderer
         className={c('item-markdown')}
         dom={item.data.dom}

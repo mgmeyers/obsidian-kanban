@@ -135,6 +135,9 @@ export default {
     'Calendar: first day of week': '달력: 첫 번째 요일',
     'Override which day is used as the start of the week':
         '한 주의 시작으로 사용되는 요일을 재정의합니다.',
+    'Hide task counter in card titles': '카드 제목에 작업 카운터 숨기기',
+    'When toggled, this will hide the number of tasks total and completed in the card.':
+        '이 옵션을 켜면 카드에서 총 작업 수와 완료된 작업 수가 숨겨집니다.',
     Sunday: '일요일',
     Monday: '월요일',
     Tuesday: '화요일',

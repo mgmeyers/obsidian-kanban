@@ -90,6 +90,9 @@ export default {
     "Verrà usato per separare data e ora dell'archiviazione dal titolo",
   'Archive date/time format': "Formato data/ora dell'archivio",
   'Kanban Plugin': 'Plugin Kanban',
+  'Hide task counter in card titles': 'Nascondere il contatore delle attività nei titoli delle schede',
+  'When toggled, this will hide the number of tasks total and completed in the card.':
+    'Se attivata, nasconde il numero di attività totali e completate nella scheda.',
 
   // components/Item/Item.tsx
   'More options': 'Altre opzioni',
