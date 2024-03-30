@@ -22,22 +22,22 @@ export function tagExtension(): Extension {
       if (
         code !== startMarker.charCodeAt(startMarkerCursor) ||
         (startMarkerCursor === 0 &&
-          // Tag must come after space or <br>
+          // Tag  as anymust come after space or <br>
           self.previous !== ' '.charCodeAt(0) &&
           self.previous !== '>'.charCodeAt(0))
       ) {
         return nok(code);
       }
 
-      effects.enter(name);
-      effects.enter(`${name}Marker`);
+      effects.enter(name as any);
+      effects.enter(`${name}Marker` as any);
 
       return consumeStart(code);
     }
 
     function consumeStart(code: number) {
       if (startMarkerCursor === startMarker.length) {
-        effects.exit(`${name}Marker`);
+        effects.exit(`${name}Marker` as any);
         return consumeData(code);
       }
 
@@ -52,8 +52,8 @@ export function tagExtension(): Extension {
     }
 
     function consumeData(code: number) {
-      effects.enter(`${name}Data`);
-      effects.enter(`${name}Target`);
+      effects.enter(`${name}Data` as any);
+      effects.enter(`${name}Target` as any);
       return consumeTarget(code);
     }
 
@@ -66,9 +66,9 @@ export function tagExtension(): Extension {
         code === null
       ) {
         if (!data) return nok(code);
-        effects.exit(`${name}Target`);
-        effects.exit(`${name}Data`);
-        effects.exit(name);
+        effects.exit(`${name}Target` as any);
+        effects.exit(`${name}Data` as any);
+        effects.exit(name as any);
 
         return ok(code);
       }

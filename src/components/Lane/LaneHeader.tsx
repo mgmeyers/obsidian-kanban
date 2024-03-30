@@ -1,16 +1,16 @@
 import update from 'immutability-helper';
 import Preact from 'preact/compat';
-
+import { StateUpdater } from 'preact/hooks';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { t } from 'src/lang/helpers';
 import { parseLaneTitle } from 'src/parsers/helpers/parser';
 
-import { KanbanContext } from '../context';
 import { getDropAction } from '../Editor/helpers';
-import { c } from '../helpers';
 import { GripIcon } from '../Icon/GripIcon';
 import { Icon } from '../Icon/Icon';
-import { Lane } from '../types';
+import { KanbanContext } from '../context';
+import { c } from '../helpers';
+import { EditState, EditingState, Lane } from '../types';
 import { ConfirmAction, useSettingsMenu } from './LaneMenu';
 import { LaneSettings } from './LaneSettings';
 import { LaneTitle } from './LaneTitle';
@@ -19,7 +19,7 @@ interface LaneHeaderProps {
   lane: Lane;
   laneIndex: number;
   dragHandleRef: Preact.RefObject<HTMLDivElement>;
-  setIsItemInputVisible?: Preact.StateUpdater<boolean>;
+  setIsItemInputVisible?: StateUpdater<EditState>;
 }
 
 export const LaneHeader = Preact.memo(function LaneHeader({
@@ -29,25 +29,28 @@ export const LaneHeader = Preact.memo(function LaneHeader({
   setIsItemInputVisible,
 }: LaneHeaderProps) {
   const { boardModifiers, stateManager } = Preact.useContext(KanbanContext);
-  const [isEditing, setIsEditing] = Preact.useState(false);
+  const [editState, setEditState] = Preact.useState<EditState>(
+    EditingState.cancel
+  );
   const lanePath = useNestedEntityPath(laneIndex);
 
   const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
-    setIsEditing,
+    setEditState: setEditState,
     path: lanePath,
     lane,
   });
 
   Preact.useEffect(() => {
     if (lane.data.forceEditMode) {
-      setIsEditing(true);
+      setEditState(null);
     }
   }, [lane.data.forceEditMode]);
 
   return (
     <>
       <div
-        onDblClick={() => setIsEditing(true)}
+        // eslint-disable-next-line react/no-unknown-property
+        onDblClick={(e) => setEditState({ x: e.clientX, y: e.clientY })}
         className={c('lane-header-wrapper')}
       >
         <div className={c('lane-grip')} ref={dragHandleRef}>
@@ -55,15 +58,13 @@ export const LaneHeader = Preact.memo(function LaneHeader({
         </div>
 
         <LaneTitle
-          isEditing={isEditing}
-          setIsEditing={setIsEditing}
+          editState={editState}
+          setEditState={setEditState}
           itemCount={lane.children.length}
           maxItems={lane.data.maxItems}
           title={lane.data.title}
-          onChange={(e) => {
-            const { title, maxItems } = parseLaneTitle(
-              (e.target as HTMLTextAreaElement).value
-            );
+          onChange={(str) => {
+            const { title, maxItems } = parseLaneTitle(str);
             boardModifiers.updateLane(
               lanePath,
               update(lane, {
@@ -76,11 +77,9 @@ export const LaneHeader = Preact.memo(function LaneHeader({
           }}
         />
         <div className={c('lane-settings-button-wrapper')}>
-          {isEditing ? (
+          {typeof editState === 'object' ? (
             <a
-              onClick={() => {
-                setIsEditing(false);
-              }}
+              onClick={() => setEditState(null)}
               aria-label={t('Close')}
               className={`${c(
                 'lane-settings-button'
@@ -95,11 +94,11 @@ export const LaneHeader = Preact.memo(function LaneHeader({
                   aria-label={t('Add a card')}
                   className={`${c('lane-settings-button')} clickable-icon`}
                   onClick={() => {
-                    setIsItemInputVisible(true);
+                    setIsItemInputVisible({ x: 0, y: 0 });
                   }}
                   onDragOver={(e) => {
                     if (getDropAction(stateManager, e.dataTransfer)) {
-                      setIsItemInputVisible(true);
+                      setIsItemInputVisible({ x: 0, y: 0 });
                     }
                   }}
                 >
@@ -120,7 +119,9 @@ export const LaneHeader = Preact.memo(function LaneHeader({
         </div>
       </div>
 
-      {isEditing && <LaneSettings lane={lane} lanePath={lanePath} />}
+      {typeof editState === 'object' && (
+        <LaneSettings lane={lane} lanePath={lanePath} />
+      )}
 
       {confirmAction && (
         <ConfirmAction

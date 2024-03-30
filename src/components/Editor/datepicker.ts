@@ -1,12 +1,11 @@
 import { moment } from 'obsidian';
 import Preact from 'preact';
-
+import { StateManager } from 'src/StateManager';
 import { getParentWindow } from 'src/dnd/util/getWindow';
 import { buildLinkToDailyNote } from 'src/helpers';
-import { StateManager } from 'src/StateManager';
 
-import { escapeRegExpStr } from '../helpers';
 import { buildTimeArray } from '../Item/helpers';
+import { escapeRegExpStr } from '../helpers';
 import { getDefaultLocale } from './datePickerLocale';
 import flatpickr from './flatpickr';
 import { Instance } from './flatpickr/types/instance';

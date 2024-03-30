@@ -1,4 +1,4 @@
-import {} from 'obsidian';
+import 'obsidian';
 
 import { Plugin } from '../types/options';
 

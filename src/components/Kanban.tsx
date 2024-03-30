@@ -7,25 +7,25 @@ import {
   createDailyNote,
 } from 'obsidian-daily-notes-interface';
 import Preact from 'preact/compat';
-
+import { KanbanView } from 'src/KanbanView';
+import { StateManager } from 'src/StateManager';
 import { useIsAnythingDragging } from 'src/dnd/components/DragOverlay';
 import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
-import { Sortable } from 'src/dnd/components/Sortable';
 import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
+import { Sortable } from 'src/dnd/components/Sortable';
 import { createHTMLDndHandlers } from 'src/dnd/managers/DragManager';
 import { getNormalizedPath } from 'src/helpers/renderMarkdown';
-import { KanbanView } from 'src/KanbanView';
 import { t } from 'src/lang/helpers';
-import { StateManager } from 'src/StateManager';
 
 import { DndScope } from '../dnd/components/Scope';
 import { getBoardModifiers } from '../helpers/boardModifiers';
-import { frontMatterKey } from '../parsers/common';
-import { KanbanContext, SearchContext } from './context';
-import { baseClassName, c, getDateColorFn, getTagColorFn } from './helpers';
+import { frontmatterKey } from '../parsers/common';
 import { Icon } from './Icon/Icon';
 import { Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
+import { TableView } from './Table';
+import { KanbanContext, SearchContext } from './context';
+import { baseClassName, c, getDateColorFn, getTagColorFn } from './helpers';
 import { DataTypes } from './types';
 
 const boardScrollTiggers = [DataTypes.Item, DataTypes.Lane];
@@ -55,6 +55,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const maxArchiveLength = stateManager.useSetting('max-archive-size');
   const dateColors = stateManager.useSetting('date-colors');
   const tagColors = stateManager.useSetting('tag-colors');
+
+  const boardView: string = 'kanban';
 
   const closeLaneForm = Preact.useCallback(() => {
     if (boardData?.children.length > 0) {
@@ -163,7 +165,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       if (targetEl.hasClass('internal-link')) {
         view.app.workspace.trigger('hover-link', {
           event: e,
-          source: frontMatterKey,
+          source: frontmatterKey,
           hoverParent: view,
           targetEl,
           linktext: targetEl.getAttr('href'),
@@ -222,7 +224,9 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                 ? app.workspace.getLeaf(true)
                 : app.workspace.getLeaf(false);
 
-              await leaf.openFile(dailyNote as TFile, { active: true });
+              await leaf.openFile(dailyNote as unknown as TFile, {
+                active: true,
+              });
             } catch (e) {
               console.error(e);
               stateManager.setError(e);
@@ -357,28 +361,32 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                 </a>
               </div>
             )}
-            <ScrollContainer
-              id={view.id}
-              className={classcat([
-                c('board'),
-                c('horizontal'),
-                {
-                  'is-adding-lane': isLaneFormVisible,
-                },
-              ])}
-              triggerTypes={boardScrollTiggers}
-            >
-              <div>
-                <Sortable axis="horizontal">
-                  <Lanes lanes={boardData.children} />
-                  <SortPlaceholder
-                    className={c('lane-placeholder')}
-                    accepts={boardAccepts}
-                    index={boardData.children.length}
-                  />
-                </Sortable>
-              </div>
-            </ScrollContainer>
+            {boardView === 'table' ? (
+              <TableView boardData={boardData} stateManager={stateManager} />
+            ) : (
+              <ScrollContainer
+                id={view.id}
+                className={classcat([
+                  c('board'),
+                  c('horizontal'),
+                  {
+                    'is-adding-lane': isLaneFormVisible,
+                  },
+                ])}
+                triggerTypes={boardScrollTiggers}
+              >
+                <div>
+                  <Sortable axis="horizontal">
+                    <Lanes lanes={boardData.children} />
+                    <SortPlaceholder
+                      className={c('lane-placeholder')}
+                      accepts={boardAccepts}
+                      index={boardData.children.length}
+                    />
+                  </Sortable>
+                </div>
+              </ScrollContainer>
+            )}
           </div>
         </SearchContext.Provider>
       </KanbanContext.Provider>

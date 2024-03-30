@@ -8,8 +8,9 @@ import {
   WorkspaceLeaf,
 } from 'obsidian';
 
-import { c } from './components/helpers';
+import { SettingsModal } from './Settings';
 import { Kanban } from './components/Kanban';
+import { c } from './components/helpers';
 import { Board } from './components/types';
 import { Emitter, createEmitter } from './dnd/util/emitter';
 import { getParentWindow } from './dnd/util/getWindow';
@@ -20,7 +21,6 @@ import {
 } from './helpers';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
-import { SettingsModal } from './Settings';
 
 export const kanbanViewType = 'kanban';
 export const kanbanIcon = 'lucide-trello';
@@ -120,13 +120,19 @@ export class KanbanView extends TextFileView implements HoverParent {
     this.actionButtons = {};
   }
 
-  async onClose() {
+  onload() {
+    super.onload();
     this.destroy();
   }
 
-  async onUnloadFile(file: TFile) {
+  onunload(): void {
+    super.onunload();
     this.destroy();
-    return await super.onUnloadFile(file);
+  }
+
+  onUnloadFile(file: TFile) {
+    this.destroy();
+    return super.onUnloadFile(file);
   }
 
   handleRename(newPath: string, oldPath: string) {
@@ -193,7 +199,6 @@ export class KanbanView extends TextFileView implements HoverParent {
       board.data.settings
     ).open();
   }
-
 
   onPaneMenu(menu: Menu, source: string, callSuper: boolean = true) {
     if (source !== 'more-options') {

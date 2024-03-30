@@ -1,5 +1,4 @@
 import 'obsidian';
-
 import { DataviewApi } from 'obsidian-dataview';
 
 declare module 'obsidian' {

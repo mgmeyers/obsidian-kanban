@@ -2,9 +2,9 @@ import Choices, { Choices as IChoices } from 'choices.js';
 import update from 'immutability-helper';
 import { App, Setting, TFile, TFolder, Vault } from 'obsidian';
 
+import { KanbanSettings, SettingsManager } from './Settings';
 import { getTemplatePlugins } from './components/helpers';
 import { t } from './lang/helpers';
-import { KanbanSettings, SettingsManager } from './Settings';
 
 export const defaultDateTrigger = '@';
 export const defaultTimeTrigger = '@@';

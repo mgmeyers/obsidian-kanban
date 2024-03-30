@@ -1,7 +1,6 @@
 import Fuse from 'fuse.js';
 import { moment } from 'obsidian';
 import Preact from 'preact/compat';
-
 import { getParentBodyElement } from 'src/dnd/util/getWindow';
 
 import { KanbanContext, KanbanContextProps } from '../context';

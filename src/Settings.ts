@@ -7,6 +7,7 @@ import {
   ToggleComponent,
 } from 'obsidian';
 
+import { KanbanView } from './KanbanView';
 import {
   c,
   generateInstanceId,
@@ -25,16 +26,19 @@ import {
   TagColorSettingTemplate,
 } from './components/types';
 import { getParentWindow } from './dnd/util/getWindow';
-import { KanbanView } from './KanbanView';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
-import { frontMatterKey } from './parsers/common';
+import { frontmatterKey } from './parsers/common';
 import {
   createSearchSelect,
   defaultDateTrigger,
   defaultTimeTrigger,
   getListOptions,
 } from './settingHelpers';
+import {
+  cleanUpDateSettings,
+  renderDateSettings,
+} from './settings/DateColorSettings';
 import {
   cleanupMetadataSettings,
   renderMetadataSettings,
@@ -43,17 +47,13 @@ import {
   cleanUpTagSettings,
   renderTagSettings,
 } from './settings/TagColorSettings';
-import {
-  cleanUpDateSettings,
-  renderDateSettings,
-} from './settings/DateColorSettings';
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
 export type KanbanFormats = 'basic';
 
 export interface KanbanSettings {
-  [frontMatterKey]?: KanbanFormats;
+  [frontmatterKey]?: KanbanFormats;
   'date-display-format'?: string;
   'date-format'?: string;
   'date-picker-week-start'?: number;
@@ -89,10 +89,12 @@ export interface KanbanSettings {
 
   'tag-colors'?: TagColorKey[];
   'date-colors'?: DateColorKey[];
+
+  'table-sizing'?: Record<string, number>;
 }
 
 export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
-  [frontMatterKey]: true,
+  [frontmatterKey]: true,
   'date-display-format': true,
   'date-format': true,
   'date-picker-week-start': true,
@@ -126,6 +128,7 @@ export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
   'show-search': true,
   'tag-colors': true,
   'date-colors': true,
+  'table-sizing': true,
 };
 
 export type SettingRetriever = <K extends keyof KanbanSettings>(

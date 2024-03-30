@@ -1,13 +1,13 @@
 import { TFile, moment } from 'obsidian';
 import Preact from 'preact/compat';
-
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
 
+import { StaticMarkdownRenderer } from '../MarkdownRenderer';
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
-import { MarkdownRenderer } from '../MarkdownRenderer';
 import { Item, PageData } from '../types';
+import { Tags } from './ItemContent';
 
 export interface ItemMetadataProps {
   item: Item;
@@ -35,7 +35,7 @@ export function ItemMetadata({
 
 interface MetadataValueProps {
   data: PageData;
-  searchQuery: string;
+  searchQuery?: string;
 }
 
 function getDateFromObj(v: any, stateManager: StateManager) {
@@ -68,7 +68,7 @@ function getLinkFromObj(v: any, view: KanbanView) {
   }]]`;
 }
 
-function MetadataValue({ data, searchQuery }: MetadataValueProps) {
+export function MetadataValue({ data, searchQuery }: MetadataValueProps) {
   const { view, stateManager } = Preact.useContext(KanbanContext);
 
   if (Array.isArray(data.value)) {
@@ -80,12 +80,13 @@ function MetadataValue({ data, searchQuery }: MetadataValueProps) {
             typeof v === 'object' &&
             !Array.isArray(v) &&
             (getDateFromObj(v, stateManager) || getLinkFromObj(v, view));
-          const isMatch = str.toLocaleLowerCase().contains(searchQuery);
+          const isMatch =
+            searchQuery && str.toLocaleLowerCase().contains(searchQuery);
 
           return (
             <>
               {link || data.containsMarkdown ? (
-                <MarkdownRenderer
+                <StaticMarkdownRenderer
                   className="inline"
                   markdownString={link ? link : str}
                   searchQuery={searchQuery}
@@ -104,7 +105,7 @@ function MetadataValue({ data, searchQuery }: MetadataValueProps) {
   }
 
   const str = `${data.value}`;
-  const isMatch = str.toLocaleLowerCase().contains(searchQuery);
+  const isMatch = searchQuery && str.toLocaleLowerCase().contains(searchQuery);
   const link =
     typeof data.value === 'object' &&
     (getDateFromObj(data.value, stateManager) ||
@@ -117,7 +118,7 @@ function MetadataValue({ data, searchQuery }: MetadataValueProps) {
       }`}
     >
       {data.containsMarkdown || !!link ? (
-        <MarkdownRenderer
+        <StaticMarkdownRenderer
           markdownString={link ? link : str}
           searchQuery={searchQuery}
         />
@@ -170,22 +171,7 @@ export const MetadataTable = Preact.memo(function MetadataTable({
                 }
               >
                 {k === 'tags' ? (
-                  (data.value as string[]).map((tag, i) => {
-                    return (
-                      <a
-                        href={tag}
-                        key={i}
-                        className={`tag ${c('item-tag')} ${
-                          tag.toLocaleLowerCase().contains(searchQuery)
-                            ? 'is-search-match'
-                            : ''
-                        }`}
-                      >
-                        <span>{tag[0]}</span>
-                        {tag.slice(1)}
-                      </a>
-                    );
-                  })
+                  <Tags tags={data.value as string[]} isDisplay={false} />
                 ) : (
                   <MetadataValue data={data} searchQuery={searchQuery} />
                 )}

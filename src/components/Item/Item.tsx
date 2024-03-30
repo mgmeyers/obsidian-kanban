@@ -1,25 +1,34 @@
 import classcat from 'classcat';
-import Preact from 'preact/compat';
-
-import { DndManagerContext } from 'src/dnd/components/context';
+import {
+  JSX,
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'preact/compat';
 import { Droppable, useNestedEntityPath } from 'src/dnd/components/Droppable';
+import { DndManagerContext } from 'src/dnd/components/context';
 import { useDragHandle } from 'src/dnd/managers/DragManager';
 
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
-import { Item } from '../types';
-import { getItemClassModifiers } from './helpers';
+import { EditState, EditingState, Item } from '../types';
 import { ItemCheckbox } from './ItemCheckbox';
 import { ItemContent } from './ItemContent';
 import { useItemMenu } from './ItemMenu';
 import { ItemMenuButton } from './ItemMenuButton';
 import { ItemMetadata } from './MetadataTable';
+import { getItemClassModifiers } from './helpers';
 
 export interface DraggableItemProps {
   item: Item;
   itemIndex: number;
   isStatic?: boolean;
   shouldMarkItemsComplete?: boolean;
+  priority: number;
 }
 
 export interface ItemInnerProps {
@@ -28,22 +37,24 @@ export interface ItemInnerProps {
   shouldMarkItemsComplete?: boolean;
   isMatch?: boolean;
   searchQuery?: string;
+  priority: number;
 }
 
-const ItemInner = Preact.memo(function ItemInner({
+const ItemInner = memo(function ItemInner({
   item,
   shouldMarkItemsComplete,
   isMatch,
   searchQuery,
+  priority,
 }: ItemInnerProps) {
-  const { stateManager, boardModifiers } = Preact.useContext(KanbanContext);
-  const [isEditing, setIsEditing] = Preact.useState(false);
+  const { stateManager, boardModifiers } = useContext(KanbanContext);
+  const [editState, setEditState] = useState<EditState>(EditingState.cancel);
 
-  const dndManager = Preact.useContext(DndManagerContext);
+  const dndManager = useContext(DndManagerContext);
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     const handler = () => {
-      if (isEditing) setIsEditing(false);
+      if (typeof editState === 'object') setEditState(EditingState.cancel);
     };
 
     dndManager.dragManager.emitter.on('dragStart', handler);
@@ -51,11 +62,11 @@ const ItemInner = Preact.memo(function ItemInner({
     return () => {
       dndManager.dragManager.emitter.off('dragStart', handler);
     };
-  }, [dndManager, isEditing]);
+  }, [dndManager, editState]);
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     if (item.data.forceEditMode) {
-      setIsEditing(true);
+      setEditState({ x: 0, y: 0 });
     }
   }, [item.data.forceEditMode]);
 
@@ -64,54 +75,52 @@ const ItemInner = Preact.memo(function ItemInner({
   const showItemMenu = useItemMenu({
     boardModifiers,
     item,
-    setIsEditing,
+    setEditState: setEditState,
     stateManager,
     path,
   });
 
-  const onContextMenu: Preact.JSX.MouseEventHandler<HTMLDivElement> =
-    Preact.useCallback(
-      (e) => {
-        if (
-          e.target instanceof
-          (e.view as Window & typeof globalThis).HTMLTextAreaElement
-        ) {
-          return;
-        }
+  const onContextMenu: JSX.MouseEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      if (e.targetNode.instanceOf(HTMLTextAreaElement)) {
+        return;
+      }
 
-        e.preventDefault();
-        e.stopPropagation();
+      e.preventDefault();
+      e.stopPropagation();
 
-        const internalLinkPath =
-          e.target instanceof
-            (e.view as Window & typeof globalThis).HTMLAnchorElement &&
-          e.target.hasClass('internal-link')
-            ? e.target.dataset.href
-            : undefined;
+      const internalLinkPath =
+        e.targetNode.instanceOf(HTMLAnchorElement) &&
+        e.targetNode.hasClass('internal-link')
+          ? e.targetNode.dataset.href
+          : undefined;
 
-        showItemMenu(e, internalLinkPath);
-      },
-      [showItemMenu]
-    );
+      showItemMenu(e, internalLinkPath);
+    },
+    [showItemMenu]
+  );
 
-  const onDoubleClick: Preact.JSX.MouseEventHandler<HTMLDivElement> =
-    Preact.useCallback(() => {
-      setIsEditing(true);
-    }, [setIsEditing]);
+  const onDoubleClick: JSX.MouseEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      setEditState({ x: e.clientX, y: e.clientY });
+    },
+    [setEditState]
+  );
 
-  const ignoreAttr = Preact.useMemo(() => {
-    if (isEditing) {
+  const ignoreAttr = useMemo(() => {
+    if (typeof editState === 'object') {
       return {
         'data-ignore-drag': true,
       };
     }
 
     return {};
-  }, [isEditing]);
+  }, [editState]);
 
   return (
     <div
       onContextMenu={onContextMenu}
+      // eslint-disable-next-line react/no-unknown-property
       onDblClick={onDoubleClick}
       className={c('item-content-wrapper')}
       {...ignoreAttr}
@@ -125,39 +134,40 @@ const ItemInner = Preact.memo(function ItemInner({
           stateManager={stateManager}
         />
         <ItemContent
-          isEditing={isEditing}
           item={item}
           searchQuery={isMatch ? searchQuery : undefined}
-          setIsEditing={setIsEditing}
+          setEditState={setEditState}
+          editState={editState}
+          priority={priority}
         />
         <ItemMenuButton
-          isEditing={isEditing}
-          setIsEditing={setIsEditing}
+          editState={editState}
+          setEditState={setEditState}
           showMenu={showItemMenu}
         />
       </div>
       <ItemMetadata
         searchQuery={isMatch ? searchQuery : undefined}
-        isSettingsVisible={isEditing}
+        isSettingsVisible={!!editState}
         item={item}
       />
     </div>
   );
 });
 
-export const DraggableItem = Preact.memo(function DraggableItem(
+export const DraggableItem = memo(function DraggableItem(
   props: DraggableItemProps
 ) {
-  const elementRef = Preact.useRef<HTMLDivElement>(null);
-  const measureRef = Preact.useRef<HTMLDivElement>(null);
-  const searchQuery = Preact.useContext(SearchContext);
+  const elementRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
+  const searchQuery = useContext(SearchContext);
 
   const { itemIndex, ...innerProps } = props;
 
   useDragHandle(measureRef, measureRef);
 
   const isMatch = searchQuery
-    ? innerProps.item.data.titleSearch.contains(searchQuery)
+    ? innerProps.item.data.title.contains(searchQuery)
     : false;
 
   const classModifiers: string[] = getItemClassModifiers(innerProps.item);
@@ -181,6 +191,7 @@ export const DraggableItem = Preact.memo(function DraggableItem(
             {...innerProps}
             isMatch={isMatch}
             searchQuery={searchQuery}
+            priority={1000}
           />
         ) : (
           <Droppable
@@ -208,11 +219,12 @@ interface ItemsProps {
   shouldMarkItemsComplete: boolean;
 }
 
-export const Items = Preact.memo(function Items({
+export const Items = memo(function Items({
   isStatic,
   items,
   shouldMarkItemsComplete,
 }: ItemsProps) {
+  const len = items.length;
   return (
     <>
       {items.map((item, i) => {
@@ -221,6 +233,7 @@ export const Items = Preact.memo(function Items({
             key={item.id}
             item={item}
             itemIndex={i}
+            priority={len - i}
             shouldMarkItemsComplete={shouldMarkItemsComplete}
             isStatic={isStatic}
           />

@@ -2,18 +2,17 @@ import animateScrollTo from 'animated-scroll-to';
 import classcat from 'classcat';
 import update from 'immutability-helper';
 import Preact from 'preact/compat';
-
 import { Droppable, useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
-import { Sortable } from 'src/dnd/components/Sortable';
 import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
+import { Sortable } from 'src/dnd/components/Sortable';
 import { useDragHandle } from 'src/dnd/managers/DragManager';
 
-import { KanbanContext } from '../context';
-import { c } from '../helpers';
 import { Items } from '../Item/Item';
 import { ItemForm } from '../Item/ItemForm';
-import { DataTypes, Item, Lane } from '../types';
+import { KanbanContext } from '../context';
+import { c } from '../helpers';
+import { DataTypes, EditState, EditingState, Item, Lane } from '../types';
 import { LaneHeader } from './LaneHeader';
 
 const laneAccepts = [DataTypes.Item];
@@ -31,7 +30,9 @@ export const DraggableLane = Preact.memo(function DraggableLane({
 }: DraggableLaneProps) {
   const { stateManager, boardModifiers, view } =
     Preact.useContext(KanbanContext);
-  const [isItemInputVisible, setIsItemInputVisible] = Preact.useState(false);
+  const [editState, setEditState] = Preact.useState<EditState>(
+    EditingState.cancel
+  );
 
   const path = useNestedEntityPath(laneIndex);
   const laneWidth = stateManager.useSetting('lane-width');
@@ -137,17 +138,15 @@ export const DraggableLane = Preact.memo(function DraggableLane({
           dragHandleRef={dragHandleRef}
           laneIndex={laneIndex}
           lane={lane}
-          setIsItemInputVisible={
-            isCompactPrepend ? setIsItemInputVisible : undefined
-          }
+          setIsItemInputVisible={isCompactPrepend ? setEditState : undefined}
         />
 
         {shouldPrepend && (
           <ItemForm
             addItems={addItems}
             hideButton={isCompactPrepend}
-            isInputVisible={isItemInputVisible}
-            setIsInputVisible={setIsItemInputVisible}
+            editState={editState}
+            setEditState={setEditState}
           />
         )}
 
@@ -168,8 +167,8 @@ export const DraggableLane = Preact.memo(function DraggableLane({
         {!shouldPrepend && (
           <ItemForm
             addItems={addItems}
-            isInputVisible={isItemInputVisible}
-            setIsInputVisible={setIsItemInputVisible}
+            editState={editState}
+            setEditState={setEditState}
           />
         )}
       </div>

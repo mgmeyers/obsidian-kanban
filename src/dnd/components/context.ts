@@ -25,3 +25,5 @@ export const SortManagerContext = Preact.createContext<SortManager | null>(
 export const EntityManagerContext = Preact.createContext<EntityManager | null>(
   null
 );
+
+export const ExplicitPathContext = Preact.createContext<number[]>(null);

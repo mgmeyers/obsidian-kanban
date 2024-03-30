@@ -25,15 +25,15 @@ export function genericWrappedExtension(
     function start(code: number) {
       if (code !== startMarker.charCodeAt(startMarkerCursor)) return nok(code);
 
-      effects.enter(name);
-      effects.enter(`${name}Marker`);
+      effects.enter(name as any);
+      effects.enter(`${name}Marker` as any);
 
       return consumeStart(code);
     }
 
     function consumeStart(code: number) {
       if (startMarkerCursor === startMarker.length) {
-        effects.exit(`${name}Marker`);
+        effects.exit(`${name}Marker` as any);
         return consumeData(code);
       }
 
@@ -52,17 +52,17 @@ export function genericWrappedExtension(
         return nok(code);
       }
 
-      effects.enter(`${name}Data`);
-      effects.enter(`${name}Target`);
+      effects.enter(`${name}Data` as any);
+      effects.enter(`${name}Target` as any);
       return consumeTarget(code);
     }
 
     function consumeTarget(code: number) {
       if (code === endMarker.charCodeAt(endMarkerCursor)) {
         if (!data) return nok(code);
-        effects.exit(`${name}Target`);
-        effects.exit(`${name}Data`);
-        effects.enter(`${name}Marker`);
+        effects.exit(`${name}Target` as any);
+        effects.exit(`${name}Data` as any);
+        effects.enter(`${name}Marker` as any);
         return consumeEnd(code);
       }
 
@@ -81,8 +81,8 @@ export function genericWrappedExtension(
 
     function consumeEnd(code: number) {
       if (endMarkerCursor === endMarker.length) {
-        effects.exit(`${name}Marker`);
-        effects.exit(name);
+        effects.exit(`${name}Marker` as any);
+        effects.exit(name as any);
         return ok(code);
       }
 

@@ -1,5 +1,4 @@
 import { CachedMetadata, MarkdownRenderer, TFile, setIcon } from 'obsidian';
-
 import { KanbanView } from 'src/KanbanView';
 import { t } from 'src/lang/helpers';
 
@@ -403,11 +402,11 @@ export async function renderMarkdown(
   view: KanbanView,
   markdownString: string
 ): Promise<HTMLDivElement> {
-  const dom = view.getWindow().document.body.createDiv();
-  dom.detach();
+  const dom = createDiv();
 
   try {
-    await MarkdownRenderer.renderMarkdown(
+    await MarkdownRenderer.render(
+      view.app,
       markdownString,
       dom,
       view.file.path,

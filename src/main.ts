@@ -1,8 +1,3 @@
-import 'choices.js/public/assets/styles/choices.css';
-
-import './components/Editor/flatpickr/flatpickr.min.css';
-import './main.less';
-
 import { around } from 'monkey-around';
 import {
   MarkdownView,
@@ -16,19 +11,39 @@ import {
 } from 'obsidian';
 import Preact from 'preact/compat';
 
-import { getParentWindow } from './dnd/util/getWindow';
 import { createApp } from './DragDropApp';
-import { hasFrontmatterKey } from './helpers';
 import { KanbanView, kanbanIcon, kanbanViewType } from './KanbanView';
-import { t } from './lang/helpers';
-import { basicFrontmatter, frontMatterKey } from './parsers/common';
 import { KanbanSettings, KanbanSettingsTab } from './Settings';
 import { StateManager } from './StateManager';
+import { getParentWindow } from './dnd/util/getWindow';
+import { hasFrontmatterKey } from './helpers';
+import { t } from './lang/helpers';
+import { basicFrontmatter, frontmatterKey } from './parsers/common';
 
 interface WindowRegistry {
   viewMap: Map<string, KanbanView>;
   viewStateReceivers: Array<(views: KanbanView[]) => void>;
   appRoot: HTMLElement;
+}
+
+function getEditorClass(app: any) {
+  const md = app.embedRegistry.embedByExtension.md(
+    { app: app, containerEl: createDiv(), state: {} },
+    null,
+    ''
+  );
+
+  md.load();
+  md.editable = true;
+  md.showEditor();
+
+  const MarkdownEditor = Object.getPrototypeOf(
+    Object.getPrototypeOf(md.editMode)
+  ).constructor;
+
+  md.unload();
+
+  return MarkdownEditor;
 }
 
 export default class KanbanPlugin extends Plugin {
@@ -54,17 +69,17 @@ export default class KanbanPlugin extends Plugin {
   }
 
   unload(): void {
+    super.unload();
     Promise.all(
       app.workspace.getLeavesOfType(kanbanViewType).map((leaf) => {
         this.kanbanFileModes[(leaf as any).id] = 'markdown';
         return this.setMarkdownView(leaf);
       })
-    ).then(() => {
-      super.unload();
-    });
+    );
   }
 
   onunload() {
+    this.MarkdownEditor = null;
     this.windowRegistry.forEach((reg, win) => {
       reg.viewStateReceivers.forEach((fn) => fn([]));
       this.unmount(win);
@@ -78,10 +93,14 @@ export default class KanbanPlugin extends Plugin {
 
     window.removeEventListener('keydown', this.handleShift);
     window.removeEventListener('keyup', this.handleShift);
-    (app.workspace as any).unregisterHoverLinkSource(frontMatterKey);
+    (app.workspace as any).unregisterHoverLinkSource(frontmatterKey);
   }
 
+  MarkdownEditor: any;
+
   async onload() {
+    this.MarkdownEditor = getEditorClass(this.app);
+
     await this.loadSettings();
 
     this.registerEvent(
@@ -395,7 +414,7 @@ export default class KanbanPlugin extends Plugin {
         if (
           leaf?.view instanceof MarkdownView &&
           file instanceof TFile &&
-          source === 'pane-more-options' &&
+          ['pane-more-options', 'tab-header'].includes(source) &&
           hasFrontmatterKey(file)
         ) {
           menu.addItem((item) => {
@@ -463,7 +482,7 @@ export default class KanbanPlugin extends Plugin {
       })
     );
 
-    (app.workspace as any).registerHoverLinkSource(frontMatterKey, {
+    (app.workspace as any).registerHoverLinkSource(frontmatterKey, {
       display: 'Kanban',
       defaultMod: true,
     });
@@ -499,7 +518,7 @@ export default class KanbanPlugin extends Plugin {
 
         const fileCache = app.metadataCache.getFileCache(activeFile);
         const fileIsKanban =
-          !!fileCache?.frontmatter && !!fileCache.frontmatter[frontMatterKey];
+          !!fileCache?.frontmatter && !!fileCache.frontmatter[frontmatterKey];
 
         if (checking) {
           return fileIsKanban;
@@ -627,7 +646,7 @@ export default class KanbanPlugin extends Plugin {
               // Then check for the kanban frontMatterKey
               const cache = self.app.metadataCache.getCache(state.state.file);
 
-              if (cache?.frontmatter && cache.frontmatter[frontMatterKey]) {
+              if (cache?.frontmatter && cache.frontmatter[frontmatterKey]) {
                 // If we have it, force the view type to kanban
                 const newState = {
                   ...state,

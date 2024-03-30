@@ -1,6 +1,6 @@
 import update from 'immutability-helper';
 import { moment } from 'obsidian';
-
+import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import {
   appendEntities,
@@ -12,7 +12,6 @@ import {
   updateEntity,
   updateParentEntity,
 } from 'src/dnd/util/data';
-import { StateManager } from 'src/StateManager';
 
 import { generateInstanceId } from '../components/helpers';
 import { Item, Lane } from '../components/types';

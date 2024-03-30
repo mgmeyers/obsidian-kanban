@@ -1,10 +1,9 @@
 import update from 'immutability-helper';
 import { App, MarkdownView, TFile, moment } from 'obsidian';
 import Preact from 'preact/compat';
-
+import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
-import { StateManager } from 'src/StateManager';
 
 import { Board, DateColorKey, Item, TagColorKey } from './types';
 
@@ -93,7 +92,7 @@ export async function applyTemplate(
             ...activeView.getState(),
             mode: 'source',
           },
-          {}
+          { history: false }
         );
       }
 
@@ -191,8 +190,8 @@ export function getTemplatePlugins(app: App) {
   const templateFolder = templatesEnabled
     ? templatesPlugin.instance.options.folder
     : templaterPlugin
-    ? templaterPlugin.settings.template_folder
-    : undefined;
+      ? templaterPlugin.settings.template_folder
+      : undefined;
 
   return {
     templatesPlugin,
@@ -209,15 +208,18 @@ export function getTagColorFn(
 ): (tag: string) => TagColorKey {
   const tagColors = stateManager.getSetting('tag-colors');
 
-  const tagMap = (tagColors || []).reduce((total, current) => {
-    if (!current.tagKey) {
+  const tagMap = (tagColors || []).reduce(
+    (total, current) => {
+      if (!current.tagKey) {
+        return total;
+      }
+
+      total[current.tagKey] = current;
+
       return total;
-    }
-
-    total[current.tagKey] = current;
-
-    return total;
-  }, {} as Record<string, TagColorKey>);
+    },
+    {} as Record<string, TagColorKey>
+  );
 
   return (tag: string) => {
     if (tagMap[tag]) return tagMap[tag];

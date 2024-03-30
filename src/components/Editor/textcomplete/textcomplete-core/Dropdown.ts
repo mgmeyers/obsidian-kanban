@@ -263,8 +263,8 @@ export class Dropdown extends EventEmitter {
     return this.activeIndex < this.items.length - 1
       ? this.activeIndex + 1
       : this.option.rotate
-      ? 0
-      : null;
+        ? 0
+        : null;
   }
 
   private getPrevActiveIndex(): number | null {
@@ -272,8 +272,8 @@ export class Dropdown extends EventEmitter {
     return this.activeIndex !== 0
       ? this.activeIndex - 1
       : this.option.rotate
-      ? this.items.length - 1
-      : null;
+        ? this.items.length - 1
+        : null;
   }
 
   private renderItems(): this {

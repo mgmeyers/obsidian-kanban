@@ -1,6 +1,5 @@
 import classcat from 'classcat';
 import Preact from 'preact/compat';
-
 import { c, generateInstanceId } from 'src/components/helpers';
 
 import { EntityData } from '../types';

@@ -1,6 +1,5 @@
 import Fuse from 'fuse.js';
 import { App, TFile, setIcon } from 'obsidian';
-
 import { StateManager } from 'src/StateManager';
 
 import { c, generateInstanceId } from '../helpers';
@@ -30,7 +29,7 @@ function getAliasMarkup(
   let container = win.document.body.createDiv(c('file-suggestion-wrapper'));
   container.detach();
 
-  setIcon(container.createDiv(c('file-suggestion-icon')), 'lucide-forward', 12);
+  setIcon(container.createDiv(c('file-suggestion-icon')), 'lucide-forward');
 
   container.createDiv({}, (div) => {
     div.createDiv({

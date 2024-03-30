@@ -1,13 +1,14 @@
 import update from 'immutability-helper';
 import { Menu, moment } from 'obsidian';
 import Preact from 'preact/compat';
-
+import { StateUpdater } from 'preact/hooks';
 import { Path } from 'src/dnd/types';
+import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
 
 import { KanbanContext } from '../context';
 import { c, generateInstanceId } from '../helpers';
-import { Lane, LaneSort, LaneTemplate } from '../types';
+import { EditState, Lane, LaneSort, LaneTemplate } from '../types';
 
 export type LaneAction = 'delete' | 'archive' | 'archive-items' | null;
 
@@ -70,13 +71,13 @@ export function ConfirmAction({
 }
 
 export interface UseSettingsMenuParams {
-  setIsEditing: Preact.StateUpdater<boolean>;
+  setEditState: StateUpdater<EditState>;
   path: Path;
   lane: Lane;
 }
 
 export function useSettingsMenu({
-  setIsEditing,
+  setEditState,
   path,
   lane,
 }: UseSettingsMenuParams) {
@@ -89,7 +90,7 @@ export function useSettingsMenu({
         item
           .setIcon('lucide-edit-3')
           .setTitle(t('Edit list'))
-          .onClick(() => setIsEditing(true));
+          .onClick(() => setEditState({ x: 0, y: 0 }));
       })
       .addItem((item) => {
         item
@@ -108,10 +109,10 @@ export function useSettingsMenu({
 
             children.sort((a, b) => {
               if (isAsc) {
-                return b.data.titleSearch.localeCompare(a.data.titleSearch);
+                return b.data.title.localeCompare(a.data.title);
               }
 
-              return a.data.titleSearch.localeCompare(b.data.titleSearch);
+              return a.data.title.localeCompare(b.data.title);
             });
 
             boardModifiers.updateLane(
@@ -165,6 +166,44 @@ export function useSettingsMenu({
                       lane.data.sorted === LaneSort.DateAsc
                         ? LaneSort.DateDsc
                         : LaneSort.DateAsc,
+                  },
+                },
+              })
+            );
+          });
+      })
+      .addItem((item) => {
+        item
+          .setIcon('lucide-move-vertical')
+          .setTitle(t('Sort by tags'))
+          .onClick(() => {
+            const children = lane.children.slice();
+            const desc = lane.data.sorted === LaneSort.TagsAsc ? true : false;
+
+            children.sort((a, b) => {
+              const tagsA = a.data.metadata.tags;
+              const tagsB = b.data.metadata.tags;
+
+              if (!tagsA?.length && !tagsB?.length) return 0;
+              if (!tagsA?.length) return 1;
+              if (!tagsB?.length) return -1;
+
+              if (desc) return defaultSort(tagsB.join(''), tagsA.join(''));
+              return defaultSort(tagsA.join(''), tagsB.join(''));
+            });
+
+            boardModifiers.updateLane(
+              path,
+              update(lane, {
+                children: {
+                  $set: children,
+                },
+                data: {
+                  sorted: {
+                    $set:
+                      lane.data.sorted === LaneSort.TagsAsc
+                        ? LaneSort.TagsDsc
+                        : LaneSort.TagsAsc,
                   },
                 },
               })

@@ -1,5 +1,4 @@
 import Preact from 'preact/compat';
-
 import { generateInstanceId } from 'src/components/helpers';
 
 import { WithChildren } from '../types';

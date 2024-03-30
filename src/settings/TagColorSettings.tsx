@@ -4,8 +4,8 @@ import Preact from 'preact/compat';
 import { RgbaStringColorPicker } from 'react-colorful';
 import useOnclickOutside from 'react-cool-onclickoutside';
 
-import { c, generateInstanceId } from '../components/helpers';
 import { Icon } from '../components/Icon/Icon';
+import { c, generateInstanceId } from '../components/helpers';
 import {
   TagColorKey,
   TagColorSetting,

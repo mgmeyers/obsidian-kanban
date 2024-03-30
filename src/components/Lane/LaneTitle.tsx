@@ -1,58 +1,60 @@
+import { EditorView } from '@codemirror/view';
 import classcat from 'classcat';
 import { getLinkpath } from 'obsidian';
 import Preact from 'preact/compat';
-
+import { StateUpdater, useEffect, useRef } from 'preact/hooks';
 import { laneTitleWithMaxItems } from 'src/helpers';
 
-import { KanbanContext } from '../context';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
+import { MarkdownPreviewRenderer } from '../MarkdownRenderer';
+import { KanbanContext } from '../context';
 import { c } from '../helpers';
-import { MarkdownRenderer } from '../MarkdownRenderer';
+import { EditState, EditingState } from '../types';
 
 export interface LaneTitleProps {
   itemCount: number;
   title: string;
   maxItems?: number;
-  isEditing: boolean;
-  setIsEditing: Preact.StateUpdater<boolean>;
-  onChange: Preact.ChangeEventHandler<HTMLTextAreaElement>;
+  editState: EditState;
+  setEditState: StateUpdater<EditState>;
+  onChange: (str: string) => void;
 }
 
 export function LaneTitle({
   itemCount,
   maxItems,
-  isEditing,
-  setIsEditing,
+  editState,
+  setEditState,
   title,
   onChange,
 }: LaneTitleProps) {
   const { stateManager } = Preact.useContext(KanbanContext);
-  const inputRef = Preact.useRef<HTMLTextAreaElement>();
   const hideCount = stateManager.getSetting('hide-card-count');
+  const titleRef = useRef<string | null>(null);
 
-  const onEnter = (e: KeyboardEvent) => {
-    if (!allowNewLine(e, stateManager)) {
-      e.preventDefault();
-      isEditing && setIsEditing(false);
+  useEffect(() => {
+    if (editState === EditingState.complete) {
+      if (titleRef.current !== null) onChange(titleRef.current);
+      titleRef.current = null;
+    } else if (editState === EditingState.cancel && titleRef.current !== null) {
+      titleRef.current = null;
+    }
+  }, [editState]);
+
+  const onEnter = (cm: EditorView, mod: boolean, shift: boolean) => {
+    if (!allowNewLine(stateManager, mod, shift)) {
+      setEditState(EditingState.complete);
+      return true;
     }
   };
 
   const onSubmit = () => {
-    isEditing && setIsEditing(false);
+    setEditState(EditingState.complete);
   };
 
   const onEscape = () => {
-    isEditing && setIsEditing(false);
+    setEditState(EditingState.cancel);
   };
-
-  Preact.useEffect(() => {
-    if (isEditing && inputRef.current) {
-      const input = inputRef.current;
-
-      inputRef.current.focus();
-      input.selectionStart = input.selectionEnd = input.value.length;
-    }
-  }, [isEditing]);
 
   const counterClasses = [c('lane-title-count')];
 
@@ -63,11 +65,13 @@ export function LaneTitle({
   return (
     <>
       <div className={c('lane-title')}>
-        {isEditing ? (
+        {typeof editState === 'object' ? (
           <MarkdownEditor
-            ref={inputRef}
+            editState={editState}
             className={c('lane-input')}
-            onChange={onChange}
+            onChange={(update) => {
+              titleRef.current = update.state.doc.toString().trim();
+            }}
             onEnter={onEnter}
             onEscape={onEscape}
             onSubmit={onSubmit}
@@ -97,12 +101,12 @@ export function LaneTitle({
                 }
               }}
             >
-              <MarkdownRenderer markdownString={title} />
+              <MarkdownPreviewRenderer markdownString={title} />
             </div>
           </>
         )}
       </div>
-      {!isEditing && !hideCount && (
+      {typeof editState !== 'object' && !hideCount && (
         <div className={classcat(counterClasses)}>
           {itemCount}
           {maxItems > 0 && (

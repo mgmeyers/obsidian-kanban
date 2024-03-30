@@ -1,8 +1,5 @@
-import { Platform } from 'obsidian';
-
 import { StateManager } from 'src/StateManager';
 
-import { getFileListFromClipboard, handleDragOrPaste } from '../Item/helpers';
 import { insertTextAtCursor } from './insertTextAtCursor';
 
 export interface TextRange {
@@ -330,37 +327,4 @@ export function getDropAction(
     transfer.types.includes('text/plain')
   )
     return 'copy';
-}
-
-export async function handlePaste(
-  e: ClipboardEvent,
-  stateManager: StateManager,
-  win: Window & typeof globalThis
-) {
-  const html = e.clipboardData.getData('text/html');
-  const hasFiles = e.clipboardData.types.includes('Files');
-  const electronClipboardFiles = Platform.isDesktopApp
-    ? getFileListFromClipboard(win)
-    : null;
-
-  const shouldConsumePaste =
-    html || hasFiles || electronClipboardFiles?.length > 0;
-
-  if (shouldConsumePaste) {
-    e.preventDefault();
-  }
-
-  try {
-    const pasteLines = await handleDragOrPaste(stateManager, e, win);
-
-    if (shouldConsumePaste) {
-      const input = e.target as HTMLTextAreaElement;
-      const paste = pasteLines.join('\n');
-
-      replaceSelection(input, paste);
-    }
-  } catch (e) {
-    console.error(e);
-    stateManager.setError(e);
-  }
 }

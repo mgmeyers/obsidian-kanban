@@ -2,16 +2,16 @@ import update from 'immutability-helper';
 import { App, TFile, moment } from 'obsidian';
 import Preact from 'preact/compat';
 
+import { KanbanView } from './KanbanView';
+import { KanbanSettings, SettingRetrievers } from './Settings';
 import {
   getDefaultDateFormat,
   getDefaultTimeFormat,
 } from './components/helpers';
 import { Board, BoardTemplate, Item } from './components/types';
-import { KanbanView } from './KanbanView';
-import { BaseFormat, shouldRefreshBoard } from './parsers/common';
 import { ListFormat } from './parsers/List';
+import { BaseFormat, shouldRefreshBoard } from './parsers/common';
 import { defaultDateTrigger, defaultTimeTrigger } from './settingHelpers';
-import { KanbanSettings, SettingRetrievers } from './Settings';
 
 export class StateManager {
   private onEmpty: () => void;

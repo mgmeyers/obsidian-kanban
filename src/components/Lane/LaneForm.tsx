@@ -1,11 +1,11 @@
-import Preact from 'preact/compat';
+import { EditorView } from '@codemirror/view';
+import Preact, { useRef } from 'preact/compat';
 import useOnclickOutside from 'react-cool-onclickoutside';
-
 import { t } from 'src/lang/helpers';
 import { parseLaneTitle } from 'src/parsers/helpers/parser';
 
-import { KanbanContext } from '../context';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
+import { KanbanContext } from '../context';
 import { c, generateInstanceId } from '../helpers';
 import { LaneTemplate } from '../types';
 
@@ -19,34 +19,39 @@ export function LaneForm({
   const { boardModifiers, stateManager } = Preact.useContext(KanbanContext);
   const [shouldMarkAsComplete, setShouldMarkAsComplete] =
     Preact.useState(false);
-  const [laneTitle, setLaneTitle] = Preact.useState('');
+  const editorRef = useRef<EditorView>();
 
   const inputRef = Preact.useRef<HTMLTextAreaElement>();
-  const clickOutsideRef = useOnclickOutside(
-    () => {
-      closeLaneForm();
-    },
-    {
-      ignoreClass: c('ignore-click-outside'),
-    }
-  );
+  const clickOutsideRef = useOnclickOutside(() => closeLaneForm(), {
+    ignoreClass: c('ignore-click-outside'),
+  });
 
   Preact.useLayoutEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  const createLane = () => {
+  const createLane = (title: string) => {
     boardModifiers.addLane({
       ...LaneTemplate,
       id: generateInstanceId(),
       children: [],
       data: {
-        ...parseLaneTitle(laneTitle),
+        ...parseLaneTitle(title),
         shouldMarkItemsComplete: shouldMarkAsComplete,
       },
     });
 
-    setLaneTitle('');
+    const cm = editorRef.current;
+    if (cm) {
+      cm.dispatch({
+        changes: {
+          from: 0,
+          to: cm.state.doc.length,
+          insert: '',
+        },
+      });
+    }
+
     setShouldMarkAsComplete(false);
     onNewLane();
   };
@@ -55,22 +60,17 @@ export function LaneForm({
     <div ref={clickOutsideRef} className={c('lane-form-wrapper')}>
       <div className={c('lane-input-wrapper')}>
         <MarkdownEditor
-          ref={inputRef}
+          editorRef={editorRef}
+          editState={{ x: 0, y: 0 }}
           className={c('lane-input')}
-          onChange={(e) =>
-            setLaneTitle((e.target as HTMLTextAreaElement).value)
-          }
-          onEnter={(e) => {
-            if (!allowNewLine(e, stateManager)) {
-              e.preventDefault();
-              createLane();
+          onEnter={(cm, mod, shift) => {
+            if (!allowNewLine(stateManager, mod, shift)) {
+              createLane(cm.state.doc.toString());
+              return true;
             }
           }}
-          onSubmit={() => {
-            createLane();
-          }}
+          onSubmit={(cm) => createLane(cm.state.doc.toString())}
           onEscape={closeLaneForm}
-          value={laneTitle}
         />
       </div>
       <div className={c('checkbox-wrapper')}>
@@ -85,7 +85,12 @@ export function LaneForm({
         />
       </div>
       <div className={c('lane-input-actions')}>
-        <button className={c('lane-action-add')} onClick={createLane}>
+        <button
+          className={c('lane-action-add')}
+          onClick={() => {
+            createLane(editorRef.current.state.doc.toString());
+          }}
+        >
           {t('Add list')}
         </button>
         <button className={c('lane-action-cancel')} onClick={closeLaneForm}>

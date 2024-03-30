@@ -2,12 +2,11 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { frontmatterFromMarkdown } from 'mdast-util-frontmatter';
 import { frontmatter } from 'micromark-extension-frontmatter';
 import { parseYaml } from 'obsidian';
-
-import { getNormalizedPath } from 'src/helpers/renderMarkdown';
 import { KanbanSettings, settingKeyLookup } from 'src/Settings';
 import { StateManager } from 'src/StateManager';
+import { getNormalizedPath } from 'src/helpers/renderMarkdown';
 
-import { frontMatterKey, getLinkedPageMetadata } from './common';
+import { frontmatterKey, getLinkedPageMetadata } from './common';
 import { blockidExtension, blockidFromMarkdown } from './extensions/blockid';
 import {
   genericWrappedExtension,
@@ -200,7 +199,7 @@ export function parseMarkdown(stateManager: StateManager, md: string) {
   const fileFrontmatter: Record<string, any> = {};
 
   Object.keys(mdFrontmatter).forEach((key) => {
-    if (key === frontMatterKey) {
+    if (key === frontmatterKey) {
       settings[key] = mdFrontmatter[key];
       fileFrontmatter[key] = mdFrontmatter[key];
     } else if (settingKeyLookup[key as keyof KanbanSettings]) {

@@ -3,8 +3,8 @@ import { Content, List, Parent, Root } from 'mdast';
 import { ListItem, Paragraph } from 'mdast-util-from-markdown/lib';
 import { toString } from 'mdast-util-to-string';
 import { stringifyYaml } from 'obsidian';
-import { visit } from 'unist-util-visit';
-
+import { KanbanSettings } from 'src/Settings';
+import { StateManager } from 'src/StateManager';
 import { generateInstanceId } from 'src/components/helpers';
 import {
   Board,
@@ -16,9 +16,9 @@ import {
   LaneTemplate,
 } from 'src/components/types';
 import { laneTitleWithMaxItems } from 'src/helpers';
+import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
-import { KanbanSettings } from 'src/Settings';
-import { StateManager } from 'src/StateManager';
+import { visit } from 'unist-util-visit';
 
 import { archiveString, completeString, settingsToCodeblock } from '../common';
 import { DateNode, FileNode, TimeNode, ValueNode } from '../extensions/types';
@@ -160,6 +160,7 @@ export function listItemToItemData(
   );
 
   itemData.title = replaceBrs(executeDeletion(title));
+  itemData.metadata.tags?.sort(defaultSort);
 
   return itemData;
 }

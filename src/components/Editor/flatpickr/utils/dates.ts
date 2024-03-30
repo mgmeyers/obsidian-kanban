@@ -30,8 +30,8 @@ export const createDateFormatter =
         formats[c as token] && arr[i - 1] !== '\\'
           ? formats[c as token](dateObj, locale, config)
           : c !== '\\'
-          ? c
-          : ''
+            ? c
+            : ''
       )
       .join('');
   };

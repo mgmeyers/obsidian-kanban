@@ -5,8 +5,11 @@ import {
   FPHTMLElement,
   FPNodeList,
 } from './types/globals';
+
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 /* eslint-disable no-empty */
+
 /* eslint-disable @typescript-eslint/ban-types */
 import { DayElement, FlatpickrFn, Instance } from './types/instance';
 import { CustomLocale, Locale, key as LocaleKey } from './types/locale';
@@ -512,8 +515,8 @@ function FlatpickrInstance(
           (self.config.minDate && self.config.minDate > self.now
             ? self.config.minDate
             : self.config.maxDate && self.config.maxDate < self.now
-            ? self.config.maxDate
-            : self.now);
+              ? self.config.maxDate
+              : self.now);
 
     const oldYear = self.currentYear;
     const oldMonth = self.currentMonth;
@@ -807,8 +810,8 @@ function FlatpickrInstance(
         givenMonth - self.currentMonth === m
           ? current.$i + delta
           : delta < 0
-          ? month.children.length - 1
-          : 0;
+            ? month.children.length - 1
+            : 0;
       const numMonthDays = month.children.length;
 
       for (
@@ -839,12 +842,13 @@ function FlatpickrInstance(
       current !== undefined
         ? current
         : dayFocused
-        ? (activeElement as DayElement)
-        : self.selectedDateElem !== undefined && isInView(self.selectedDateElem)
-        ? self.selectedDateElem
-        : self.todayDateElem !== undefined && isInView(self.todayDateElem)
-        ? self.todayDateElem
-        : getFirstAvailableDay(offset > 0 ? 1 : -1);
+          ? (activeElement as DayElement)
+          : self.selectedDateElem !== undefined &&
+              isInView(self.selectedDateElem)
+            ? self.selectedDateElem
+            : self.todayDateElem !== undefined && isInView(self.todayDateElem)
+              ? self.todayDateElem
+              : getFirstAvailableDay(offset > 0 ? 1 : -1);
 
     if (startElem === undefined) {
       self._input.focus();
@@ -1203,8 +1207,8 @@ function FlatpickrInstance(
       self.latestSelectedDateObj
         ? self.latestSelectedDateObj.getHours()
         : self.config.time_24hr
-        ? defaults.hours
-        : military2ampm(defaults.hours)
+          ? defaults.hours
+          : military2ampm(defaults.hours)
     );
 
     self.minuteElement.value = pad(
@@ -1270,7 +1274,7 @@ function FlatpickrInstance(
         self.l10n.amPM[
           int(
             (self.latestSelectedDateObj
-              ? self.hourElement.value
+              ? parseInt(self.hourElement.value)
               : self.config.defaultHour) > 11
           )
         ]
@@ -2214,8 +2218,8 @@ function FlatpickrInstance(
       ...(typeof self.config.locale === 'object'
         ? self.config.locale
         : self.config.locale !== 'default'
-        ? flatpickr.l10ns[self.config.locale as LocaleKey]
-        : undefined),
+          ? flatpickr.l10ns[self.config.locale as LocaleKey]
+          : undefined),
     };
 
     tokenRegex.D = `(${self.l10n.weekdays.shorthand.join('|')})`;
@@ -2640,12 +2644,12 @@ function FlatpickrInstance(
       self.selectedDates.length > 0
         ? self.selectedDates[0]
         : self.config.minDate &&
-          self.config.minDate.getTime() > self.now.getTime()
-        ? self.config.minDate
-        : self.config.maxDate &&
-          self.config.maxDate.getTime() < self.now.getTime()
-        ? self.config.maxDate
-        : self.now;
+            self.config.minDate.getTime() > self.now.getTime()
+          ? self.config.minDate
+          : self.config.maxDate &&
+              self.config.maxDate.getTime() < self.now.getTime()
+            ? self.config.maxDate
+            : self.now;
 
     self.currentYear = self._initialDate.getFullYear();
     self.currentMonth = self._initialDate.getMonth();
@@ -2742,8 +2746,8 @@ function FlatpickrInstance(
       inputType === 'datetime-local'
         ? 'Y-m-d\\TH:i:S'
         : inputType === 'date'
-        ? 'Y-m-d'
-        : 'H:i:S';
+          ? 'Y-m-d'
+          : 'H:i:S';
 
     if (self.selectedDates.length > 0) {
       self.mobileInput.defaultValue = self.mobileInput.value = self.formatDate(

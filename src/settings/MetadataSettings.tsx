@@ -1,25 +1,26 @@
 import update from 'immutability-helper';
 import Preact from 'preact/compat';
+import { StateUpdater } from 'preact/hooks';
 
+import { Icon } from '../components/Icon/Icon';
 import {
   c,
   generateInstanceId,
   noop,
   useIMEInputProps,
 } from '../components/helpers';
-import { Icon } from '../components/Icon/Icon';
 import {
   DataTypes,
   MetadataSetting,
   MetadataSettingTemplate,
 } from '../components/types';
-import { DndManagerContext } from '../dnd/components/context';
 import { DndContext } from '../dnd/components/DndContext';
 import { DragOverlay } from '../dnd/components/DragOverlay';
 import { Droppable } from '../dnd/components/Droppable';
 import { DndScope } from '../dnd/components/Scope';
-import { Sortable } from '../dnd/components/Sortable';
 import { SortPlaceholder } from '../dnd/components/SortPlaceholder';
+import { Sortable } from '../dnd/components/Sortable';
+import { DndManagerContext } from '../dnd/components/context';
 import { useDragHandle } from '../dnd/managers/DragManager';
 import { Entity } from '../dnd/types';
 import { getParentBodyElement, getParentWindow } from '../dnd/util/getWindow';
@@ -147,7 +148,7 @@ interface UseKeyModifiersParams {
   onChange(keys: MetadataSetting[]): void;
   inputValue: string;
   keys: MetadataSetting[];
-  setKeys: Preact.StateUpdater<MetadataSetting[]>;
+  setKeys: StateUpdater<MetadataSetting[]>;
   win: Window;
 }
 

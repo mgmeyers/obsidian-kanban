@@ -1,13 +1,13 @@
 import { Menu, TFile, TFolder, getLinkpath } from 'obsidian';
 import Preact from 'preact/compat';
-
+import { StateUpdater } from 'preact/hooks';
+import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { t } from 'src/lang/helpers';
-import { StateManager } from 'src/StateManager';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
-import { Item } from '../types';
+import { EditState, Item } from '../types';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
@@ -21,7 +21,7 @@ const wikilinkRegEx = /!?\[\[([^\]]*)\]\]/g;
 const mdLinkRegEx = /!?\[([^\]]*)\]\([^)]*\)/g;
 
 interface UseItemMenuParams {
-  setIsEditing: Preact.StateUpdater<boolean>;
+  setEditState: StateUpdater<EditState>;
   item: Item;
   path: Path;
   boardModifiers: BoardModifiers;
@@ -29,7 +29,7 @@ interface UseItemMenuParams {
 }
 
 export function useItemMenu({
-  setIsEditing,
+  setEditState,
   item,
   path,
   boardModifiers,
@@ -51,7 +51,7 @@ export function useItemMenu({
         const menu = new Menu().addItem((i) => {
           i.setIcon('lucide-edit')
             .setTitle(t('Edit card'))
-            .onClick(() => setIsEditing(true));
+            .onClick(() => setEditState(coordinates));
         });
 
         menu
@@ -324,6 +324,6 @@ export function useItemMenu({
         menu.showAtPosition(coordinates);
       }
     },
-    [setIsEditing, item, path, boardModifiers, stateManager]
+    [setEditState, item, path, boardModifiers, stateManager]
   );
 }

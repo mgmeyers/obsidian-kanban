@@ -5,6 +5,7 @@ import { EntityData, WithChildren } from '../types';
 import {
   DndManagerContext,
   EntityManagerContext,
+  ExplicitPathContext,
   ScopeIdContext,
   ScrollManagerContext,
   SortManagerContext,
@@ -90,7 +91,8 @@ export const Droppable = Preact.memo(function Droppable({
 
 export function useNestedEntityPath(selfIndex?: number) {
   const entityManager = Preact.useContext(EntityManagerContext);
-  const currentPath = entityManager?.getPath() || [];
+  const explicitPath = Preact.useContext(ExplicitPathContext);
+  const currentPath = explicitPath ?? entityManager?.getPath() ?? [];
 
   if (selfIndex !== undefined) {
     currentPath.push(selfIndex);

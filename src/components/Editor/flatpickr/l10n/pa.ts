@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Punjabi locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 

@@ -1,8 +1,7 @@
 import boxIntersect from 'box-intersect';
 import Preact from 'preact/compat';
-
-import { handleDragOrPaste } from 'src/components/Item/helpers';
 import { StateManager } from 'src/StateManager';
+import { handleDragOrPaste } from 'src/components/Item/helpers';
 
 import { DndManagerContext } from '../components/context';
 import { Coordinates, Entity, Hitbox, Side } from '../types';
@@ -406,8 +405,16 @@ export function useDragHandle(
     }
 
     const onPointerDown = (e: PointerEvent) => {
-      if (e.defaultPrevented || (e.target as HTMLElement).dataset.ignoreDrag) {
+      if (e.defaultPrevented) {
         return;
+      }
+
+      let node = e.targetNode;
+      while (node) {
+        if (node.instanceOf(HTMLElement) && node.dataset.ignoreDrag) {
+          return;
+        }
+        node = node.parentElement;
       }
 
       // We only care about left mouse / touch contact

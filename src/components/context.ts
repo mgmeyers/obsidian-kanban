@@ -1,5 +1,4 @@
 import Preact from 'preact/compat';
-
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
 

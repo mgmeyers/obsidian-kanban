@@ -167,9 +167,16 @@ export default {
   // TagColorSettings.tsx
   'Add tag color': 'Add tag color',
 
+  // components/Table.tsx
+  List: 'List',
+  Card: 'Card',
+  Date: 'Date',
+  'Card tags': 'Card tags',
+
   // components/Item/Item.tsx
   'More options': 'More options',
   Cancel: 'Cancel',
+  Save: 'Save',
 
   // components/Item/ItemContent.tsx
   today: 'today',
@@ -231,6 +238,7 @@ export default {
   'Insert list after': 'Insert list after',
   'Sort by card text': 'Sort by card text',
   'Sort by date': 'Sort by date',
+  'Sort by tags': 'Sort by tags',
 
   // components/helpers/renderMarkdown.ts
   'Unable to find': 'Unable to find',

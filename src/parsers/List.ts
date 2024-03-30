@@ -1,8 +1,7 @@
 import { compare } from 'fast-json-patch';
 import { JSONPatchDocument, immutableJSONPatch } from 'immutable-json-patch';
-
-import { Board, Item } from 'src/components/types';
 import { StateManager } from 'src/StateManager';
+import { Board, Item } from 'src/components/types';
 
 import { BaseFormat } from './common';
 import {

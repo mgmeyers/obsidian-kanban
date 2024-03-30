@@ -1,12 +1,11 @@
 import update from 'immutability-helper';
 import Preact from 'preact/compat';
-
-import { Path } from 'src/dnd/types';
 import { StateManager } from 'src/StateManager';
+import { Path } from 'src/dnd/types';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
-import { c } from '../helpers';
 import { Icon } from '../Icon/Icon';
+import { c } from '../helpers';
 import { Item } from '../types';
 
 interface ItemCheckboxProps {

@@ -1,9 +1,8 @@
 import classcat from 'classcat';
 import { getLinkpath, moment } from 'obsidian';
 import Preact from 'preact/compat';
-
-import { t } from 'src/lang/helpers';
 import { StateManager } from 'src/StateManager';
+import { t } from 'src/lang/helpers';
 
 import { c } from '../helpers';
 import { DateColorKey, Item } from '../types';

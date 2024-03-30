@@ -33,7 +33,7 @@ export interface Emitter<Events extends EventsMap = DefaultEvents> {
 }
 
 export function createEmitter<
-  Events extends EventsMap = DefaultEvents
+  Events extends EventsMap = DefaultEvents,
 >(): Emitter<Events> {
   return {
     events: {},

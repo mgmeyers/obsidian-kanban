@@ -1,6 +1,5 @@
 import update from 'immutability-helper';
 import Preact from 'preact/compat';
-
 import { Path } from 'src/dnd/types';
 import { t } from 'src/lang/helpers';
 

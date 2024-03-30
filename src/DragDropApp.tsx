@@ -1,6 +1,9 @@
 import update from 'immutability-helper';
 import Preact from 'preact/compat';
 
+import { KanbanView } from './KanbanView';
+import { DraggableItem } from './components/Item/Item';
+import { DraggableLane } from './components/Lane/Lane';
 import { KanbanContext } from './components/context';
 import {
   c,
@@ -8,8 +11,6 @@ import {
   getTagColorFn,
   maybeCompleteForMove,
 } from './components/helpers';
-import { DraggableItem } from './components/Item/Item';
-import { DraggableLane } from './components/Lane/Lane';
 import { DataTypes, Item, Lane } from './components/types';
 import { DndContext } from './dnd/components/DndContext';
 import { DragOverlay } from './dnd/components/DragOverlay';
@@ -22,7 +23,6 @@ import {
   updateEntity,
 } from './dnd/util/data';
 import { getBoardModifiers } from './helpers/boardModifiers';
-import { KanbanView } from './KanbanView';
 import KanbanPlugin from './main';
 
 export function createApp(win: Window, plugin: KanbanPlugin) {
@@ -252,6 +252,7 @@ export function DragDropApp({
                       item={data as Item}
                       itemIndex={0}
                       isStatic={true}
+                      priority={1000}
                     />
                   </div>
                 </KanbanContext.Provider>

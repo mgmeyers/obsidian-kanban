@@ -9,10 +9,9 @@ import {
   parseLinktext,
   setIcon,
 } from 'obsidian';
-
+import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { buildLinkToDailyNote } from 'src/helpers';
-import { StateManager } from 'src/StateManager';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { getDefaultLocale } from '../Editor/datePickerLocale';

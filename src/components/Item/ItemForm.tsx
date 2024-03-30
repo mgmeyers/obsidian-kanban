@@ -1,99 +1,68 @@
-import Preact from 'preact/compat';
+import { EditorView } from '@codemirror/view';
+import { StateUpdater, useContext, useRef } from 'preact/hooks';
 import useOnclickOutside from 'react-cool-onclickoutside';
-
 import { t } from 'src/lang/helpers';
 
-import { KanbanContext } from '../context';
-import { getDropAction, handlePaste } from '../Editor/helpers';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
+import { getDropAction } from '../Editor/helpers';
+import { KanbanContext } from '../context';
 import { c } from '../helpers';
-import { Item } from '../types';
+import { EditState, EditingState, Item } from '../types';
 
 interface ItemFormProps {
   addItems: (items: Item[]) => void;
-  isInputVisible: boolean;
-  setIsInputVisible: Preact.StateUpdater<boolean>;
+  editState: EditState;
+  setEditState: StateUpdater<EditState>;
   hideButton?: boolean;
 }
 
 export function ItemForm({
   addItems,
-  isInputVisible,
-  setIsInputVisible,
+  editState,
+  setEditState,
   hideButton,
 }: ItemFormProps) {
-  const [itemTitle, setItemTitle] = Preact.useState('');
-  const { stateManager, view } = Preact.useContext(KanbanContext);
-  const inputRef = Preact.useRef<HTMLTextAreaElement>();
+  const { stateManager } = useContext(KanbanContext);
+  const editorRef = useRef<EditorView>();
 
-  const clickOutsideRef = useOnclickOutside(
-    () => {
-      setIsInputVisible(false);
-    },
-    {
-      ignoreClass: c('ignore-click-outside'),
-    }
-  );
+  const clear = () => setEditState(EditingState.cancel);
+  const clickOutsideRef = useOnclickOutside(clear, {
+    ignoreClass: c('ignore-click-outside'),
+  });
 
-  const clear = Preact.useCallback(() => {
-    setItemTitle('');
-    setIsInputVisible(false);
-  }, []);
-
-  const addItemsFromStrings = async (titles: string[]) => {
-    try {
-      addItems(
-        await Promise.all(
-          titles.map((title) => {
-            return stateManager.getNewItem(title);
-          })
-        )
-      );
-    } catch (e) {
-      stateManager.setError(e);
+  const createItem = async (title: string) => {
+    addItems([await stateManager.getNewItem(title)]);
+    const cm = editorRef.current;
+    if (cm) {
+      cm.dispatch({
+        changes: {
+          from: 0,
+          to: cm.state.doc.length,
+          insert: '',
+        },
+      });
     }
   };
 
-  const onEnter = (e: KeyboardEvent) => {
-    if (!allowNewLine(e, stateManager)) {
-      e.preventDefault();
-
-      const title = itemTitle.trim();
-
-      if (title) {
-        addItemsFromStrings([title]);
-        setItemTitle('');
-      }
-    }
-  };
-
-  const onSubmit = () => {
-    const title = itemTitle.trim();
-
-    if (title) {
-      addItemsFromStrings([title]);
-      setItemTitle('');
-    }
-  };
-
-  if (isInputVisible) {
+  if (typeof editState === 'object') {
     return (
       <div className={c('item-form')} ref={clickOutsideRef}>
         <div className={c('item-input-wrapper')}>
           <MarkdownEditor
-            ref={inputRef}
+            editorRef={editorRef}
+            editState={{ x: 0, y: 0 }}
             className={c('item-input')}
             placeholder={t('Card title...')}
-            onEnter={onEnter}
+            onEnter={(cm, mod, shift) => {
+              if (!allowNewLine(stateManager, mod, shift)) {
+                createItem(cm.state.doc.toString());
+                return true;
+              }
+            }}
+            onSubmit={(cm) => {
+              createItem(cm.state.doc.toString());
+            }}
             onEscape={clear}
-            onSubmit={onSubmit}
-            value={itemTitle}
-            onChange={(e) => {
-              setItemTitle((e.target as HTMLTextAreaElement).value);
-            }}
-            onPaste={(e) => {
-              handlePaste(e, stateManager, view.getWindow());
-            }}
           />
         </div>
       </div>
@@ -106,10 +75,10 @@ export function ItemForm({
     <div className={c('item-button-wrapper')}>
       <button
         className={c('new-item-button')}
-        onClick={() => setIsInputVisible(true)}
+        onClick={() => setEditState({ x: 0, y: 0 })}
         onDragOver={(e) => {
           if (getDropAction(stateManager, e.dataTransfer)) {
-            setIsInputVisible(true);
+            setEditState({ x: 0, y: 0 });
           }
         }}
       >

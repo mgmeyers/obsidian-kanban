@@ -1,11 +1,11 @@
 import { App, TFile } from 'obsidian';
-
-import { Board, FileMetadata, Item } from 'src/components/types';
-import { t } from 'src/lang/helpers';
 import { KanbanSettings } from 'src/Settings';
 import { StateManager } from 'src/StateManager';
+import { Board, FileMetadata, Item } from 'src/components/types';
+import { defaultSort } from 'src/helpers/util';
+import { t } from 'src/lang/helpers';
 
-export const frontMatterKey = 'kanban-plugin';
+export const frontmatterKey = 'kanban-plugin';
 
 export enum ParserFormats {
   List,
@@ -28,7 +28,7 @@ export const archiveString = '***';
 export const basicFrontmatter = [
   '---',
   '',
-  `${frontMatterKey}: basic`,
+  `${frontmatterKey}: basic`,
   '',
   '---',
   '',
@@ -172,7 +172,8 @@ export function getLinkedPageMetadata(
 
             seenTags[t] = true;
             return true;
-          }),
+          })
+          .sort(defaultSort),
       };
 
       haveData = true;

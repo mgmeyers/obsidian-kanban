@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Republic of Korea locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 

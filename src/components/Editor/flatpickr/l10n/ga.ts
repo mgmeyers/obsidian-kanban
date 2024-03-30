@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Gaelic Irish locale for flatpickr */
 import { CustomLocale } from '../types/locale';
 

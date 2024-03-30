@@ -2,8 +2,8 @@ import Preact from 'preact/compat';
 
 import { DndManager } from '../managers/DndManager';
 import { Entity, WithChildren } from '../types';
-import { DndManagerContext } from './context';
 import { DndScrollState } from './ScrollStateContext';
+import { DndManagerContext } from './context';
 
 interface DndContextProps extends WithChildren {
   win: Window;

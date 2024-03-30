@@ -1,14 +1,15 @@
 import { TFile } from 'obsidian';
-
+import { KanbanSettings } from 'src/Settings';
 import { Nestable } from 'src/dnd/types';
 import { FileAccessor } from 'src/parsers/helpers/parser';
-import { KanbanSettings } from 'src/Settings';
 
 export enum LaneSort {
   TitleAsc,
   TitleDsc,
   DateAsc,
   DateDsc,
+  TagsAsc,
+  TagsDsc,
 }
 
 export interface LaneData {
@@ -145,3 +146,15 @@ export const DateColorSettingTemplate = {
   type: DataTypes.DateColorSetting,
   children: [] as any[],
 };
+
+export interface EditCoordinates {
+  x: number;
+  y: number;
+}
+
+export enum EditingState {
+  cancel,
+  complete,
+}
+
+export type EditState = EditCoordinates | EditingState;
