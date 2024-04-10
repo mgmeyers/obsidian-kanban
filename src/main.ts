@@ -15,6 +15,7 @@ import { createApp } from './DragDropApp';
 import { KanbanView, kanbanIcon, kanbanViewType } from './KanbanView';
 import { KanbanSettings, KanbanSettingsTab } from './Settings';
 import { StateManager } from './StateManager';
+import { DateSuggest, TimeSuggest } from './components/Editor/suggest';
 import { getParentWindow } from './dnd/util/getWindow';
 import { hasFrontmatterKey } from './helpers';
 import { t } from './lang/helpers';
@@ -102,6 +103,9 @@ export default class KanbanPlugin extends Plugin {
     this.MarkdownEditor = getEditorClass(this.app);
 
     await this.loadSettings();
+
+    this.registerEditorSuggest(new DateSuggest(this.app, this));
+    this.registerEditorSuggest(new TimeSuggest(this.app, this));
 
     this.registerEvent(
       app.workspace.on('window-open', (_: any, win: Window) => {

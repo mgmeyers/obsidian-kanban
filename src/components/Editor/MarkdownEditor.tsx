@@ -15,6 +15,7 @@ import { t } from 'src/lang/helpers';
 import { KanbanContext } from '../context';
 import { c, noop } from '../helpers';
 import { EditState } from '../types';
+import { commands } from './commands';
 
 interface MarkdownEditorProps {
   editorRef?: MutableRefObject<EditorView>;
@@ -171,7 +172,14 @@ export function MarkdownEditor({
       });
     }
 
+    const onHotkey = (command: string) => {
+      commands[command]?.(editor.editor);
+    };
+
+    view.emitter.on('hotkey', onHotkey);
+
     return () => {
+      view.emitter.off('hotkey', onHotkey);
       view.plugin.removeChild(editor);
       internalRef.current = null;
       if (editorRef) editorRef.current = null;

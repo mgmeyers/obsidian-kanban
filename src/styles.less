@@ -564,7 +564,7 @@ button.kanban-plugin__new-item-button {
   border-color: var(--interactive-accent);
   box-shadow:
     var(--shadow-s),
-    0 0 0 2px hsla(var(--interactive-accent-hsl), 0.2);
+    0 0 0 2px hsla(var(--interactive-accent-hsl), 0.7);
 }
 
 .kanban-plugin__item {
@@ -1230,6 +1230,7 @@ button.kanban-plugin__cancel-action-button {
 }
 
 .kanban-plugin__date-picker .flatpickr-calendar {
+  border-radius: var(--radius-m);
   font-size: 13px;
   overflow: hidden;
   background-color: var(--background-primary);
@@ -1237,6 +1238,10 @@ button.kanban-plugin__cancel-action-button {
   box-shadow:
     0 0 0 1px var(--background-modifier-border),
     0px 15px 25px rgba(0, 0, 0, 0.2);
+
+  &.inline {
+    top: 0;
+  }
 }
 
 .kanban-plugin__date-picker .flatpickr-months {
