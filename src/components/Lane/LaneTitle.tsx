@@ -9,7 +9,7 @@ import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { MarkdownPreviewRenderer } from '../MarkdownRenderer';
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
-import { EditState, EditingState } from '../types';
+import { EditState, EditingState, isEditing } from '../types';
 
 export interface LaneTitleProps {
   itemCount: number;
@@ -65,7 +65,7 @@ export function LaneTitle({
   return (
     <>
       <div className={c('lane-title')}>
-        {typeof editState === 'object' ? (
+        {isEditing(editState) ? (
           <MarkdownEditor
             editState={editState}
             className={c('lane-input')}

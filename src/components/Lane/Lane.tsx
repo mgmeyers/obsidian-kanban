@@ -102,11 +102,11 @@ export const DraggableLane = Preact.memo(function DraggableLane({
 
   const laneBody = (
     <ScrollContainer
+      className={classcat([c('lane-items'), c('vertical')])}
       id={lane.id}
       index={laneIndex}
-      className={classcat([c('lane-items'), c('vertical')])}
-      triggerTypes={laneAccepts}
       isStatic={isStatic}
+      triggerTypes={laneAccepts}
     >
       {isStatic ? (
         laneContent

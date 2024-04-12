@@ -50,7 +50,7 @@ import {
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
-export type KanbanFormats = 'basic';
+export type KanbanFormats = 'basic' | 'board' | 'table' | 'list';
 
 export interface KanbanSettings {
   [frontmatterKey]?: KanbanFormats;

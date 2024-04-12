@@ -1,3 +1,4 @@
+import { insertBlankLine } from '@codemirror/commands';
 import { EditorSelection, Extension, Prec } from '@codemirror/state';
 import {
   EditorView,
@@ -14,7 +15,7 @@ import { t } from 'src/lang/helpers';
 
 import { KanbanContext } from '../context';
 import { c, noop } from '../helpers';
-import { EditState } from '../types';
+import { EditState, isEditing } from '../types';
 import { commands } from './commands';
 
 interface MarkdownEditorProps {
@@ -124,18 +125,29 @@ export function MarkdownEditor({
             )
           );
 
+        const makeEnterHandler =
+          (mod: boolean, shift: boolean) => (cm: EditorView) => {
+            const didRun = onEnter(cm, mod, shift);
+            if (!didRun && this.app.vault.getConfig('smartIndentList')) {
+              this.editor.newlineAndIndentContinueMarkdownList();
+            } else {
+              insertBlankLine(cm as any);
+            }
+            return true;
+          };
+
         extensions.push(
           Prec.high(
             keymap.of([
               {
                 key: 'Enter',
-                run: (cm) => onEnter(cm, false, false),
-                shift: (cm) => onEnter(cm, false, true),
+                run: makeEnterHandler(false, false),
+                shift: makeEnterHandler(false, true),
               },
               {
                 key: 'Mod-Enter',
-                run: (cm) => onEnter(cm, true, false),
-                shift: (cm) => onEnter(cm, true, true),
+                run: makeEnterHandler(true, false),
+                shift: makeEnterHandler(true, true),
               },
               {
                 key: 'Escape',
@@ -165,7 +177,7 @@ export function MarkdownEditor({
 
     controller.editMode = editor;
     editor.set(value || '');
-    if (typeof editState === 'object') {
+    if (isEditing(editState)) {
       cm.dispatch({
         userEvent: 'select.pointer',
         selection: EditorSelection.single(cm.posAtCoords(editState, false)),

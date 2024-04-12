@@ -158,3 +158,9 @@ export enum EditingState {
 }
 
 export type EditState = EditCoordinates | EditingState;
+
+export function isEditing(state: EditState): state is EditCoordinates {
+  if (state === null) return false;
+  if (typeof state === 'number') return false;
+  return true;
+}

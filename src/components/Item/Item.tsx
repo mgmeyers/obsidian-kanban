@@ -15,7 +15,7 @@ import { useDragHandle } from 'src/dnd/managers/DragManager';
 
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
-import { EditState, EditingState, Item } from '../types';
+import { EditState, EditingState, Item, isEditing } from '../types';
 import { ItemCheckbox } from './ItemCheckbox';
 import { ItemContent } from './ItemContent';
 import { useItemMenu } from './ItemMenu';
@@ -54,7 +54,7 @@ const ItemInner = memo(function ItemInner({
 
   useEffect(() => {
     const handler = () => {
-      if (typeof editState === 'object') setEditState(EditingState.cancel);
+      if (isEditing(editState)) setEditState(EditingState.cancel);
     };
 
     dndManager.dragManager.emitter.on('dragStart', handler);
@@ -108,7 +108,7 @@ const ItemInner = memo(function ItemInner({
   );
 
   const ignoreAttr = useMemo(() => {
-    if (typeof editState === 'object') {
+    if (isEditing(editState)) {
       return {
         'data-ignore-drag': true,
       };

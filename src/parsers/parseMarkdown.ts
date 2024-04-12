@@ -200,8 +200,9 @@ export function parseMarkdown(stateManager: StateManager, md: string) {
 
   Object.keys(mdFrontmatter).forEach((key) => {
     if (key === frontmatterKey) {
-      settings[key] = mdFrontmatter[key];
-      fileFrontmatter[key] = mdFrontmatter[key];
+      const val = mdFrontmatter[key] === 'basic' ? 'board' : mdFrontmatter[key];
+      settings[key] = val;
+      fileFrontmatter[key] = val;
     } else if (settingKeyLookup[key as keyof KanbanSettings]) {
       settings[key] = mdFrontmatter[key];
     } else {

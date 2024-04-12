@@ -7,7 +7,10 @@ import { memo, useEffect, useRef } from 'preact/compat';
 import { useContext, useState } from 'preact/hooks';
 import { KanbanView } from 'src/KanbanView';
 
-import { renderMarkdown } from '../helpers/renderMarkdown';
+import {
+  applyCheckboxIndexes,
+  renderMarkdown,
+} from '../helpers/renderMarkdown';
 import { KanbanContext } from './context';
 import { c } from './helpers';
 
@@ -98,6 +101,49 @@ class MarkdownRenderer extends ObsidianRenderer {
     // @ts-ignore
     super(owner.app, el, renderOnInsert);
     this.owner = owner;
+    this.containerEl.addEventListener(
+      'pointerdown',
+      (evt) => {
+        const { targetNode } = evt;
+        if (
+          targetNode.instanceOf(HTMLElement) &&
+          targetNode.hasClass('task-list-item-checkbox')
+        ) {
+          if (targetNode.dataset.checkboxIndex === undefined) {
+            applyCheckboxIndexes(this.containerEl);
+          }
+        }
+      },
+      { capture: true }
+    );
+    this.containerEl.addEventListener(
+      'click',
+      (evt) => {
+        const { targetNode } = evt;
+        if (
+          targetNode.instanceOf(HTMLElement) &&
+          targetNode.hasClass('task-list-item-checkbox')
+        ) {
+          evt.preventDefault();
+          evt.stopPropagation();
+        }
+      },
+      { capture: true }
+    );
+    this.containerEl.addEventListener(
+      'contextmenu',
+      (evt) => {
+        const { targetNode } = evt;
+        if (
+          targetNode.instanceOf(HTMLElement) &&
+          targetNode.hasClass('task-list-item-checkbox')
+        ) {
+          evt.preventDefault();
+          evt.stopPropagation();
+        }
+      },
+      { capture: true }
+    );
   }
 
   get file(): TFile | null {

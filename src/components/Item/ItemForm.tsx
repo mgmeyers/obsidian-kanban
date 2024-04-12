@@ -7,7 +7,7 @@ import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { getDropAction } from '../Editor/helpers';
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
-import { EditState, EditingState, Item } from '../types';
+import { EditState, EditingState, Item, isEditing } from '../types';
 
 interface ItemFormProps {
   addItems: (items: Item[]) => void;
@@ -44,7 +44,7 @@ export function ItemForm({
     }
   };
 
-  if (typeof editState === 'object') {
+  if (isEditing(editState)) {
     return (
       <div className={c('item-form')} ref={clickOutsideRef}>
         <div className={c('item-input-wrapper')}>

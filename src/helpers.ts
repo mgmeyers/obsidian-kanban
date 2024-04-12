@@ -4,6 +4,8 @@ import {
   getDateFromFile,
 } from 'obsidian-daily-notes-interface';
 
+import { frontmatterKey } from './parsers/common';
+
 export function gotoNextDailyNote(app: App, file: TFile) {
   const date = getDateFromFile(file as any, 'day');
 
@@ -56,7 +58,7 @@ export function hasFrontmatterKeyRaw(data: string) {
     return false;
   }
 
-  if (!match[1].contains('kanban-plugin')) {
+  if (!match[1].contains(frontmatterKey)) {
     return false;
   }
 
@@ -65,10 +67,8 @@ export function hasFrontmatterKeyRaw(data: string) {
 
 export function hasFrontmatterKey(file: TFile) {
   if (!file) return false;
-
   const cache = app.metadataCache.getFileCache(file);
-
-  return !!cache?.frontmatter && !!cache?.frontmatter['kanban-plugin'];
+  return !!cache?.frontmatter?.[frontmatterKey];
 }
 
 export function laneTitleWithMaxItems(title: string, maxItems?: number) {

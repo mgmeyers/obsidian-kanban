@@ -118,7 +118,7 @@ function getSubpathBoundary(fileCache: CachedMetadata, subpath: string) {
     : null;
 }
 
-function applyCheckboxIndexes(dom: HTMLDivElement) {
+export function applyCheckboxIndexes(dom: HTMLElement) {
   const checkboxes = dom.querySelectorAll('.task-list-item-checkbox');
 
   checkboxes.forEach((el, i) => {

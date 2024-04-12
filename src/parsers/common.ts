@@ -28,7 +28,7 @@ export const archiveString = '***';
 export const basicFrontmatter = [
   '---',
   '',
-  `${frontmatterKey}: basic`,
+  `${frontmatterKey}: board`,
   '',
   '---',
   '',

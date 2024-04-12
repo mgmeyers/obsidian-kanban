@@ -1,5 +1,6 @@
 import {
   ColumnDef,
+  OnChangeFn,
   SortingState,
   createColumnHelper,
   flexRender,
@@ -10,7 +11,7 @@ import {
 import classcat from 'classcat';
 import update from 'immutability-helper';
 import { Menu } from 'obsidian';
-import Preact, {
+import {
   JSX,
   memo,
   useCallback,
@@ -102,8 +103,7 @@ function DateCell({
   hideDateDisplay: boolean;
   shouldShowRelativeDate: boolean;
 }) {
-  const { stateManager, filePath, getDateColor } =
-    Preact.useContext(KanbanContext);
+  const { stateManager, filePath, getDateColor } = useContext(KanbanContext);
   const { onEditDate, onEditTime } = useDatePickers(item.item, item.path);
 
   return (
@@ -279,15 +279,24 @@ const baseColumns = (
 ];
 
 function useTableColumns(boardData: Board, stateManager: StateManager) {
-  const [sorting, setSorting] = Preact.useState<SortingState>([]);
+  const [sorting, setSortingRaw] = useState<SortingState>([]);
   const shouldShowRelativeDate = stateManager.useSetting('show-relative-date');
   const hideDateDisplay = stateManager.useSetting('hide-date-display');
   const hideTagsDisplay = stateManager.useSetting('hide-tags-display');
   const tableSizing = stateManager.useSetting('table-sizing') || {};
 
+  const desc = useRef<boolean>(false);
+  const setSorting = useCallback<OnChangeFn<SortingState>>(
+    (onChange: (old: SortingState) => SortingState) => {
+      setSortingRaw((old) => {
+        const newState = onChange(old);
+        if (newState.length) desc.current = newState[0].desc;
+        return newState;
+      });
+    },
+    [setSortingRaw]
+  );
   const state = useMemo(() => ({ sorting }), [sorting]);
-
-  const { desc } = state.sorting[0] ?? {};
 
   const { items, metadata, fileMetadata } = useTableData(boardData);
   const withMetadata: ColumnDef<TableItem, any>[] = useMemo(() => {
@@ -314,13 +323,14 @@ function useTableColumns(boardData: Board, stateManager: StateManager) {
                       />
                     );
                   },
+                  sortUndefined: false,
                   sortingFn: (a, b, id) => {
                     const dateA = a.getValue(id) as moment.Moment;
                     const dateB = b.getValue(id) as moment.Moment;
 
                     if (!dateA && !dateB) return 0;
-                    if (!dateA) return desc ? -1 : 1;
-                    if (!dateB) return desc ? 1 : -1;
+                    if (!dateA) return desc.current ? -1 : 1;
+                    if (!dateB) return desc.current ? 1 : -1;
 
                     return dateA.valueOf() - dateB.valueOf();
                   },
@@ -344,16 +354,18 @@ function useTableColumns(boardData: Board, stateManager: StateManager) {
                     if (!tags?.length) return null;
                     return <Tags tags={tags} />;
                   },
+                  sortUndefined: false,
                   sortingFn: (a, b, id) => {
-                    const tagsA = a.getValue(id) as string[];
-                    const tagsB = b.getValue(id) as string[];
+                    const tagsA = a.getValue<string[] | undefined>(id);
+                    const tagsB = b.getValue<string[] | undefined>(id);
 
                     if (!tagsA?.length && !tagsB?.length) return 0;
-                    if (!tagsA?.length) return desc ? -1 : 1;
-                    if (!tagsB?.length) return desc ? 1 : -1;
+                    if (!tagsA?.length) return desc.current ? -1 : 1;
+                    if (!tagsB?.length) return desc.current ? 1 : -1;
 
                     return defaultSort(tagsA.join(''), tagsB.join(''));
                   },
+                  sortDescFirst: false,
                 }
               )
             );
@@ -392,8 +404,8 @@ function useTableColumns(boardData: Board, stateManager: StateManager) {
               const valB = b.getValue(id) as any;
 
               if (!valA?.value && !valB?.value) return 0;
-              if (!valA?.value) return desc ? -1 : 1;
-              if (!valB?.value) return desc ? 1 : -1;
+              if (!valA?.value) return desc.current ? -1 : 1;
+              if (!valB?.value) return desc.current ? 1 : -1;
 
               if (id === 'tags') {
                 return defaultSort(valA.value.join(''), valB.value.join(''));

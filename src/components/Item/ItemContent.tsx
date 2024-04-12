@@ -16,7 +16,7 @@ import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { MarkdownPreviewRenderer } from '../MarkdownRenderer';
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
-import { EditState, EditingState, Item } from '../types';
+import { EditState, EditingState, Item, isEditing } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
 import {
   constructDatePicker,
@@ -251,7 +251,7 @@ export const ItemContent = memo(function ItemContent({
     [path, boardModifiers, stateManager, item]
   );
 
-  if (typeof editState === 'object') {
+  if (isEditing(editState)) {
     return (
       <div className={c('item-input-wrapper')}>
         <MarkdownEditor
@@ -276,7 +276,7 @@ export const ItemContent = memo(function ItemContent({
         className={c('item-markdown')}
         markdownString={item.data.title}
         searchQuery={searchQuery}
-        onPointerDown={onCheckboxContainerClick}
+        onPointerUp={onCheckboxContainerClick}
       />
       {showMetadata && (
         <div className={c('item-metadata')}>

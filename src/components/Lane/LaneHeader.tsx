@@ -1,6 +1,6 @@
 import update from 'immutability-helper';
-import Preact from 'preact/compat';
-import { StateUpdater } from 'preact/hooks';
+import { RefObject, memo } from 'preact/compat';
+import { StateUpdater, useContext, useEffect, useState } from 'preact/hooks';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { t } from 'src/lang/helpers';
 import { parseLaneTitle } from 'src/parsers/helpers/parser';
@@ -10,7 +10,7 @@ import { GripIcon } from '../Icon/GripIcon';
 import { Icon } from '../Icon/Icon';
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
-import { EditState, EditingState, Lane } from '../types';
+import { EditState, EditingState, Lane, isEditing } from '../types';
 import { ConfirmAction, useSettingsMenu } from './LaneMenu';
 import { LaneSettings } from './LaneSettings';
 import { LaneTitle } from './LaneTitle';
@@ -18,20 +18,18 @@ import { LaneTitle } from './LaneTitle';
 interface LaneHeaderProps {
   lane: Lane;
   laneIndex: number;
-  dragHandleRef: Preact.RefObject<HTMLDivElement>;
+  dragHandleRef: RefObject<HTMLDivElement>;
   setIsItemInputVisible?: StateUpdater<EditState>;
 }
 
-export const LaneHeader = Preact.memo(function LaneHeader({
+export const LaneHeader = memo(function LaneHeader({
   lane,
   laneIndex,
   dragHandleRef,
   setIsItemInputVisible,
 }: LaneHeaderProps) {
-  const { boardModifiers, stateManager } = Preact.useContext(KanbanContext);
-  const [editState, setEditState] = Preact.useState<EditState>(
-    EditingState.cancel
-  );
+  const { boardModifiers, stateManager } = useContext(KanbanContext);
+  const [editState, setEditState] = useState<EditState>(EditingState.cancel);
   const lanePath = useNestedEntityPath(laneIndex);
 
   const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
@@ -40,7 +38,7 @@ export const LaneHeader = Preact.memo(function LaneHeader({
     lane,
   });
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     if (lane.data.forceEditMode) {
       setEditState(null);
     }
@@ -77,7 +75,7 @@ export const LaneHeader = Preact.memo(function LaneHeader({
           }}
         />
         <div className={c('lane-settings-button-wrapper')}>
-          {typeof editState === 'object' ? (
+          {isEditing(editState) ? (
             <a
               onClick={() => setEditState(null)}
               aria-label={t('Close')}
@@ -119,9 +117,9 @@ export const LaneHeader = Preact.memo(function LaneHeader({
         </div>
       </div>
 
-      {typeof editState === 'object' && (
+      {isEditing(editState) ? (
         <LaneSettings lane={lane} lanePath={lanePath} />
-      )}
+      ) : null}
 
       {confirmAction && (
         <ConfirmAction

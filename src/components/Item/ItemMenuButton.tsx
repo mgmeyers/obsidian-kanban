@@ -4,7 +4,7 @@ import { t } from 'src/lang/helpers';
 
 import { Icon } from '../Icon/Icon';
 import { c } from '../helpers';
-import { EditState, EditingState } from '../types';
+import { EditState, EditingState, isEditing } from '../types';
 
 interface ItemMenuButtonProps {
   editState: EditState;
@@ -29,7 +29,7 @@ export const ItemMenuButton = Preact.memo(function ItemMenuButton({
 
   return (
     <div {...ignoreAttr} className={c('item-postfix-button-wrapper')}>
-      {typeof editState === 'object' ? (
+      {isEditing(editState) ? (
         <a
           data-ignore-drag={true}
           onPointerDown={(e) => e.preventDefault()}

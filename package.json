@@ -17,6 +17,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@codemirror/commands": "^6.0.0",
     "@codemirror/state": "^6.0.0",
     "@codemirror/view": "^6.0.0",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
@@ -33,7 +34,7 @@
     "esbuild-plugin-less": "^1.3.1",
     "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.33.2",
-    "obsidian": "^1.4.11",
+    "obsidian": "^1.5.7-1",
     "obsidian-dataview": "^0.5.64",
     "obsidian-plugin-cli": "^0.9.0",
     "prettier": "^3.1.1",

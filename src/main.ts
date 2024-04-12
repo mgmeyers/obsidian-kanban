@@ -370,6 +370,7 @@ export default class KanbanPlugin extends Plugin {
         if (file instanceof TFolder) {
           menu.addItem((item) => {
             item
+              .setSection('action-primary')
               .setTitle(t('New kanban board'))
               .setIcon(kanbanIcon)
               .onClick(() => this.newKanban(file));
@@ -430,6 +431,24 @@ export default class KanbanPlugin extends Plugin {
                 this.kanbanFileModes[(leaf as any).id || file.path] =
                   kanbanViewType;
                 this.setKanbanView(leaf);
+              });
+          });
+        }
+
+        if (
+          leaf?.view instanceof KanbanView &&
+          file instanceof TFile &&
+          ['pane-more-options', 'tab-header'].includes(source)
+        ) {
+          menu.addItem((item) => {
+            item
+              .setTitle(t('Open as markdown'))
+              .setIcon(kanbanIcon)
+              .setSection('pane')
+              .onClick(() => {
+                this.kanbanFileModes[(leaf as any).id || file.path] =
+                  'markdown';
+                this.setMarkdownView(leaf);
               });
           });
         }

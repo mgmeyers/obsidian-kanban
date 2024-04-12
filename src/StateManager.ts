@@ -10,7 +10,11 @@ import {
 } from './components/helpers';
 import { Board, BoardTemplate, Item } from './components/types';
 import { ListFormat } from './parsers/List';
-import { BaseFormat, shouldRefreshBoard } from './parsers/common';
+import {
+  BaseFormat,
+  frontmatterKey,
+  shouldRefreshBoard,
+} from './parsers/common';
 import { defaultDateTrigger, defaultTimeTrigger } from './settingHelpers';
 
 export class StateManager {
@@ -224,9 +228,7 @@ export class StateManager {
     );
 
     Preact.useEffect(() => {
-      const receiver = () => {
-        setState(this.getSetting(key));
-      };
+      const receiver = () => setState(this.getSetting(key));
 
       if (this.settingsNotifiers.has(key)) {
         this.settingsNotifiers.get(key).push(receiver);
@@ -260,6 +262,8 @@ export class StateManager {
       `${dateFormat} ${timeFormat}`;
 
     this.compiledSettings = {
+      [frontmatterKey]:
+        this.getSettingRaw(frontmatterKey, suppliedSettings) || 'board',
       'date-format': dateFormat,
       'date-display-format':
         this.getSettingRaw('date-display-format', suppliedSettings) ||
@@ -306,11 +310,11 @@ export class StateManager {
     key: K,
     suppliedLocalSettings?: KanbanSettings
   ): KanbanSettings[K] => {
-    if (suppliedLocalSettings && suppliedLocalSettings[key] !== undefined) {
+    if (suppliedLocalSettings?.[key] !== undefined) {
       return suppliedLocalSettings[key];
     }
 
-    if (this.compiledSettings && this.compiledSettings[key] !== undefined) {
+    if (this.compiledSettings?.[key] !== undefined) {
       return this.compiledSettings[key];
     }
 
@@ -321,14 +325,11 @@ export class StateManager {
     key: K,
     suppliedLocalSettings?: KanbanSettings
   ): KanbanSettings[K] => {
-    if (suppliedLocalSettings && suppliedLocalSettings[key] !== undefined) {
+    if (suppliedLocalSettings?.[key] !== undefined) {
       return suppliedLocalSettings[key];
     }
 
-    if (
-      this.state?.data?.settings &&
-      this.state.data.settings[key] !== undefined
-    ) {
+    if (this.state?.data?.settings?.[key] !== undefined) {
       return this.state.data.settings[key];
     }
 
@@ -340,8 +341,9 @@ export class StateManager {
   ): KanbanSettings[K] => {
     const globalSettings = this.getGlobalSettings();
 
-    if (globalSettings && globalSettings[key] !== undefined)
+    if (globalSettings?.[key] !== undefined) {
       return globalSettings[key];
+    }
 
     return null;
   };
@@ -355,7 +357,7 @@ export class StateManager {
       children: [],
       data: {
         archive: [],
-        settings: { 'kanban-plugin': 'basic' },
+        settings: { [frontmatterKey]: 'board' },
         frontmatter: {},
         isSearching: false,
         errors: [],
