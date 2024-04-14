@@ -13,3 +13,4 @@ package-lock.json
 yarn*
 dist
 test-vault/
+main.js
