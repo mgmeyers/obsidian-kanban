@@ -240,8 +240,6 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
 
   useEffect(() => {
     if (view.previewCache.has(entityId)) {
-      console.log('have cache');
-
       const preview = view.previewCache.get(entityId);
       renderer.current = preview;
       preview.migrate(elRef.current);
@@ -257,8 +255,6 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
       async () => {
         if (!(view as any)._loaded || !elRef.current) return;
         const containerEl = elRef.current.createDiv();
-        console.log('new cache');
-
         const preview = (renderer.current = view.addChild(new MarkdownRenderer(view, containerEl)));
         preview.wrapperEl = elRef.current;
         preview.set(markdownString);
