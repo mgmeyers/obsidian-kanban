@@ -23,14 +23,9 @@ export interface Coordinates {
   y: number;
 }
 
-export interface CoordinateShift {
-  x: number;
-  y: number;
-}
+export type CoordinateShift = Coordinates;
 
-export interface ScrollState {
-  x: number;
-  y: number;
+export interface ScrollState extends Coordinates {
   maxX: number;
   maxY: number;
 }
@@ -39,6 +34,7 @@ export interface EntityData {
   type: string;
   id: string;
   accepts: string[];
+  acceptsSort?: string[];
   sortAxis?: Axis;
   [k: string]: any;
 }

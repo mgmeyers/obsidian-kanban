@@ -1,11 +1,4 @@
-import {
-  CoordinateShift,
-  Coordinates,
-  Entity,
-  Hitbox,
-  ScrollState,
-  Side,
-} from '../types';
+import { CoordinateShift, Coordinates, Entity, Hitbox, ScrollState, Side } from '../types';
 
 export const emptyDomRect: DOMRectReadOnly = {
   bottom: 0,
@@ -147,8 +140,7 @@ function getIntersectionRatio(hitboxA: Hitbox, hitboxB: Hitbox): number {
     const targetArea = bWidth * bHeight;
     const entryArea = aWidth * aHeight;
     const intersectionArea = width * height;
-    const intersectionRatio =
-      intersectionArea / (targetArea + entryArea - intersectionArea);
+    const intersectionRatio = intersectionArea / (targetArea + entryArea - intersectionArea);
 
     return Number(intersectionRatio.toFixed(4));
   }
@@ -157,9 +149,7 @@ function getIntersectionRatio(hitboxA: Hitbox, hitboxB: Hitbox): number {
 }
 
 export function rectIntersection(entities: Entity[], target: Hitbox) {
-  const intersections = entities.map((entity) =>
-    getIntersectionRatio(entity.getHitbox(), target)
-  );
+  const intersections = entities.map((entity) => getIntersectionRatio(entity.getHitbox(), target));
 
   const maxValueIndex = getMaxValueIndex(intersections);
 
@@ -304,14 +294,7 @@ export function getBestIntersect(
 }
 
 export function getElementScrollOffsets(element: HTMLElement): ScrollState {
-  const {
-    scrollLeft,
-    scrollTop,
-    scrollWidth,
-    scrollHeight,
-    offsetWidth,
-    offsetHeight,
-  } = element;
+  const { scrollLeft, scrollTop, scrollWidth, scrollHeight, offsetWidth, offsetHeight } = element;
 
   const x = scrollLeft;
   const y = scrollTop;
@@ -334,12 +317,7 @@ export function adjustHitboxForMovement(
   const xShift = Math.trunc((position.x - origin.x) * 100) / 100;
   const yShift = Math.trunc((position.y - origin.y) * 100) / 100;
 
-  return [
-    hitbox[0] + xShift,
-    hitbox[1] + yShift,
-    hitbox[2] + xShift,
-    hitbox[3] + yShift,
-  ];
+  return [hitbox[0] + xShift, hitbox[1] + yShift, hitbox[2] + xShift, hitbox[3] + yShift];
 }
 
 export function getScrollIntersectionDiff(
@@ -386,10 +364,7 @@ export function getScrollIntersectionDiff(
   };
 }
 
-export function getHitboxDimensions(
-  hitbox: Hitbox,
-  margin: Hitbox = [0, 0, 0, 0]
-) {
+export function getHitboxDimensions(hitbox: Hitbox, margin: Hitbox = [0, 0, 0, 0]) {
   const minX = hitbox[0] - margin[0];
   const minY = hitbox[1] - margin[1];
   const maxX = hitbox[2] + margin[2];

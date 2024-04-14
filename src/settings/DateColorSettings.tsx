@@ -5,11 +5,7 @@ import Preact from 'preact/compat';
 
 import { Icon } from '../components/Icon/Icon';
 import { c, generateInstanceId } from '../components/helpers';
-import {
-  DateColorKey,
-  DateColorSetting,
-  DateColorSettingTemplate,
-} from '../components/types';
+import { DateColorKey, DateColorSetting, DateColorSettingTemplate } from '../components/types';
 import { getParentBodyElement } from '../dnd/util/getWindow';
 import { t } from '../lang/helpers';
 import { ColorPickerInput } from './TagColorSettings';
@@ -40,9 +36,7 @@ function Item({
   return (
     <div className={c('setting-item-wrapper')}>
       <div className={c('setting-item')}>
-        <div
-          className={`${c('setting-controls-wrapper')} ${c('tag-color-input')}`}
-        >
+        <div className={`${c('setting-controls-wrapper')} ${c('tag-color-input')}`}>
           <div>
             <div>
               <div className={c('setting-item-label')}>{t('Date is')}</div>
@@ -79,60 +73,53 @@ function Item({
                 <option value="after">{t('After now')}</option>
                 <option value="before">{t('Before now')}</option>
               </select>
-              {!dateColorKey.isToday &&
-                !dateColorKey.isAfter &&
-                !dateColorKey.isBefore && (
-                  <>
-                    <input
-                      type="number"
-                      value={dateColorKey.distance}
-                      onChange={(e) => {
-                        updateKey({
-                          ...dateColorKey,
-                          distance: parseInt(
-                            (e.target as HTMLInputElement).value
-                          ),
-                        });
-                      }}
-                    />
-                    <select
-                      className="dropdown"
-                      defaultValue={dateColorKey.unit}
-                      onChange={(e) => {
-                        updateKey({
-                          ...dateColorKey,
-                          unit: (e.target as HTMLSelectElement).value as any,
-                        });
-                      }}
-                    >
-                      <option value="hours">Hours</option>
-                      <option value="days">Days</option>
-                      <option value="weeks">Weeks</option>
-                      <option value="months">Months</option>
-                    </select>
-                    <select
-                      className="dropdown"
-                      defaultValue={dateColorKey.direction}
-                      onChange={(e) => {
-                        updateKey({
-                          ...dateColorKey,
-                          direction: (e.target as HTMLSelectElement)
-                            .value as any,
-                        });
-                      }}
-                    >
-                      <option value="after">{t('After now')}</option>
-                      <option value="before">{t('Before now')}</option>
-                    </select>
-                  </>
-                )}
+              {!dateColorKey.isToday && !dateColorKey.isAfter && !dateColorKey.isBefore && (
+                <>
+                  <input
+                    type="number"
+                    value={dateColorKey.distance}
+                    onChange={(e) => {
+                      updateKey({
+                        ...dateColorKey,
+                        distance: parseInt((e.target as HTMLInputElement).value),
+                      });
+                    }}
+                  />
+                  <select
+                    className="dropdown"
+                    defaultValue={dateColorKey.unit}
+                    onChange={(e) => {
+                      updateKey({
+                        ...dateColorKey,
+                        unit: (e.target as HTMLSelectElement).value as any,
+                      });
+                    }}
+                  >
+                    <option value="hours">Hours</option>
+                    <option value="days">Days</option>
+                    <option value="weeks">Weeks</option>
+                    <option value="months">Months</option>
+                  </select>
+                  <select
+                    className="dropdown"
+                    defaultValue={dateColorKey.direction}
+                    onChange={(e) => {
+                      updateKey({
+                        ...dateColorKey,
+                        direction: (e.target as HTMLSelectElement).value as any,
+                      });
+                    }}
+                  >
+                    <option value="after">{t('After now')}</option>
+                    <option value="before">{t('Before now')}</option>
+                  </select>
+                </>
+              )}
             </div>
 
             <div className={c('date-color-config')}>
               <div>
-                <div className={c('setting-item-label')}>
-                  {t('Background color')}
-                </div>
+                <div className={c('setting-item-label')}>{t('Background color')}</div>
                 <ColorPickerInput
                   color={dateColorKey.backgroundColor}
                   setColor={(color) => {
@@ -184,11 +171,7 @@ function Item({
           </div>
         </div>
         <div className={c('setting-button-wrapper')}>
-          <div
-            className="clickable-icon"
-            onClick={deleteKey}
-            aria-label={t('Delete')}
-          >
+          <div className="clickable-icon" onClick={deleteKey} aria-label={t('Delete')}>
             <Icon name="lucide-trash-2" />
           </div>
         </div>
@@ -205,12 +188,7 @@ interface DateSettingsProps {
   getDateFormat: () => string;
 }
 
-function DateSettings({
-  dataKeys,
-  onChange,
-  getTimeFormat,
-  getDateFormat,
-}: DateSettingsProps) {
+function DateSettings({ dataKeys, onChange, getTimeFormat, getDateFormat }: DateSettingsProps) {
   const [keys, setKeys] = Preact.useState(dataKeys);
   const defaultColors = Preact.useMemo(() => {
     const wrapper = createDiv(c('item-metadata'));
@@ -282,9 +260,7 @@ function DateSettings({
       <div className="setting-item-info">
         <div className="setting-item-name">{t('Display date colors')}</div>
         <div className="setting-item-description">
-          {t(
-            'Set colors for the date displayed below the card based on the rules below'
-          )}
+          {t('Set colors for the date displayed below the card based on the rules below')}
         </div>
       </div>
       {keys.map((key, index) => (

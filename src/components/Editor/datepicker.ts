@@ -2,18 +2,11 @@ import { EditorSuggestContext, moment } from 'obsidian';
 import { StateManager } from 'src/StateManager';
 import { buildLinkToDailyNote } from 'src/helpers';
 
-import { buildTimeArray } from '../Item/helpers';
-import { escapeRegExpStr } from '../helpers';
 import { getDefaultLocale } from './datePickerLocale';
 import flatpickr from './flatpickr';
 import { Instance } from './flatpickr/types/instance';
-import { StrategyProps } from './textcomplete/textcomplete-core';
 
-export function applyDate(
-  ctx: EditorSuggestContext,
-  stateManager: StateManager,
-  date: Date
-) {
+export function applyDate(ctx: EditorSuggestContext, stateManager: StateManager, date: Date) {
   const dateFormat = stateManager.getSetting('date-format');
   const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
 
@@ -51,35 +44,6 @@ export function constructDatePicker(
       )
     );
   });
-}
-
-export function getTimePickerConfig(
-  stateManager: StateManager
-): StrategyProps<string> {
-  const timeTrigger = stateManager.getSetting('time-trigger');
-  const timeTriggerRegex = new RegExp(
-    `\\B${escapeRegExpStr(timeTrigger as string)}{?([^}]*)$`
-  );
-  const times = buildTimeArray(stateManager);
-
-  return {
-    id: 'time',
-    match: timeTriggerRegex,
-    index: 1,
-    search: (term: string, callback: (results: string[]) => void) => {
-      if (!term) {
-        callback(times);
-      } else {
-        callback(times.filter((t) => t.startsWith(term)));
-      }
-    },
-    template: (result: string) => {
-      return result;
-    },
-    replace: (result: string): string => {
-      return `${timeTrigger}{${result}} `;
-    },
-  };
 }
 
 export function toPreviousMonth(date: moment.Moment) {

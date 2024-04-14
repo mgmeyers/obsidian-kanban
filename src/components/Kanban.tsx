@@ -2,17 +2,8 @@ import animateScrollTo from 'animated-scroll-to';
 import classcat from 'classcat';
 import update from 'immutability-helper';
 import { TFile, moment } from 'obsidian';
-import {
-  appHasDailyNotesPluginLoaded,
-  createDailyNote,
-} from 'obsidian-daily-notes-interface';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'preact/compat';
+import { appHasDailyNotesPluginLoaded, createDailyNote } from 'obsidian-daily-notes-interface';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
 import { useIsAnythingDragging } from 'src/dnd/components/DragOverlay';
@@ -29,9 +20,9 @@ import { frontmatterKey } from '../parsers/common';
 import { Icon } from './Icon/Icon';
 import { Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
-import { TableView } from './Table';
+import { TableView } from './Table/Table';
 import { KanbanContext, SearchContext } from './context';
-import { baseClassName, c, getDateColorFn, getTagColorFn } from './helpers';
+import { baseClassName, c, getDateColorFn, getSearchHits, getTagColorFn } from './helpers';
 import { DataTypes } from './types';
 
 const boardScrollTiggers = [DataTypes.Item, DataTypes.Lane];
@@ -49,8 +40,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [isSearching, setIsSearching] = useState<boolean>(false);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
+  const [isSearching, setIsSearching] = useState<boolean>(false);
 
   const [isLaneFormVisible, setIsLaneFormVisible] = useState<boolean>(
     boardData?.children.length === 0
@@ -92,8 +83,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   }, []);
 
   useEffect(() => {
-    const onSearchHotkey = (e: string) => {
-      if (e === 'editor:open-search') {
+    const onSearchHotkey = (command: string) => {
+      if (command === 'editor:open-search') {
         setIsSearching((val) => !val);
       }
     };
@@ -140,10 +131,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       return;
     }
 
-    if (
-      typeof maxArchiveLength === 'number' &&
-      boardData?.data.archive.length > maxArchiveLength
-    ) {
+    if (typeof maxArchiveLength === 'number' && boardData?.data.archive.length > maxArchiveLength) {
       stateManager.setState((board) =>
         update(board, {
           data: {
@@ -187,8 +175,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       }
 
       const targetEl = e.target as HTMLElement;
-      const closestAnchor =
-        targetEl.tagName === 'A' ? targetEl : targetEl.closest('a');
+      const closestAnchor = targetEl.tagName === 'A' ? targetEl : targetEl.closest('a');
 
       if (!closestAnchor) return;
 
@@ -198,10 +185,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
         const normalizedPath = getNormalizedPath(href);
         const target =
           typeof href === 'string' &&
-          view.app.metadataCache.getFirstLinkpathDest(
-            normalizedPath.root,
-            view.file.path
-          );
+          view.app.metadataCache.getFirstLinkpathDest(normalizedPath.root, view.file.path);
 
         if (!target) return;
 
@@ -224,9 +208,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
           if (parsed.isValid()) {
             try {
               const dailyNote = await createDailyNote(parsed);
-              const leaf = inNewLeaf
-                ? app.workspace.getLeaf(true)
-                : app.workspace.getLeaf(false);
+              const leaf = inNewLeaf ? app.workspace.getLeaf(true) : app.workspace.getLeaf(false);
 
               await leaf.openFile(dailyNote as unknown as TFile, {
                 active: true,
@@ -239,11 +221,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
           }
         }
 
-        stateManager.app.workspace.openLinkText(
-          destination,
-          filePath,
-          inNewLeaf
-        );
+        stateManager.app.workspace.openLinkText(destination, filePath, inNewLeaf);
 
         return;
       }
@@ -303,16 +281,17 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     );
   }
 
+  const axis = boardView === 'list' ? 'vertical' : 'horizontal';
+
+  const searchHits = useMemo(
+    () => getSearchHits(boardData, debouncedSearchQuery),
+    [boardData, debouncedSearchQuery]
+  );
+
   return (
     <DndScope id={view.id}>
       <KanbanContext.Provider value={kanbanContext}>
-        <SearchContext.Provider
-          value={
-            debouncedSearchQuery
-              ? debouncedSearchQuery.toLocaleLowerCase()
-              : null
-          }
-        >
+        <SearchContext.Provider value={searchHits}>
           <div
             ref={rootRef}
             className={classcat([
@@ -375,19 +354,20 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                 id={view.id}
                 className={classcat([
                   c('board'),
-                  c('horizontal'),
                   {
+                    [c('horizontal')]: boardView !== 'list',
+                    [c('vertical')]: boardView === 'list',
                     'is-adding-lane': isLaneFormVisible,
                   },
                 ])}
                 triggerTypes={boardScrollTiggers}
               >
                 <div>
-                  <Sortable axis="horizontal">
-                    <Lanes lanes={boardData.children} />
+                  <Sortable axis={axis}>
+                    <Lanes lanes={boardData.children} collapseDir={axis} />
                     <SortPlaceholder
-                      className={c('lane-placeholder')}
                       accepts={boardAccepts}
+                      className={c('lane-placeholder')}
                       index={boardData.children.length}
                     />
                   </Sortable>

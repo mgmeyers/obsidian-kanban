@@ -46,6 +46,7 @@ const ItemInner = memo(function ItemInner({
   isMatch,
   searchQuery,
   priority,
+  isStatic,
 }: ItemInnerProps) {
   const { stateManager, boardModifiers } = useContext(KanbanContext);
   const [editState, setEditState] = useState<EditState>(EditingState.cancel);
@@ -90,8 +91,7 @@ const ItemInner = memo(function ItemInner({
       e.stopPropagation();
 
       const internalLinkPath =
-        e.targetNode.instanceOf(HTMLAnchorElement) &&
-        e.targetNode.hasClass('internal-link')
+        e.targetNode.instanceOf(HTMLAnchorElement) && e.targetNode.hasClass('internal-link')
           ? e.targetNode.dataset.href
           : undefined;
 
@@ -139,12 +139,9 @@ const ItemInner = memo(function ItemInner({
           setEditState={setEditState}
           editState={editState}
           priority={priority}
+          isStatic={isStatic}
         />
-        <ItemMenuButton
-          editState={editState}
-          setEditState={setEditState}
-          showMenu={showItemMenu}
-        />
+        <ItemMenuButton editState={editState} setEditState={setEditState} showMenu={showItemMenu} />
       </div>
       <ItemMetadata
         searchQuery={isMatch ? searchQuery : undefined}
@@ -155,43 +152,28 @@ const ItemInner = memo(function ItemInner({
   );
 });
 
-export const DraggableItem = memo(function DraggableItem(
-  props: DraggableItemProps
-) {
+export const DraggableItem = memo(function DraggableItem(props: DraggableItemProps) {
   const elementRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
-  const searchQuery = useContext(SearchContext);
+  const search = useContext(SearchContext);
 
   const { itemIndex, ...innerProps } = props;
 
   useDragHandle(measureRef, measureRef);
 
-  const isMatch = searchQuery
-    ? innerProps.item.data.title.contains(searchQuery)
-    : false;
-
+  const isMatch = search ? innerProps.item.data.titleSearch.includes(search.query) : false;
   const classModifiers: string[] = getItemClassModifiers(innerProps.item);
-
-  if (searchQuery) {
-    if (isMatch) {
-      classModifiers.push('is-search-hit');
-    } else {
-      classModifiers.push('is-search-miss');
-    }
-  }
 
   return (
     <div ref={measureRef} className={c('item-wrapper')}>
-      <div
-        ref={elementRef}
-        className={classcat([c('item'), ...classModifiers])}
-      >
+      <div ref={elementRef} className={classcat([c('item'), ...classModifiers])}>
         {props.isStatic ? (
           <ItemInner
             {...innerProps}
             isMatch={isMatch}
-            searchQuery={searchQuery}
+            searchQuery={search?.query}
             priority={1000}
+            isStatic={true}
           />
         ) : (
           <Droppable
@@ -201,11 +183,7 @@ export const DraggableItem = memo(function DraggableItem(
             index={itemIndex}
             data={props.item}
           >
-            <ItemInner
-              {...innerProps}
-              isMatch={isMatch}
-              searchQuery={searchQuery}
-            />
+            <ItemInner {...innerProps} isMatch={isMatch} searchQuery={search?.query} />
           </Droppable>
         )}
       </div>
@@ -219,16 +197,13 @@ interface ItemsProps {
   shouldMarkItemsComplete: boolean;
 }
 
-export const Items = memo(function Items({
-  isStatic,
-  items,
-  shouldMarkItemsComplete,
-}: ItemsProps) {
+export const Items = memo(function Items({ isStatic, items, shouldMarkItemsComplete }: ItemsProps) {
+  const search = useContext(SearchContext);
   const len = items.length;
   return (
     <>
       {items.map((item, i) => {
-        return (
+        return search && !search.items.has(item) ? null : (
           <DraggableItem
             key={item.id}
             item={item}

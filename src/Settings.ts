@@ -1,11 +1,5 @@
 import update, { Spec } from 'immutability-helper';
-import {
-  App,
-  Modal,
-  PluginSettingTab,
-  Setting,
-  ToggleComponent,
-} from 'obsidian';
+import { App, Modal, PluginSettingTab, Setting, ToggleComponent } from 'obsidian';
 
 import { KanbanView } from './KanbanView';
 import {
@@ -35,25 +29,21 @@ import {
   defaultTimeTrigger,
   getListOptions,
 } from './settingHelpers';
-import {
-  cleanUpDateSettings,
-  renderDateSettings,
-} from './settings/DateColorSettings';
-import {
-  cleanupMetadataSettings,
-  renderMetadataSettings,
-} from './settings/MetadataSettings';
-import {
-  cleanUpTagSettings,
-  renderTagSettings,
-} from './settings/TagColorSettings';
+import { cleanUpDateSettings, renderDateSettings } from './settings/DateColorSettings';
+import { cleanupMetadataSettings, renderMetadataSettings } from './settings/MetadataSettings';
+import { cleanUpTagSettings, renderTagSettings } from './settings/TagColorSettings';
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
-export type KanbanFormats = 'basic' | 'board' | 'table' | 'list';
+export type KanbanFormat = 'basic' | 'board' | 'table' | 'list';
 
 export interface KanbanSettings {
-  [frontmatterKey]?: KanbanFormats;
+  [frontmatterKey]?: KanbanFormat;
+  'append-archive-date'?: boolean;
+  'archive-date-format'?: string;
+  'archive-date-separator'?: string;
+  'archive-with-date'?: boolean;
+  'date-colors'?: DateColorKey[];
   'date-display-format'?: string;
   'date-format'?: string;
   'date-picker-week-start'?: number;
@@ -66,70 +56,66 @@ export interface KanbanSettings {
   'hide-tags-in-title'?: boolean;
   'lane-width'?: number;
   'link-date-to-daily-note'?: boolean;
+  'list-collapse'?: boolean[];
   'max-archive-size'?: number;
   'metadata-keys'?: DataKey[];
   'new-card-insertion-method'?: 'prepend' | 'prepend-compact' | 'append';
   'new-line-trigger'?: 'enter' | 'shift-enter';
   'new-note-folder'?: string;
   'new-note-template'?: string;
-  'archive-with-date'?: boolean;
-  'append-archive-date'?: boolean;
-  'archive-date-format'?: string;
-  'archive-date-separator'?: string;
-  'show-checkboxes'?: boolean;
-  'show-relative-date'?: boolean;
-  'time-format'?: string;
-  'time-trigger'?: string;
-
   'show-add-list'?: boolean;
   'show-archive-all'?: boolean;
-  'show-view-as-markdown'?: boolean;
   'show-board-settings'?: boolean;
+  'show-checkboxes'?: boolean;
+  'show-relative-date'?: boolean;
   'show-search'?: boolean;
-
-  'tag-colors'?: TagColorKey[];
-  'date-colors'?: DateColorKey[];
-
+  'show-view-as-markdown'?: boolean;
+  'show-set-view'?: boolean;
   'table-sizing'?: Record<string, number>;
+  'tag-colors'?: TagColorKey[];
+  'time-format'?: string;
+  'time-trigger'?: string;
 }
 
-export const settingKeyLookup: Record<keyof KanbanSettings, true> = {
-  [frontmatterKey]: true,
-  'date-display-format': true,
-  'date-format': true,
-  'date-picker-week-start': true,
-  'date-time-display-format': true,
-  'date-trigger': true,
-  'hide-card-count': true,
-  'hide-date-display': true,
-  'hide-date-in-title': true,
-  'hide-tags-display': true,
-  'hide-tags-in-title': true,
-  'lane-width': true,
-  'link-date-to-daily-note': true,
-  'max-archive-size': true,
-  'metadata-keys': true,
-  'new-card-insertion-method': true,
-  'new-line-trigger': true,
-  'new-note-folder': true,
-  'new-note-template': true,
-  'archive-with-date': true,
-  'append-archive-date': true,
-  'archive-date-format': true,
-  'archive-date-separator': true,
-  'show-checkboxes': true,
-  'show-relative-date': true,
-  'time-format': true,
-  'time-trigger': true,
-  'show-add-list': true,
-  'show-archive-all': true,
-  'show-view-as-markdown': true,
-  'show-board-settings': true,
-  'show-search': true,
-  'tag-colors': true,
-  'date-colors': true,
-  'table-sizing': true,
-};
+export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
+  frontmatterKey,
+  'append-archive-date',
+  'archive-date-format',
+  'archive-date-separator',
+  'archive-with-date',
+  'date-colors',
+  'date-display-format',
+  'date-format',
+  'date-picker-week-start',
+  'date-time-display-format',
+  'date-trigger',
+  'hide-card-count',
+  'hide-date-display',
+  'hide-date-in-title',
+  'hide-tags-display',
+  'hide-tags-in-title',
+  'lane-width',
+  'link-date-to-daily-note',
+  'list-collapse',
+  'max-archive-size',
+  'metadata-keys',
+  'new-card-insertion-method',
+  'new-line-trigger',
+  'new-note-folder',
+  'new-note-template',
+  'show-add-list',
+  'show-archive-all',
+  'show-board-settings',
+  'show-checkboxes',
+  'show-relative-date',
+  'show-search',
+  'show-view-as-markdown',
+  'show-set-view',
+  'table-sizing',
+  'tag-colors',
+  'time-format',
+  'time-trigger',
+]);
 
 export type SettingRetriever = <K extends keyof KanbanSettings>(
   key: K,
@@ -155,11 +141,7 @@ export class SettingsManager {
   cleanupFns: Array<() => void> = [];
   applyDebounceTimer: number = 0;
 
-  constructor(
-    plugin: KanbanPlugin,
-    config: SettingsManagerConfig,
-    settings: KanbanSettings
-  ) {
+  constructor(plugin: KanbanPlugin, config: SettingsManagerConfig, settings: KanbanSettings) {
     this.app = plugin.app;
     this.plugin = plugin;
     this.config = config;
@@ -186,17 +168,13 @@ export class SettingsManager {
   constructUI(contentEl: HTMLElement, heading: string, local: boolean) {
     this.win = contentEl.win;
 
-    const { templateFiles, vaultFolders, templateWarning } = getListOptions(
-      this.app
-    );
+    const { templateFiles, vaultFolders, templateWarning } = getListOptions(this.app);
 
     contentEl.createEl('h3', { text: heading });
 
     if (local) {
       contentEl.createEl('p', {
-        text: t(
-          'These settings will take precedence over the default Kanban board settings.'
-        ),
+        text: t('These settings will take precedence over the default Kanban board settings.'),
       });
     } else {
       contentEl.createEl('p', {
@@ -219,9 +197,7 @@ export class SettingsManager {
 
         const [value, globalValue] = this.getSetting('new-line-trigger', local);
 
-        dropdown.setValue(
-          (value as string) || (globalValue as string) || 'shift-enter'
-        );
+        dropdown.setValue((value as string) || (globalValue as string) || 'shift-enter');
         dropdown.onChange((value) => {
           this.applySettingsUpdate({
             'new-line-trigger': {
@@ -234,23 +210,16 @@ export class SettingsManager {
     new Setting(contentEl)
       .setName(t('Prepend / append new cards'))
       .setDesc(
-        t(
-          'This setting controls whether new cards are added to the beginning or end of the list.'
-        )
+        t('This setting controls whether new cards are added to the beginning or end of the list.')
       )
       .addDropdown((dropdown) => {
         dropdown.addOption('prepend', t('Prepend'));
         dropdown.addOption('prepend-compact', t('Prepend (compact)'));
         dropdown.addOption('append', t('Append'));
 
-        const [value, globalValue] = this.getSetting(
-          'new-card-insertion-method',
-          local
-        );
+        const [value, globalValue] = this.getSetting('new-card-insertion-method', local);
 
-        dropdown.setValue(
-          (value as string) || (globalValue as string) || 'append'
-        );
+        dropdown.setValue((value as string) || (globalValue as string) || 'append');
         dropdown.onChange((value) => {
           this.applySettingsUpdate({
             'new-card-insertion-method': {
@@ -262,11 +231,7 @@ export class SettingsManager {
 
     new Setting(contentEl)
       .setName(t('Note template'))
-      .setDesc(
-        t(
-          'This template will be used when creating new notes from Kanban cards.'
-        )
-      )
+      .setDesc(t('This template will be used when creating new notes from Kanban cards.'))
       .then(
         createSearchSelect({
           choices: templateFiles,
@@ -305,10 +270,7 @@ export class SettingsManager {
           .addToggle((toggle) => {
             toggleComponent = toggle;
 
-            const [value, globalValue] = this.getSetting(
-              'hide-card-count',
-              local
-            );
+            const [value, globalValue] = this.getSetting('hide-card-count', local);
 
             if (value !== undefined) {
               toggle.setValue(value as boolean);
@@ -328,10 +290,7 @@ export class SettingsManager {
             b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
-                const [, globalValue] = this.getSetting(
-                  'hide-card-count',
-                  local
-                );
+                const [, globalValue] = this.getSetting('hide-card-count', local);
                 toggleComponent.setValue(!!globalValue);
 
                 this.applySettingsUpdate({
@@ -348,9 +307,7 @@ export class SettingsManager {
         const [value, globalValue] = this.getSetting('lane-width', local);
 
         text.inputEl.setAttr('type', 'number');
-        text.inputEl.placeholder = `${
-          globalValue ? globalValue : '272'
-        } (default)`;
+        text.inputEl.placeholder = `${globalValue ? globalValue : '272'} (default)`;
         text.inputEl.value = value ? value.toString() : '';
 
         text.onChange((val) => {
@@ -387,9 +344,7 @@ export class SettingsManager {
         const [value, globalValue] = this.getSetting('max-archive-size', local);
 
         text.inputEl.setAttr('type', 'number');
-        text.inputEl.placeholder = `${
-          globalValue ? globalValue : '-1'
-        } (default)`;
+        text.inputEl.placeholder = `${globalValue ? globalValue : '-1'} (default)`;
         text.inputEl.value = value ? value.toString() : '';
 
         text.onChange((val) => {
@@ -425,10 +380,7 @@ export class SettingsManager {
           .addToggle((toggle) => {
             toggleComponent = toggle;
 
-            const [value, globalValue] = this.getSetting(
-              'show-checkboxes',
-              local
-            );
+            const [value, globalValue] = this.getSetting('show-checkboxes', local);
 
             if (value !== undefined) {
               toggle.setValue(value as boolean);
@@ -448,10 +400,7 @@ export class SettingsManager {
             b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
-                const [, globalValue] = this.getSetting(
-                  'show-checkboxes',
-                  local
-                );
+                const [, globalValue] = this.getSetting('show-checkboxes', local);
                 toggleComponent.setValue(!!globalValue);
 
                 this.applySettingsUpdate({
@@ -475,10 +424,7 @@ export class SettingsManager {
           .addToggle((toggle) => {
             toggleComponent = toggle;
 
-            const [value, globalValue] = this.getSetting(
-              'hide-tags-in-title',
-              local
-            );
+            const [value, globalValue] = this.getSetting('hide-tags-in-title', local);
 
             if (value !== undefined) {
               toggle.setValue(value as boolean);
@@ -498,10 +444,7 @@ export class SettingsManager {
             b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
-                const [, globalValue] = this.getSetting(
-                  'hide-tags-in-title',
-                  local
-                );
+                const [, globalValue] = this.getSetting('hide-tags-in-title', local);
                 toggleComponent.setValue(!!globalValue);
 
                 this.applySettingsUpdate({
@@ -513,9 +456,7 @@ export class SettingsManager {
 
     new Setting(contentEl)
       .setName(t('Hide card display tags'))
-      .setDesc(
-        t('When toggled, tags will not be displayed below the card title.')
-      )
+      .setDesc(t('When toggled, tags will not be displayed below the card title.'))
       .then((setting) => {
         let toggleComponent: ToggleComponent;
 
@@ -523,10 +464,7 @@ export class SettingsManager {
           .addToggle((toggle) => {
             toggleComponent = toggle;
 
-            const [value, globalValue] = this.getSetting(
-              'hide-tags-display',
-              local
-            );
+            const [value, globalValue] = this.getSetting('hide-tags-display', local);
 
             if (value !== undefined) {
               toggle.setValue(value as boolean);
@@ -546,10 +484,7 @@ export class SettingsManager {
             b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
-                const [, globalValue] = this.getSetting(
-                  'hide-tags-display',
-                  local
-                );
+                const [, globalValue] = this.getSetting('hide-tags-display', local);
                 toggleComponent.setValue(!!globalValue);
 
                 this.applySettingsUpdate({
@@ -565,15 +500,13 @@ export class SettingsManager {
       .then((setting) => {
         const [value] = this.getSetting('tag-colors', local);
 
-        const keys: TagColorSetting[] = ((value || []) as TagColorKey[]).map(
-          (k) => {
-            return {
-              ...TagColorSettingTemplate,
-              id: generateInstanceId(),
-              data: k,
-            };
-          }
-        );
+        const keys: TagColorSetting[] = ((value || []) as TagColorKey[]).map((k) => {
+          return {
+            ...TagColorSettingTemplate,
+            id: generateInstanceId(),
+            data: k,
+          };
+        });
 
         renderTagSettings(setting.settingEl, keys, (keys: TagColorSetting[]) =>
           this.applySettingsUpdate({
@@ -632,53 +565,45 @@ export class SettingsManager {
         });
     });
 
-    new Setting(contentEl)
-      .setName(t('Archive completed cards'))
-      .then((setting) => {
-        let toggleComponent: ToggleComponent;
+    new Setting(contentEl).setName(t('Archive completed cards')).then((setting) => {
+      let toggleComponent: ToggleComponent;
 
-        setting
-          .addToggle((toggle) => {
-            toggleComponent = toggle;
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
 
-            const [value, globalValue] = this.getSetting(
-              'show-archive-all',
-              local
-            );
+          const [value, globalValue] = this.getSetting('show-archive-all', local);
 
-            if (value !== undefined && value !== null) {
-              toggle.setValue(value as boolean);
-            } else if (globalValue !== undefined && globalValue !== null) {
-              toggle.setValue(globalValue as boolean);
-            } else {
-              // default
-              toggle.setValue(true);
-            }
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
 
-            toggle.onChange((newValue) => {
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'show-archive-all': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('lucide-rotate-ccw')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('show-archive-all', local);
+              toggleComponent.setValue(!!globalValue);
+
               this.applySettingsUpdate({
-                'show-archive-all': {
-                  $set: newValue,
-                },
+                $unset: ['show-archive-all'],
               });
             });
-          })
-          .addExtraButton((b) => {
-            b.setIcon('lucide-rotate-ccw')
-              .setTooltip(t('Reset to default'))
-              .onClick(() => {
-                const [, globalValue] = this.getSetting(
-                  'show-archive-all',
-                  local
-                );
-                toggleComponent.setValue(!!globalValue);
-
-                this.applySettingsUpdate({
-                  $unset: ['show-archive-all'],
-                });
-              });
-          });
-      });
+        });
+    });
 
     new Setting(contentEl).setName(t('Open as markdown')).then((setting) => {
       let toggleComponent: ToggleComponent;
@@ -687,10 +612,7 @@ export class SettingsManager {
         .addToggle((toggle) => {
           toggleComponent = toggle;
 
-          const [value, globalValue] = this.getSetting(
-            'show-view-as-markdown',
-            local
-          );
+          const [value, globalValue] = this.getSetting('show-view-as-markdown', local);
 
           if (value !== undefined && value !== null) {
             toggle.setValue(value as boolean);
@@ -713,10 +635,7 @@ export class SettingsManager {
           b.setIcon('lucide-rotate-ccw')
             .setTooltip(t('Reset to default'))
             .onClick(() => {
-              const [, globalValue] = this.getSetting(
-                'show-view-as-markdown',
-                local
-              );
+              const [, globalValue] = this.getSetting('show-view-as-markdown', local);
               toggleComponent.setValue(!!globalValue);
 
               this.applySettingsUpdate({
@@ -733,10 +652,7 @@ export class SettingsManager {
         .addToggle((toggle) => {
           toggleComponent = toggle;
 
-          const [value, globalValue] = this.getSetting(
-            'show-board-settings',
-            local
-          );
+          const [value, globalValue] = this.getSetting('show-board-settings', local);
 
           if (value !== undefined && value !== null) {
             toggle.setValue(value as boolean);
@@ -759,10 +675,7 @@ export class SettingsManager {
           b.setIcon('lucide-rotate-ccw')
             .setTooltip(t('Reset to default'))
             .onClick(() => {
-              const [, globalValue] = this.getSetting(
-                'show-board-settings',
-                local
-              );
+              const [, globalValue] = this.getSetting('show-board-settings', local);
               toggleComponent.setValue(!!globalValue);
 
               this.applySettingsUpdate({
@@ -807,6 +720,46 @@ export class SettingsManager {
 
               this.applySettingsUpdate({
                 $unset: ['show-search'],
+              });
+            });
+        });
+    });
+
+    new Setting(contentEl).setName(t('Board view')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting('show-set-view', local);
+
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'show-set-view': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('lucide-rotate-ccw')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('show-set-view', local);
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['show-set-view'],
               });
             });
         });
@@ -872,9 +825,7 @@ export class SettingsManager {
       setting.addMomentFormat((mf) => {
         setting.descEl.appendChild(
           createFragment((frag) => {
-            frag.appendText(
-              t('This format will be used when saving dates in markdown.')
-            );
+            frag.appendText(t('This format will be used when saving dates in markdown.'));
             frag.createEl('br');
             frag.appendText(t('For more syntax, refer to') + ' ');
             frag.createEl(
@@ -972,11 +923,7 @@ export class SettingsManager {
       setting.addMomentFormat((mf) => {
         setting.descEl.appendChild(
           createFragment((frag) => {
-            frag.appendText(
-              t(
-                'This format will be used when displaying dates in Kanban cards.'
-              )
-            );
+            frag.appendText(t('This format will be used when displaying dates in Kanban cards.'));
             frag.createEl('br');
             frag.appendText(t('For more syntax, refer to') + ' ');
             frag.createEl(
@@ -996,10 +943,7 @@ export class SettingsManager {
           })
         );
 
-        const [value, globalValue] = this.getSetting(
-          'date-display-format',
-          local
-        );
+        const [value, globalValue] = this.getSetting('date-display-format', local);
         const defaultFormat = getDefaultDateFormat(this.app);
 
         mf.setPlaceholder(defaultFormat);
@@ -1039,10 +983,7 @@ export class SettingsManager {
           .addToggle((toggle) => {
             toggleComponent = toggle;
 
-            const [value, globalValue] = this.getSetting(
-              'show-relative-date',
-              local
-            );
+            const [value, globalValue] = this.getSetting('show-relative-date', local);
 
             if (value !== undefined) {
               toggle.setValue(value as boolean);
@@ -1062,10 +1003,7 @@ export class SettingsManager {
             b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
-                const [, globalValue] = this.getSetting(
-                  'show-relative-date',
-                  local
-                );
+                const [, globalValue] = this.getSetting('show-relative-date', local);
                 toggleComponent.setValue(!!globalValue);
 
                 this.applySettingsUpdate({
@@ -1089,10 +1027,7 @@ export class SettingsManager {
           .addToggle((toggle) => {
             toggleComponent = toggle;
 
-            const [value, globalValue] = this.getSetting(
-              'hide-date-display',
-              local
-            );
+            const [value, globalValue] = this.getSetting('hide-date-display', local);
 
             if (value !== undefined) {
               toggle.setValue(value as boolean);
@@ -1112,10 +1047,7 @@ export class SettingsManager {
             b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
-                const [, globalValue] = this.getSetting(
-                  'hide-date-display',
-                  local
-                );
+                const [, globalValue] = this.getSetting('hide-date-display', local);
                 toggleComponent.setValue(!!globalValue);
 
                 this.applySettingsUpdate({
@@ -1139,10 +1071,7 @@ export class SettingsManager {
           .addToggle((toggle) => {
             toggleComponent = toggle;
 
-            const [value, globalValue] = this.getSetting(
-              'hide-date-in-title',
-              local
-            );
+            const [value, globalValue] = this.getSetting('hide-date-in-title', local);
 
             if (value !== undefined) {
               toggle.setValue(value as boolean);
@@ -1162,10 +1091,7 @@ export class SettingsManager {
             b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
-                const [, globalValue] = this.getSetting(
-                  'hide-date-in-title',
-                  local
-                );
+                const [, globalValue] = this.getSetting('hide-date-in-title', local);
                 toggleComponent.setValue(!!globalValue);
 
                 this.applySettingsUpdate({
@@ -1177,23 +1103,17 @@ export class SettingsManager {
 
     new Setting(contentEl)
       .setName(t('Display date colors'))
-      .setDesc(
-        t(
-          'Set colors for the date displayed below the card based on the rules below'
-        )
-      )
+      .setDesc(t('Set colors for the date displayed below the card based on the rules below'))
       .then((setting) => {
         const [value] = this.getSetting('date-colors', local);
 
-        const keys: DateColorSetting[] = ((value || []) as DateColorKey[]).map(
-          (k) => {
-            return {
-              ...DateColorSettingTemplate,
-              id: generateInstanceId(),
-              data: k,
-            };
-          }
-        );
+        const keys: DateColorSetting[] = ((value || []) as DateColorKey[]).map((k) => {
+          return {
+            ...DateColorSettingTemplate,
+            id: generateInstanceId(),
+            data: k,
+          };
+        });
 
         renderDateSettings(
           setting.settingEl,
@@ -1205,10 +1125,7 @@ export class SettingsManager {
               },
             }),
           () => {
-            const [value, globalValue] = this.getSetting(
-              'date-display-format',
-              local
-            );
+            const [value, globalValue] = this.getSetting('date-display-format', local);
             const defaultFormat = getDefaultDateFormat(this.app);
             return value || globalValue || defaultFormat;
           },
@@ -1228,9 +1145,7 @@ export class SettingsManager {
 
     new Setting(contentEl)
       .setName(t('Link dates to daily notes'))
-      .setDesc(
-        t('When toggled, dates will link to daily notes. Eg. [[2021-04-26]]')
-      )
+      .setDesc(t('When toggled, dates will link to daily notes. Eg. [[2021-04-26]]'))
       .then((setting) => {
         let toggleComponent: ToggleComponent;
 
@@ -1238,10 +1153,7 @@ export class SettingsManager {
           .addToggle((toggle) => {
             toggleComponent = toggle;
 
-            const [value, globalValue] = this.getSetting(
-              'link-date-to-daily-note',
-              local
-            );
+            const [value, globalValue] = this.getSetting('link-date-to-daily-note', local);
 
             if (value !== undefined) {
               toggle.setValue(value as boolean);
@@ -1261,10 +1173,7 @@ export class SettingsManager {
             b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
-                const [, globalValue] = this.getSetting(
-                  'link-date-to-daily-note',
-                  local
-                );
+                const [, globalValue] = this.getSetting('link-date-to-daily-note', local);
                 toggleComponent.setValue(!!globalValue);
 
                 this.applySettingsUpdate({
@@ -1288,10 +1197,7 @@ export class SettingsManager {
           .addToggle((toggle) => {
             toggleComponent = toggle;
 
-            const [value, globalValue] = this.getSetting(
-              'archive-with-date',
-              local
-            );
+            const [value, globalValue] = this.getSetting('archive-with-date', local);
 
             if (value !== undefined) {
               toggle.setValue(value as boolean);
@@ -1311,10 +1217,7 @@ export class SettingsManager {
             b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
-                const [, globalValue] = this.getSetting(
-                  'archive-with-date',
-                  local
-                );
+                const [, globalValue] = this.getSetting('archive-with-date', local);
                 toggleComponent.setValue(!!globalValue);
 
                 this.applySettingsUpdate({
@@ -1338,10 +1241,7 @@ export class SettingsManager {
           .addToggle((toggle) => {
             toggleComponent = toggle;
 
-            const [value, globalValue] = this.getSetting(
-              'append-archive-date',
-              local
-            );
+            const [value, globalValue] = this.getSetting('append-archive-date', local);
 
             if (value !== undefined) {
               toggle.setValue(value as boolean);
@@ -1361,10 +1261,7 @@ export class SettingsManager {
             b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
-                const [, globalValue] = this.getSetting(
-                  'append-archive-date',
-                  local
-                );
+                const [, globalValue] = this.getSetting('append-archive-date', local);
                 toggleComponent.setValue(!!globalValue);
 
                 this.applySettingsUpdate({
@@ -1376,18 +1273,11 @@ export class SettingsManager {
 
     new Setting(contentEl)
       .setName(t('Archive date/time separator'))
-      .setDesc(
-        t('This will be used to separate the archived date/time from the title')
-      )
+      .setDesc(t('This will be used to separate the archived date/time from the title'))
       .addText((text) => {
-        const [value, globalValue] = this.getSetting(
-          'archive-date-separator',
-          local
-        );
+        const [value, globalValue] = this.getSetting('archive-date-separator', local);
 
-        text.inputEl.placeholder = globalValue
-          ? `${globalValue} (default)`
-          : '';
+        text.inputEl.placeholder = globalValue ? `${globalValue} (default)` : '';
         text.inputEl.value = value ? (value as string) : '';
 
         text.onChange((val) => {
@@ -1407,72 +1297,59 @@ export class SettingsManager {
         });
       });
 
-    new Setting(contentEl)
-      .setName(t('Archive date/time format'))
-      .then((setting) => {
-        setting.addMomentFormat((mf) => {
-          setting.descEl.appendChild(
-            createFragment((frag) => {
-              frag.appendText(t('For more syntax, refer to') + ' ');
-              frag.createEl(
-                'a',
-                {
-                  text: t('format reference'),
-                  href: 'https://momentjs.com/docs/#/displaying/format/',
-                },
-                (a) => {
-                  a.setAttr('target', '_blank');
-                }
-              );
-              frag.createEl('br');
-              frag.appendText(t('Your current syntax looks like this') + ': ');
-              mf.setSampleEl(frag.createEl('b', { cls: 'u-pop' }));
-              frag.createEl('br');
-            })
-          );
+    new Setting(contentEl).setName(t('Archive date/time format')).then((setting) => {
+      setting.addMomentFormat((mf) => {
+        setting.descEl.appendChild(
+          createFragment((frag) => {
+            frag.appendText(t('For more syntax, refer to') + ' ');
+            frag.createEl(
+              'a',
+              {
+                text: t('format reference'),
+                href: 'https://momentjs.com/docs/#/displaying/format/',
+              },
+              (a) => {
+                a.setAttr('target', '_blank');
+              }
+            );
+            frag.createEl('br');
+            frag.appendText(t('Your current syntax looks like this') + ': ');
+            mf.setSampleEl(frag.createEl('b', { cls: 'u-pop' }));
+            frag.createEl('br');
+          })
+        );
 
-          const [value, globalValue] = this.getSetting(
-            'archive-date-format',
-            local
-          );
+        const [value, globalValue] = this.getSetting('archive-date-format', local);
 
-          const [dateFmt, globalDateFmt] = this.getSetting(
-            'date-format',
-            local
-          );
-          const defaultDateFmt =
-            dateFmt || globalDateFmt || getDefaultDateFormat(this.app);
-          const [timeFmt, globalTimeFmt] = this.getSetting(
-            'time-format',
-            local
-          );
-          const defaultTimeFmt =
-            timeFmt || globalTimeFmt || getDefaultTimeFormat(this.app);
+        const [dateFmt, globalDateFmt] = this.getSetting('date-format', local);
+        const defaultDateFmt = dateFmt || globalDateFmt || getDefaultDateFormat(this.app);
+        const [timeFmt, globalTimeFmt] = this.getSetting('time-format', local);
+        const defaultTimeFmt = timeFmt || globalTimeFmt || getDefaultTimeFormat(this.app);
 
-          const defaultFormat = `${defaultDateFmt} ${defaultTimeFmt}`;
+        const defaultFormat = `${defaultDateFmt} ${defaultTimeFmt}`;
 
-          mf.setPlaceholder(defaultFormat);
-          mf.setDefaultFormat(defaultFormat);
+        mf.setPlaceholder(defaultFormat);
+        mf.setDefaultFormat(defaultFormat);
 
-          if (value || globalValue) {
-            mf.setValue((value || globalValue) as string);
+        if (value || globalValue) {
+          mf.setValue((value || globalValue) as string);
+        }
+
+        mf.onChange((newValue) => {
+          if (newValue) {
+            this.applySettingsUpdate({
+              'archive-date-format': {
+                $set: newValue,
+              },
+            });
+          } else {
+            this.applySettingsUpdate({
+              $unset: ['archive-date-format'],
+            });
           }
-
-          mf.onChange((newValue) => {
-            if (newValue) {
-              this.applySettingsUpdate({
-                'archive-date-format': {
-                  $set: newValue,
-                },
-              });
-            } else {
-              this.applySettingsUpdate({
-                $unset: ['archive-date-format'],
-              });
-            }
-          });
         });
       });
+    });
 
     new Setting(contentEl)
       .setName(t('Calendar: first day of week'))
@@ -1487,10 +1364,7 @@ export class SettingsManager {
         dropdown.addOption('5', t('Friday'));
         dropdown.addOption('6', t('Saturday'));
 
-        const [value, globalValue] = this.getSetting(
-          'date-picker-week-start',
-          local
-        );
+        const [value, globalValue] = this.getSetting('date-picker-week-start', local);
 
         dropdown.setValue(value?.toString() || globalValue?.toString() || '');
         dropdown.onChange((value) => {
@@ -1522,9 +1396,7 @@ export class SettingsManager {
 
       const [value] = this.getSetting('metadata-keys', local);
 
-      const keys: MetadataSetting[] = (
-        (value as DataKey[]) || ([] as DataKey[])
-      ).map((k) => {
+      const keys: MetadataSetting[] = ((value as DataKey[]) || ([] as DataKey[])).map((k) => {
         return {
           ...MetadataSettingTemplate,
           id: generateInstanceId(),
@@ -1533,16 +1405,12 @@ export class SettingsManager {
         };
       });
 
-      renderMetadataSettings(
-        setting.settingEl,
-        contentEl,
-        keys,
-        (keys: MetadataSetting[]) =>
-          this.applySettingsUpdate({
-            'metadata-keys': {
-              $set: keys.map((k) => k.data),
-            },
-          })
+      renderMetadataSettings(setting.settingEl, contentEl, keys, (keys: MetadataSetting[]) =>
+        this.applySettingsUpdate({
+          'metadata-keys': {
+            $set: keys.map((k) => k.data),
+          },
+        })
       );
 
       this.cleanupFns.push(() => {
@@ -1564,11 +1432,7 @@ export class SettingsModal extends Modal {
   view: KanbanView;
   settingsManager: SettingsManager;
 
-  constructor(
-    view: KanbanView,
-    config: SettingsManagerConfig,
-    settings: KanbanSettings
-  ) {
+  constructor(view: KanbanView, config: SettingsManagerConfig, settings: KanbanSettings) {
     super(view.app);
 
     this.view = view;

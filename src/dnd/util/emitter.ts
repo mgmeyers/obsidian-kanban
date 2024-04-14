@@ -12,18 +12,8 @@ export interface Unsubscribe {
 
 export interface Emitter<Events extends EventsMap = DefaultEvents> {
   events: Partial<{ [E in keyof Events]: Array<Events[E]> }>;
-  on<K extends keyof Events>(
-    this: this,
-    event: K,
-    cb: Events[K],
-    id?: string
-  ): Unsubscribe;
-  off<K extends keyof Events>(
-    this: this,
-    event: K,
-    cb: Events[K],
-    id?: string
-  ): void;
+  on<K extends keyof Events>(this: this, event: K, cb: Events[K], id?: string): Unsubscribe;
+  off<K extends keyof Events>(this: this, event: K, cb: Events[K], id?: string): void;
   emit<K extends keyof Events>(
     this: this,
     event: K,
@@ -32,9 +22,7 @@ export interface Emitter<Events extends EventsMap = DefaultEvents> {
   ): void;
 }
 
-export function createEmitter<
-  Events extends EventsMap = DefaultEvents,
->(): Emitter<Events> {
+export function createEmitter<Events extends EventsMap = DefaultEvents>(): Emitter<Events> {
   return {
     events: {},
 

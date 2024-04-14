@@ -25,20 +25,7 @@ export const Icelandic: CustomLocale = {
   },
 
   months: {
-    shorthand: [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'Maí',
-      'Jún',
-      'Júl',
-      'Ágú',
-      'Sep',
-      'Okt',
-      'Nóv',
-      'Des',
-    ],
+    shorthand: ['Jan', 'Feb', 'Mar', 'Apr', 'Maí', 'Jún', 'Júl', 'Ágú', 'Sep', 'Okt', 'Nóv', 'Des'],
     longhand: [
       'Janúar',
       'Febrúar',

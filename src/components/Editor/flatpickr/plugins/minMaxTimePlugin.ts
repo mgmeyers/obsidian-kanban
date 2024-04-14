@@ -48,10 +48,8 @@ function minMaxTimePlugin(config: Config = {}): Plugin {
       onReady(this: Instance) {
         state.formatDate = this.formatDate;
         state.defaults = {
-          minTime:
-            this.config.minTime && state.formatDate(this.config.minTime, 'H:i'),
-          maxTime:
-            this.config.maxTime && state.formatDate(this.config.maxTime, 'H:i'),
+          minTime: this.config.minTime && state.formatDate(this.config.minTime, 'H:i'),
+          maxTime: this.config.maxTime && state.formatDate(this.config.maxTime, 'H:i'),
         };
         fp.loadedPlugins.push('minMaxTime');
       },
@@ -90,11 +88,7 @@ function minMaxTimePlugin(config: Config = {}): Plugin {
             if (currentTime > maxBound && currentTime < minBound) {
               const result = parseSeconds(minBound);
               fp.setDate(
-                new Date(latest.getTime()).setHours(
-                  result[0],
-                  result[1],
-                  result[2]
-                ),
+                new Date(latest.getTime()).setHours(result[0], result[1], result[2]),
                 false
               );
             }
@@ -109,9 +103,7 @@ function minMaxTimePlugin(config: Config = {}): Plugin {
                 ),
                 false
               );
-            } else if (
-              compareDates(latest, fp.config.minTime as Date, false) < 0
-            ) {
+            } else if (compareDates(latest, fp.config.minTime as Date, false) < 0) {
               fp.setDate(
                 new Date(latest.getTime()).setHours(
                   (fp.config.minTime as Date).getHours(),

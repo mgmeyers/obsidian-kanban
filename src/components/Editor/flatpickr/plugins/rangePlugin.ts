@@ -36,9 +36,7 @@ function rangePlugin(config: Config = {}): Plugin {
         }
 
         if (fp.config.wrap) {
-          secondInput = secondInput.querySelector(
-            '[data-input]'
-          ) as HTMLInputElement;
+          secondInput = secondInput.querySelector('[data-input]') as HTMLInputElement;
         }
       } else {
         secondInput = fp._input.cloneNode() as HTMLInputElement;
@@ -64,10 +62,7 @@ function rangePlugin(config: Config = {}): Plugin {
 
           _secondInputFocused = true;
           fp.isOpen = false;
-          fp.open(
-            undefined,
-            config.position === 'left' ? fp._input : secondInput
-          );
+          fp.open(undefined, config.position === 'left' ? fp._input : secondInput);
         });
 
         fp._bind(fp._input, ['focus', 'click'], (e: FocusEvent) => {
@@ -80,11 +75,7 @@ function rangePlugin(config: Config = {}): Plugin {
       if (fp.config.allowInput)
         fp._bind(secondInput, 'keydown', (e: KeyboardEvent) => {
           if ((e as KeyboardEvent).key === 'Enter') {
-            fp.setDate(
-              [fp.selectedDates[0], secondInput.value],
-              true,
-              dateFormat
-            );
+            fp.setDate([fp.selectedDates[0], secondInput.value], true, dateFormat);
             secondInput.click();
           }
         });
@@ -98,9 +89,7 @@ function rangePlugin(config: Config = {}): Plugin {
       onParseConfig() {
         fp.config.mode = 'range';
 
-        dateFormat = fp.config.altInput
-          ? fp.config.altFormat
-          : fp.config.dateFormat;
+        dateFormat = fp.config.altInput ? fp.config.altFormat : fp.config.dateFormat;
       },
 
       onReady() {
@@ -123,11 +112,7 @@ function rangePlugin(config: Config = {}): Plugin {
         if (fp.config.allowInput)
           fp._bind(fp._input, 'keydown', (e: KeyboardEvent) => {
             if ((e as KeyboardEvent).key === 'Enter')
-              fp.setDate(
-                [fp._input.value, fp.selectedDates[1]],
-                true,
-                dateFormat
-              );
+              fp.setDate([fp._input.value, fp.selectedDates[1]], true, dateFormat);
           });
 
         fp.setDate(fp.selectedDates, false);
@@ -163,17 +148,14 @@ function rangePlugin(config: Config = {}): Plugin {
 
       onDestroy() {
         if (!config.input)
-          secondInput.parentNode &&
-            secondInput.parentNode.removeChild(secondInput);
+          secondInput.parentNode && secondInput.parentNode.removeChild(secondInput);
       },
 
       onValueUpdate(selDates: Date[]) {
         if (!secondInput) return;
 
         _prevDates =
-          !_prevDates || selDates.length >= _prevDates.length
-            ? [...selDates]
-            : _prevDates;
+          !_prevDates || selDates.length >= _prevDates.length ? [...selDates] : _prevDates;
 
         if (_prevDates.length > selDates.length) {
           const newSelectedDate = selDates[0];
@@ -193,8 +175,8 @@ function rangePlugin(config: Config = {}): Plugin {
           _prevDates = [...newDates];
         }
 
-        [fp._input.value = '', secondInput.value = ''] = fp.selectedDates.map(
-          (d) => fp.formatDate(d, dateFormat)
+        [fp._input.value = '', secondInput.value = ''] = fp.selectedDates.map((d) =>
+          fp.formatDate(d, dateFormat)
         );
       },
     };

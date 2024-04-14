@@ -1,5 +1,5 @@
 import { EditorView } from '@codemirror/view';
-import { StateUpdater, useContext, useRef } from 'preact/hooks';
+import { Dispatch, StateUpdater, useContext, useRef } from 'preact/hooks';
 import useOnclickOutside from 'react-cool-onclickoutside';
 import { t } from 'src/lang/helpers';
 
@@ -12,16 +12,11 @@ import { EditState, EditingState, Item, isEditing } from '../types';
 interface ItemFormProps {
   addItems: (items: Item[]) => void;
   editState: EditState;
-  setEditState: StateUpdater<EditState>;
+  setEditState: Dispatch<StateUpdater<EditState>>;
   hideButton?: boolean;
 }
 
-export function ItemForm({
-  addItems,
-  editState,
-  setEditState,
-  hideButton,
-}: ItemFormProps) {
+export function ItemForm({ addItems, editState, setEditState, hideButton }: ItemFormProps) {
   const { stateManager } = useContext(KanbanContext);
   const editorRef = useRef<EditorView>();
 

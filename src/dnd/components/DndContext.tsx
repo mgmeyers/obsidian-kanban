@@ -1,4 +1,4 @@
-import Preact from 'preact/compat';
+import { useEffect, useMemo, useRef } from 'preact/compat';
 
 import { DndManager } from '../managers/DndManager';
 import { Entity, WithChildren } from '../types';
@@ -11,17 +11,17 @@ interface DndContextProps extends WithChildren {
 }
 
 export function DndContext({ win, children, onDrop }: DndContextProps) {
-  const onDropRef = Preact.useRef(onDrop);
+  const onDropRef = useRef(onDrop);
 
   onDropRef.current = onDrop;
 
-  const dndManager = Preact.useMemo(() => {
+  const dndManager = useMemo(() => {
     return new DndManager(win, (dragEntity: Entity, dropEntity: Entity) => {
       return onDropRef.current(dragEntity, dropEntity);
     });
   }, []);
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     return () => {
       dndManager.destroy();
     };

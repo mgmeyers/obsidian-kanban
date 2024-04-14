@@ -5,8 +5,7 @@ export default {
   'Open as kanban board': '칸반 보드로 열기',
   'Create new board': '새 보드 만들기',
   'Archive completed cards in active board': '활성 보드에서 완료된 카드 보관',
-  'Error: current file is not a Kanban board':
-    '에러: 현재 파일은 칸반 보드가 아닙니다.',
+  'Error: current file is not a Kanban board': '에러: 현재 파일은 칸반 보드가 아닙니다.',
   'Convert empty note to Kanban': '빈 노트를 칸반 보드로 변환',
   'Error: cannot create Kanban, the current note is not empty':
     '에러: 칸반을 생성할 수 없습니다. 현재 노트가 비어있지 않습니다.',
@@ -63,8 +62,7 @@ export default {
     '카드에서 만든 노트는 이 폴더에 저장됩니다. 만약 비어있다면, 기본 위치에 저장됩니다.',
   'Default folder': '기본 폴더',
   'List width': '목록 너비',
-  'Enter a number to set the list width in pixels.':
-    '픽셀 단위로 목록의 너비를 설정합니다.',
+  'Enter a number to set the list width in pixels.': '픽셀 단위로 목록의 너비를 설정합니다.',
   'Maximum number of archived cards': '보관된 카드의 최대 수',
   "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
     '보관된 카드는 마크다운 모드에서 볼 수 있습니다. 이 설정은 한도에 도달하면 이전 카드를 제거하기 시작합니다. 이 값을 -1로 설정하면 보관함이 무한정으로 커질 수 있습니다.',
@@ -107,8 +105,7 @@ export default {
   'Add date and time to archived cards': '보관된 카드에 날짜와 시간 추가',
   'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     '활성화하면 카드가 보관될 때 현재 날짜와 시간이 카드 제목에 추가됩니다. 예: - [ ] 2021-05-14 10:00am 내 카드 제목',
-  'Add archive date/time after card title':
-    '카드 제목 뒤에 보관된 날짜/시간 추가',
+  'Add archive date/time after card title': '카드 제목 뒤에 보관된 날짜/시간 추가',
   'When toggled, the archived date/time will be added after the card title, e.g.- [ ] My card title 2021-05-14 10:00am. By default, it is inserted before the title.':
     '활성화하면 카드 제목 뒤에 보관된 날짜/시간이 추가됩니다. 예: - [ ] 내 카드 제목 2021-05-14 10:00am. 기본적으로 제목 앞에 삽입됩니다.',
   'Archive date/time separator': '보관될 카드의 날짜/시간 구분자',

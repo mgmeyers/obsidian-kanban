@@ -15,11 +15,7 @@ declare module 'obsidian' {
   }
 
   interface MetadataCache {
-    on(
-      name: 'dataview:api-ready',
-      callback: (api: DataviewApi) => any,
-      ctx?: any
-    ): EventRef;
+    on(name: 'dataview:api-ready', callback: (api: DataviewApi) => any, ctx?: any): EventRef;
     on(
       name: 'dataview:metadata-change',
       callback: (op: string, file: TFile) => any,

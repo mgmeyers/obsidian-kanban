@@ -4,52 +4,18 @@ import { StateManager } from 'src/StateManager';
 import { Board, DataTypes, Item, Lane } from 'src/components/types';
 import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
-import { renderMarkdown } from 'src/helpers/renderMarkdown';
 
 import { getSearchValue } from '../common';
 
 export async function hydrateLane(stateManager: StateManager, lane: Lane) {
-  try {
-    // const laneTitleDom = await renderMarkdown(
-    //   stateManager.getAView(),
-    //   lane.data.title
-    // );
-    // lane.data.dom = laneTitleDom;
-
-    return lane;
-  } catch (e) {
-    stateManager.setError(e);
-    throw e;
-  }
+  return lane;
 }
 
 export async function hydrateItem(stateManager: StateManager, item: Item) {
-  // let itemTitleDom: HTMLDivElement;
-
-  // try {
-  //   itemTitleDom = await renderMarkdown(
-  //     stateManager.getAView(),
-  //     item.data.title
-  //   );
-  // } catch (e) {
-  //   stateManager.setError(e);
-  //   throw e;
-  // }
-
-  // item.data.dom = itemTitleDom;
-  // item.data.titleSearch = getSearchValue(
-  //   itemTitleDom,
-  //   item.data.metadata.tags,
-  //   item.data.metadata.fileMetadata
-  // );
-
   const { dateStr, timeStr, fileAccessor } = item.data.metadata;
 
   if (dateStr) {
-    item.data.metadata.date = moment(
-      dateStr,
-      stateManager.getSetting('date-format')
-    );
+    item.data.metadata.date = moment(dateStr, stateManager.getSetting('date-format'));
   }
 
   if (timeStr) {
@@ -79,13 +45,12 @@ export async function hydrateItem(stateManager: StateManager, item: Item) {
     }
   }
 
+  item.data.titleSearch = getSearchValue(item, stateManager);
+
   return item;
 }
 
-export async function hydrateBoard(
-  stateManager: StateManager,
-  board: Board
-): Promise<Board> {
+export async function hydrateBoard(stateManager: StateManager, board: Board): Promise<Board> {
   try {
     await Promise.all(
       board.children.map(async (lane) => {
@@ -113,20 +78,15 @@ export async function hydrateBoard(
 function opAffectsHydration(op: Operation) {
   return (
     (op.op === 'add' || op.op === 'replace') &&
-    [
-      '/title',
-      '/titleRaw',
-      '/dateStr',
-      '/timeStr',
-      /\d$/,
-      /\/fileAccessor\/.+$/,
-    ].some((postFix) => {
-      if (typeof postFix === 'string') {
-        return op.path.endsWith(postFix);
-      } else {
-        return postFix.test(op.path);
+    ['/title', '/titleRaw', '/dateStr', '/timeStr', /\d$/, /\/fileAccessor\/.+$/].some(
+      (postFix) => {
+        if (typeof postFix === 'string') {
+          return op.path.endsWith(postFix);
+        } else {
+          return postFix.test(op.path);
+        }
       }
-    })
+    )
   );
 }
 

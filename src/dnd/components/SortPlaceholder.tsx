@@ -1,11 +1,11 @@
 import classcat from 'classcat';
-import Preact from 'preact/compat';
+import { useMemo, useRef } from 'preact/compat';
 import { c, generateInstanceId } from 'src/components/helpers';
 
-import { EntityData } from '../types';
+import { EntityData, WithChildren } from '../types';
 import { Droppable } from './Droppable';
 
-interface SortPlaceholderProps {
+export interface SortPlaceholderProps extends WithChildren {
   index: number;
   accepts: string[];
   className?: string;
@@ -17,11 +17,12 @@ export function SortPlaceholder({
   accepts,
   className,
   isStatic,
+  children,
 }: SortPlaceholderProps) {
-  const elementRef = Preact.useRef<HTMLDivElement>(null);
-  const measureRef = Preact.useRef<HTMLDivElement>(null);
+  const elementRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
 
-  const data = Preact.useMemo<EntityData>(() => {
+  const data = useMemo<EntityData>(() => {
     return {
       id: generateInstanceId(),
       type: 'placeholder',
@@ -32,14 +33,18 @@ export function SortPlaceholder({
   return (
     <div ref={measureRef} className={classcat([className, c('placeholder')])}>
       <div ref={elementRef}>
-        {!isStatic && (
+        {!isStatic ? (
           <Droppable
             elementRef={elementRef}
             measureRef={measureRef}
             id={data.id}
             index={index}
             data={data}
-          />
+          >
+            {children}
+          </Droppable>
+        ) : (
+          children
         )}
       </div>
     </div>

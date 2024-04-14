@@ -19,6 +19,7 @@ export interface LaneData {
   dom?: HTMLDivElement;
   forceEditMode?: boolean;
   sorted?: LaneSort;
+  isCollapsed?: boolean;
 }
 
 export interface DataKey {
@@ -76,7 +77,8 @@ export interface ItemData {
   isComplete?: boolean;
   title: string;
   titleRaw: string;
-  titleSearch?: string;
+  titleSearch: string;
+  titleSearchRaw: string;
   metadata: ItemMetaData;
   dom?: HTMLDivElement;
   forceEditMode?: boolean;

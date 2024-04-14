@@ -83,11 +83,7 @@ export type Instance = Elements &
     maxDateHasTime: boolean;
 
     // Methods
-    changeMonth: (
-      value: number,
-      isOffset?: boolean,
-      fromKeyboard?: boolean
-    ) => void;
+    changeMonth: (value: number, isOffset?: boolean, fromKeyboard?: boolean) => void;
     changeYear: (year: number) => void;
     clear: (emitChangeEvent?: boolean, toInitial?: boolean) => void;
     close: () => void;
@@ -98,15 +94,8 @@ export type Instance = Elements &
     onMouseOver: (elem?: DayElement, cellClass?: string) => void;
     open: (e?: FocusEvent | MouseEvent, positionElement?: HTMLElement) => void;
     redraw: () => void;
-    set: (
-      option: keyof Options | { [k in keyof Options]?: Options[k] },
-      value?: any
-    ) => void;
-    setDate: (
-      date: DateOption | DateOption[],
-      triggerChange?: boolean,
-      format?: string
-    ) => void;
+    set: (option: keyof Options | { [k in keyof Options]?: Options[k] }, value?: any) => void;
+    setDate: (date: DateOption | DateOption[], triggerChange?: boolean, format?: string) => void;
     toggle: () => void;
 
     pad: (num: string | number) => string;
@@ -135,12 +124,7 @@ export type Instance = Elements &
       className: string,
       content?: string
     ) => E;
-    createDay: (
-      className: string,
-      date: Date,
-      dayNumber: number,
-      i: number
-    ) => DayElement;
+    createDay: (className: string, date: Date, dayNumber: number, i: number) => DayElement;
     _setHoursFromDate: (date: Date) => void;
     _debouncedChange: () => void;
     __hideNextMonthArrow: boolean;
@@ -160,11 +144,7 @@ export interface FlatpickrFn {
   l10ns: { [k in LocaleKey]?: CustomLocale } & { default: Locale };
   localize: (l10n: CustomLocale) => void;
   setDefaults: (config: Options) => void;
-  parseDate: (
-    date: DateOption,
-    format?: string,
-    timeless?: boolean
-  ) => Date | undefined;
+  parseDate: (date: DateOption, format?: string, timeless?: boolean) => Date | undefined;
   formatDate: (date: Date, format: string) => string;
   compareDates: (date1: Date, date2: Date, timeless?: boolean) => number;
 }

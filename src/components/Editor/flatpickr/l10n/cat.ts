@@ -13,15 +13,7 @@ const fp =
 export const Catalan: CustomLocale = {
   weekdays: {
     shorthand: ['Dg', 'Dl', 'Dt', 'Dc', 'Dj', 'Dv', 'Ds'],
-    longhand: [
-      'Diumenge',
-      'Dilluns',
-      'Dimarts',
-      'Dimecres',
-      'Dijous',
-      'Divendres',
-      'Dissabte',
-    ],
+    longhand: ['Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'],
   },
 
   months: {

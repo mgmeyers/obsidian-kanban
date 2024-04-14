@@ -1,14 +1,9 @@
 import { insertBlankLine } from '@codemirror/commands';
 import { EditorSelection, Extension, Prec } from '@codemirror/state';
-import {
-  EditorView,
-  ViewUpdate,
-  keymap,
-  placeholder as placeholderExt,
-} from '@codemirror/view';
+import { EditorView, ViewUpdate, keymap, placeholder as placeholderExt } from '@codemirror/view';
 import classcat from 'classcat';
 import { Platform } from 'obsidian';
-import Preact, { MutableRefObject, useEffect, useRef } from 'preact/compat';
+import { MutableRefObject, useContext, useEffect, useRef } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
 import { t } from 'src/lang/helpers';
@@ -31,15 +26,9 @@ interface MarkdownEditorProps {
   placeholder?: string;
 }
 
-export function allowNewLine(
-  stateManager: StateManager,
-  mod: boolean,
-  shift: boolean
-) {
+export function allowNewLine(stateManager: StateManager, mod: boolean, shift: boolean) {
   if (Platform.isMobile) return true;
-  return stateManager.getSetting('new-line-trigger') === 'enter'
-    ? !(mod || shift)
-    : mod || shift;
+  return stateManager.getSetting('new-line-trigger') === 'enter' ? !(mod || shift) : mod || shift;
 }
 
 function getEditorAppProxy(view: KanbanView) {
@@ -51,11 +40,7 @@ function getEditorAppProxy(view: KanbanView) {
             if (prop === 'config') {
               return new Proxy((view.app.vault as any).config, {
                 get(target, prop, reveiver) {
-                  if (
-                    ['showLineNumber', 'foldHeading', 'foldIndent'].includes(
-                      prop as string
-                    )
-                  ) {
+                  if (['showLineNumber', 'foldHeading', 'foldIndent'].includes(prop as string)) {
                     return false;
                   }
                   return Reflect.get(target, prop, reveiver);
@@ -101,7 +86,7 @@ export function MarkdownEditor({
   value,
   placeholder,
 }: MarkdownEditorProps) {
-  const { view } = Preact.useContext(KanbanContext);
+  const { view } = useContext(KanbanContext);
   const elRef = useRef<HTMLDivElement>();
   const internalRef = useRef<EditorView>();
 
@@ -125,29 +110,31 @@ export function MarkdownEditor({
             )
           );
 
-        const makeEnterHandler =
-          (mod: boolean, shift: boolean) => (cm: EditorView) => {
-            const didRun = onEnter(cm, mod, shift);
-            if (!didRun && this.app.vault.getConfig('smartIndentList')) {
-              this.editor.newlineAndIndentContinueMarkdownList();
-            } else {
-              insertBlankLine(cm as any);
-            }
-            return true;
-          };
+        const makeEnterHandler = (mod: boolean, shift: boolean) => (cm: EditorView) => {
+          const didRun = onEnter(cm, mod, shift);
+          if (didRun) return true;
+          if (this.app.vault.getConfig('smartIndentList')) {
+            this.editor.newlineAndIndentContinueMarkdownList();
+          } else {
+            insertBlankLine(cm as any);
+          }
+          return true;
+        };
 
         extensions.push(
-          Prec.high(
+          Prec.highest(
             keymap.of([
               {
                 key: 'Enter',
                 run: makeEnterHandler(false, false),
                 shift: makeEnterHandler(false, true),
+                preventDefault: true,
               },
               {
                 key: 'Mod-Enter',
                 run: makeEnterHandler(true, false),
                 shift: makeEnterHandler(true, true),
+                preventDefault: true,
               },
               {
                 key: 'Escape',
@@ -167,9 +154,7 @@ export function MarkdownEditor({
 
     const controller = getMarkdownController(view);
     const app = getEditorAppProxy(view);
-    const editor = view.plugin.addChild(
-      new (Editor as any)(app, elRef.current, controller)
-    );
+    const editor = view.plugin.addChild(new (Editor as any)(app, elRef.current, controller));
     const cm: EditorView = editor.cm;
 
     internalRef.current = cm;

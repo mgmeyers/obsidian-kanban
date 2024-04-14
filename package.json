@@ -43,6 +43,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@tanstack/match-sorter-utils": "^8.15.1",
     "@tanstack/react-table": "^8.11.2",
     "animated-scroll-to": "^2.2.0",
     "box-intersect": "^1.0.2",

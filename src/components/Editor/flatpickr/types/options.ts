@@ -3,17 +3,9 @@ import { CustomLocale, Locale, key as LocaleKey } from './locale';
 
 export type DateOption = Date | string | number;
 export type DateRangeLimit<D = DateOption> = { from: D; to: D };
-export type DateLimit<D = DateOption> =
-  | D
-  | DateRangeLimit<D>
-  | ((date: Date) => boolean);
+export type DateLimit<D = DateOption> = D | DateRangeLimit<D> | ((date: Date) => boolean);
 
-export type Hook = (
-  dates: Date[],
-  currentDateString: string,
-  self: Instance,
-  data?: any
-) => void;
+export type Hook = (dates: Date[], currentDateString: string, self: Instance, data?: any) => void;
 
 export type HookKey =
   | 'onChange'
@@ -351,9 +343,7 @@ export const defaults: ParsedOptions = {
   altFormat: 'F j, Y',
   altInput: false,
   altInputClass: 'form-control input',
-  animate:
-    typeof window === 'object' &&
-    window.navigator.userAgent.indexOf('MSIE') === -1,
+  animate: typeof window === 'object' && window.navigator.userAgent.indexOf('MSIE') === -1,
   ariaDateFormat: 'F j, Y',
   autoFillDefaultTime: true,
   clickOpens: true,
@@ -367,8 +357,7 @@ export const defaults: ParsedOptions = {
   disableMobile: false,
   enableSeconds: false,
   enableTime: false,
-  errorHandler: (err: Error) =>
-    typeof console !== 'undefined' && console.warn(err),
+  errorHandler: (err: Error) => typeof console !== 'undefined' && console.warn(err),
   getWeek: (givenDate: Date) => {
     const date = new Date(givenDate.getTime());
     date.setHours(0, 0, 0, 0);
@@ -383,10 +372,7 @@ export const defaults: ParsedOptions = {
     return (
       1 +
       Math.round(
-        ((date.getTime() - week1.getTime()) / 86400000 -
-          3 +
-          ((week1.getDay() + 6) % 7)) /
-          7
+        ((date.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7
       )
     );
   },

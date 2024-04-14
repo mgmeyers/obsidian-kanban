@@ -43,14 +43,9 @@ export function RelativeDate({ item, stateManager }: DateProps) {
     return null;
   }
 
-  const relativeDate = getRelativeDate(
-    item.data.metadata.date,
-    item.data.metadata.time
-  );
+  const relativeDate = getRelativeDate(item.data.metadata.date, item.data.metadata.time);
 
-  return (
-    <span className={c('item-metadata-date-relative')}>{relativeDate}</span>
-  );
+  return <span className={c('item-metadata-date-relative')}>{relativeDate}</span>;
 }
 
 interface DateAndTimeProps {
@@ -87,9 +82,7 @@ export function DateAndTime({
 
   const hasTime = !!item.data.metadata.time;
   const dateDisplayStr = item.data.metadata.date.format(dateDisplayFormat);
-  const timeDisplayStr = !hasTime
-    ? null
-    : item.data.metadata.time.format(timeFormat);
+  const timeDisplayStr = !hasTime ? null : item.data.metadata.time.format(timeFormat);
 
   const datePath = dateStr ? getLinkpath(dateStr) : null;
   const isResolved = dateStr
@@ -134,9 +127,7 @@ export function DateAndTime({
     >
       <span
         {...dateProps}
-        className={`${c('item-metadata-date')} ${
-          !shouldLinkDate ? 'is-button' : ''
-        }`}
+        className={`${c('item-metadata-date')} ${!shouldLinkDate ? 'is-button' : ''}`}
       >
         {date}
       </span>{' '}

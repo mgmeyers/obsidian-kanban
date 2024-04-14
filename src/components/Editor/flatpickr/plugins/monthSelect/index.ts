@@ -60,9 +60,7 @@ function monthSelectPlugin(pluginConfig?: Partial<Config>): Plugin {
 
       fp.rContainer.appendChild(self.monthsContainer);
 
-      fp.calendarContainer.classList.add(
-        `flatpickr-monthSelect-theme-${config.theme}`
-      );
+      fp.calendarContainer.classList.add(`flatpickr-monthSelect-theme-${config.theme}`);
     }
 
     function buildMonths() {
@@ -90,17 +88,11 @@ function monthSelectPlugin(pluginConfig?: Partial<Config>): Plugin {
       }
 
       self.monthsContainer.appendChild(frag);
-      if (
-        fp.config.minDate &&
-        fp.currentYear === fp.config.minDate.getFullYear()
-      )
+      if (fp.config.minDate && fp.currentYear === fp.config.minDate.getFullYear())
         fp.prevMonthNav.classList.add('flatpickr-disabled');
       else fp.prevMonthNav.classList.remove('flatpickr-disabled');
 
-      if (
-        fp.config.maxDate &&
-        fp.currentYear === fp.config.maxDate.getFullYear()
-      )
+      if (fp.config.maxDate && fp.currentYear === fp.config.maxDate.getFullYear())
         fp.nextMonthNav.classList.add('flatpickr-disabled');
       else fp.nextMonthNav.classList.remove('flatpickr-disabled');
     }
@@ -124,17 +116,10 @@ function monthSelectPlugin(pluginConfig?: Partial<Config>): Plugin {
         buildMonths();
       });
 
-      fp._bind(
-        self.monthsContainer as HTMLElement,
-        'mouseover',
-        (e: MouseEvent) => {
-          if (fp.config.mode === 'range')
-            fp.onMouseOver(
-              getEventTarget(e) as DayElement,
-              'flatpickr-monthSelect-month'
-            );
-        }
-      );
+      fp._bind(self.monthsContainer as HTMLElement, 'mouseover', (e: MouseEvent) => {
+        if (fp.config.mode === 'range')
+          fp.onMouseOver(getEventTarget(e) as DayElement, 'flatpickr-monthSelect-month');
+      });
     }
 
     function setCurrentlySelected() {
@@ -208,19 +193,14 @@ function monthSelectPlugin(pluginConfig?: Partial<Config>): Plugin {
 
       if (fp.config.closeOnSelect) {
         const single = fp.config.mode === 'single';
-        const range =
-          fp.config.mode === 'range' && fp.selectedDates.length === 2;
+        const range = fp.config.mode === 'range' && fp.selectedDates.length === 2;
 
         if (single || range) fp.close();
       }
     }
 
     function setMonth(date: Date) {
-      const selectedDate = new Date(
-        fp.currentYear,
-        date.getMonth(),
-        date.getDate()
-      );
+      const selectedDate = new Date(fp.currentYear, date.getMonth(), date.getDate());
       let selectedDates: Date[] = [];
 
       switch (fp.config.mode) {
@@ -272,31 +252,25 @@ function monthSelectPlugin(pluginConfig?: Partial<Config>): Plugin {
       );
 
       if (index === -1) {
-        const target =
-          currentlySelected || self.monthsContainer.firstElementChild;
+        const target = currentlySelected || self.monthsContainer.firstElementChild;
         target.focus();
         index = (target as MonthElement).$i;
       }
 
       if (shouldMove) {
         (
-          self.monthsContainer.children[
-            (12 + index + shifts[e.keyCode]) % 12
-          ] as HTMLElement
+          self.monthsContainer.children[(12 + index + shifts[e.keyCode]) % 12] as HTMLElement
         ).focus();
       } else if (
         e.keyCode === 13 &&
         self.monthsContainer.contains(self.monthsContainer.doc.activeElement)
       ) {
-        setMonth(
-          (self.monthsContainer.doc.activeElement as MonthElement).dateObj
-        );
+        setMonth((self.monthsContainer.doc.activeElement as MonthElement).dateObj);
       }
     }
 
     function closeHook() {
-      if (fp.config?.mode === 'range' && fp.selectedDates.length === 1)
-        fp.clear(false);
+      if (fp.config?.mode === 'range' && fp.selectedDates.length === 1) fp.clear(false);
 
       if (!fp.selectedDates.length) buildMonths();
     }
@@ -319,9 +293,7 @@ function monthSelectPlugin(pluginConfig?: Partial<Config>): Plugin {
 
     function destroyPluginInstance() {
       if (self.monthsContainer !== null) {
-        const months = self.monthsContainer.querySelectorAll(
-          '.flatpickr-monthSelect-month'
-        );
+        const months = self.monthsContainer.querySelectorAll('.flatpickr-monthSelect-month');
 
         for (let index = 0; index < months.length; index++) {
           months[index].removeEventListener('click', selectMonth);
@@ -350,9 +322,7 @@ function monthSelectPlugin(pluginConfig?: Partial<Config>): Plugin {
         unstubCurrentMonth,
         destroyPluginInstance,
         () => {
-          fp.config.onClose = fp.config.onClose.filter(
-            (hook) => hook !== closeHook
-          );
+          fp.config.onClose = fp.config.onClose.filter((hook) => hook !== closeHook);
         },
       ],
     };

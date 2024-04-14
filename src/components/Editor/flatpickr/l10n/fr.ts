@@ -15,15 +15,7 @@ export const French: CustomLocale = {
 
   weekdays: {
     shorthand: ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'],
-    longhand: [
-      'dimanche',
-      'lundi',
-      'mardi',
-      'mercredi',
-      'jeudi',
-      'vendredi',
-      'samedi',
-    ],
+    longhand: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
   },
 
   months: {

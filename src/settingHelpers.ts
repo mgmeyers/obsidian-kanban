@@ -50,8 +50,7 @@ export function getTemplateChoices(app: App, folderStr?: string) {
 }
 
 export function getListOptions(app: App) {
-  const { templateFolder, templatesEnabled, templaterPlugin } =
-    getTemplatePlugins(app);
+  const { templateFolder, templatesEnabled, templaterPlugin } = getTemplatePlugins(app);
 
   const templateFiles = getTemplateChoices(app, templateFolder);
   const vaultFolders = getFolderChoices(app);

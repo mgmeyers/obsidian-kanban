@@ -1,5 +1,5 @@
 import Preact from 'preact/compat';
-import { StateUpdater } from 'preact/hooks';
+import { Dispatch, StateUpdater } from 'preact/hooks';
 import { t } from 'src/lang/helpers';
 
 import { Icon } from '../Icon/Icon';
@@ -8,7 +8,7 @@ import { EditState, EditingState, isEditing } from '../types';
 
 interface ItemMenuButtonProps {
   editState: EditState;
-  setEditState: StateUpdater<EditState>;
+  setEditState: Dispatch<StateUpdater<EditState>>;
   showMenu: (e: MouseEvent, internalLinkPath?: string) => void;
 }
 

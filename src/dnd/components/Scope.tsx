@@ -18,9 +18,5 @@ export function DndScope({ id, children }: ScopeProps) {
     };
   }, [id]);
 
-  return (
-    <ScopeIdContext.Provider value={scopeId}>
-      {children}
-    </ScopeIdContext.Provider>
-  );
+  return <ScopeIdContext.Provider value={scopeId}>{children}</ScopeIdContext.Provider>;
 }

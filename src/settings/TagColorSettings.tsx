@@ -6,11 +6,7 @@ import useOnclickOutside from 'react-cool-onclickoutside';
 
 import { Icon } from '../components/Icon/Icon';
 import { c, generateInstanceId } from '../components/helpers';
-import {
-  TagColorKey,
-  TagColorSetting,
-  TagColorSettingTemplate,
-} from '../components/types';
+import { TagColorKey, TagColorSetting, TagColorSettingTemplate } from '../components/types';
 import { getParentBodyElement } from '../dnd/util/getWindow';
 import { t } from '../lang/helpers';
 
@@ -41,11 +37,7 @@ export interface ColorPickerInputProps {
   defaultColor: string;
 }
 
-export function ColorPickerInput({
-  color,
-  setColor,
-  defaultColor,
-}: ColorPickerInputProps) {
+export function ColorPickerInput({ color, setColor, defaultColor }: ColorPickerInputProps) {
   const [localRGB, setLocalRGB] = Preact.useState(color || defaultColor);
   const [localHEX, setLocalHEX] = Preact.useState(color || defaultColor);
   const [isPickerVisible, setIsPickerVisible] = Preact.useState(false);
@@ -98,9 +90,7 @@ function Item({ tagColorKey, deleteKey, updateKey, defaultColors }: ItemProps) {
   return (
     <div className={c('setting-item-wrapper')}>
       <div className={c('setting-item')}>
-        <div
-          className={`${c('setting-controls-wrapper')} ${c('tag-color-input')}`}
-        >
+        <div className={`${c('setting-controls-wrapper')} ${c('tag-color-input')}`}>
           <div className={c('setting-input-wrapper')}>
             <div>
               <div className={c('setting-item-label')}>{t('Tag')}</div>
@@ -109,18 +99,12 @@ function Item({ tagColorKey, deleteKey, updateKey, defaultColors }: ItemProps) {
                 placeholder="#tag"
                 value={tagColorKey.tagKey}
                 onChange={(e) => {
-                  updateKey(
-                    e.currentTarget.value,
-                    tagColorKey.color,
-                    tagColorKey.backgroundColor
-                  );
+                  updateKey(e.currentTarget.value, tagColorKey.color, tagColorKey.backgroundColor);
                 }}
               />
             </div>
             <div>
-              <div className={c('setting-item-label')}>
-                {t('Background color')}
-              </div>
+              <div className={c('setting-item-label')}>{t('Background color')}</div>
               <ColorPickerInput
                 color={tagColorKey.backgroundColor}
                 setColor={(color) => {
@@ -134,11 +118,7 @@ function Item({ tagColorKey, deleteKey, updateKey, defaultColors }: ItemProps) {
               <ColorPickerInput
                 color={tagColorKey.color}
                 setColor={(color) => {
-                  updateKey(
-                    tagColorKey.tagKey,
-                    color,
-                    tagColorKey.backgroundColor
-                  );
+                  updateKey(tagColorKey.tagKey, color, tagColorKey.backgroundColor);
                 }}
                 defaultColor={defaultColors.color}
               />
@@ -163,11 +143,7 @@ function Item({ tagColorKey, deleteKey, updateKey, defaultColors }: ItemProps) {
           </div>
         </div>
         <div className={c('setting-button-wrapper')}>
-          <div
-            className="clickable-icon"
-            onClick={deleteKey}
-            aria-label={t('Delete')}
-          >
+          <div className="clickable-icon" onClick={deleteKey} aria-label={t('Delete')}>
             <Icon name="lucide-trash-2" />
           </div>
         </div>

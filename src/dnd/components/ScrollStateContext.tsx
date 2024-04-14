@@ -10,11 +10,7 @@ export function DndScrollState({ children }: WithChildren) {
     return new ScrollStateManager();
   }, []);
 
-  return (
-    <ScrollStateContext.Provider value={manager}>
-      {children}
-    </ScrollStateContext.Provider>
-  );
+  return <ScrollStateContext.Provider value={manager}>{children}</ScrollStateContext.Provider>;
 }
 
 export function useStoredScrollState(id: string, index: number | undefined) {

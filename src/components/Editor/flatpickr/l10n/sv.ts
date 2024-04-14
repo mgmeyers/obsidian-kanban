@@ -16,32 +16,11 @@ export const Swedish: CustomLocale = {
 
   weekdays: {
     shorthand: ['sön', 'mån', 'tis', 'ons', 'tor', 'fre', 'lör'],
-    longhand: [
-      'söndag',
-      'måndag',
-      'tisdag',
-      'onsdag',
-      'torsdag',
-      'fredag',
-      'lördag',
-    ],
+    longhand: ['söndag', 'måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag'],
   },
 
   months: {
-    shorthand: [
-      'jan',
-      'feb',
-      'mar',
-      'apr',
-      'maj',
-      'jun',
-      'jul',
-      'aug',
-      'sep',
-      'okt',
-      'nov',
-      'dec',
-    ],
+    shorthand: ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'],
     longhand: [
       'januari',
       'februari',

@@ -19,9 +19,7 @@ import {
 import { DndManager } from './DndManager';
 import { ScrollEventData } from './DragManager';
 
-export type IntersectionObserverHandler = (
-  entry: IntersectionObserverEntry
-) => void;
+export type IntersectionObserverHandler = (entry: IntersectionObserverEntry) => void;
 
 export const scrollContainerEntityType = 'scroll-container';
 
@@ -53,8 +51,7 @@ export class ScrollManager {
     dndManager: DndManager,
     scopeId: string,
     triggerTypes: string[],
-    parent: ScrollManager | null,
-    getScrollEl: () => HTMLElement | null
+    parent: ScrollManager | null
   ) {
     this.dndManager = dndManager;
     this.instanceId = generateInstanceId();
@@ -63,19 +60,19 @@ export class ScrollManager {
     this.scrollState = initialScrollState;
     this.parent = parent;
     this.activeScroll = new Map();
+    this.observerHandlers = new Map();
 
-    this.pollForNodes(getScrollEl);
+    //
+    // this.pollForNodes(getScrollEl);
   }
 
-  pollForNodes(getScrollEl: () => HTMLElement | null) {
-    if (!getScrollEl() || (this.parent && !this.parent.observerHandlers)) {
-      this.dndManager.win.requestAnimationFrame(() =>
-        this.pollForNodes(getScrollEl)
-      );
-    } else {
-      this.initNodes(getScrollEl());
-    }
-  }
+  // pollForNodes(getScrollEl: () => HTMLElement | null) {
+  //   if (!getScrollEl() || (this.parent && !this.parent.observerHandlers)) {
+  //     this.dndManager.win.requestAnimationFrame(() => this.pollForNodes(getScrollEl));
+  //   } else {
+  //     this.initNodes(getScrollEl());
+  //   }
+  // }
 
   initNodes(scrollEl: HTMLElement) {
     this.scrollEl = scrollEl;
@@ -89,7 +86,6 @@ export class ScrollManager {
 
     this.bindScrollHandlers();
 
-    this.observerHandlers = new Map();
     this.observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -107,6 +103,14 @@ export class ScrollManager {
       }
     );
 
+    const { observerQueue } = this;
+    this.observerQueue = [];
+
+    observerQueue.forEach(([id, element, handler]) => {
+      this.observerHandlers.set(id, handler);
+      this.observer.observe(element);
+    });
+
     this.scrollEl.addEventListener('scroll', this.onScroll, {
       passive: true,
       capture: false,
@@ -114,30 +118,24 @@ export class ScrollManager {
 
     this.dndManager.emitter.on('scrollResize', this.onScroll);
 
-    this.scrollEl.win.setTimeout(() => {
-      this.onScroll();
-    });
-
+    this.scrollEl.win.setTimeout(() => this.onScroll());
     this.dndManager.observeResize(this.scrollEl);
 
     if (this.parent) {
-      this.parent.registerObserverHandler(
-        this.instanceId,
-        this.scrollEl,
-        (entry) => {
-          if (entry.isIntersecting) {
-            this.handleEntityRegistration();
-          } else {
-            this.handleEntityUnregistration();
-          }
+      this.parent.registerObserverHandler(this.instanceId, this.scrollEl, (entry) => {
+        if (entry.isIntersecting) {
+          this.handleEntityRegistration();
+        } else {
+          this.handleEntityUnregistration();
         }
-      );
+      });
     } else {
       this.handleEntityRegistration();
     }
   }
 
   destroy() {
+    this.observerQueue.length = 0;
     this.handleEntityUnregistration();
     this.observer.disconnect();
     this.unbindScrollHandlers();
@@ -171,38 +169,32 @@ export class ScrollManager {
     });
   }
 
-  registerObserverHandler(
-    id: string,
-    element: HTMLElement,
-    handler: IntersectionObserverHandler
-  ) {
-    this.observerHandlers.set(id, handler);
-    this.observer.observe(element);
+  observerQueue: [string, HTMLElement, IntersectionObserverHandler][] = [];
+
+  registerObserverHandler(id: string, element: HTMLElement, handler: IntersectionObserverHandler) {
+    if (!this.observer) {
+      this.observerQueue.push([id, element, handler]);
+    } else {
+      this.observerHandlers.set(id, handler);
+      this.observer.observe(element);
+    }
   }
 
   unregisterObserverHandler(id: string, element: HTMLElement) {
-    this.observerHandlers.delete(id);
-    this.observer.unobserve(element);
+    if (!this.observer) {
+      this.observerQueue = this.observerQueue.filter((q) => q[0] !== id);
+    } else {
+      this.observerHandlers.delete(id);
+      this.observer.unobserve(element);
+    }
   }
 
   bindScrollHandlers() {
     sides.forEach((side) => {
       const id = this.getId(side);
-      this.dndManager.dragManager.emitter.on(
-        'beginDragScroll',
-        this.handleBeginDragScroll,
-        id
-      );
-      this.dndManager.dragManager.emitter.on(
-        'updateDragScroll',
-        this.handleUpdateDragScroll,
-        id
-      );
-      this.dndManager.dragManager.emitter.on(
-        'endDragScroll',
-        this.handleEndDragScroll,
-        id
-      );
+      this.dndManager.dragManager.emitter.on('beginDragScroll', this.handleBeginDragScroll, id);
+      this.dndManager.dragManager.emitter.on('updateDragScroll', this.handleUpdateDragScroll, id);
+      this.dndManager.dragManager.emitter.on('endDragScroll', this.handleEndDragScroll, id);
       this.dndManager.dragManager.emitter.on('dragEnd', this.onDragEnd);
     });
   }
@@ -210,21 +202,9 @@ export class ScrollManager {
   unbindScrollHandlers() {
     sides.forEach((side) => {
       const id = this.getId(side);
-      this.dndManager.dragManager.emitter.off(
-        'beginDragScroll',
-        this.handleBeginDragScroll,
-        id
-      );
-      this.dndManager.dragManager.emitter.off(
-        'updateDragScroll',
-        this.handleUpdateDragScroll,
-        id
-      );
-      this.dndManager.dragManager.emitter.off(
-        'endDragScroll',
-        this.handleEndDragScroll,
-        id
-      );
+      this.dndManager.dragManager.emitter.off('beginDragScroll', this.handleBeginDragScroll, id);
+      this.dndManager.dragManager.emitter.off('updateDragScroll', this.handleUpdateDragScroll, id);
+      this.dndManager.dragManager.emitter.off('endDragScroll', this.handleEndDragScroll, id);
       this.dndManager.dragManager.emitter.off('dragEnd', this.onDragEnd);
     });
   }
@@ -240,20 +220,14 @@ export class ScrollManager {
     this.activeScroll.clear();
   };
 
-  handleBeginDragScroll = ({
-    scrollEntitySide,
-    scrollStrength,
-  }: ScrollEventData) => {
+  handleBeginDragScroll = ({ scrollEntitySide, scrollStrength }: ScrollEventData) => {
     if (this.isDoneScrolling(scrollEntitySide)) return;
 
     this.activeScroll.set(scrollEntitySide, scrollStrength);
     this.handleDragScroll();
   };
 
-  handleUpdateDragScroll = ({
-    scrollEntitySide,
-    scrollStrength,
-  }: ScrollEventData) => {
+  handleUpdateDragScroll = ({ scrollEntitySide, scrollStrength }: ScrollEventData) => {
     if (this.isDoneScrolling(scrollEntitySide)) return;
 
     this.activeScroll.set(scrollEntitySide, scrollStrength);
@@ -296,15 +270,8 @@ export class ScrollManager {
         const shouldIncreaseScroll = ['right', 'bottom'].includes(side);
 
         scrollBy[scrollKey] = shouldIncreaseScroll
-          ? Math.max(
-              scrollStrengthModifier - (scrollStrengthModifier * strength) / 35,
-              0
-            )
-          : Math.min(
-              -scrollStrengthModifier +
-                (scrollStrengthModifier * strength) / 35,
-              0
-            );
+          ? Math.max(scrollStrengthModifier - (scrollStrengthModifier * strength) / 35, 0)
+          : Math.min(-scrollStrengthModifier + (scrollStrengthModifier * strength) / 35, 0);
       });
 
       this.scrollEl.scrollBy(scrollBy);
@@ -336,10 +303,8 @@ export class ScrollManager {
     const parentShift = this.parent?.getScrollShift();
 
     return {
-      x:
-        numberOrZero(this.parent?.scrollState.x) + numberOrZero(parentShift?.x),
-      y:
-        numberOrZero(this.parent?.scrollState.y) + numberOrZero(parentShift?.y),
+      x: numberOrZero(this.parent?.scrollState.x) + numberOrZero(parentShift?.x),
+      y: numberOrZero(this.parent?.scrollState.y) + numberOrZero(parentShift?.y),
     };
   }
 

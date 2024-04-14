@@ -11,8 +11,7 @@ export default {
     '错误：无法转换当前文件，当前笔记不是空白笔记',
   'New kanban board': '新看板',
   'Untitled Kanban': '未命名看板',
-  'Toggle between Kanban and markdown mode':
-    '在看板和 Markdown 模式之间进行切换',
+  'Toggle between Kanban and markdown mode': '在看板和 Markdown 模式之间进行切换',
 
   // KanbanView.tsx
   'Open as markdown': '打开为 Markdown 文件',
@@ -33,8 +32,7 @@ export default {
   Untitled: '未命名', // auto-created column
 
   // settingHelpers.ts
-  'Note: No template plugins are currently enabled.':
-    '注意：当前没有启用模板插件',
+  'Note: No template plugins are currently enabled.': '注意：当前没有启用模板插件',
   default: '默认',
   'Search...': '搜索……',
 
@@ -63,14 +61,12 @@ export default {
     '从看板卡片创建的笔记会放置到该文件夹中。如果为空，笔记将会放置到 Obsidian 的默认文件存放位置。',
   'Default folder': '默认文件夹',
   'List width': '列宽',
-  'Enter a number to set the list width in pixels.':
-    '输入一个像素值来设置列的宽度',
+  'Enter a number to set the list width in pixels.': '输入一个像素值来设置列的宽度',
   'Maximum number of archived cards': '单个看板内已归档卡片的最大数量',
   "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
     '已归档卡片可以在 Markdown 模式下查看。该设置将使已归档卡片在达到最大数量时删除旧卡。设置为 -1 可以永久保留所有归档卡片。',
   'Display card checkbox': '展示卡片复选框',
-  'When toggled, a checkbox will be displayed with each card':
-    '打开时，复选框会出现在每张卡片上',
+  'When toggled, a checkbox will be displayed with each card': '打开时，复选框会出现在每张卡片上',
   'Reset to default': '还原初始设置',
   'Date & Time': '日期和时间',
   'Date trigger': '日期触发指令',
@@ -87,15 +83,13 @@ export default {
   'Your current syntax looks like this': '你当前设置的格式会是',
   'Time format': '时间格式',
   'Date display format': '日期展示格式',
-  'This format will be used when displaying dates in Kanban cards.':
-    '看板卡片会以该格式展示日期。',
+  'This format will be used when displaying dates in Kanban cards.': '看板卡片会以该格式展示日期。',
   'Show relative date': '展示相对日期',
   "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'":
     '打开时，卡片会展示其所设日期与当前日期的差值，例如“3天内”“一个月前”等',
   'Hide card display dates': '隐藏卡片日期',
   'Hide card counts in list titles': '在列标题上隐藏卡片计数',
-  'When toggled, card counts are hidden from the list title':
-    '打开时，列标题上的卡片计数将隐藏',
+  'When toggled, card counts are hidden from the list title': '打开时，列标题上的卡片计数将隐藏',
   'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.':
     '打开时，格式化日期不会在卡片上展示。如果开启了相对日期功能，相对日期还是会继续展示。',
   'Hide dates in card titles': '在卡片标题中隐藏日期',
@@ -107,8 +101,7 @@ export default {
   'Add date and time to archived cards': '添加日期和时间到归档卡片',
   'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     '打开时，当前日期和时间会被添加到归档卡片的 frontmatter 上，例如“- [ ] 2021-05-14 10:00am 我的卡片标题”',
-  'Archive date/time separator':
-    '归档日期或时间分隔符Archive date/time separator',
+  'Archive date/time separator': '归档日期或时间分隔符Archive date/time separator',
   'This will be used to separate the archived date/time from the title':
     '用于分隔标题与归档卡片的日期或时间',
   'Archive date/time format': '归档日期或时间格式',
@@ -124,8 +117,7 @@ export default {
     '展示卡片中第一个连接所对应的笔记元数据。请在下方指定哪些元数据可以展示。你可以选择展示哪些标志，所有标志都可以被隐藏。',
   'Board Header Buttons': '板头按钮',
   'Calendar: first day of week': '日历：一周的第一天',
-  'Override which day is used as the start of the week':
-    '设置哪一天作为一周的开始',
+  'Override which day is used as the start of the week': '设置哪一天作为一周的开始',
   Sunday: '周日',
   Monday: '周一',
   Tuesday: '周二',
@@ -195,8 +187,7 @@ export default {
   'Are you sure you want to archive this list and all its cards?':
     '你确定你要归档整列以及该列下所有卡片吗？',
   'Yes, archive list': '是, 归档列',
-  'Are you sure you want to archive all cards in this list?':
-    '你确认你要归档当前列的所有卡片吗？',
+  'Are you sure you want to archive all cards in this list?': '你确认你要归档当前列的所有卡片吗？',
   'Yes, archive cards': '是，归档所有卡片',
   'Edit list': '编辑列',
   'Archive cards': '归档卡片',

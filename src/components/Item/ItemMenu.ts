@@ -1,6 +1,6 @@
 import { Menu, TFile, TFolder, getLinkpath } from 'obsidian';
 import Preact from 'preact/compat';
-import { StateUpdater } from 'preact/hooks';
+import { Dispatch, StateUpdater } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { t } from 'src/lang/helpers';
@@ -21,7 +21,7 @@ const wikilinkRegEx = /!?\[\[([^\]]*)\]\]/g;
 const mdLinkRegEx = /!?\[([^\]]*)\]\([^)]*\)/g;
 
 interface UseItemMenuParams {
-  setEditState: StateUpdater<EditState>;
+  setEditState: Dispatch<StateUpdater<EditState>>;
   item: Item;
   path: Path;
   boardModifiers: BoardModifiers;
@@ -67,22 +67,19 @@ export function useItemMenu({
                   .replace(illegalCharsRegEx, ' ')
                   .trim();
 
-                const newNoteFolder =
-                  stateManager.getSetting('new-note-folder');
-                const newNoteTemplatePath =
-                  stateManager.getSetting('new-note-template');
+                const newNoteFolder = stateManager.getSetting('new-note-folder');
+                const newNoteTemplatePath = stateManager.getSetting('new-note-template');
 
                 const targetFolder = newNoteFolder
                   ? (stateManager.app.vault.getAbstractFileByPath(
                       newNoteFolder as string
                     ) as TFolder)
-                  : stateManager.app.fileManager.getNewFileParent(
-                      stateManager.file.path
-                    );
+                  : stateManager.app.fileManager.getNewFileParent(stateManager.file.path);
 
-                const newFile = (await (
-                  stateManager.app.fileManager as any
-                ).createNewMarkdownFile(targetFolder, sanitizedTitle)) as TFile;
+                const newFile = (await (stateManager.app.fileManager as any).createNewMarkdownFile(
+                  targetFolder,
+                  sanitizedTitle
+                )) as TFile;
 
                 const newLeaf = stateManager.app.workspace.splitActiveLeaf();
 
@@ -90,17 +87,11 @@ export function useItemMenu({
 
                 stateManager.app.workspace.setActiveLeaf(newLeaf, false, true);
 
-                await applyTemplate(
-                  stateManager,
-                  newNoteTemplatePath as string | undefined
-                );
+                await applyTemplate(stateManager, newNoteTemplatePath as string | undefined);
 
                 const newTitleRaw = item.data.titleRaw.replace(
                   prevTitle,
-                  stateManager.app.fileManager.generateMarkdownLink(
-                    newFile,
-                    stateManager.file.path
-                  )
+                  stateManager.app.fileManager.generateMarkdownLink(newFile, stateManager.file.path)
                 );
 
                 stateManager
@@ -130,11 +121,7 @@ export function useItemMenu({
                   const id = generateInstanceId(6);
 
                   navigator.clipboard.writeText(
-                    `${this.app.fileManager.generateMarkdownLink(
-                      stateManager.file,
-                      '',
-                      '#^' + id
-                    )}`
+                    `${this.app.fileManager.generateMarkdownLink(stateManager.file, '', '#^' + id)}`
                   );
 
                   stateManager
@@ -156,9 +143,7 @@ export function useItemMenu({
             i.setIcon('lucide-wrap-text')
               .setTitle(t('Split card'))
               .onClick(async () => {
-                const titles = item.data.titleRaw
-                  .split(/[\r\n]+/g)
-                  .map((t) => t.trim());
+                const titles = item.data.titleRaw.split(/[\r\n]+/g).map((t) => t.trim());
                 const newItems = await Promise.all(
                   titles.map((title) => {
                     return stateManager.getNewItem(title);
@@ -180,9 +165,7 @@ export function useItemMenu({
             i.setIcon('lucide-list-start')
               .setTitle(t('Insert card before'))
               .onClick(async () =>
-                boardModifiers.insertItems(path, [
-                  await stateManager.getNewItem('', false, true),
-                ])
+                boardModifiers.insertItems(path, [await stateManager.getNewItem('', false, true)])
               );
           })
           .addItem((i) => {
@@ -244,22 +227,16 @@ export function useItemMenu({
             i.setIcon('lucide-x')
               .setTitle(t('Remove date'))
               .onClick(() => {
-                const shouldLinkDates = stateManager.getSetting(
-                  'link-date-to-daily-note'
-                );
+                const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
                 const dateTrigger = stateManager.getSetting('date-trigger');
                 const contentMatch = shouldLinkDates
                   ? '(?:\\[[^\\]]+\\]\\([^\\)]+\\)|\\[\\[[^\\]]+\\]\\])'
                   : '{[^}]+}';
                 const dateRegEx = new RegExp(
-                  `(^|\\s)${escapeRegExpStr(
-                    dateTrigger as string
-                  )}${contentMatch}`
+                  `(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`
                 );
 
-                const titleRaw = item.data.titleRaw
-                  .replace(dateRegEx, '')
-                  .trim();
+                const titleRaw = item.data.titleRaw.replace(dateRegEx, '').trim();
 
                 stateManager
                   .updateItemContent(item, titleRaw)
@@ -303,9 +280,7 @@ export function useItemMenu({
                     `(^|\\s)${escapeRegExpStr(timeTrigger as string)}{([^}]+)}`
                   );
 
-                  const titleRaw = item.data.titleRaw
-                    .replace(timeRegEx, '')
-                    .trim();
+                  const titleRaw = item.data.titleRaw.replace(timeRegEx, '').trim();
 
                   stateManager
                     .updateItemContent(item, titleRaw)

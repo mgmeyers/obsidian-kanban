@@ -4,17 +4,14 @@ export default {
   // main.ts
   'Open as kanban board': 'Открыть как Kanban-доску',
   'Create new board': 'Создать новую доску',
-  'Archive completed cards in active board':
-    'Архивировать завершённые карточки в активной доске',
-  'Error: current file is not a Kanban board':
-    'Ошибка: текущий файл не является Kanban-доской',
+  'Archive completed cards in active board': 'Архивировать завершённые карточки в активной доске',
+  'Error: current file is not a Kanban board': 'Ошибка: текущий файл не является Kanban-доской',
   'Convert empty note to Kanban': 'Конвертировать пустую заметку в Kanban',
   'Error: cannot create Kanban, the current note is not empty':
     'Ошибка: невозможно создать Kanban, текущая заметка не пуста',
   'New kanban board': 'Новая Kanban-доска',
   'Untitled Kanban': 'Безымянная Kanban-доска',
-  'Toggle between Kanban and markdown mode':
-    'Переключиться между Kanban и markdown режимами',
+  'Toggle between Kanban and markdown mode': 'Переключиться между Kanban и markdown режимами',
 
   // KanbanView.tsx
   'Open as markdown': 'Открыть как markdown',
@@ -31,8 +28,7 @@ export default {
   Archive: 'Архивировать',
   'Invalid Kanban file: problems parsing frontmatter':
     'Неверный файл Kanban: не удаётся парсинг frontmatter',
-  "I don't know how to interpret this line:":
-    'Я не знаю, как интерпретировать эту строку:',
+  "I don't know how to interpret this line:": 'Я не знаю, как интерпретировать эту строку:',
   Untitled: 'Без имени', // auto-created column
 
   // settingHelpers.ts
@@ -68,8 +64,7 @@ export default {
   'List width': 'Ширина списка',
   'Enter a number to set the list width in pixels.':
     'Введите число, чтобы установить ширину списка в пикселях.',
-  'Maximum number of archived cards':
-    'Максимальное количество архивированных карточек',
+  'Maximum number of archived cards': 'Максимальное количество архивированных карточек',
   "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
     'Архивированные карточки можно просмотреть в режиме markdown. Эта настройка начнет удалять старые карточки после достижения лимита. Установка этого значения на -1 позволит архиву доски расти бесконечно.',
   'Display card checkbox': 'Показывать флажок карточки',
@@ -78,11 +73,9 @@ export default {
   'Reset to default': 'Сбросить настройки',
   'Date & Time': 'Дата и время',
   'Date trigger': 'Триггер даты',
-  'When this is typed, it will trigger the date selector':
-    'Ввод активирует выбор даты',
+  'When this is typed, it will trigger the date selector': 'Ввод активирует выбор даты',
   'Time trigger': 'Триггер времени',
-  'When this is typed, it will trigger the time selector':
-    'Ввод активирует выбор времени',
+  'When this is typed, it will trigger the time selector': 'Ввод активирует выбор времени',
   'Date format': 'Формат даты',
   'This format will be used when saving dates in markdown.':
     'Этот формат будет использован при сохранении дат в markdown.',
@@ -97,8 +90,7 @@ export default {
   "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'":
     "Когда включено, карточки будут отображать разницу между сегодняшним днем ​​и датой карточки. Например. 'Через 3 дня', 'Месяц назад'",
   'Hide card display dates': 'Скрыть показ даты в карточках',
-  'Hide card counts in list titles':
-    'Скрыть счётчики карточек в заголовках списка',
+  'Hide card counts in list titles': 'Скрыть счётчики карточек в заголовках списка',
   'When toggled, card counts are hidden from the list title':
     'Когда включено, счётчики карточек скрыты в заголовках списка',
   'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.':
@@ -109,8 +101,7 @@ export default {
   'Link dates to daily notes': 'Связывать даты с ежедневными заметками',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     'Когда включено, даты будут указывать на ежедневные заметки. Например, [[2021-04-26]]',
-  'Add date and time to archived cards':
-    'Добавлять дату и время к архивированным карточкам',
+  'Add date and time to archived cards': 'Добавлять дату и время к архивированным карточкам',
   'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     'Когда включено, текущие дата и время будут добавлены к заголовку карточки, когда она заархивирована. Например, - [ ] 2021-05-14 10:00am Мой заголовок карточки',
   'Add archive date/time after card title':
@@ -208,8 +199,7 @@ export default {
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Введите заголовок списка...',
-  'Mark cards in this list as complete':
-    'Отметить карточки в этом списке как завершённые',
+  'Mark cards in this list as complete': 'Отметить карточки в этом списке как завершённые',
   'Add list': 'Добавить список',
   'Add a list': 'Добавить список',
 

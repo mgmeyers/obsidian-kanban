@@ -1,6 +1,6 @@
 import update from 'immutability-helper';
 import { Content, List, Parent, Root } from 'mdast';
-import { ListItem, Paragraph } from 'mdast-util-from-markdown/lib';
+import { ListItem } from 'mdast-util-from-markdown/lib';
 import { toString } from 'mdast-util-to-string';
 import { stringifyYaml } from 'obsidian';
 import { KanbanSettings } from 'src/Settings';
@@ -23,6 +23,7 @@ import { visit } from 'unist-util-visit';
 import { archiveString, completeString, settingsToCodeblock } from '../common';
 import { DateNode, FileNode, TimeNode, ValueNode } from '../extensions/types';
 import {
+  ContentBoundary,
   getNextOfType,
   getNodeContentBoundary,
   getPrevSibling,
@@ -30,7 +31,9 @@ import {
 } from '../helpers/ast';
 import { hydrateItem } from '../helpers/hydrateBoard';
 import {
+  dedentNewLines,
   executeDeletion,
+  indentNewLines,
   markRangeForDeletion,
   parseLaneTitle,
   replaceBrs,
@@ -38,15 +41,23 @@ import {
 } from '../helpers/parser';
 import { parseFragment } from '../parseMarkdown';
 
-export function listItemToItemData(
-  stateManager: StateManager,
-  md: string,
-  item: ListItem
-) {
+export function listItemToItemData(stateManager: StateManager, md: string, item: ListItem) {
   const hideTagsInTitle = stateManager.getSetting('hide-tags-in-title');
   const hideDateInTitle = stateManager.getSetting('hide-date-in-title');
 
-  const itemBoundary = getNodeContentBoundary(item.children[0] as Paragraph);
+  const startNode = item.children.first();
+  const endNode = item.children.last();
+
+  const start =
+    startNode.type === 'paragraph'
+      ? getNodeContentBoundary(startNode).start
+      : startNode.position.start.offset;
+  const end =
+    endNode.type === 'paragraph'
+      ? getNodeContentBoundary(endNode).end
+      : endNode.position.end.offset;
+  const itemBoundary: ContentBoundary = { start, end };
+
   let itemContent = getStringFromBoundary(md, itemBoundary);
 
   // Handle empty task
@@ -55,12 +66,18 @@ export function listItemToItemData(
   }
 
   let title = itemContent;
+  let titleSearch = '';
+
+  visit(item, ['text', 'wikilink', 'embedWikilink', 'image', 'inlineCode', 'code'], (node: any) => {
+    titleSearch += node.value || node.alt || '';
+  });
 
   const itemData: ItemData = {
-    titleRaw: replaceBrs(itemContent),
+    titleRaw: dedentNewLines(replaceBrs(itemContent)),
     blockId: undefined,
     title: '',
-    titleSearch: '',
+    titleSearch,
+    titleSearchRaw: titleSearch,
     metadata: {
       dateStr: undefined,
       date: undefined,
@@ -119,10 +136,12 @@ export function listItemToItemData(
 
       if (genericNode.type === 'time') {
         itemData.metadata.timeStr = (genericNode as TimeNode).time;
-        title = markRangeForDeletion(title, {
-          start: node.position.start.offset - itemBoundary.start,
-          end: node.position.end.offset - itemBoundary.start,
-        });
+        if (hideDateInTitle) {
+          title = markRangeForDeletion(title, {
+            start: node.position.start.offset - itemBoundary.start,
+            end: node.position.end.offset - itemBoundary.start,
+          });
+        }
         return true;
       }
 
@@ -134,21 +153,14 @@ export function listItemToItemData(
       if (genericNode.type === 'wikilink') {
         itemData.metadata.fileAccessor = (genericNode as FileNode).fileAccessor;
         itemData.metadata.fileMetadata = (genericNode as FileNode).fileMetadata;
-        itemData.metadata.fileMetadataOrder = (
-          genericNode as FileNode
-        ).fileMetadataOrder;
+        itemData.metadata.fileMetadataOrder = (genericNode as FileNode).fileMetadataOrder;
         return true;
       }
 
-      if (
-        genericNode.type === 'link' &&
-        (genericNode as FileNode).fileAccessor
-      ) {
+      if (genericNode.type === 'link' && (genericNode as FileNode).fileAccessor) {
         itemData.metadata.fileAccessor = (genericNode as FileNode).fileAccessor;
         itemData.metadata.fileMetadata = (genericNode as FileNode).fileMetadata;
-        itemData.metadata.fileMetadataOrder = (
-          genericNode as FileNode
-        ).fileMetadataOrder;
+        itemData.metadata.fileMetadataOrder = (genericNode as FileNode).fileMetadataOrder;
         return true;
       }
 
@@ -159,21 +171,14 @@ export function listItemToItemData(
     }
   );
 
-  itemData.title = replaceBrs(executeDeletion(title));
+  itemData.title = dedentNewLines(executeDeletion(title));
   itemData.metadata.tags?.sort(defaultSort);
 
   return itemData;
 }
 
-function isArchiveLane(
-  child: Content,
-  children: Content[],
-  currentIndex: number
-) {
-  if (
-    child.type !== 'heading' ||
-    toString(child, { includeImageAlt: false }) !== t('Archive')
-  ) {
+function isArchiveLane(child: Content, children: Content[], currentIndex: number) {
+  if (child.type !== 'heading' || toString(child, { includeImageAlt: false }) !== t('Archive')) {
     return false;
   }
 
@@ -191,7 +196,6 @@ export function astToUnhydratedBoard(
 ): Board {
   const lanes: Lane[] = [];
   const archive: Item[] = [];
-
   root.children.forEach((child, index) => {
     if (child.type === 'heading') {
       const isArchive = isArchiveLane(child, root.children, index);
@@ -241,22 +245,25 @@ export function astToUnhydratedBoard(
           data: {
             ...parseLaneTitle(title),
             shouldMarkItemsComplete,
+            isCollapsed: settings['list-collapse']?.[lanes.length],
           },
         });
       } else {
         lanes.push({
           ...LaneTemplate,
           children: (list as List).children.map((listItem) => {
+            const data = listItemToItemData(stateManager, md, listItem);
             return {
               ...ItemTemplate,
               id: generateInstanceId(),
-              data: listItemToItemData(stateManager, md, listItem),
+              data,
             };
           }),
           id: generateInstanceId(),
           data: {
             ...parseLaneTitle(title),
             shouldMarkItemsComplete,
+            isCollapsed: settings['list-collapse']?.[lanes.length],
           },
         });
       }
@@ -282,18 +289,12 @@ export async function updateItemContent(
   oldItem: Item,
   newContent: string
 ) {
-  const md = `- [${oldItem.data.isComplete ? 'x' : ' '}] ${replaceNewLines(
-    newContent
-  )}${oldItem.data.blockId ? ` ^${oldItem.data.blockId}` : ''}`;
+  const md = `- [${oldItem.data.isComplete ? 'x' : ' '}] ${indentNewLines(newContent)}${
+    oldItem.data.blockId ? ` ^${oldItem.data.blockId}` : ''
+  }`;
 
   const ast = parseFragment(stateManager, md);
-
-  const itemData = listItemToItemData(
-    stateManager,
-    md,
-    (ast.children[0] as List).children[0]
-  );
-
+  const itemData = listItemToItemData(stateManager, md, (ast.children[0] as List).children[0]);
   const newItem = update(oldItem, {
     data: {
       $set: itemData,
@@ -315,15 +316,9 @@ export async function newItem(
   isComplete?: boolean,
   forceEdit?: boolean
 ) {
-  const md = `- [${isComplete ? 'x' : ' '}] ${replaceNewLines(newContent)}`;
-
+  const md = `- [${isComplete ? 'x' : ' '}] ${indentNewLines(newContent)}`;
   const ast = parseFragment(stateManager, md);
-
-  const itemData = listItemToItemData(
-    stateManager,
-    md,
-    (ast.children[0] as List).children[0]
-  );
+  const itemData = listItemToItemData(stateManager, md, (ast.children[0] as List).children[0]);
 
   itemData.forceEditMode = !!forceEdit;
 
@@ -353,11 +348,7 @@ export async function reparseBoard(stateManager: StateManager, board: Board) {
                 children: {
                   $set: await Promise.all(
                     lane.children.map((item) => {
-                      return updateItemContent(
-                        stateManager,
-                        item,
-                        item.data.titleRaw
-                      );
+                      return updateItemContent(stateManager, item, item.data.titleRaw);
                     })
                   ),
                 },
@@ -377,19 +368,15 @@ export async function reparseBoard(stateManager: StateManager, board: Board) {
 }
 
 function itemToMd(item: Item) {
-  return `- [${item.data.isComplete ? 'x' : ' '}] ${replaceNewLines(
-    item.data.titleRaw
-  )}${item.data.blockId ? ` ^${item.data.blockId}` : ''}`;
+  return `- [${item.data.isComplete ? 'x' : ' '}] ${indentNewLines(item.data.titleRaw)}${
+    item.data.blockId ? ` ^${item.data.blockId}` : ''
+  }`;
 }
 
 function laneToMd(lane: Lane) {
   const lines: string[] = [];
 
-  lines.push(
-    `## ${replaceNewLines(
-      laneTitleWithMaxItems(lane.data.title, lane.data.maxItems)
-    )}`
-  );
+  lines.push(`## ${replaceNewLines(laneTitleWithMaxItems(lane.data.title, lane.data.maxItems))}`);
 
   lines.push('');
 
@@ -427,19 +414,7 @@ export function boardToMd(board: Board) {
     return md + laneToMd(lane);
   }, '');
 
-  const frontmatter = [
-    '---',
-    '',
-    stringifyYaml(board.data.frontmatter),
-    '---',
-    '',
-    '',
-  ].join('\n');
+  const frontmatter = ['---', '', stringifyYaml(board.data.frontmatter), '---', '', ''].join('\n');
 
-  return (
-    frontmatter +
-    lanes +
-    archiveToMd(board.data.archive) +
-    settingsToCodeblock(board.data.settings)
-  );
+  return frontmatter + lanes + archiveToMd(board.data.archive) + settingsToCodeblock(board);
 }

@@ -13,15 +13,7 @@ const fp =
 export const Dutch: CustomLocale = {
   weekdays: {
     shorthand: ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'],
-    longhand: [
-      'zondag',
-      'maandag',
-      'dinsdag',
-      'woensdag',
-      'donderdag',
-      'vrijdag',
-      'zaterdag',
-    ],
+    longhand: ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'],
   },
 
   months: {

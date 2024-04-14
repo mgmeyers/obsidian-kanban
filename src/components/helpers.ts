@@ -1,18 +1,22 @@
 import update from 'immutability-helper';
 import { App, MarkdownView, TFile, moment } from 'obsidian';
-import Preact from 'preact/compat';
+import Preact, { RefObject, useEffect } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
 
-import { Board, DateColorKey, Item, TagColorKey } from './types';
+import { Board, DateColorKey, Item, Lane, TagColorKey } from './types';
 
 export const baseClassName = 'kanban-plugin';
 
 export function noop() {}
 
+const classCache = new Map<string, string>();
 export function c(className: string) {
-  return `${baseClassName}__${className}`;
+  if (classCache.has(className)) return classCache.get(className);
+  const cls = `${baseClassName}__${className}`;
+  classCache.set(className, cls);
+  return cls;
 }
 
 export function generateInstanceId(len: number = 9): string {
@@ -29,10 +33,7 @@ export function maybeCompleteForMove(
   item: Item
 ): Item {
   const sourceParent = getEntityFromPath(sourceBoard, sourcePath.slice(0, -1));
-  const destinationParent = getEntityFromPath(
-    destinationBoard,
-    destinationPath.slice(0, -1)
-  );
+  const destinationParent = getEntityFromPath(destinationBoard, destinationPath.slice(0, -1));
 
   const oldShouldComplete = sourceParent?.data?.shouldMarkItemsComplete;
   const newShouldComplete = destinationParent?.data?.shouldMarkItemsComplete;
@@ -73,10 +74,7 @@ export function useIMEInputProps() {
 
 export const templaterDetectRegex = /<%/;
 
-export async function applyTemplate(
-  stateManager: StateManager,
-  templatePath?: string
-) {
+export async function applyTemplate(stateManager: StateManager, templatePath?: string) {
   const templateFile = templatePath
     ? stateManager.app.vault.getAbstractFileByPath(templatePath)
     : null;
@@ -96,21 +94,15 @@ export async function applyTemplate(
         );
       }
 
-      const {
-        templatesEnabled,
-        templaterEnabled,
-        templatesPlugin,
-        templaterPlugin,
-      } = getTemplatePlugins(stateManager.app);
+      const { templatesEnabled, templaterEnabled, templatesPlugin, templaterPlugin } =
+        getTemplatePlugins(stateManager.app);
 
       const templateContent = await stateManager.app.vault.read(templateFile);
 
       // If both plugins are enabled, attempt to detect templater first
       if (templatesEnabled && templaterEnabled) {
         if (templaterDetectRegex.test(templateContent)) {
-          return await templaterPlugin.append_template_to_active_file(
-            templateFile
-          );
+          return await templaterPlugin.append_template_to_active_file(templateFile);
         }
 
         return await templatesPlugin.instance.insertTemplate(templateFile);
@@ -121,9 +113,7 @@ export async function applyTemplate(
       }
 
       if (templaterEnabled) {
-        return await templaterPlugin.append_template_to_active_file(
-          templateFile
-        );
+        return await templaterPlugin.append_template_to_active_file(templateFile);
       }
 
       // No template plugins enabled so we can just append the template to the doc
@@ -141,10 +131,8 @@ export async function applyTemplate(
 export function getDefaultDateFormat(app: App) {
   const internalPlugins = (app as any).internalPlugins.plugins;
   const dailyNotesEnabled = internalPlugins['daily-notes']?.enabled;
-  const dailyNotesValue =
-    internalPlugins['daily-notes']?.instance.options.format;
-  const nlDatesValue = (app as any).plugins.plugins['nldates-obsidian']
-    ?.settings.format;
+  const dailyNotesValue = internalPlugins['daily-notes']?.instance.options.format;
+  const nlDatesValue = (app as any).plugins.plugins['nldates-obsidian']?.settings.format;
   const templatesEnabled = internalPlugins.templates?.enabled;
   const templatesValue = internalPlugins.templates?.instance.options.dateFormat;
 
@@ -158,8 +146,7 @@ export function getDefaultDateFormat(app: App) {
 
 export function getDefaultTimeFormat(app: App) {
   const internalPlugins = (app as any).internalPlugins.plugins;
-  const nlDatesValue = (app as any).plugins.plugins['nldates-obsidian']
-    ?.settings.timeFormat;
+  const nlDatesValue = (app as any).plugins.plugins['nldates-obsidian']?.settings.timeFormat;
   const templatesEnabled = internalPlugins.templates?.enabled;
   const templatesValue = internalPlugins.templates?.instance.options.timeFormat;
 
@@ -170,22 +157,17 @@ const reRegExChar = /[\\^$.*+?()[\]{}|]/g;
 const reHasRegExChar = RegExp(reRegExChar.source);
 
 export function escapeRegExpStr(str: string) {
-  return str && reHasRegExChar.test(str)
-    ? str.replace(reRegExChar, '\\$&')
-    : str || '';
+  return str && reHasRegExChar.test(str) ? str.replace(reRegExChar, '\\$&') : str || '';
 }
 
 export function getTemplatePlugins(app: App) {
   const templatesPlugin = (app as any).internalPlugins.plugins.templates;
   const templatesEnabled = templatesPlugin.enabled;
   const templaterPlugin = (app as any).plugins.plugins['templater-obsidian'];
-  const templaterEnabled = (app as any).plugins.enabledPlugins.has(
-    'templater-obsidian'
-  );
+  const templaterEnabled = (app as any).plugins.enabledPlugins.has('templater-obsidian');
   const templaterEmptyFileTemplate =
     templaterPlugin &&
-    (this.app as any).plugins.plugins['templater-obsidian'].settings
-      ?.empty_file_template;
+    (this.app as any).plugins.plugins['templater-obsidian'].settings?.empty_file_template;
 
   const templateFolder = templatesEnabled
     ? templatesPlugin.instance.options.folder
@@ -203,23 +185,14 @@ export function getTemplatePlugins(app: App) {
   };
 }
 
-export function getTagColorFn(
-  stateManager: StateManager
-): (tag: string) => TagColorKey {
+export function getTagColorFn(stateManager: StateManager): (tag: string) => TagColorKey {
   const tagColors = stateManager.getSetting('tag-colors');
 
-  const tagMap = (tagColors || []).reduce(
-    (total, current) => {
-      if (!current.tagKey) {
-        return total;
-      }
-
-      total[current.tagKey] = current;
-
-      return total;
-    },
-    {} as Record<string, TagColorKey>
-  );
+  const tagMap = (tagColors || []).reduce<Record<string, TagColorKey>>((total, current) => {
+    if (!current.tagKey) return total;
+    total[current.tagKey] = current;
+    return total;
+  }, {});
 
   return (tag: string) => {
     if (tagMap[tag]) return tagMap[tag];
@@ -298,4 +271,43 @@ export function getDateColorFn(
 
     return null;
   };
+}
+
+export function useOnMount(refs: RefObject<HTMLElement>[], cb: () => void, onUnmount?: () => void) {
+  useEffect(() => {
+    let complete = 0;
+    let unmounted = false;
+    const onDone = () => {
+      if (unmounted) return;
+      if (++complete === refs.length) {
+        cb();
+      }
+    };
+    for (const ref of refs) ref.current?.onNodeInserted(onDone, true);
+    return () => {
+      unmounted = true;
+      onUnmount();
+    };
+  }, []);
+}
+
+export function getSearchHits(board: Board, query: string) {
+  query = query.trim().toLocaleLowerCase();
+  if (!query) return null;
+
+  const lanes = new Set<Lane>();
+  const items = new Set<Item>();
+
+  board.children.forEach((lane) => {
+    let laneMatched = false;
+    lane.children.forEach((item) => {
+      if (item.data.titleSearch.includes(query)) {
+        laneMatched = true;
+        items.add(item);
+      }
+    });
+    if (laneMatched) lanes.add(lane);
+  });
+
+  return { lanes, items, query };
 }

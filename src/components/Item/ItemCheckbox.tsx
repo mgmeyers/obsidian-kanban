@@ -25,8 +25,7 @@ export const ItemCheckbox = Preact.memo(function ItemCheckbox({
 }: ItemCheckboxProps) {
   const shouldShowCheckbox = stateManager.useSetting('show-checkboxes');
 
-  const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] =
-    Preact.useState(false);
+  const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] = Preact.useState(false);
   const [isHoveringCheckbox, setIsHoveringCheckbox] = Preact.useState(false);
 
   Preact.useEffect(() => {
@@ -88,8 +87,7 @@ export const ItemCheckbox = Preact.memo(function ItemCheckbox({
           checked={!!item.data.isComplete}
         />
       )}
-      {(isCtrlHoveringCheckbox ||
-        (!shouldShowCheckbox && shouldMarkItemsComplete)) && (
+      {(isCtrlHoveringCheckbox || (!shouldShowCheckbox && shouldMarkItemsComplete)) && (
         <a
           onClick={() => {
             boardModifiers.archiveItem(path);

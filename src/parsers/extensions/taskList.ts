@@ -1,8 +1,5 @@
 import { factorySpace } from 'micromark-factory-space';
-import {
-  markdownLineEndingOrSpace,
-  markdownSpace,
-} from 'micromark-util-character';
+import { markdownLineEndingOrSpace, markdownSpace } from 'micromark-util-character';
 import { codes } from 'micromark-util-symbol/codes.js';
 import { types } from 'micromark-util-symbol/types.js';
 import { Effects, Extension, State, Token } from 'micromark-util-types';
@@ -136,11 +133,7 @@ function exitParagraphWithTaskListItem(token: Token) {
 
       if (head.value.length === 0) {
         node.children.shift();
-      } else if (
-        node.position &&
-        head.position &&
-        typeof head.position.start.offset === 'number'
-      ) {
+      } else if (node.position && head.position && typeof head.position.start.offset === 'number') {
         head.position.start.column++;
         head.position.start.offset++;
         node.position.start = Object.assign({}, head.position.start);

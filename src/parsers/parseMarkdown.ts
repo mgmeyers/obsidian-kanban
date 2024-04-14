@@ -8,16 +8,10 @@ import { getNormalizedPath } from 'src/helpers/renderMarkdown';
 
 import { frontmatterKey, getLinkedPageMetadata } from './common';
 import { blockidExtension, blockidFromMarkdown } from './extensions/blockid';
-import {
-  genericWrappedExtension,
-  genericWrappedFromMarkdown,
-} from './extensions/genericWrapped';
+import { genericWrappedExtension, genericWrappedFromMarkdown } from './extensions/genericWrapped';
 import { internalMarkdownLinks } from './extensions/internalMarkdownLink';
 import { tagExtension, tagFromMarkdown } from './extensions/tag';
-import {
-  gfmTaskListItem,
-  gfmTaskListItemFromMarkdown,
-} from './extensions/taskList';
+import { gfmTaskListItem, gfmTaskListItemFromMarkdown } from './extensions/taskList';
 import { FileAccessor } from './helpers/parser';
 
 function extractFrontmatter(md: string) {
@@ -36,12 +30,7 @@ function extractFrontmatter(md: string) {
 
     if (frontmatterStart < 0) frontmatterStart = i;
 
-    if (
-      md[i] === '-' &&
-      /[\r\n]/.test(md[i - 1]) &&
-      md[i + 1] === '-' &&
-      md[i + 2] === '-'
-    ) {
+    if (md[i] === '-' && /[\r\n]/.test(md[i - 1]) && md[i + 1] === '-' && md[i + 2] === '-') {
       return parseYaml(md.slice(frontmatterStart, i - 1).trim());
     }
   }
@@ -67,12 +56,7 @@ function extractSettingsFooter(md: string) {
       return {};
     }
 
-    if (
-      md[i] === '`' &&
-      md[i - 1] === '`' &&
-      md[i - 2] === '`' &&
-      /[\r\n]/.test(md[i - 3])
-    ) {
+    if (md[i] === '`' && md[i - 1] === '`' && md[i - 2] === '`' && /[\r\n]/.test(md[i - 3])) {
       return JSON.parse(md.slice(i + 1, settingsEnd).trim());
     }
   }
@@ -81,21 +65,9 @@ function extractSettingsFooter(md: string) {
 function getExtensions(stateManager: StateManager) {
   return [
     gfmTaskListItem,
-    genericWrappedExtension(
-      'date',
-      `${stateManager.getSetting('date-trigger')}{`,
-      '}'
-    ),
-    genericWrappedExtension(
-      'dateLink',
-      `${stateManager.getSetting('date-trigger')}[[`,
-      ']]'
-    ),
-    genericWrappedExtension(
-      'time',
-      `${stateManager.getSetting('time-trigger')}{`,
-      '}'
-    ),
+    genericWrappedExtension('date', `${stateManager.getSetting('date-trigger')}{`, '}'),
+    genericWrappedExtension('dateLink', `${stateManager.getSetting('date-trigger')}[[`, ']]'),
+    genericWrappedExtension('time', `${stateManager.getSetting('time-trigger')}{`, '}'),
     genericWrappedExtension('embedWikilink', '![[', ']]'),
     genericWrappedExtension('wikilink', '[[', ']]'),
     tagExtension(),
@@ -203,7 +175,7 @@ export function parseMarkdown(stateManager: StateManager, md: string) {
       const val = mdFrontmatter[key] === 'basic' ? 'board' : mdFrontmatter[key];
       settings[key] = val;
       fileFrontmatter[key] = val;
-    } else if (settingKeyLookup[key as keyof KanbanSettings]) {
+    } else if (settingKeyLookup.has(key as keyof KanbanSettings)) {
       settings[key] = mdFrontmatter[key];
     } else {
       fileFrontmatter[key] = mdFrontmatter[key];
@@ -217,10 +189,7 @@ export function parseMarkdown(stateManager: StateManager, md: string) {
     frontmatter: fileFrontmatter,
     ast: fromMarkdown(md, {
       extensions: [frontmatter(['yaml']), ...getExtensions(stateManager)],
-      mdastExtensions: [
-        frontmatterFromMarkdown(['yaml']),
-        ...getMdastExtensions(stateManager),
-      ],
+      mdastExtensions: [frontmatterFromMarkdown(['yaml']), ...getMdastExtensions(stateManager)],
     }),
   };
 }

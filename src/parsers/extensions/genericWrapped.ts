@@ -1,11 +1,5 @@
-import {
-  Extension as FromMarkdownExtension,
-  Token,
-} from 'mdast-util-from-markdown';
-import {
-  markdownLineEnding,
-  markdownLineEndingOrSpace,
-} from 'micromark-util-character';
+import { Extension as FromMarkdownExtension, Token } from 'mdast-util-from-markdown';
+import { markdownLineEnding, markdownLineEndingOrSpace } from 'micromark-util-character';
 import { Effects, Extension, State } from 'micromark-util-types';
 
 import { getSelf } from './helpers';

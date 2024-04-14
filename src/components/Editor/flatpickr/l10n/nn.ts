@@ -13,15 +13,7 @@ const fp =
 export const NorwegianNynorsk: CustomLocale = {
   weekdays: {
     shorthand: ['Sø.', 'Må.', 'Ty.', 'On.', 'To.', 'Fr.', 'La.'],
-    longhand: [
-      'Søndag',
-      'Måndag',
-      'Tysdag',
-      'Onsdag',
-      'Torsdag',
-      'Fredag',
-      'Laurdag',
-    ],
+    longhand: ['Søndag', 'Måndag', 'Tysdag', 'Onsdag', 'Torsdag', 'Fredag', 'Laurdag'],
   },
 
   months: {

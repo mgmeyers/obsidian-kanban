@@ -1,13 +1,7 @@
 import { english } from '../l10n/default';
 import { Locale } from '../types/locale';
 import { ParsedOptions, defaults } from '../types/options';
-import {
-  RevFormatFn,
-  formats,
-  revFormat,
-  token,
-  tokenRegex,
-} from './formatting';
+import { RevFormatFn, formats, revFormat, token, tokenRegex } from './formatting';
 
 export interface FormatterArgs {
   config?: ParsedOptions;
@@ -101,8 +95,7 @@ export const createDateParser =
             : (new Date(new Date().setHours(0, 0, 0, 0)) as Date);
 
         ops.forEach(
-          ({ fn, val }) =>
-            (parsedDate = fn(parsedDate as Date, val, locale) || parsedDate)
+          ({ fn, val }) => (parsedDate = fn(parsedDate as Date, val, locale) || parsedDate)
         );
 
         parsedDate = matched ? parsedDate : undefined;
@@ -150,11 +143,7 @@ export const isBetween = (ts: number, ts1: number, ts2: number) => {
   return ts > Math.min(ts1, ts2) && ts < Math.max(ts1, ts2);
 };
 
-export const calculateSecondsSinceMidnight = (
-  hours: number,
-  minutes: number,
-  seconds: number
-) => {
+export const calculateSecondsSinceMidnight = (hours: number, minutes: number, seconds: number) => {
   return hours * 3600 + minutes * 60 + seconds;
 };
 
@@ -196,8 +185,7 @@ export function getDefaultHours(config: ParsedOptions) {
     hours = Math.min(hours, maxHr);
 
     if (hours === maxHr) minutes = Math.min(maxMinutes, minutes);
-    if (hours === maxHr && minutes === maxMinutes)
-      seconds = config.maxDate.getSeconds();
+    if (hours === maxHr && minutes === maxMinutes) seconds = config.maxDate.getSeconds();
   }
 
   return { hours, minutes, seconds };

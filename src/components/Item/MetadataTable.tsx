@@ -1,9 +1,10 @@
+import classcat from 'classcat';
 import { TFile, moment } from 'obsidian';
-import Preact from 'preact/compat';
+import { memo, useContext } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
 
-import { StaticMarkdownRenderer } from '../MarkdownRenderer';
+import { StaticMarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
 import { Item, PageData } from '../types';
@@ -15,11 +16,7 @@ export interface ItemMetadataProps {
   searchQuery?: string;
 }
 
-export function ItemMetadata({
-  item,
-  isSettingsVisible,
-  searchQuery,
-}: ItemMetadataProps) {
+export function ItemMetadata({ item, isSettingsVisible, searchQuery }: ItemMetadataProps) {
   if (isSettingsVisible || !item.data.metadata.fileMetadata) return null;
 
   return (
@@ -38,50 +35,68 @@ interface MetadataValueProps {
   searchQuery?: string;
 }
 
-function getDateFromObj(v: any, stateManager: StateManager) {
+export function getDateFromObj(v: any, stateManager: StateManager) {
+  let m: moment.Moment;
+
   if (v.ts) {
-    const dateFormat = stateManager.getSetting('date-display-format');
-    return moment(v.ts).format(dateFormat);
+    m = moment(v.ts);
+  } else if (moment.isMoment(v)) {
+    m = v;
+  } else if (v instanceof Date) {
+    m = moment(v);
+  }
+
+  if (m) {
+    const dateFormat = stateManager.getSetting(
+      m.hours() === 0 ? 'date-display-format' : 'date-time-display-format'
+    );
+
+    return m.format(dateFormat);
   }
 
   return null;
 }
 
-function getLinkFromObj(v: any, view: KanbanView) {
-  if (!v.path) return null;
+export function getLinkFromObj(v: any, view: KanbanView) {
+  if (typeof v !== 'object' || !v.path) return null;
 
   const file = app.vault.getAbstractFileByPath(v.path);
-
   if (file && file instanceof TFile) {
-    const link = app.fileManager.generateMarkdownLink(
-      file,
-      view.file.path,
-      v.subpath,
-      v.display
-    );
-
+    const link = app.fileManager.generateMarkdownLink(file, view.file.path, v.subpath, v.display);
     return `${v.embed && link[0] !== '!' ? '!' : ''}${link}`;
   }
 
-  return `${v.embed ? '!' : ''}[[${v.path}${
-    v.display ? `|${v.display}` : ''
-  }]]`;
+  return `${v.embed ? '!' : ''}[[${v.path}${v.display ? `|${v.display}` : ''}]]`;
+}
+
+export function anyToString(v: any, stateManager: StateManager): string {
+  if (v.value) v = v.value;
+  if (typeof v === 'string') return v;
+  if (v instanceof TFile) return v.path;
+  if (moment.isMoment(v)) return getDateFromObj(v, stateManager);
+  if (v instanceof Date) return getDateFromObj(v, stateManager);
+  if (v.ts) return getDateFromObj(v, stateManager);
+  if (typeof v === 'object' && v.path) return v.display || v.path;
+  if (Array.isArray(v)) {
+    return v.map((v2) => anyToString(v2, stateManager)).join(' ');
+  }
+  return `${v}`;
+}
+
+export function pageDataToString(data: PageData, stateManager: StateManager): string {
+  return anyToString(data.value, stateManager);
 }
 
 export function MetadataValue({ data, searchQuery }: MetadataValueProps) {
-  const { view, stateManager } = Preact.useContext(KanbanContext);
+  const { view, stateManager } = useContext(KanbanContext);
 
   if (Array.isArray(data.value)) {
     return (
-      <span className={c('meta-value')}>
+      <span className={classcat([c('meta-value'), 'mod-array'])}>
         {data.value.map((v, i, arr) => {
-          const str = `${v}`;
-          const link =
-            typeof v === 'object' &&
-            !Array.isArray(v) &&
-            (getDateFromObj(v, stateManager) || getLinkFromObj(v, view));
-          const isMatch =
-            searchQuery && str.toLocaleLowerCase().contains(searchQuery);
+          const str = anyToString(v, stateManager);
+          const link = getLinkFromObj(v, view);
+          const isMatch = searchQuery && str.toLocaleLowerCase().contains(searchQuery);
 
           return (
             <>
@@ -104,24 +119,21 @@ export function MetadataValue({ data, searchQuery }: MetadataValueProps) {
     );
   }
 
-  const str = `${data.value}`;
+  const str = anyToString(data.value, stateManager);
+  const link = getLinkFromObj(data.value, view);
   const isMatch = searchQuery && str.toLocaleLowerCase().contains(searchQuery);
-  const link =
-    typeof data.value === 'object' &&
-    (getDateFromObj(data.value, stateManager) ||
-      getLinkFromObj(data.value, view));
 
   return (
     <span
-      className={`${c('meta-value')} ${
-        isMatch && !data.containsMarkdown ? 'is-search-match' : ''
-      }`}
+      className={classcat([
+        c('meta-value'),
+        {
+          'is-search-match': isMatch && !data.containsMarkdown,
+        },
+      ])}
     >
       {data.containsMarkdown || !!link ? (
-        <StaticMarkdownRenderer
-          markdownString={link ? link : str}
-          searchQuery={searchQuery}
-        />
+        <StaticMarkdownRenderer markdownString={link ? link : str} searchQuery={searchQuery} />
       ) : (
         str
       )}
@@ -135,11 +147,13 @@ export interface MetadataTableProps {
   searchQuery?: string;
 }
 
-export const MetadataTable = Preact.memo(function MetadataTable({
+export const MetadataTable = memo(function MetadataTable({
   metadata,
   order,
   searchQuery,
 }: MetadataTableProps) {
+  const { stateManager } = useContext(KanbanContext);
+
   if (!metadata || !order || order.length === 0) return null;
 
   return (
@@ -147,15 +161,17 @@ export const MetadataTable = Preact.memo(function MetadataTable({
       <tbody>
         {order.map((k) => {
           const data = metadata[k];
+          const isSearchMatch = (data.label || k).toLocaleLowerCase().contains(searchQuery);
           return (
             <tr key={k} className={c('meta-row')}>
               {!data.shouldHideLabel && (
                 <td
-                  className={`${c('meta-key')} ${
-                    (data.label || k).toLocaleLowerCase().contains(searchQuery)
-                      ? 'is-search-match'
-                      : ''
-                  }`}
+                  className={classcat([
+                    c('meta-key'),
+                    {
+                      'is-search-match': isSearchMatch,
+                    },
+                  ])}
                   data-key={k}
                 >
                   <span>{data.label || k}</span>
@@ -164,14 +180,10 @@ export const MetadataTable = Preact.memo(function MetadataTable({
               <td
                 colSpan={data.shouldHideLabel ? 2 : 1}
                 className={c('meta-value-wrapper')}
-                data-value={
-                  Array.isArray(data.value)
-                    ? data.value.join(', ')
-                    : `${data.value}`
-                }
+                data-value={pageDataToString(data, stateManager)}
               >
                 {k === 'tags' ? (
-                  <Tags tags={data.value as string[]} isDisplay={false} />
+                  <Tags searchQuery={searchQuery} tags={data.value as string[]} isDisplay={false} />
                 ) : (
                   <MetadataValue data={data} searchQuery={searchQuery} />
                 )}

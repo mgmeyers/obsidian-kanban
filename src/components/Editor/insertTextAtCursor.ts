@@ -74,10 +74,7 @@ export function insertTextAtCursor(input: HTMLTextAreaElement, text: string) {
       // Get the commonAncestorContainer of the selected range and test its type
       // If the node is of type `#text` it means that we're still working with text nodes within our textarea element
       // otherwise, if it's of type `#document` for example it means our selection spans outside the textarea.
-      if (
-        canManipulateViaTextNodes(input) &&
-        range.commonAncestorContainer.nodeName === '#text'
-      ) {
+      if (canManipulateViaTextNodes(input) && range.commonAncestorContainer.nodeName === '#text') {
         // Finally insert a new node. The browser will automatically split start and end nodes into two if necessary
         range.insertNode(textNode);
       } else {

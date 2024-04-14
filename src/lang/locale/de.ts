@@ -4,8 +4,7 @@ export default {
   // main.ts
   'Open as kanban board': 'Öffne als Kanban-Board',
   'Create new board': 'Erstelle ein neues Board',
-  'Archive completed cards in active board':
-    'Archiviere fertiggestellte Karten im aktiven Board',
+  'Archive completed cards in active board': 'Archiviere fertiggestellte Karten im aktiven Board',
   'Error: current file is not a Kanban board':
     'Fehler: Momentan geöffnete Datei ist kein Kanban-Board',
   'Convert empty note to Kanban': 'Konvertiere leere Notiz in ein Kanban-Board',
@@ -13,8 +12,7 @@ export default {
     'Fehler: Kanban konnte nicht erstellt werden, momentan geöffnete Datei ist nicht leer',
   'New kanban board': 'Neues Kanban-Board',
   'Untitled Kanban': 'Unbenanntes Kanban',
-  'Toggle between Kanban and markdown mode':
-    'Wechsle zwischen Kanban und Markdown Modus',
+  'Toggle between Kanban and markdown mode': 'Wechsle zwischen Kanban und Markdown Modus',
 
   // KanbanView.tsx
   'Open as markdown': 'Öffne als Markdown',
@@ -93,15 +91,13 @@ export default {
   'Link dates to daily notes': 'Verbinde Daten zu Daily Notes',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     'Wenn aktiviert, werden Daten mit Daily Notes verbunden. Zum Beispiel [[26.4.2021]]',
-  'Add date and time to archived cards':
-    'Füge Datum und Uhrzeit zu archivierten Notizen hinzu',
+  'Add date and time to archived cards': 'Füge Datum und Uhrzeit zu archivierten Notizen hinzu',
   'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     'Wenn aktiviert, wird das momentane Datum und die momentane Zeit am Anfang einer Karte hinzugefügt, wenn sie archiviert wird. Zum Beispiel: - [ ] 14.05.2021 10:00 Mein Karten Titel',
   'Archive date/time separator': 'Datum/Uhrzeit Trenner für das Archiv',
   'This will be used to separate the archived date/time from the title':
     'Dies wird verwendet, um das Datum und die Uhrzeit archivierter Karten vom Titel zu trennen',
-  'Archive date/time format':
-    'Format des Datums und der Uhrzeit für das Archiv',
+  'Archive date/time format': 'Format des Datums und der Uhrzeit für das Archiv',
   'Kanban Plugin': 'Kanban Erweiterung',
   'New line trigger': 'Taste für neue Zeile', //No exact translation, but makes sense in App
   'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lanes.':
@@ -163,8 +159,7 @@ export default {
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Listen Titel eingeben..',
-  'Mark cards in this list as complete':
-    'Markiere Karten in dieser Liste als fertiggestellt',
+  'Mark cards in this list as complete': 'Markiere Karten in dieser Liste als fertiggestellt',
   'Add list': 'Liste hinzufügen',
   'Add a list': 'Füge eine Liste hinzu',
 

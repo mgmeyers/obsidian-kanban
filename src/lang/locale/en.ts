@@ -4,17 +4,19 @@ export default {
   // main.ts
   'Open as kanban board': 'Open as kanban board',
   'Create new board': 'Create new board',
-  'Archive completed cards in active board':
-    'Archive completed cards in active board',
-  'Error: current file is not a Kanban board':
-    'Error: current file is not a Kanban board',
+  'Archive completed cards in active board': 'Archive completed cards in active board',
+  'Error: current file is not a Kanban board': 'Error: current file is not a Kanban board',
   'Convert empty note to Kanban': 'Convert empty note to Kanban',
   'Error: cannot create Kanban, the current note is not empty':
     'Error: cannot create Kanban, the current note is not empty',
   'New kanban board': 'New kanban board',
   'Untitled Kanban': 'Untitled Kanban',
-  'Toggle between Kanban and markdown mode':
-    'Toggle between Kanban and markdown mode',
+  'Toggle between Kanban and markdown mode': 'Toggle between Kanban and markdown mode',
+
+  'View as board': 'View as board',
+  'View as list': 'View as list',
+  'View as table': 'View as table',
+  'Board view': 'Board view',
 
   // KanbanView.tsx
   'Open as markdown': 'Open as markdown',
@@ -31,8 +33,7 @@ export default {
   Archive: 'Archive',
   'Invalid Kanban file: problems parsing frontmatter':
     'Invalid Kanban file: problems parsing frontmatter',
-  "I don't know how to interpret this line:":
-    "I don't know how to interpret this line:",
+  "I don't know how to interpret this line:": "I don't know how to interpret this line:",
   Untitled: 'Untitled', // auto-created column
 
   // settingHelpers.ts
@@ -110,8 +111,7 @@ export default {
   'Add date and time to archived cards': 'Add date and time to archived cards',
   'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title',
-  'Add archive date/time after card title':
-    'Add archive date/time after card title',
+  'Add archive date/time after card title': 'Add archive date/time after card title',
   'When toggled, the archived date/time will be added after the card title, e.g.- [ ] My card title 2021-05-14 10:00am. By default, it is inserted before the title.':
     'When toggled, the archived date/time will be added after the card title, e.g.- [ ] My card title 2021-05-14 10:00am. By default, it is inserted before the title.',
   'Archive date/time separator': 'Archive date/time separator',
@@ -171,7 +171,7 @@ export default {
   List: 'List',
   Card: 'Card',
   Date: 'Date',
-  'Card tags': 'Card tags',
+  Tags: 'Tags',
 
   // components/Item/Item.tsx
   'More options': 'More options',

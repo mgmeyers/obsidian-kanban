@@ -13,32 +13,11 @@ const fp =
 export const Danish: CustomLocale = {
   weekdays: {
     shorthand: ['søn', 'man', 'tir', 'ons', 'tors', 'fre', 'lør'],
-    longhand: [
-      'søndag',
-      'mandag',
-      'tirsdag',
-      'onsdag',
-      'torsdag',
-      'fredag',
-      'lørdag',
-    ],
+    longhand: ['søndag', 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag'],
   },
 
   months: {
-    shorthand: [
-      'jan',
-      'feb',
-      'mar',
-      'apr',
-      'maj',
-      'jun',
-      'jul',
-      'aug',
-      'sep',
-      'okt',
-      'nov',
-      'dec',
-    ],
+    shorthand: ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'],
     longhand: [
       'januar',
       'februar',

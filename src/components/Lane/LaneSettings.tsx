@@ -1,26 +1,27 @@
 import update from 'immutability-helper';
-import Preact from 'preact/compat';
+import { useContext } from 'preact/compat';
 import { Path } from 'src/dnd/types';
 import { t } from 'src/lang/helpers';
 
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
-import { Lane } from '../types';
+import { EditState, Lane, isEditing } from '../types';
 
 export interface LaneSettingsProps {
   lane: Lane;
   lanePath: Path;
+  editState: EditState;
 }
 
-export function LaneSettings({ lane, lanePath }: LaneSettingsProps) {
-  const { boardModifiers } = Preact.useContext(KanbanContext);
+export function LaneSettings({ lane, lanePath, editState }: LaneSettingsProps) {
+  const { boardModifiers } = useContext(KanbanContext);
+
+  if (!isEditing(editState)) return null;
 
   return (
     <div className={c('lane-setting-wrapper')}>
       <div className={c('checkbox-wrapper')}>
-        <div className={c('checkbox-label')}>
-          {t('Mark cards in this list as complete')}
-        </div>
+        <div className={c('checkbox-label')}>{t('Mark cards in this list as complete')}</div>
         <div
           onClick={() =>
             boardModifiers.updateLane(
@@ -30,9 +31,7 @@ export function LaneSettings({ lane, lanePath }: LaneSettingsProps) {
               })
             )
           }
-          className={`checkbox-container ${
-            lane.data.shouldMarkItemsComplete ? 'is-enabled' : ''
-          }`}
+          className={`checkbox-container ${lane.data.shouldMarkItemsComplete ? 'is-enabled' : ''}`}
         />
       </div>
     </div>

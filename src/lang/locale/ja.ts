@@ -4,8 +4,7 @@ export default {
   // main.ts
   'Open as kanban board': 'カンバンボードとして開く',
   'Create new board': 'カンバンボードを新規作成',
-  'Archive completed cards in active board':
-    'アクティブボードの完了したカードをアーカイブ',
+  'Archive completed cards in active board': 'アクティブボードの完了したカードをアーカイブ',
   'Error: current file is not a Kanban board':
     'エラー: 現在のファイルはカンバンボードではありません',
   'Convert empty note to Kanban': '空のノートをカンバンに変換',
@@ -13,8 +12,7 @@ export default {
     'エラー: 現在開いているノートは空であり、カンバンを作成できません',
   'New kanban board': '新規カンバンボード',
   'Untitled Kanban': '無題のカンバン',
-  'Toggle between Kanban and markdown mode':
-    'カンバンとマークダウンのモードを切り替える',
+  'Toggle between Kanban and markdown mode': 'カンバンとマークダウンのモードを切り替える',
 
   // KanbanView.tsx
   'Open as markdown': 'マークダウンとして開く',
@@ -31,8 +29,7 @@ export default {
   Archive: 'アーカイブ',
   'Invalid Kanban file: problems parsing frontmatter':
     '無効なカンバンファイル: フロントマターのパースに問題があります',
-  "I don't know how to interpret this line:":
-    'この行をどう解釈すればよいか分かりません',
+  "I don't know how to interpret this line:": 'この行をどう解釈すればよいか分かりません',
   Untitled: '無題', // auto-created column
 
   // settingHelpers.ts
@@ -66,8 +63,7 @@ export default {
     'カンバンカードから作成されたノートはこのフォルダ内に置かれます。ブランクの場合には、この保管庫のデフォルトロケーションに置かれます。',
   'Default folder': 'デフォルトフォルダ',
   'Lane width': 'レーンの幅',
-  'Enter a number to set the lane width in pixels.':
-    'レーンの幅をピクセル単位を入力してください。',
+  'Enter a number to set the lane width in pixels.': 'レーンの幅をピクセル単位を入力してください。',
   'Maximum number of archived cards': 'アーカイブされたカードの最大数',
   "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
     'アーカイブされたカードはマークダウンモードで閲覧できます。この設定により指定されたアーカイブの限界数まで達した際には古いカードを削除します。この値を-1に設定するとボードのアーカイブ限界を無限にします。',
@@ -87,8 +83,7 @@ export default {
     'このフォーマットはマークダウンで日付が保存される際に使用されます。',
   'For more syntax, refer to': 'シンタックスについてはこちらを参照:',
   'format reference': 'フォーマットリファレンス',
-  'Your current syntax looks like this':
-    '現在のシンタックスは次のように見えます',
+  'Your current syntax looks like this': '現在のシンタックスは次のように見えます',
   'Time format': '時間フォーマット',
   'Date display format': '日付表示フォーマット',
   'This format will be used when displaying dates in Kanban cards.':
@@ -105,8 +100,7 @@ export default {
   'Link dates to daily notes': 'デイリーノートに日付をリンク',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     '有効化すると日付がデイリーノートにリンクされます。 例: [[2021-04-26]]',
-  'Add date and time to archived cards':
-    'アーカイブされたカードに日付と時間を追加',
+  'Add date and time to archived cards': 'アーカイブされたカードに日付と時間を追加',
   'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     '有効化するとカードがアーカイブされた際に現在の日付と時間がカードの最初に追記されるようになります。例: - [ ] 2021-05-14 10:00am カードタイトル',
   'Archive date/time separator': '日付・時間セパレーターをアーカイブ',
@@ -177,8 +171,7 @@ export default {
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'リストタイトルを編集…',
-  'Mark cards in this list as complete':
-    'このリストに含まれるカードを完了としてマークする',
+  'Mark cards in this list as complete': 'このリストに含まれるカードを完了としてマークする',
   'Add list': 'リストを追加',
   'Add a list': 'リストを追加',
 

@@ -2,6 +2,7 @@ import { EditorView } from '@codemirror/view';
 import { TFile } from 'obsidian';
 import { JSX, memo } from 'preact/compat';
 import {
+  Dispatch,
   StateUpdater,
   useCallback,
   useContext,
@@ -13,7 +14,10 @@ import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { Path } from 'src/dnd/types';
 
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
-import { MarkdownPreviewRenderer } from '../MarkdownRenderer';
+import {
+  MarkdownClonedPreviewRenderer,
+  MarkdownPreviewRenderer,
+} from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
@@ -71,34 +75,32 @@ export function useDatePickers(item: Item, explicitPath?: Path) {
 
 export interface ItemContentProps {
   item: Item;
-  setEditState: StateUpdater<EditState>;
+  setEditState: Dispatch<StateUpdater<EditState>>;
   searchQuery?: string;
   showMetadata?: boolean;
   editState: EditState;
   priority?: number;
+  isStatic: boolean;
 }
 
 function checkCheckbox(title: string, checkboxIndex: number) {
   let count = 0;
 
-  return title.replace(
-    /^(\s*[-+*]\s+?\[)([^\]])(\]\s+)/gm,
-    (sub, before, check, after) => {
-      let match = sub;
+  return title.replace(/^(\s*[-+*]\s+?\[)([^\]])(\]\s+)/gm, (sub, before, check, after) => {
+    let match = sub;
 
-      if (count === checkboxIndex) {
-        if (check === ' ') {
-          match = `${before}x${after}`;
-        } else {
-          match = `${before} ${after}`;
-        }
+    if (count === checkboxIndex) {
+      if (check === ' ') {
+        match = `${before}x${after}`;
+      } else {
+        match = `${before} ${after}`;
       }
-
-      count++;
-
-      return match;
     }
-  );
+
+    count++;
+
+    return match;
+  });
 }
 
 async function checkEmbeddedCheckbox(checkbox: HTMLElement) {
@@ -123,10 +125,7 @@ async function checkEmbeddedCheckbox(checkbox: HTMLElement) {
     return `${g1}[x]${g3}`;
   });
 
-  await app.vault.modify(
-    file,
-    `${content.substring(0, start)}${updated}${content.substring(end)}`
-  );
+  await app.vault.modify(file, `${content.substring(0, start)}${updated}${content.substring(end)}`);
 }
 
 export function Tags({
@@ -140,8 +139,7 @@ export function Tags({
 }) {
   const { stateManager, getTagColor } = useContext(KanbanContext);
 
-  const hideTagsDisplay =
-    isDisplay && stateManager.useSetting('hide-tags-display');
+  const hideTagsDisplay = isDisplay && stateManager.useSetting('hide-tags-display');
   if (hideTagsDisplay || !tags?.length) return null;
   return (
     <div className={c('item-tags')}>
@@ -153,9 +151,7 @@ export function Tags({
             href={tag}
             key={i}
             className={`tag ${c('item-tag')} ${
-              searchQuery && tag.toLocaleLowerCase().contains(searchQuery)
-                ? 'is-search-match'
-                : ''
+              searchQuery && tag.toLocaleLowerCase().contains(searchQuery) ? 'is-search-match' : ''
             }`}
             style={
               tagColor && {
@@ -180,9 +176,9 @@ export const ItemContent = memo(function ItemContent({
   searchQuery,
   priority = 0,
   showMetadata = true,
+  isStatic,
 }: ItemContentProps) {
-  const { stateManager, filePath, boardModifiers, getDateColor } =
-    useContext(KanbanContext);
+  const { stateManager, filePath, boardModifiers, getDateColor } = useContext(KanbanContext);
   const titleRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -235,10 +231,7 @@ export const ItemContent = memo(function ItemContent({
         const checkboxIndex = parseInt(target.dataset.checkboxIndex, 10);
 
         stateManager
-          .updateItemContent(
-            item,
-            checkCheckbox(item.data.titleRaw, checkboxIndex)
-          )
+          .updateItemContent(item, checkCheckbox(item.data.titleRaw, checkboxIndex))
           .then((item) => {
             boardModifiers.updateItem(path, item);
           })
@@ -251,7 +244,7 @@ export const ItemContent = memo(function ItemContent({
     [path, boardModifiers, stateManager, item]
   );
 
-  if (isEditing(editState)) {
+  if (!isStatic && isEditing(editState)) {
     return (
       <div className={c('item-input-wrapper')}>
         <MarkdownEditor
@@ -262,7 +255,9 @@ export const ItemContent = memo(function ItemContent({
           onSubmit={onSubmit}
           value={item.data.titleRaw}
           onChange={(update) => {
-            titleRef.current = update.state.doc.toString().trim();
+            if (update.docChanged) {
+              titleRef.current = update.state.doc.toString().trim();
+            }
           }}
         />
       </div>
@@ -271,13 +266,25 @@ export const ItemContent = memo(function ItemContent({
 
   return (
     <div className={c('item-title')}>
-      <MarkdownPreviewRenderer
-        priority={priority}
-        className={c('item-markdown')}
-        markdownString={item.data.title}
-        searchQuery={searchQuery}
-        onPointerUp={onCheckboxContainerClick}
-      />
+      {isStatic ? (
+        <MarkdownClonedPreviewRenderer
+          entityId={item.id}
+          priority={priority}
+          className={c('item-markdown')}
+          markdownString={item.data.title}
+          searchQuery={searchQuery}
+          onPointerUp={onCheckboxContainerClick}
+        />
+      ) : (
+        <MarkdownPreviewRenderer
+          entityId={item.id}
+          priority={priority}
+          className={c('item-markdown')}
+          markdownString={item.data.title}
+          searchQuery={searchQuery}
+          onPointerUp={onCheckboxContainerClick}
+        />
+      )}
       {showMetadata && (
         <div className={c('item-metadata')}>
           <RelativeDate item={item} stateManager={stateManager} />

@@ -32,24 +32,17 @@ function confirmDatePlugin(pluginConfig: Config): Plugin {
           (fp.config.time_24hr &&
             ((fp.config.enableSeconds && eventTarget === fp.secondElement) ||
               (!fp.config.enableSeconds && eventTarget === fp.minuteElement)));
-        if (
-          fp.config.enableTime &&
-          e.key === 'Tab' &&
-          isTargetLastFocusableElement
-        ) {
+        if (fp.config.enableTime && e.key === 'Tab' && isTargetLastFocusableElement) {
           e.preventDefault();
           confirmContainer.focus();
-        } else if (e.key === 'Enter' && eventTarget === confirmContainer)
-          fp.close();
+        } else if (e.key === 'Enter' && eventTarget === confirmContainer) fp.close();
       },
 
       onReady() {
         confirmContainer = fp._createElement<HTMLDivElement>(
           fp.calendarContainer.doc,
           'div',
-          `${confirmButtonCSSClass} ${config.showAlways ? 'visible' : ''} ${
-            config.theme
-          }Theme`,
+          `${confirmButtonCSSClass} ${config.showAlways ? 'visible' : ''} ${config.theme}Theme`,
           config.confirmText
         );
 
@@ -75,12 +68,7 @@ function confirmDatePlugin(pluginConfig: Config): Plugin {
 
               if (!localConfirmContainer) return;
 
-              if (
-                dateStr &&
-                !fp.config.inline &&
-                showCondition &&
-                localConfirmContainer
-              )
+              if (dateStr && !fp.config.inline && showCondition && localConfirmContainer)
                 return localConfirmContainer.classList.add('visible');
 
               localConfirmContainer.classList.remove('visible');

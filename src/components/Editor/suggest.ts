@@ -12,12 +12,7 @@ import {
 import KanbanPlugin from '../../main';
 import { buildTimeArray } from '../Item/helpers';
 import { c, escapeRegExpStr } from '../helpers';
-import {
-  applyDate,
-  constructDatePicker,
-  toNextMonth,
-  toPreviousMonth,
-} from './datepicker';
+import { applyDate, constructDatePicker, toNextMonth, toPreviousMonth } from './datepicker';
 import { Instance } from './flatpickr/types/instance';
 
 export class DateSuggest extends EditorSuggest<[]> {
@@ -25,9 +20,7 @@ export class DateSuggest extends EditorSuggest<[]> {
   app: App;
 
   get stateManager() {
-    return this.context
-      ? this.plugin.stateManagers.get(this.context.file)
-      : null;
+    return this.context ? this.plugin.stateManagers.get(this.context.file) : null;
   }
 
   constructor(app: App, plugin: KanbanPlugin) {
@@ -137,19 +130,13 @@ export class DateSuggest extends EditorSuggest<[]> {
     }
   }
 
-  onTrigger(
-    cursor: EditorPosition,
-    editor: Editor,
-    file: TFile
-  ): EditorSuggestTriggerInfo | null {
+  onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo | null {
     const stateManager = this.plugin.getStateManager(file);
     if (!stateManager) return null;
 
     const dateTrigger = stateManager.getSetting('date-trigger');
     const textCtx = (editor.getLine(cursor.line) || '').slice(0, cursor.ch);
-    const isMatch = new RegExp(
-      `(?:^|\\s)${escapeRegExpStr(dateTrigger)}$`
-    ).test(textCtx);
+    const isMatch = new RegExp(`(?:^|\\s)${escapeRegExpStr(dateTrigger)}$`).test(textCtx);
 
     if (isMatch) {
       return {
@@ -183,18 +170,12 @@ export class TimeSuggest extends EditorSuggest<string> {
     this.plugin = plugin;
   }
 
-  onTrigger(
-    cursor: EditorPosition,
-    editor: Editor,
-    file: TFile
-  ): EditorSuggestTriggerInfo {
+  onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo {
     const stateManager = this.plugin.getStateManager(file);
     if (!stateManager) return null;
 
     const timeTrigger = stateManager.getSetting('time-trigger');
-    const timeTriggerRegex = new RegExp(
-      `\\B${escapeRegExpStr(timeTrigger as string)}{?([^}]*)$`
-    );
+    const timeTriggerRegex = new RegExp(`\\B${escapeRegExpStr(timeTrigger as string)}{?([^}]*)$`);
     const textCtx = (editor.getLine(cursor.line) || '').slice(0, cursor.ch);
     const match = textCtx.match(timeTriggerRegex);
 

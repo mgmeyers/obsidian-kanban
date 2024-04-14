@@ -94,8 +94,7 @@ function getSubpathBoundary(fileCache: CachedMetadata, subpath: string) {
     if (
       !targetHeading &&
       currentHeading.level > targetHeadingLevel &&
-      sanitize(currentHeading.heading).toLowerCase() ===
-        sanitize(pathArr[l]).toLowerCase()
+      sanitize(currentHeading.heading).toLowerCase() === sanitize(pathArr[l]).toLowerCase()
     ) {
       l++;
       targetHeadingLevel = currentHeading.level;
@@ -131,10 +130,7 @@ function findUnresolvedLinks(dom: HTMLDivElement, view: KanbanView) {
 
   links.forEach((link) => {
     const path = getNormalizedPath(link.getAttr('href'));
-    const dest = view.app.metadataCache.getFirstLinkpathDest(
-      path.root,
-      view.file.path
-    );
+    const dest = view.app.metadataCache.getFirstLinkpathDest(path.root, view.file.path);
 
     if (!dest) {
       link.addClass('is-unresolved');
@@ -145,23 +141,19 @@ function findUnresolvedLinks(dom: HTMLDivElement, view: KanbanView) {
 function handleImage(el: HTMLElement, file: TFile, view: KanbanView) {
   el.empty();
 
-  el.createEl(
-    'img',
-    { attr: { src: view.app.vault.getResourcePath(file) } },
-    (img) => {
-      if (el.hasAttribute('width')) {
-        img.setAttribute('width', el.getAttribute('width'));
-      }
-
-      if (el.hasAttribute('height')) {
-        img.setAttribute('height', el.getAttribute('height'));
-      }
-
-      if (el.hasAttribute('alt')) {
-        img.setAttribute('alt', el.getAttribute('alt'));
-      }
+  el.createEl('img', { attr: { src: view.app.vault.getResourcePath(file) } }, (img) => {
+    if (el.hasAttribute('width')) {
+      img.setAttribute('width', el.getAttribute('width'));
     }
-  );
+
+    if (el.hasAttribute('height')) {
+      img.setAttribute('height', el.getAttribute('height'));
+    }
+
+    if (el.hasAttribute('alt')) {
+      img.setAttribute('alt', el.getAttribute('alt'));
+    }
+  });
 
   el.addClasses(['image-embed', 'is-loaded']);
 }
@@ -226,9 +218,7 @@ async function getEmbeddedMarkdownString(
     };
   } else if (normalizedPath.subpath) {
     return {
-      markdown: `${t('Unable to find')} ${normalizedPath.root}${
-        normalizedPath.subpath
-      }`,
+      markdown: `${t('Unable to find')} ${normalizedPath.root}${normalizedPath.subpath}`,
       boundary: null,
     };
   }
@@ -248,11 +238,7 @@ function pollForCachedSubpath(
     const reg = view.plugin.windowRegistry.get(view.getWindow());
 
     if (reg.viewMap.has(view.id)) {
-      const { markdown } = await getEmbeddedMarkdownString(
-        file,
-        normalizedPath,
-        view
-      );
+      const { markdown } = await getEmbeddedMarkdownString(file, normalizedPath, view);
 
       if (!markdown) return;
 
@@ -274,11 +260,7 @@ async function handleMarkdown(
   view: KanbanView,
   depth: number
 ) {
-  const { markdown, boundary } = await getEmbeddedMarkdownString(
-    file,
-    normalizedPath,
-    view
-  );
+  const { markdown, boundary } = await getEmbeddedMarkdownString(file, normalizedPath, view);
 
   if (!markdown) return;
 
@@ -300,12 +282,7 @@ async function handleMarkdown(
     );
   });
 
-  await MarkdownRenderer.renderMarkdown(
-    markdown,
-    dom.createDiv(),
-    file.path,
-    view
-  );
+  await MarkdownRenderer.renderMarkdown(markdown, dom.createDiv(), file.path, view);
 
   el.addClass('is-loaded');
 
@@ -325,8 +302,7 @@ async function handleMarkdown(
         ?.filter((li) => {
           if (!boundary) return true;
           return (
-            li.position.start.line >= boundary.startLine &&
-            li.position.end.line <= boundary.endLine
+            li.position.start.line >= boundary.startLine && li.position.end.line <= boundary.endLine
           );
         })
         .forEach((li, i) => {
@@ -368,10 +344,7 @@ function handleEmbeds(dom: HTMLDivElement, view: KanbanView, depth: number) {
       const normalizedPath = getNormalizedPath(src);
       const target =
         typeof src === 'string' &&
-        view.app.metadataCache.getFirstLinkpathDest(
-          normalizedPath.root,
-          view.file.path
-        );
+        view.app.metadataCache.getFirstLinkpathDest(normalizedPath.root, view.file.path);
 
       if (!(target instanceof TFile)) {
         return;
@@ -405,13 +378,7 @@ export async function renderMarkdown(
   const dom = createDiv();
 
   try {
-    await MarkdownRenderer.render(
-      view.app,
-      markdownString,
-      dom,
-      view.file.path,
-      view
-    );
+    await MarkdownRenderer.render(view.app, markdownString, dom, view.file.path, view);
 
     applyCheckboxIndexes(dom);
     findUnresolvedLinks(dom, view);
