@@ -1,1 +1,1 @@
-d121ce1 Use static renderer for table cell lane titles
+c91be2b Fix markdown metadata rendering in tables
