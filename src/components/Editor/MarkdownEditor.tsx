@@ -12,6 +12,7 @@ import { KanbanContext } from '../context';
 import { c, noop } from '../helpers';
 import { EditState, isEditing } from '../types';
 import { commands } from './commands';
+import { datePlugins, stateManagerField } from './dateWidget';
 
 interface MarkdownEditorProps {
   editorRef?: MutableRefObject<EditorView>;
@@ -86,7 +87,7 @@ export function MarkdownEditor({
   value,
   placeholder,
 }: MarkdownEditorProps) {
-  const { view } = useContext(KanbanContext);
+  const { view, stateManager } = useContext(KanbanContext);
   const elRef = useRef<HTMLDivElement>();
   const internalRef = useRef<EditorView>();
 
@@ -99,6 +100,9 @@ export function MarkdownEditor({
       }
       buildLocalExtensions(): Extension[] {
         const extensions = super.buildLocalExtensions();
+
+        extensions.push(stateManagerField.init(() => stateManager));
+        extensions.push(datePlugins);
 
         if (placeholder) extensions.push(placeholderExt(placeholder));
         if (onPaste)

@@ -1,6 +1,6 @@
 import { EditorView } from '@codemirror/view';
 import { TFile } from 'obsidian';
-import { JSX, memo } from 'preact/compat';
+import { memo } from 'preact/compat';
 import {
   Dispatch,
   StateUpdater,
@@ -34,7 +34,7 @@ export function useDatePickers(item: Item, explicitPath?: Path) {
   const path = explicitPath || useNestedEntityPath();
 
   return useMemo(() => {
-    const onEditDate: JSX.MouseEventHandler<HTMLSpanElement> = (e) => {
+    const onEditDate = (e: MouseEvent) => {
       constructDatePicker(
         e.view,
         stateManager,
@@ -50,7 +50,7 @@ export function useDatePickers(item: Item, explicitPath?: Path) {
       );
     };
 
-    const onEditTime: JSX.MouseEventHandler<HTMLSpanElement> = (e) => {
+    const onEditTime = (e: MouseEvent) => {
       constructTimePicker(
         e.view, // Preact uses real events, so this is safe
         stateManager,
@@ -212,6 +212,19 @@ export const ItemContent = memo(function ItemContent({
     [stateManager]
   );
 
+  const onWrapperClick = useCallback(
+    (e: MouseEvent) => {
+      if (e.targetNode.instanceOf(HTMLElement)) {
+        if (e.targetNode.hasClass(c('item-metadata-date'))) {
+          onEditDate(e);
+        } else if (e.targetNode.hasClass(c('item-metadata-time'))) {
+          onEditTime(e);
+        }
+      }
+    },
+    [onEditDate, onEditTime]
+  );
+
   const onSubmit = useCallback(() => setEditState(EditingState.complete), []);
 
   const onEscape = useCallback(() => {
@@ -265,7 +278,7 @@ export const ItemContent = memo(function ItemContent({
   }
 
   return (
-    <div className={c('item-title')}>
+    <div onClick={onWrapperClick} className={c('item-title')}>
       {isStatic ? (
         <MarkdownClonedPreviewRenderer
           entityId={item.id}
@@ -292,8 +305,6 @@ export const ItemContent = memo(function ItemContent({
             item={item}
             stateManager={stateManager}
             filePath={filePath}
-            onEditDate={onEditDate}
-            onEditTime={onEditTime}
             getDateColor={getDateColor}
           />
           <Tags tags={item.data.metadata.tags} searchQuery={searchQuery} />

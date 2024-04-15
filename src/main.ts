@@ -70,7 +70,7 @@ export default class KanbanPlugin extends Plugin {
   unload(): void {
     super.unload();
     Promise.all(
-      app.workspace.getLeavesOfType(kanbanViewType).map((leaf) => {
+      this.app.workspace.getLeavesOfType(kanbanViewType).map((leaf) => {
         this.kanbanFileModes[(leaf as any).id] = 'markdown';
         return this.setMarkdownView(leaf);
       })
@@ -92,7 +92,7 @@ export default class KanbanPlugin extends Plugin {
 
     window.removeEventListener('keydown', this.handleShift);
     window.removeEventListener('keyup', this.handleShift);
-    (app.workspace as any).unregisterHoverLinkSource(frontmatterKey);
+    (this.app.workspace as any).unregisterHoverLinkSource(frontmatterKey);
   }
 
   MarkdownEditor: any;
@@ -106,13 +106,13 @@ export default class KanbanPlugin extends Plugin {
     this.registerEditorSuggest(new TimeSuggest(this.app, this));
 
     this.registerEvent(
-      app.workspace.on('window-open', (_: any, win: Window) => {
+      this.app.workspace.on('window-open', (_: any, win: Window) => {
         this.mount(win);
       })
     );
 
     this.registerEvent(
-      app.workspace.on('window-close', (_: any, win: Window) => {
+      this.app.workspace.on('window-close', (_: any, win: Window) => {
         this.unmount(win);
       })
     );
@@ -139,7 +139,7 @@ export default class KanbanPlugin extends Plugin {
     // Mount an empty component to start; views will be added as we go
     this.mount(window);
 
-    (app.workspace as any).floatingSplit?.children?.forEach((c: any) => {
+    (this.app.workspace as any).floatingSplit?.children?.forEach((c: any) => {
       this.mount(c.win);
     });
 

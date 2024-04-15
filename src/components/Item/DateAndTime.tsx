@@ -1,6 +1,6 @@
 import classcat from 'classcat';
 import { getLinkpath, moment } from 'obsidian';
-import Preact from 'preact/compat';
+import { JSX, useMemo } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
 import { t } from 'src/lang/helpers';
 
@@ -49,8 +49,8 @@ export function RelativeDate({ item, stateManager }: DateProps) {
 }
 
 interface DateAndTimeProps {
-  onEditDate?: Preact.JSX.MouseEventHandler<HTMLSpanElement>;
-  onEditTime?: Preact.JSX.MouseEventHandler<HTMLSpanElement>;
+  onEditDate?: JSX.MouseEventHandler<HTMLSpanElement>;
+  onEditTime?: JSX.MouseEventHandler<HTMLSpanElement>;
   filePath: string;
   getDateColor: (date: moment.Moment) => DateColorKey;
 }
@@ -69,7 +69,7 @@ export function DateAndTime({
   const dateDisplayFormat = stateManager.useSetting('date-display-format');
   const shouldLinkDate = stateManager.useSetting('link-date-to-daily-note');
 
-  const dateColor = Preact.useMemo(() => {
+  const dateColor = useMemo(() => {
     if (!item.data.metadata.date) return null;
     return getDateColor(item.data.metadata.date);
   }, [item.data.metadata.date, getDateColor]);

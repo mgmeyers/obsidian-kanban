@@ -53,7 +53,6 @@
     "classcat": "^5.0.3",
     "colord": "^2.9.3",
     "deepmerge": "^4.2.2",
-    "eventemitter3": "^4.0.7",
     "fast-json-patch": "^3.1.0",
     "file-selector": "^0.2.4",
     "fuse.js": "^6.5.3",

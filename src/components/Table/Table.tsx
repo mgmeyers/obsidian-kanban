@@ -239,7 +239,7 @@ function LaneCell({ lane, path }: { lane: Lane; path: number[] }) {
 
           menu.showAtMouseEvent(e);
         }}
-        className={classcat([c('icon-wrapper'), c('lane-menu')])}
+        className={classcat(['clickable-icon', c('icon-wrapper'), c('lane-menu')])}
       >
         <Icon name="lucide-square-kanban" />
       </div>

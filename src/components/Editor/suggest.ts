@@ -38,54 +38,36 @@ export class DateSuggest extends EditorSuggest<[]> {
       if (!datepicker) return;
 
       const currentDate = moment(datepicker.selectedDates[0] || new Date());
+      let nextDate: Date;
 
       if (dir === 'right') {
         if (currentDate.weekday() === 6) {
-          datepicker.setDate(toNextMonth(currentDate).toDate(), false);
+          nextDate = toNextMonth(currentDate).toDate();
         } else {
-          datepicker.setDate(currentDate.add(1, 'day').toDate(), false);
+          nextDate = currentDate.add(1, 'day').toDate();
         }
-        return;
-      }
-
-      if (dir === 'left') {
+      } else if (dir === 'left') {
         if (currentDate.weekday() === 0) {
-          datepicker.setDate(toPreviousMonth(currentDate).toDate(), false);
+          nextDate = toPreviousMonth(currentDate).toDate();
         } else {
-          datepicker.setDate(currentDate.subtract(1, 'day').toDate(), false);
+          nextDate = currentDate.subtract(1, 'day').toDate();
         }
+      } else if (dir === 'up') {
+        nextDate = currentDate.subtract(1, 'week').toDate();
+      } else if (dir === 'down') {
+        nextDate = currentDate.add(1, 'week').toDate();
       }
 
-      if (dir === 'up') {
-        datepicker.setDate(currentDate.subtract(1, 'week').toDate(), false);
-        return;
-      }
-
-      if (dir === 'down') {
-        datepicker.setDate(currentDate.add(1, 'week').toDate(), false);
-        return;
+      if (nextDate) {
+        datepicker.setDate(nextDate, false);
+        return false;
       }
     };
 
-    this.scope.register([], 'ArrowLeft', () => {
-      move('left');
-      return false;
-    });
-
-    this.scope.register([], 'ArrowRight', () => {
-      move('right');
-      return false;
-    });
-
-    this.scope.register([], 'ArrowDown', () => {
-      move('down');
-      return false;
-    });
-
-    this.scope.register([], 'ArrowUp', () => {
-      move('up');
-      return false;
-    });
+    this.scope.register([], 'ArrowLeft', () => move('left'));
+    this.scope.register([], 'ArrowRight', () => move('right'));
+    this.scope.register([], 'ArrowDown', () => move('down'));
+    this.scope.register([], 'ArrowUp', () => move('up'));
 
     this.scope.register([], 'Enter', () => {
       const selectedDates = this.datepicker.selectedDates;
@@ -134,19 +116,20 @@ export class DateSuggest extends EditorSuggest<[]> {
     const stateManager = this.plugin.getStateManager(file);
     if (!stateManager) return null;
 
+    const line = editor.getLine(cursor.line);
+    if (!line) return null;
+
     const dateTrigger = stateManager.getSetting('date-trigger');
-    const textCtx = (editor.getLine(cursor.line) || '').slice(0, cursor.ch);
+    const textCtx = line.slice(0, cursor.ch);
+
     const isMatch = new RegExp(`(?:^|\\s)${escapeRegExpStr(dateTrigger)}$`).test(textCtx);
+    if (!isMatch) return null;
 
-    if (isMatch) {
-      return {
-        start: { line: cursor.line, ch: cursor.ch - dateTrigger.length },
-        end: cursor,
-        query: dateTrigger,
-      };
-    }
-
-    return null;
+    return {
+      start: { line: cursor.line, ch: cursor.ch - dateTrigger.length },
+      end: cursor,
+      query: dateTrigger,
+    };
   }
 
   close() {

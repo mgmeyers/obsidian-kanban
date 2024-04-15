@@ -4,10 +4,11 @@ import Mark from 'mark.js';
 import { MarkdownRenderer as ObsidianRenderer, TFile } from 'obsidian';
 import PQueue from 'p-queue';
 import { CSSProperties, memo, useEffect, useRef } from 'preact/compat';
-import { useContext, useState } from 'preact/hooks';
+import { useContext, useMemo, useState } from 'preact/hooks';
 import { KanbanView } from 'src/KanbanView';
 
 import { applyCheckboxIndexes, renderMarkdown } from '../../helpers/renderMarkdown';
+import { preprocess } from '../Editor/dateWidget';
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
 
@@ -98,6 +99,7 @@ export class MarkdownRenderer extends ObsidianRenderer {
     // @ts-ignore
     super(owner.app, el, renderOnInsert);
     this.owner = owner;
+    this.renderer.sizerEl.addClass('kanban-renderer');
   }
 
   lastWidth = -1;
@@ -235,11 +237,16 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
   priority,
   ...divProps
 }: MarkdownPreviewRendererProps) {
-  const { view } = useContext(KanbanContext);
+  const { view, stateManager, getDateColor } = useContext(KanbanContext);
   const markRef = useRef<Mark>();
   const renderer = useRef<MarkdownRenderer>();
   const elRef = useRef<HTMLDivElement>();
   const [rendered, setRendered] = useState(false);
+
+  const processed = useMemo(
+    () => preprocess(stateManager, markdownString, getDateColor),
+    [stateManager, markdownString]
+  );
 
   useEffect(() => {
     if (view.previewCache.has(entityId)) {
@@ -260,7 +267,7 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
         const containerEl = elRef.current.createDiv();
         const preview = (renderer.current = view.addChild(new MarkdownRenderer(view, containerEl)));
         preview.wrapperEl = elRef.current;
-        preview.set(markdownString);
+        preview.set(processed);
         markRef.current = new Mark(preview.renderer.previewEl);
 
         view.previewCache.set(entityId, preview);
@@ -274,13 +281,13 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
 
   useEffect(() => {
     const preview = renderer.current;
-    if (!rendered || markdownString === preview.renderer.text) return;
+    if (!rendered || processed === preview.renderer.text) return;
     const el = elRef.current;
     if (el) {
       preview.migrate(el);
     }
-    renderer.current.set(markdownString);
-  }, [rendered, markdownString]);
+    renderer.current.set(processed);
+  }, [rendered, processed]);
 
   useEffect(() => {
     markRef.current?.unmark();
