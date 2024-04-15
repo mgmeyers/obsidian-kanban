@@ -68,14 +68,17 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
   }, [searchQuery]);
 
   return (
-    <div
-      ref={(node) => {
-        wrapperRef.current = node;
-        appendOrReplaceFirstChild(node, contentRef.current);
-      }}
-      className={classcat(['markdown-preview-view', c('markdown-preview-view'), className])}
-      {...divProps}
-    />
+    <div className={classcat([c('markdown-preview-wrapper'), className])} {...divProps}>
+      <div>
+        <div
+          className={classcat(['markdown-preview-view', c('markdown-preview-view')])}
+          ref={(node) => {
+            wrapperRef.current = node;
+            appendOrReplaceFirstChild(node, contentRef.current);
+          }}
+        ></div>
+      </div>
+    </div>
   );
 });
 

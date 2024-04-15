@@ -40,7 +40,7 @@ import { ItemCheckbox } from '../Item/ItemCheckbox';
 import { ItemContent, Tags, useDatePickers } from '../Item/ItemContent';
 import { useItemMenu } from '../Item/ItemMenu';
 import { MetadataValue, anyToString } from '../Item/MetadataTable';
-import { MarkdownPreviewRenderer } from '../MarkdownRenderer/MarkdownRenderer';
+import { StaticMarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
 import { Board, Item, Lane } from '../types';
@@ -215,11 +215,7 @@ function LaneCell({ lane, path }: { lane: Lane; path: number[] }) {
   const search = useContext(SearchContext);
   return (
     <div className={c('cell-flex-wrapper')}>
-      <MarkdownPreviewRenderer
-        entityId={lane.id}
-        searchQuery={search?.query}
-        markdownString={lane.data.title}
-      />
+      <StaticMarkdownRenderer searchQuery={search?.query} markdownString={lane.data.title} />
       <div
         onClick={(e) => {
           const menu = new Menu();
