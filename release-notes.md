@@ -1,1 +1,1 @@
-abc59b0 Add date widgets
+9c97dfe Fix #919 - Card content not rendering
