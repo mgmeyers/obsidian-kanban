@@ -119,13 +119,6 @@ export class MarkdownRenderer extends ObsidianRenderer {
       const entry = entries.first().contentBoxSize[0];
       if (entry.blockSize === 0) return;
 
-      if (
-        this.lastWidth >= 0 &&
-        (this.lastWidth !== entry.inlineSize || this.lastHeight !== entry.blockSize)
-      ) {
-        this.renderer.onResize();
-      }
-
       if (this.wrapperEl) {
         const rect = this.wrapperEl.getBoundingClientRect();
         if (this.lastRefHeight === -1 || rect.height > 0) {
@@ -225,6 +218,17 @@ export class MarkdownRenderer extends ObsidianRenderer {
       el.append(containerEl);
     }
   }
+
+  displayAllChildren() {
+    const { renderer } = this;
+    const { sizerEl, pusherEl, previewEl, sections } = renderer;
+
+    (sizerEl as HTMLElement).setChildrenInPlace([pusherEl, ...sections.map((s: any) => s.el)]);
+
+    sizerEl.style.minHeight = '';
+    pusherEl.style.marginBottom = '0';
+    previewEl.scrollTop = 0;
+  }
 }
 
 const q = new PQueue({ concurrency: 50 });
@@ -269,11 +273,15 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
         preview.wrapperEl = elRef.current;
         preview.set(processed);
         markRef.current = new Mark(preview.renderer.previewEl);
-
         view.previewCache.set(entityId, preview);
 
         setRendered(true);
-        await new Promise((res) => setTimeout(res));
+        await new Promise<void>((res) => {
+          preview.renderer.onRendered(() => {
+            preview.displayAllChildren();
+            res();
+          });
+        });
       },
       { priority: priority ?? 0 }
     );
@@ -282,11 +290,8 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
   useEffect(() => {
     const preview = renderer.current;
     if (!rendered || processed === preview.renderer.text) return;
-    const el = elRef.current;
-    if (el) {
-      preview.migrate(el);
-    }
-    renderer.current.set(processed);
+    if (elRef.current) preview.migrate(elRef.current);
+    preview.set(processed);
   }, [rendered, processed]);
 
   useEffect(() => {
