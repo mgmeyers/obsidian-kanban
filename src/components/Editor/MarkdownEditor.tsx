@@ -107,19 +107,13 @@ export function MarkdownEditor({
         extensions.push(datePlugins);
         extensions.push(
           EditorView.domEventHandlers({
-            focus: (evt, cm) => {
-              cm.dom.win.setTimeout(() => {
+            focus: (evt) => {
+              evt.win.setTimeout(() => {
                 this.app.workspace.activeEditor = this.owner;
                 if (Platform.isMobile) {
                   this.app.mobileToolbar.update();
                 }
               });
-            },
-            blur: () => {
-              if (Platform.isMobile) {
-                this.app.mobileToolbar.update();
-              }
-              this.editorSuggest.close();
             },
           })
         );

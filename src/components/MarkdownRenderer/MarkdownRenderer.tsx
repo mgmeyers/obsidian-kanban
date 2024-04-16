@@ -1,13 +1,21 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import classcat from 'classcat';
 import Mark from 'mark.js';
-import { MarkdownRenderer as ObsidianRenderer, TFile } from 'obsidian';
+import moment from 'moment';
+import { MarkdownRenderer as ObsidianRenderer, TFile, getLinkpath } from 'obsidian';
+import { appHasDailyNotesPluginLoaded, createDailyNote } from 'obsidian-daily-notes-interface';
 import PQueue from 'p-queue';
 import { CSSProperties, memo, useEffect, useRef } from 'preact/compat';
-import { useContext, useMemo, useState } from 'preact/hooks';
+import { useCallback, useContext, useMemo, useState } from 'preact/hooks';
 import { KanbanView } from 'src/KanbanView';
+import { PromiseCapability } from 'src/helpers/util';
+import { frontmatterKey } from 'src/parsers/common';
 
-import { applyCheckboxIndexes, renderMarkdown } from '../../helpers/renderMarkdown';
+import {
+  applyCheckboxIndexes,
+  getNormalizedPath,
+  renderMarkdown,
+} from '../../helpers/renderMarkdown';
 import { preprocess } from '../Editor/dateWidget';
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
@@ -39,7 +47,7 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
   searchQuery,
   ...divProps
 }: MarkdownRendererProps) {
-  const { stateManager } = useContext(KanbanContext);
+  const { stateManager, view, filePath } = useContext(KanbanContext);
   const wrapperRef = useRef<HTMLDivElement>();
   const contentRef = useRef<HTMLDivElement>();
   const markRef = useRef<Mark>();
@@ -68,8 +76,131 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
     }
   }, [searchQuery]);
 
+  const onMouseOver = useCallback(
+    (e: MouseEvent) => {
+      const targetEl = e.target as HTMLElement;
+
+      if (targetEl.tagName !== 'A') return;
+
+      if (targetEl.hasClass('internal-link')) {
+        view.app.workspace.trigger('hover-link', {
+          event: e,
+          source: frontmatterKey,
+          hoverParent: view,
+          targetEl,
+          linktext: targetEl.getAttr('href'),
+          sourcePath: view.file.path,
+        });
+      }
+    },
+    [view]
+  );
+
+  const onClick = useCallback(
+    async (e: MouseEvent) => {
+      if (e.type === 'auxclick' || e.button === 2) {
+        return;
+      }
+
+      const targetEl = e.target as HTMLElement;
+      const closestAnchor = targetEl.tagName === 'A' ? targetEl : targetEl.closest('a');
+
+      if (!closestAnchor) return;
+
+      if (closestAnchor.hasClass('file-link')) {
+        e.preventDefault();
+        const href = closestAnchor.getAttribute('href');
+        const normalizedPath = getNormalizedPath(href);
+        const target =
+          typeof href === 'string' &&
+          view.app.metadataCache.getFirstLinkpathDest(normalizedPath.root, view.file.path);
+
+        if (!target) return;
+
+        (stateManager.app as any).openWithDefaultApp(target.path);
+
+        return;
+      }
+
+      // Open an internal link in a new pane
+      if (closestAnchor.hasClass('internal-link')) {
+        e.preventDefault();
+        const destination = closestAnchor.getAttr('href');
+        const inNewLeaf = e.button === 1 || e.ctrlKey || e.metaKey;
+        const isUnresolved = closestAnchor.hasClass('is-unresolved');
+
+        if (isUnresolved && appHasDailyNotesPluginLoaded()) {
+          const dateFormat = stateManager.getSetting('date-format');
+          const parsed = moment(destination, dateFormat, true);
+
+          if (parsed.isValid()) {
+            try {
+              const dailyNote = await createDailyNote(parsed);
+              const leaf = inNewLeaf ? app.workspace.getLeaf(true) : app.workspace.getLeaf(false);
+
+              await leaf.openFile(dailyNote as unknown as TFile, {
+                active: true,
+              });
+            } catch (e) {
+              console.error(e);
+              stateManager.setError(e);
+            }
+            return;
+          }
+        }
+
+        stateManager.app.workspace.openLinkText(destination, filePath, inNewLeaf);
+        return;
+      }
+
+      // Open a tag search
+      if (closestAnchor.hasClass('tag')) {
+        e.preventDefault();
+        (stateManager.app as any).internalPlugins
+          .getPluginById('global-search')
+          .instance.openGlobalSearch(`tag:${closestAnchor.getAttr('href')}`);
+        return;
+      }
+
+      // Open external link
+      if (closestAnchor.hasClass('external-link')) {
+        e.preventDefault();
+        window.open(closestAnchor.getAttr('href'), '_blank');
+      }
+    },
+    [stateManager, filePath]
+  );
+
+  const onContextMenu = useCallback(
+    (e: MouseEvent) => {
+      const internalLinkPath =
+        e.targetNode.instanceOf(HTMLAnchorElement) && e.targetNode.hasClass('internal-link')
+          ? e.targetNode.dataset.href
+          : undefined;
+
+      if (!internalLinkPath) return;
+
+      (stateManager.app.workspace as any).onLinkContextMenu(
+        e,
+        getLinkpath(internalLinkPath),
+        stateManager.file.path
+      );
+    },
+    [stateManager]
+  );
+
   return (
-    <div className={classcat([c('markdown-preview-wrapper'), className])} {...divProps}>
+    <div
+      className={classcat([c('markdown-preview-wrapper'), className])}
+      {...divProps}
+      onMouseOver={onMouseOver}
+      onPointerDown={onClick}
+      onClick={onClick}
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      onAuxClick={onClick}
+      onContextMenu={onContextMenu}
+    >
       <div>
         <div
           className={classcat(['markdown-preview-view', c('markdown-preview-view')])}
@@ -231,7 +362,14 @@ export class MarkdownRenderer extends ObsidianRenderer {
   }
 }
 
-const q = new PQueue({ concurrency: 50 });
+const q = new PQueue({
+  autoStart: true,
+  concurrency: 50,
+});
+
+q.on('error', (...args) => {
+  console.error('Error rendering Kanban cards', ...args);
+});
 
 export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
   entityId,
@@ -265,26 +403,34 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
       return;
     }
 
+    const promiseCapability = new PromiseCapability();
+
     q.add(
       async () => {
         if (!(view as any)._loaded || !elRef.current) return;
+
         const containerEl = elRef.current.createDiv();
         const preview = (renderer.current = view.addChild(new MarkdownRenderer(view, containerEl)));
+
         preview.wrapperEl = elRef.current;
         preview.set(processed);
-        markRef.current = new Mark(preview.renderer.previewEl);
+
         view.previewCache.set(entityId, preview);
+        markRef.current = new Mark(preview.renderer.previewEl);
+
+        preview.renderer.onRendered(() => {
+          preview.displayAllChildren();
+          promiseCapability.resolve();
+        });
 
         setRendered(true);
-        await new Promise<void>((res) => {
-          preview.renderer.onRendered(() => {
-            preview.displayAllChildren();
-            res();
-          });
-        });
+
+        await promiseCapability.promise;
       },
       { priority: priority ?? 0 }
     );
+
+    return () => promiseCapability.resolve();
   }, [view, entityId]);
 
   useEffect(() => {

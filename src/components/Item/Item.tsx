@@ -59,7 +59,6 @@ const ItemInner = memo(function ItemInner({
     };
 
     dndManager.dragManager.emitter.on('dragStart', handler);
-
     return () => {
       dndManager.dragManager.emitter.off('dragStart', handler);
     };
@@ -81,29 +80,8 @@ const ItemInner = memo(function ItemInner({
     path,
   });
 
-  const onContextMenu: JSX.MouseEventHandler<HTMLDivElement> = useCallback(
-    (e) => {
-      if (e.targetNode.instanceOf(HTMLTextAreaElement)) {
-        return;
-      }
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      const internalLinkPath =
-        e.targetNode.instanceOf(HTMLAnchorElement) && e.targetNode.hasClass('internal-link')
-          ? e.targetNode.dataset.href
-          : undefined;
-
-      showItemMenu(e, internalLinkPath);
-    },
-    [showItemMenu]
-  );
-
   const onDoubleClick: JSX.MouseEventHandler<HTMLDivElement> = useCallback(
-    (e) => {
-      setEditState({ x: e.clientX, y: e.clientY });
-    },
+    (e) => setEditState({ x: e.clientX, y: e.clientY }),
     [setEditState]
   );
 
@@ -119,7 +97,6 @@ const ItemInner = memo(function ItemInner({
 
   return (
     <div
-      onContextMenu={onContextMenu}
       // eslint-disable-next-line react/no-unknown-property
       onDblClick={onDoubleClick}
       className={c('item-content-wrapper')}

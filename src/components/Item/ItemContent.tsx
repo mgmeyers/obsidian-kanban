@@ -149,6 +149,12 @@ export function Tags({
         return (
           <a
             href={tag}
+            onClick={(e) => {
+              e.preventDefault();
+              (stateManager.app as any).internalPlugins
+                .getPluginById('global-search')
+                .instance.openGlobalSearch(`tag:${tag}`);
+            }}
             key={i}
             className={`tag ${c('item-tag')} ${
               searchQuery && tag.toLocaleLowerCase().contains(searchQuery) ? 'is-search-match' : ''

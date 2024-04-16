@@ -388,6 +388,7 @@ export function useDragHandle(
 
       const win = e.view;
       const isTouchEvent = ['pen', 'touch'].includes(e.pointerType);
+      const pointerId = e.pointerId;
 
       if (!isTouchEvent) {
         e.stopPropagation();
@@ -416,6 +417,7 @@ export function useDragHandle(
       }
 
       const onMove = rafThrottle(win, (e: PointerEvent) => {
+        if (e.pointerId !== pointerId) return;
         if (isTouchEvent) {
           if (!isDragging) {
             if (
@@ -452,6 +454,7 @@ export function useDragHandle(
       });
 
       const onEnd = (e: PointerEvent) => {
+        if (e.pointerId !== pointerId) return;
         win.clearTimeout(longPressTimeout);
         isDragging = false;
 

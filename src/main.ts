@@ -363,6 +363,8 @@ export default class KanbanPlugin extends Plugin {
   registerEvents() {
     this.registerEvent(
       app.workspace.on('file-menu', (menu, file, source, leaf) => {
+        if (source === 'link-context-menu') return;
+
         // Add a menu item to the folder context menu to create a board
         if (file instanceof TFolder) {
           menu.addItem((item) => {

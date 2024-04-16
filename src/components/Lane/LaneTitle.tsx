@@ -1,6 +1,5 @@
 import { EditorView, ViewUpdate } from '@codemirror/view';
 import classcat from 'classcat';
-import { getLinkpath } from 'obsidian';
 import { Dispatch, StateUpdater, useCallback, useContext, useEffect, useRef } from 'preact/hooks';
 import { laneTitleWithMaxItems } from 'src/helpers';
 
@@ -82,27 +81,6 @@ export function LaneTitle({ maxItems, editState, setEditState, title, onChange }
   );
   const onSubmit = useCallback(() => setEditState(EditingState.complete), [setEditState]);
   const onEscape = useCallback(() => setEditState(EditingState.cancel), [setEditState]);
-  const onContextMenu = useCallback(
-    (e: MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const internalLinkPath =
-        e.target instanceof (e.view as Window & typeof globalThis).HTMLAnchorElement &&
-        e.target.hasClass('internal-link')
-          ? e.target.dataset.href
-          : undefined;
-
-      if (internalLinkPath) {
-        (stateManager.app.workspace as any).onLinkContextMenu(
-          e,
-          getLinkpath(internalLinkPath),
-          stateManager.file.path
-        );
-      }
-    },
-    [stateManager]
-  );
 
   return (
     <div className={c('lane-title')}>
@@ -117,7 +95,7 @@ export function LaneTitle({ maxItems, editState, setEditState, title, onChange }
           value={laneTitleWithMaxItems(title, maxItems)}
         />
       ) : (
-        <div className={c('lane-title-text')} onContextMenu={onContextMenu}>
+        <div className={c('lane-title-text')}>
           <StaticMarkdownRenderer markdownString={title} />
         </div>
       )}

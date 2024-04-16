@@ -1,8 +1,6 @@
 import animateScrollTo from 'animated-scroll-to';
 import classcat from 'classcat';
 import update from 'immutability-helper';
-import { TFile, moment } from 'obsidian';
-import { appHasDailyNotesPluginLoaded, createDailyNote } from 'obsidian-daily-notes-interface';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
@@ -11,7 +9,6 @@ import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
 import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
 import { Sortable } from 'src/dnd/components/Sortable';
 import { createHTMLDndHandlers } from 'src/dnd/managers/DragManager';
-import { getNormalizedPath } from 'src/helpers/renderMarkdown';
 import { t } from 'src/lang/helpers';
 
 import { DndScope } from '../dnd/components/Scope';
@@ -148,103 +145,6 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     return getBoardModifiers(stateManager);
   }, [stateManager]);
 
-  const onMouseOver = useCallback(
-    (e: MouseEvent) => {
-      const targetEl = e.target as HTMLElement;
-
-      if (targetEl.tagName !== 'A') return;
-
-      if (targetEl.hasClass('internal-link')) {
-        view.app.workspace.trigger('hover-link', {
-          event: e,
-          source: frontmatterKey,
-          hoverParent: view,
-          targetEl,
-          linktext: targetEl.getAttr('href'),
-          sourcePath: view.file.path,
-        });
-      }
-    },
-    [view]
-  );
-
-  const onClick = useCallback(
-    async (e: MouseEvent) => {
-      if (e.type === 'auxclick' || e.button === 2) {
-        return;
-      }
-
-      const targetEl = e.target as HTMLElement;
-      const closestAnchor = targetEl.tagName === 'A' ? targetEl : targetEl.closest('a');
-
-      if (!closestAnchor) return;
-
-      if (closestAnchor.hasClass('file-link')) {
-        e.preventDefault();
-        const href = closestAnchor.getAttribute('href');
-        const normalizedPath = getNormalizedPath(href);
-        const target =
-          typeof href === 'string' &&
-          view.app.metadataCache.getFirstLinkpathDest(normalizedPath.root, view.file.path);
-
-        if (!target) return;
-
-        (stateManager.app as any).openWithDefaultApp(target.path);
-
-        return;
-      }
-
-      // Open an internal link in a new pane
-      if (closestAnchor.hasClass('internal-link')) {
-        e.preventDefault();
-        const destination = closestAnchor.getAttr('href');
-        const inNewLeaf = e.button === 1 || e.ctrlKey || e.metaKey;
-        const isUnresolved = closestAnchor.hasClass('is-unresolved');
-
-        if (isUnresolved && appHasDailyNotesPluginLoaded()) {
-          const dateFormat = stateManager.getSetting('date-format');
-          const parsed = moment(destination, dateFormat, true);
-
-          if (parsed.isValid()) {
-            try {
-              const dailyNote = await createDailyNote(parsed);
-              const leaf = inNewLeaf ? app.workspace.getLeaf(true) : app.workspace.getLeaf(false);
-
-              await leaf.openFile(dailyNote as unknown as TFile, {
-                active: true,
-              });
-            } catch (e) {
-              console.error(e);
-              stateManager.setError(e);
-            }
-            return;
-          }
-        }
-
-        stateManager.app.workspace.openLinkText(destination, filePath, inNewLeaf);
-
-        return;
-      }
-
-      // Open a tag search
-      if (closestAnchor.hasClass('tag')) {
-        e.preventDefault();
-        (stateManager.app as any).internalPlugins
-          .getPluginById('global-search')
-          .instance.openGlobalSearch(`tag:${closestAnchor.getAttr('href')}`);
-
-        return;
-      }
-
-      // Open external link
-      if (closestAnchor.hasClass('external-link')) {
-        e.preventDefault();
-        window.open(closestAnchor.getAttr('href'), '_blank');
-      }
-    },
-    [stateManager, filePath]
-  );
-
   const kanbanContext = useMemo(() => {
     return {
       view,
@@ -303,12 +203,6 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
               ...((boardData.data.frontmatter.cssclass || []) as string[]),
               ...((boardData.data.frontmatter.cssclasses || []) as string[]),
             ])}
-            onMouseOver={onMouseOver}
-            onPointerDown={onClick}
-            onClick={onClick}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            onAuxClick={onClick}
             {...html5DragHandlers}
           >
             {(isLaneFormVisible || boardData.children.length === 0) && (
