@@ -22,7 +22,7 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
 
   const clear = () => setEditState(EditingState.cancel);
   const clickOutsideRef = useOnclickOutside(clear, {
-    ignoreClass: c('ignore-click-outside'),
+    ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar'],
   });
 
   const createItem = async (title: string) => {

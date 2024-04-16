@@ -2,7 +2,7 @@ import { insertBlankLine } from '@codemirror/commands';
 import { EditorSelection, Extension, Prec } from '@codemirror/state';
 import { EditorView, ViewUpdate, keymap, placeholder as placeholderExt } from '@codemirror/view';
 import classcat from 'classcat';
-import { Platform } from 'obsidian';
+import { Editor, Platform } from 'obsidian';
 import { MutableRefObject, useContext, useEffect, useRef } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
@@ -11,7 +11,6 @@ import { t } from 'src/lang/helpers';
 import { KanbanContext } from '../context';
 import { c, noop } from '../helpers';
 import { EditState, isEditing } from '../types';
-import { commands } from './commands';
 import { datePlugins, stateManagerField } from './dateWidget';
 
 interface MarkdownEditorProps {
@@ -57,7 +56,7 @@ function getEditorAppProxy(view: KanbanView) {
   });
 }
 
-function getMarkdownController(view: KanbanView): Record<any, any> {
+function getMarkdownController(view: KanbanView, getEditor: () => Editor): Record<any, any> {
   return {
     app: view.app,
     showSearch: noop,
@@ -66,6 +65,9 @@ function getMarkdownController(view: KanbanView): Record<any, any> {
     getMode: () => 'source',
     scroll: 0,
     editMode: null,
+    get editor() {
+      return getEditor();
+    },
     get file() {
       return view.file;
     },
@@ -103,9 +105,27 @@ export function MarkdownEditor({
 
         extensions.push(stateManagerField.init(() => stateManager));
         extensions.push(datePlugins);
+        extensions.push(
+          EditorView.domEventHandlers({
+            focus: (evt, cm) => {
+              cm.dom.win.setTimeout(() => {
+                this.app.workspace.activeEditor = this.owner;
+                if (Platform.isMobile) {
+                  this.app.mobileToolbar.update();
+                }
+              });
+            },
+            blur: () => {
+              if (Platform.isMobile) {
+                this.app.mobileToolbar.update();
+              }
+              this.editorSuggest.close();
+            },
+          })
+        );
 
         if (placeholder) extensions.push(placeholderExt(placeholder));
-        if (onPaste)
+        if (onPaste) {
           extensions.push(
             Prec.high(
               EditorView.domEventHandlers({
@@ -113,6 +133,7 @@ export function MarkdownEditor({
               })
             )
           );
+        }
 
         const makeEnterHandler = (mod: boolean, shift: boolean) => (cm: EditorView) => {
           const didRun = onEnter(cm, mod, shift);
@@ -156,7 +177,7 @@ export function MarkdownEditor({
       }
     }
 
-    const controller = getMarkdownController(view);
+    const controller = getMarkdownController(view, () => editor.editor);
     const app = getEditorAppProxy(view);
     const editor = view.plugin.addChild(new (Editor as any)(app, elRef.current, controller));
     const cm: EditorView = editor.cm;
@@ -173,14 +194,7 @@ export function MarkdownEditor({
       });
     }
 
-    const onHotkey = (command: string) => {
-      commands[command]?.(editor.editor);
-    };
-
-    view.emitter.on('hotkey', onHotkey);
-
     return () => {
-      view.emitter.off('hotkey', onHotkey);
       view.plugin.removeChild(editor);
       internalRef.current = null;
       if (editorRef) editorRef.current = null;

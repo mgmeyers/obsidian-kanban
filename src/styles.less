@@ -305,6 +305,10 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
     height: 100%;
   }
 
+  .is-mobile & > div {
+    padding-bottom: calc(1rem + var(--mobile-navbar-height));
+  }
+
   &.kanban-plugin__vertical {
     > div {
       height: fit-content;

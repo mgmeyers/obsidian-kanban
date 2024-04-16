@@ -1,5 +1,13 @@
 import update from 'immutability-helper';
-import { HoverParent, HoverPopover, Menu, TFile, TextFileView, WorkspaceLeaf } from 'obsidian';
+import {
+  HoverParent,
+  HoverPopover,
+  Menu,
+  Platform,
+  TFile,
+  TextFileView,
+  WorkspaceLeaf,
+} from 'obsidian';
 
 import { KanbanFormat, SettingsModal } from './Settings';
 import { Kanban } from './components/Kanban';
@@ -139,6 +147,11 @@ export class KanbanView extends TextFileView implements HoverParent {
   onload() {
     super.onload();
     this.destroy();
+    if (Platform.isMobile) {
+      this.containerEl.setCssProps({
+        '--mobile-navbar-height': (this.app as any).mobileNavbar.containerEl.clientHeight + 'px',
+      });
+    }
   }
 
   onunload(): void {
