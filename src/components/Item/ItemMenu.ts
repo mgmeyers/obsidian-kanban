@@ -1,8 +1,8 @@
 import { Menu, TFile, TFolder, getLinkpath } from 'obsidian';
-import Preact from 'preact/compat';
-import { Dispatch, StateUpdater } from 'preact/hooks';
+import { Dispatch, StateUpdater, useCallback } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
+import { moveEntity } from 'src/dnd/util/data';
 import { t } from 'src/lang/helpers';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
@@ -35,10 +35,10 @@ export function useItemMenu({
   boardModifiers,
   stateManager,
 }: UseItemMenuParams) {
-  return Preact.useCallback(
+  return useCallback(
     (e: MouseEvent, internalLinkPath?: string) => {
       if (internalLinkPath) {
-        (app.workspace as any).onLinkContextMenu(
+        (stateManager.app.workspace as any).onLinkContextMenu(
           e,
           getLinkpath(internalLinkPath),
           stateManager.file.path
@@ -294,6 +294,24 @@ export function useItemMenu({
                 });
             });
           }
+        }
+
+        menu.addSeparator();
+
+        const lanes = stateManager.state.children;
+        for (let i = 0, len = lanes.length; i < len; i++) {
+          menu.addItem((item) =>
+            item
+              .setIcon('lucide-square-kanban')
+              .setChecked(path[0] === i)
+              .setTitle(lanes[i].data.title)
+              .onClick(() => {
+                if (path[0] === i) return;
+                stateManager.setState((boardData) => {
+                  return moveEntity(boardData, path, [i, 0]);
+                });
+              })
+          );
         }
 
         menu.showAtPosition(coordinates);

@@ -94,12 +94,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
         );
 
         if (inDropArea) {
-          const parent = getEntityFromPath(stateManager.state, dropPath);
-          const shouldAppend =
-            (stateManager.getSetting('new-card-insertion-method') || 'append') === 'append';
-
-          if (shouldAppend) dropPath.push(parent.children.length);
-          else dropPath.push(0);
+          dropPath.push(0);
         }
 
         plugin.app.workspace.trigger(
