@@ -61,18 +61,7 @@ export class ScrollManager {
     this.parent = parent;
     this.activeScroll = new Map();
     this.observerHandlers = new Map();
-
-    //
-    // this.pollForNodes(getScrollEl);
   }
-
-  // pollForNodes(getScrollEl: () => HTMLElement | null) {
-  //   if (!getScrollEl() || (this.parent && !this.parent.observerHandlers)) {
-  //     this.dndManager.win.requestAnimationFrame(() => this.pollForNodes(getScrollEl));
-  //   } else {
-  //     this.initNodes(getScrollEl());
-  //   }
-  // }
 
   initNodes(scrollEl: HTMLElement) {
     this.scrollEl = scrollEl;
@@ -135,6 +124,8 @@ export class ScrollManager {
   }
 
   destroy() {
+    if (!this.scrollEl && !this.observer) return;
+
     this.observerQueue.length = 0;
     this.handleEntityUnregistration();
     this.observer.disconnect();

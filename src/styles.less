@@ -719,6 +719,11 @@ button.kanban-plugin__new-item-button {
 
 .kanban-plugin__meta-value,
 .kanban-plugin__markdown-preview-wrapper {
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+
   .markdown-preview-view {
     --file-margins: 0;
   }
@@ -1114,41 +1119,6 @@ button.kanban-plugin__cancel-action-button {
 }
 
 /* Inputs */
-
-.kanban-plugin__grow-wrap {
-  width: 100%;
-  display: grid;
-}
-.kanban-plugin__grow-wrap::after {
-  content: attr(data-replicated-value) ' ';
-  white-space: pre-wrap;
-  visibility: hidden;
-}
-.kanban-plugin__grow-wrap > textarea {
-  resize: none;
-  overflow: hidden;
-  tab-size: 2;
-}
-
-.kanban-plugin__grow-wrap > textarea:focus {
-  border: none;
-  box-shadow: none;
-}
-
-.kanban-plugin__grow-wrap > textarea,
-.kanban-plugin__grow-wrap::after {
-  /* Identical styling required! */
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  font: inherit;
-  line-height: var(--line-height-tight);
-  grid-area: 1 / 1 / 2 / 2;
-  font-size: 0.875rem;
-  overflow: hidden;
-  overflow-wrap: break-word;
-  white-space: pre-wrap;
-}
 
 .kanban-plugin__autocomplete {
   font-size: 0.875rem;
