@@ -80,6 +80,14 @@ const ItemInner = memo(function ItemInner({
     path,
   });
 
+  const onContextMenu: JSX.MouseEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      if (isEditing(editState)) return;
+      showItemMenu(e);
+    },
+    [showItemMenu, editState]
+  );
+
   const onDoubleClick: JSX.MouseEventHandler<HTMLDivElement> = useCallback(
     (e) => setEditState({ x: e.clientX, y: e.clientY }),
     [setEditState]
@@ -99,6 +107,7 @@ const ItemInner = memo(function ItemInner({
     <div
       // eslint-disable-next-line react/no-unknown-property
       onDblClick={onDoubleClick}
+      onContextMenu={onContextMenu}
       className={c('item-content-wrapper')}
       {...ignoreAttr}
     >
