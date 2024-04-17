@@ -28,7 +28,6 @@ export interface DraggableItemProps {
   itemIndex: number;
   isStatic?: boolean;
   shouldMarkItemsComplete?: boolean;
-  priority: number;
 }
 
 export interface ItemInnerProps {
@@ -37,7 +36,6 @@ export interface ItemInnerProps {
   shouldMarkItemsComplete?: boolean;
   isMatch?: boolean;
   searchQuery?: string;
-  priority: number;
 }
 
 const ItemInner = memo(function ItemInner({
@@ -45,7 +43,6 @@ const ItemInner = memo(function ItemInner({
   shouldMarkItemsComplete,
   isMatch,
   searchQuery,
-  priority,
   isStatic,
 }: ItemInnerProps) {
   const { stateManager, boardModifiers } = useContext(KanbanContext);
@@ -124,7 +121,6 @@ const ItemInner = memo(function ItemInner({
           searchQuery={isMatch ? searchQuery : undefined}
           setEditState={setEditState}
           editState={editState}
-          priority={priority}
           isStatic={isStatic}
         />
         <ItemMenuButton editState={editState} setEditState={setEditState} showMenu={showItemMenu} />
@@ -158,7 +154,6 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
             {...innerProps}
             isMatch={isMatch}
             searchQuery={search?.query}
-            priority={1000}
             isStatic={true}
           />
         ) : (
@@ -185,7 +180,6 @@ interface ItemsProps {
 
 export const Items = memo(function Items({ isStatic, items, shouldMarkItemsComplete }: ItemsProps) {
   const search = useContext(SearchContext);
-  const len = items.length;
   return (
     <>
       {items.map((item, i) => {
@@ -194,7 +188,6 @@ export const Items = memo(function Items({ isStatic, items, shouldMarkItemsCompl
             key={item.id}
             item={item}
             itemIndex={i}
-            priority={len - i}
             shouldMarkItemsComplete={shouldMarkItemsComplete}
             isStatic={isStatic}
           />

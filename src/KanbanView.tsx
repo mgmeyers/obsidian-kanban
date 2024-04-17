@@ -8,6 +8,7 @@ import {
   TextFileView,
   WorkspaceLeaf,
 } from 'obsidian';
+import PQueue from 'p-queue';
 
 import { KanbanFormat, SettingsModal } from './Settings';
 import { Kanban } from './components/Kanban';
@@ -34,13 +35,23 @@ export class KanbanView extends TextFileView implements HoverParent {
   hoverPopover: HoverPopover | null;
   emitter: Emitter<ViewEvents>;
   actionButtons: Record<string, HTMLElement> = {};
+
   previewCache: Map<string, MarkdownRenderer>;
+  previewQueue: PQueue;
 
   constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
     super(leaf);
     this.plugin = plugin;
     this.emitter = createEmitter();
     this.previewCache = new Map();
+    this.previewQueue = new PQueue({
+      autoStart: true,
+      concurrency: 100,
+    });
+
+    this.previewQueue.on('error', (...args) => {
+      console.error('Error processing Kanban render queue', ...args);
+    });
 
     this.emitter.on('hotkey', (commmandId) => {
       switch (commmandId) {
@@ -139,6 +150,8 @@ export class KanbanView extends TextFileView implements HoverParent {
   destroy() {
     // Remove draggables from render, as the DOM has already detached
     this.plugin.removeView(this);
+    this.previewQueue.clear();
+    this.previewCache.clear();
 
     Object.values(this.actionButtons).forEach((b) => b.remove());
     this.actionButtons = {};

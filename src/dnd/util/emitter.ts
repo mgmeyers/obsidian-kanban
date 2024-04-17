@@ -22,7 +22,9 @@ export interface Emitter<Events extends EventsMap = DefaultEvents> {
   ): void;
 }
 
-export function createEmitter<Events extends EventsMap = DefaultEvents>(): Emitter<Events> {
+export function createEmitter<Events extends EventsMap = DefaultEvents>(
+  allowUnhandled?: boolean
+): Emitter<Events> {
   return {
     events: {},
 
@@ -33,7 +35,7 @@ export function createEmitter<Events extends EventsMap = DefaultEvents>(): Emitt
       const scopedHandlers = this.events[scopedKey];
 
       if (!globalHandlers && !scopedHandlers) {
-        console.warn('Event emitted with no handler', event, id);
+        if (!allowUnhandled) console.warn('Event emitted with no handler', event, id);
         return;
       }
 

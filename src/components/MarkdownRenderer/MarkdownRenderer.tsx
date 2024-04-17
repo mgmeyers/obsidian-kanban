@@ -4,10 +4,10 @@ import Mark from 'mark.js';
 import moment from 'moment';
 import { MarkdownRenderer as ObsidianRenderer, TFile, getLinkpath } from 'obsidian';
 import { appHasDailyNotesPluginLoaded, createDailyNote } from 'obsidian-daily-notes-interface';
-import PQueue from 'p-queue';
 import { CSSProperties, memo, useEffect, useRef } from 'preact/compat';
-import { useCallback, useContext, useMemo, useState } from 'preact/hooks';
+import { useCallback, useContext, useMemo } from 'preact/hooks';
 import { KanbanView } from 'src/KanbanView';
+import { DndManagerContext, EntityManagerContext } from 'src/dnd/components/context';
 import { PromiseCapability } from 'src/helpers/util';
 import { frontmatterKey } from 'src/parsers/common';
 
@@ -18,13 +18,12 @@ import {
 } from '../../helpers/renderMarkdown';
 import { preprocess } from '../Editor/dateWidget';
 import { KanbanContext } from '../context';
-import { c } from '../helpers';
+import { c, noop } from '../helpers';
 
 interface MarkdownRendererProps extends HTMLAttributes<HTMLDivElement> {
   className?: string;
   markdownString: string;
   searchQuery?: string;
-  priority?: number;
 }
 
 interface MarkdownPreviewRendererProps extends MarkdownRendererProps {
@@ -57,10 +56,7 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
       .then((el) => {
         contentRef.current = el;
         markRef.current = new Mark(el);
-
-        if (wrapperRef.current) {
-          appendOrReplaceFirstChild(wrapperRef.current, el);
-        }
+        if (wrapperRef.current) appendOrReplaceFirstChild(wrapperRef.current, el);
       })
       .catch((e) => {
         stateManager.setError(e);
@@ -214,6 +210,20 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
   );
 });
 
+function getPreviewElProxy(previewEl: HTMLElement) {
+  return new Proxy(previewEl, {
+    get(target, prop) {
+      if (prop === 'scrollTop' || prop === 'offsetWidth') {
+        return 1;
+      }
+      // @ts-ignore
+      const val = target[prop];
+      if (val === 'function') return val.bind(target);
+      return val;
+    },
+  });
+}
+
 export class MarkdownRenderer extends ObsidianRenderer {
   search: null = null;
   owner: KanbanView;
@@ -222,15 +232,26 @@ export class MarkdownRenderer extends ObsidianRenderer {
   showSearch() {}
   onScroll() {}
 
-  constructor(
-    owner: KanbanView,
-    el: HTMLElement | DocumentFragment,
-    renderOnInsert: boolean = true
-  ) {
+  constructor(owner: KanbanView, el: HTMLElement) {
     // @ts-ignore
-    super(owner.app, el, renderOnInsert);
+    super(owner.app, el, false);
     this.owner = owner;
-    this.renderer.sizerEl.addClass('kanban-renderer');
+    const { renderer } = this;
+
+    renderer.sizerEl.addClass('kanban-renderer');
+    renderer.previewEl = getPreviewElProxy(renderer.previewEl);
+    renderer.measureSection = noop;
+    renderer.updateVirtualDisplay = noop;
+    renderer.updateShownSections = noop;
+    renderer.onResize = noop;
+
+    // @ts-ignore
+    renderer.previewEl.toggleClass('rtl', app.vault.getConfig('rightToLeft'));
+    renderer.previewEl.toggleClass('show-indentation-guide', false);
+    renderer.previewEl.toggleClass('allow-fold-headings', false);
+    renderer.previewEl.toggleClass('allow-fold-lists', false);
+    renderer.unfoldAllHeadings();
+    renderer.unfoldAllLists();
   }
 
   lastWidth = -1;
@@ -309,31 +330,17 @@ export class MarkdownRenderer extends ObsidianRenderer {
     this.observer.disconnect();
   }
 
-  get file(): TFile | null {
+  get file() {
     return this.owner.file;
   }
 
   renderer: any;
-
-  set(content: string): void {
-    const { app, renderer } = this;
-
-    renderer.set(content);
-    // @ts-ignore
-    renderer.previewEl.toggleClass('rtl', app.vault.getConfig('rightToLeft'));
-    renderer.previewEl.toggleClass('show-indentation-guide', false);
-    renderer.previewEl.toggleClass('allow-fold-headings', false);
-    renderer.previewEl.toggleClass('allow-fold-lists', false);
-    renderer.unfoldAllHeadings();
-    renderer.unfoldAllLists();
-  }
-
-  edit(newContent: string) {
-    this.renderer.set(newContent);
+  set(content: string) {
+    this.renderer.set(content);
+    this.renderer.onRendered(() => this.showChildren());
   }
 
   wrapperEl: HTMLElement;
-
   migrate(el: HTMLElement) {
     const { lastRefHeight, lastRefWidth, containerEl } = this;
     this.wrapperEl = el;
@@ -350,40 +357,42 @@ export class MarkdownRenderer extends ObsidianRenderer {
     }
   }
 
-  displayAllChildren() {
-    const { renderer } = this;
-    const { sizerEl, pusherEl, previewEl, sections } = renderer;
+  isVisible: boolean = false;
+  showChildren() {
+    const { renderer, wrapperEl } = this;
+    const { sizerEl, pusherEl, sections } = renderer;
 
-    (sizerEl as HTMLElement).setChildrenInPlace([pusherEl, ...sections.map((s: any) => s.el)]);
+    sizerEl.setChildrenInPlace([pusherEl, ...sections.map((s: any) => s.el)]);
 
-    sizerEl.style.minHeight = '';
-    pusherEl.style.marginBottom = '0';
-    previewEl.scrollTop = 0;
+    if (sizerEl.style.minHeight) sizerEl.style.minHeight = '';
+    if (wrapperEl.style.minHeight) wrapperEl.style.minHeight = '';
+    this.isVisible = true;
+  }
+
+  hideChildren() {
+    const { renderer, wrapperEl } = this;
+    const { sizerEl } = renderer;
+
+    wrapperEl.style.minHeight = this.lastRefHeight + 'px';
+    sizerEl.empty();
+    this.isVisible = false;
   }
 }
-
-const q = new PQueue({
-  autoStart: true,
-  concurrency: 50,
-});
-
-q.on('error', (...args) => {
-  console.error('Error rendering Kanban cards', ...args);
-});
 
 export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
   entityId,
   className,
   markdownString,
   searchQuery,
-  priority,
   ...divProps
 }: MarkdownPreviewRendererProps) {
   const { view, stateManager, getDateColor } = useContext(KanbanContext);
   const markRef = useRef<Mark>();
   const renderer = useRef<MarkdownRenderer>();
   const elRef = useRef<HTMLDivElement>();
-  const [rendered, setRendered] = useState(false);
+
+  const entityManager = useContext(EntityManagerContext);
+  const dndManager = useContext(DndManagerContext);
 
   const processed = useMemo(
     () => preprocess(stateManager, markdownString, getDateColor),
@@ -391,21 +400,36 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
   );
 
   useEffect(() => {
+    const renderCapability = new PromiseCapability();
+
+    const onVisibilityChange = (isVisible: boolean) => {
+      const preview = renderer.current;
+      if (!preview) return;
+
+      const { dragManager } = dndManager;
+      if (dragManager.dragEntityId === entityManager.entityId) return;
+      if (dragManager.dragEntityId === entityManager.parent.entityId) return;
+
+      if (preview.isVisible && !isVisible) {
+        preview.hideChildren();
+      } else if (!preview.isVisible && isVisible) {
+        preview.showChildren();
+      }
+    };
+
     if (view.previewCache.has(entityId)) {
       const preview = view.previewCache.get(entityId);
+
       renderer.current = preview;
       preview.migrate(elRef.current);
-
       markRef.current?.unmark();
-      markRef.current = new Mark(preview.renderer.previewEl);
+      markRef.current = new Mark(elRef.current);
 
-      setRendered(true);
-      return;
+      entityManager.emitter.on('visibility-change', onVisibilityChange);
+      return () => entityManager.emitter.off('visibility-change', onVisibilityChange);
     }
 
-    const promiseCapability = new PromiseCapability();
-
-    q.add(
+    view.previewQueue.add(
       async () => {
         if (!(view as any)._loaded || !elRef.current) return;
 
@@ -413,32 +437,42 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
         const preview = (renderer.current = view.addChild(new MarkdownRenderer(view, containerEl)));
 
         preview.wrapperEl = elRef.current;
-        preview.set(processed);
 
-        view.previewCache.set(entityId, preview);
-        markRef.current = new Mark(preview.renderer.previewEl);
+        containerEl.onNodeInserted(() => {
+          preview.renderer.queueRender();
+          renderCapability.resolve();
+        }, true);
 
         preview.renderer.onRendered(() => {
-          preview.displayAllChildren();
-          promiseCapability.resolve();
+          if (!entityManager.isVisible) preview.hideChildren();
         });
+        view.previewCache.set(entityId, preview);
 
-        setRendered(true);
+        markRef.current = new Mark(elRef.current);
+        preview.set(processed);
 
-        await promiseCapability.promise;
+        await renderCapability.promise;
       },
-      { priority: priority ?? 0 }
+      { priority: entityManager ? 100000 - entityManager.index : 0 }
     );
 
-    return () => promiseCapability.resolve();
-  }, [view, entityId]);
+    entityManager?.emitter.on('visibility-change', onVisibilityChange);
+
+    return () => {
+      renderCapability.resolve();
+      entityManager?.emitter.off('visibility-change', onVisibilityChange);
+    };
+  }, [view, entityId, entityManager]);
 
   useEffect(() => {
     const preview = renderer.current;
-    if (!rendered || processed === preview.renderer.text) return;
-    if (elRef.current) preview.migrate(elRef.current);
+    if (!preview || processed === preview.renderer.text) return;
     preview.set(processed);
-  }, [rendered, processed]);
+    preview.renderer.onRendered(() => {
+      preview.showChildren();
+      if (!entityManager.isVisible) preview.hideChildren();
+    });
+  }, [processed]);
 
   useEffect(() => {
     markRef.current?.unmark();
@@ -448,12 +482,9 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
   }, [searchQuery]);
 
   useEffect(() => {
-    if (
-      elRef.current &&
-      renderer.current &&
-      renderer.current.containerEl.parentElement !== elRef.current
-    ) {
-      renderer.current.migrate(elRef.current);
+    const preview = renderer.current;
+    if (elRef.current && preview && preview.containerEl.parentElement !== elRef.current) {
+      preview.migrate(elRef.current);
     }
   }, []);
 
@@ -473,7 +504,8 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
       style={styles}
       ref={(el) => {
         elRef.current = el;
-        if (el && renderer.current && renderer.current.containerEl.parentElement !== el) {
+        const preview = renderer.current;
+        if (el && preview && preview.containerEl.parentElement !== el) {
           renderer.current.migrate(el);
         }
       }}

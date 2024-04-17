@@ -2,6 +2,7 @@ import { RefObject } from 'preact/compat';
 import { generateInstanceId } from 'src/components/helpers';
 
 import { Entity, EntityData, Path, initialScrollShift, initialScrollState } from '../types';
+import { Emitter, createEmitter } from '../util/emitter';
 import { getParentWindow } from '../util/getWindow';
 import { adjustHitbox, calculateHitbox, emptyDomRect } from '../util/hitbox';
 import { DndManager } from './DndManager';
@@ -30,6 +31,7 @@ export class EntityManager {
   instanceId: string;
   entityId: string;
   scopeId: string;
+  emitter: Emitter;
 
   constructor(
     dndManager: DndManager,
@@ -45,6 +47,7 @@ export class EntityManager {
     this.instanceId = generateInstanceId();
     this.scopeId = scopeId;
     this.entityId = `${scopeId}-${id}`;
+    this.emitter = createEmitter(true);
 
     this.dndManager = dndManager;
     this.index = index;
@@ -111,6 +114,7 @@ export class EntityManager {
   }
 
   setVisibility(isVisible: boolean) {
+    this.emitter.emit('visibility-change', isVisible);
     this.isVisible = isVisible;
     this.children.forEach((child) => {
       child.manager.setVisibility(isVisible);

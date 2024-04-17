@@ -79,7 +79,6 @@ export interface ItemContentProps {
   searchQuery?: string;
   showMetadata?: boolean;
   editState: EditState;
-  priority?: number;
   isStatic: boolean;
 }
 
@@ -180,7 +179,6 @@ export const ItemContent = memo(function ItemContent({
   editState,
   setEditState,
   searchQuery,
-  priority = 0,
   showMetadata = true,
   isStatic,
 }: ItemContentProps) {
@@ -288,7 +286,6 @@ export const ItemContent = memo(function ItemContent({
       {isStatic ? (
         <MarkdownClonedPreviewRenderer
           entityId={item.id}
-          priority={priority}
           className={c('item-markdown')}
           markdownString={item.data.title}
           searchQuery={searchQuery}
@@ -297,7 +294,6 @@ export const ItemContent = memo(function ItemContent({
       ) : (
         <MarkdownPreviewRenderer
           entityId={item.id}
-          priority={priority}
           className={c('item-markdown')}
           markdownString={item.data.title}
           searchQuery={searchQuery}

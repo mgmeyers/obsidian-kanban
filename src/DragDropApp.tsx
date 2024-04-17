@@ -235,12 +235,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
               return (
                 <KanbanContext.Provider value={context}>
                   <div className={c('drag-container')} style={styles}>
-                    <DraggableItem
-                      item={data as Item}
-                      itemIndex={0}
-                      isStatic={true}
-                      priority={1000}
-                    />
+                    <DraggableItem item={data as Item} itemIndex={0} isStatic={true} />
                   </div>
                 </KanbanContext.Provider>
               );
