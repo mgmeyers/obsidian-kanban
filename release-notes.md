@@ -1,2 +1,2 @@
-982ddda Ensure mobile button is not covered by toolbar
-88bb1ba Improve rendering performance
+b858ea3 Add option to expand lists to full width in list view
+19ed65e Scroll editor into view on mobile
