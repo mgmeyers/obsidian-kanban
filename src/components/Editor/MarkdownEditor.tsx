@@ -106,27 +106,31 @@ export function MarkdownEditor({
         extensions.push(stateManagerField.init(() => stateManager));
         extensions.push(datePlugins);
         extensions.push(
-          EditorView.domEventHandlers({
-            focus: (evt) => {
-              if (Platform.isMobile) {
-                view.contentEl.addClass('is-mobile-editing');
-              }
-
-              evt.win.setTimeout(() => {
-                this.app.workspace.activeEditor = this.owner;
+          Prec.high(
+            EditorView.domEventHandlers({
+              focus: (evt) => {
                 if (Platform.isMobile) {
+                  view.contentEl.addClass('is-mobile-editing');
+                }
+
+                evt.win.setTimeout(() => {
+                  this.app.workspace.activeEditor = this.owner;
+                  if (Platform.isMobile) {
+                    this.app.mobileToolbar.update();
+                  }
+                });
+                return true;
+              },
+              blur: () => {
+                this.app.workspace.activeEditor = null;
+                if (Platform.isMobile) {
+                  view.contentEl.removeClass('is-mobile-editing');
                   this.app.mobileToolbar.update();
                 }
-              });
-            },
-            blur: () => {
-              this.app.workspace.activeEditor = null;
-              if (Platform.isMobile) {
-                view.contentEl.removeClass('is-mobile-editing');
-                this.app.mobileToolbar.update();
-              }
-            },
-          })
+                return true;
+              },
+            })
+          )
         );
 
         if (placeholder) extensions.push(placeholderExt(placeholder));
@@ -210,6 +214,12 @@ export function MarkdownEditor({
     return () => {
       if (Platform.isMobile) {
         window.removeEventListener('keyboardDidShow', onShow);
+
+        if (app.workspace.activeEditor === controller) {
+          app.workspace.activeEditor = null;
+          (app as any).mobileToolbar.update();
+          view.contentEl.removeClass('is-mobile-editing');
+        }
       }
       view.plugin.removeChild(editor);
       internalRef.current = null;
