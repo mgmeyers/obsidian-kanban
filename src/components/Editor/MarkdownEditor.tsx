@@ -119,13 +119,11 @@ export function MarkdownEditor({
                 }
               });
             },
-            blur: (evt) => {
+            blur: () => {
               this.app.workspace.activeEditor = null;
               if (Platform.isMobile) {
                 view.contentEl.removeClass('is-mobile-editing');
-                evt.win.setTimeout(() => {
-                  this.app.mobileToolbar.update();
-                });
+                this.app.mobileToolbar.update();
               }
             },
           })
@@ -201,7 +199,18 @@ export function MarkdownEditor({
       });
     }
 
+    const onShow = () => {
+      elRef.current.scrollIntoView({ block: 'end' });
+    };
+
+    if (Platform.isMobile) {
+      window.addEventListener('keyboardDidShow', onShow);
+    }
+
     return () => {
+      if (Platform.isMobile) {
+        window.removeEventListener('keyboardDidShow', onShow);
+      }
       view.plugin.removeChild(editor);
       internalRef.current = null;
       if (editorRef) editorRef.current = null;
