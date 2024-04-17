@@ -425,8 +425,8 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
       markRef.current?.unmark();
       markRef.current = new Mark(elRef.current);
 
-      entityManager.emitter.on('visibility-change', onVisibilityChange);
-      return () => entityManager.emitter.off('visibility-change', onVisibilityChange);
+      entityManager?.emitter.on('visibility-change', onVisibilityChange);
+      return () => entityManager?.emitter.off('visibility-change', onVisibilityChange);
     }
 
     view.previewQueue.add(
@@ -444,7 +444,7 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
         }, true);
 
         preview.renderer.onRendered(() => {
-          if (!entityManager.isVisible) preview.hideChildren();
+          if (!entityManager?.isVisible) preview.hideChildren();
         });
         view.previewCache.set(entityId, preview);
 

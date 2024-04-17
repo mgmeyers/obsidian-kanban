@@ -12,6 +12,7 @@ import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
 import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
 import { Sortable, StaticSortable } from 'src/dnd/components/Sortable';
 import { useDragHandle } from 'src/dnd/managers/DragManager';
+import { frontmatterKey } from 'src/parsers/common';
 
 import { Items } from '../Item/Item';
 import { ItemForm } from '../Item/ItemForm';
@@ -43,10 +44,15 @@ function DraggableLaneRaw({
   const { stateManager, boardModifiers, view } = useContext(KanbanContext);
   const search = useContext(SearchContext);
 
+  const boardView = stateManager.useSetting(frontmatterKey);
   const path = useNestedEntityPath(laneIndex);
   const laneWidth = stateManager.useSetting('lane-width');
+  const fullWidth = boardView === 'list' && stateManager.useSetting('full-list-lane-width');
   const insertionMethod = stateManager.useSetting('new-card-insertion-method');
-  const laneStyles = useMemo(() => (laneWidth ? { width: `${laneWidth}px` } : undefined), []);
+  const laneStyles = useMemo(
+    () => (fullWidth || laneWidth ? { width: fullWidth ? '100%' : `${laneWidth}px` } : undefined),
+    [fullWidth, laneWidth]
+  );
 
   const elementRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);

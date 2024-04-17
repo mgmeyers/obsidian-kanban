@@ -67,6 +67,7 @@ export default {
     'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.',
   'Default folder': 'Default folder',
   'List width': 'List width',
+  'Expand lists to full width in list view': 'Expand lists to full width in list view',
   'Enter a number to set the list width in pixels.':
     'Enter a number to set the list width in pixels.',
   'Maximum number of archived cards': 'Maximum number of archived cards',

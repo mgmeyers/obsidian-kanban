@@ -43,7 +43,7 @@ import { MetadataValue, anyToString } from '../Item/MetadataTable';
 import { StaticMarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
-import { Board, Item, Lane } from '../types';
+import { Board, EditState, Item, Lane, isEditing } from '../types';
 
 interface TableItem {
   item: Item;
@@ -135,41 +135,34 @@ const CellItem = memo(
   function CellItem({ item, lane, path }: { item: Item; lane: Lane; path: number[] }) {
     const { stateManager, boardModifiers } = useContext(KanbanContext);
     const search = useContext(SearchContext);
-    const [editCoords, setIsEditing] = useState<{
-      x: number;
-      y: number;
-    } | null>(null);
+    const [editState, setEditState] = useState<EditState>(null);
     const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
 
     const showItemMenu = useItemMenu({
       boardModifiers,
       item,
-      setEditState: setIsEditing,
+      setEditState,
       stateManager,
       path,
     });
 
     const onContextMenu: JSX.MouseEventHandler<HTMLDivElement> = useCallback(
       (e) => {
-        if (e.targetNode.instanceOf(HTMLTextAreaElement)) {
+        if (isEditing(editState)) return;
+        if (
+          e.targetNode.instanceOf(HTMLAnchorElement) &&
+          (e.targetNode.hasClass('internal-link') || e.targetNode.hasClass('external-link'))
+        ) {
           return;
         }
 
-        e.preventDefault();
-        e.stopPropagation();
-
-        const internalLinkPath =
-          e.targetNode.instanceOf(HTMLAnchorElement) && e.targetNode.hasClass('internal-link')
-            ? e.targetNode.dataset.href
-            : undefined;
-
-        showItemMenu(e, internalLinkPath);
+        showItemMenu(e);
       },
-      [showItemMenu]
+      [showItemMenu, editState]
     );
 
     const onDoubleClick: JSX.MouseEventHandler<HTMLDivElement> = useCallback((e) => {
-      setIsEditing({ x: e.clientX, y: e.clientY });
+      setEditState({ x: e.clientX, y: e.clientY });
     }, []);
 
     return (
@@ -189,9 +182,9 @@ const CellItem = memo(
               stateManager={stateManager}
             />
             <ItemContent
-              editState={editCoords}
+              editState={editState}
               item={item}
-              setEditState={setIsEditing}
+              setEditState={setEditState}
               showMetadata={false}
               searchQuery={search?.query}
               isStatic={false}

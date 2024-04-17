@@ -80,6 +80,12 @@ const ItemInner = memo(function ItemInner({
   const onContextMenu: JSX.MouseEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       if (isEditing(editState)) return;
+      if (
+        e.targetNode.instanceOf(HTMLAnchorElement) &&
+        (e.targetNode.hasClass('internal-link') || e.targetNode.hasClass('external-link'))
+      ) {
+        return;
+      }
       showItemMenu(e);
     },
     [showItemMenu, editState]

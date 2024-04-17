@@ -55,6 +55,7 @@ export interface KanbanSettings {
   'hide-tags-display'?: boolean;
   'hide-tags-in-title'?: boolean;
   'lane-width'?: number;
+  'full-list-lane-width'?: boolean;
   'link-date-to-daily-note'?: boolean;
   'list-collapse'?: boolean[];
   'max-archive-size'?: number;
@@ -89,6 +90,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'date-picker-week-start',
   'date-time-display-format',
   'date-trigger',
+  'full-list-lane-width',
   'hide-card-count',
   'hide-date-display',
   'hide-date-in-title',
@@ -332,6 +334,43 @@ export class SettingsManager {
           });
         });
       });
+
+    new Setting(contentEl).setName(t('Expand lists to full width in list view')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting('full-list-lane-width', local);
+
+          if (value !== undefined) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined) {
+            toggle.setValue(globalValue as boolean);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'full-list-lane-width': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('lucide-rotate-ccw')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('full-list-lane-width', local);
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['full-list-lane-width'],
+              });
+            });
+        });
+    });
 
     new Setting(contentEl)
       .setName(t('Maximum number of archived cards'))
