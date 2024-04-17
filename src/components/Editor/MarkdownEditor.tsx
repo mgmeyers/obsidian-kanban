@@ -108,12 +108,25 @@ export function MarkdownEditor({
         extensions.push(
           EditorView.domEventHandlers({
             focus: (evt) => {
+              if (Platform.isMobile) {
+                view.contentEl.addClass('is-mobile-editing');
+              }
+
               evt.win.setTimeout(() => {
                 this.app.workspace.activeEditor = this.owner;
                 if (Platform.isMobile) {
                   this.app.mobileToolbar.update();
                 }
               });
+            },
+            blur: (evt) => {
+              this.app.workspace.activeEditor = null;
+              if (Platform.isMobile) {
+                view.contentEl.removeClass('is-mobile-editing');
+                evt.win.setTimeout(() => {
+                  this.app.mobileToolbar.update();
+                });
+              }
             },
           })
         );

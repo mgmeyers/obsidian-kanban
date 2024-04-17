@@ -305,7 +305,7 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
     height: 100%;
   }
 
-  .is-mobile & > div {
+  .view-content:not(.is-mobile-editing) & > div {
     padding-bottom: calc(1rem + var(--mobile-navbar-height));
   }
 
@@ -663,10 +663,15 @@ button.kanban-plugin__lane-settings-button + button.kanban-plugin__lane-settings
   background-color: var(--background-secondary-alt);
   flex-grow: 0;
   flex-shrink: 1;
-  width: auto;
-  margin-block-start: 5px;
-  line-height: 1;
   font-size: 14px;
+  height: auto;
+  line-height: 1;
+  margin-block-start: 5px;
+  width: auto;
+
+  .is-mobile & {
+    font-size: 12px;
+  }
 }
 
 button.kanban-plugin__new-item-button {
