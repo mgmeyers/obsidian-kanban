@@ -262,6 +262,7 @@ export class StateManager {
       'show-set-view': this.getSettingRaw('show-set-view', suppliedSettings) ?? true,
       'tag-colors': this.getSettingRaw('tag-colors', suppliedSettings) ?? [],
       'date-colors': this.getSettingRaw('date-colors', suppliedSettings) ?? [],
+      'tag-action': this.getSettingRaw('tag-action', suppliedSettings) ?? 'obsidian',
     };
   }
 

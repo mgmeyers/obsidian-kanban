@@ -538,9 +538,11 @@ export class SettingsManager {
       });
 
     new Setting(contentEl)
-      .setName(t('Tag action'))
+      .setName(t('Tag click action'))
       .setDesc(
-        t('This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.')
+        t(
+          'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.'
+        )
       )
       .addDropdown((dropdown) => {
         dropdown.addOption('kanban', t('Search Kanban Board'));

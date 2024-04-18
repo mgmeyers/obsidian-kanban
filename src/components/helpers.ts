@@ -1,10 +1,12 @@
 import update from 'immutability-helper';
 import { App, MarkdownView, TFile, moment } from 'obsidian';
-import Preact, { RefObject, useEffect } from 'preact/compat';
+import Preact, { Dispatch, RefObject, useEffect } from 'preact/compat';
+import { StateUpdater, useMemo } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
 
+import { SearchContextProps } from './context';
 import { Board, DateColorKey, Item, Lane, TagColorKey } from './types';
 
 export const baseClassName = 'kanban-plugin';
@@ -291,23 +293,50 @@ export function useOnMount(refs: RefObject<HTMLElement>[], cb: () => void, onUnm
   }, []);
 }
 
-export function getSearchHits(board: Board, query: string) {
-  query = query.trim().toLocaleLowerCase();
-  if (!query) return null;
+export function useSearchValue(
+  board: Board,
+  query: string,
+  setSearchQuery: Dispatch<StateUpdater<string>>,
+  setDebouncedSearchQuery: Dispatch<StateUpdater<string>>,
+  setIsSearching: Dispatch<StateUpdater<boolean>>
+) {
+  return useMemo<SearchContextProps>(() => {
+    query = query.trim().toLocaleLowerCase();
 
-  const lanes = new Set<Lane>();
-  const items = new Set<Item>();
+    const lanes = new Set<Lane>();
+    const items = new Set<Item>();
 
-  board.children.forEach((lane) => {
-    let laneMatched = false;
-    lane.children.forEach((item) => {
-      if (item.data.titleSearch.includes(query)) {
-        laneMatched = true;
-        items.add(item);
-      }
-    });
-    if (laneMatched) lanes.add(lane);
-  });
+    if (query) {
+      board.children.forEach((lane) => {
+        let laneMatched = false;
+        lane.children.forEach((item) => {
+          if (item.data.titleSearch.includes(query)) {
+            laneMatched = true;
+            items.add(item);
+          }
+        });
+        if (laneMatched) lanes.add(lane);
+      });
+    }
 
-  return { lanes, items, query };
+    return {
+      lanes,
+      items,
+      query,
+      search: (query, immediate) => {
+        if (!query) {
+          setIsSearching(false);
+          setSearchQuery('');
+          setDebouncedSearchQuery('');
+        }
+        setIsSearching(true);
+        if (immediate) {
+          setSearchQuery(query);
+          setDebouncedSearchQuery(query);
+        } else {
+          setSearchQuery(query);
+        }
+      },
+    };
+  }, [board, query, setSearchQuery, setDebouncedSearchQuery]);
 }

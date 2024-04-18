@@ -68,9 +68,17 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
   let title = itemContent;
   let titleSearch = '';
 
-  visit(item, ['text', 'wikilink', 'embedWikilink', 'image', 'inlineCode', 'code'], (node: any) => {
-    titleSearch += node.value || node.alt || '';
-  });
+  visit(
+    item,
+    ['text', 'wikilink', 'embedWikilink', 'image', 'inlineCode', 'code', 'hashtag'],
+    (node: any) => {
+      if (node.type === 'hashtag') {
+        titleSearch += '#' + node.value;
+      } else {
+        titleSearch += node.value || node.alt || '';
+      }
+    }
+  );
 
   const itemData: ItemData = {
     titleRaw: dedentNewLines(replaceBrs(itemContent)),

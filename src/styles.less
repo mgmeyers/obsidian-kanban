@@ -305,10 +305,6 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
     height: 100%;
   }
 
-  .view-content:not(.is-mobile-editing) & > div {
-    padding-bottom: calc(1rem + var(--mobile-navbar-height));
-  }
-
   &.kanban-plugin__vertical {
     > div {
       height: fit-content;
@@ -316,6 +312,10 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
       flex-direction: column;
     }
   }
+}
+
+.is-mobile .view-content:not(.is-mobile-editing) .kanban-plugin__board > div {
+  padding-bottom: calc(1rem + var(--mobile-navbar-height));
 }
 
 .kanban-plugin__board.is-adding-lane > div {

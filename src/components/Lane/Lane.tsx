@@ -159,7 +159,7 @@ function DraggableLaneRaw({
             toggleIsCollapsed={toggleIsCollapsed}
           />
 
-          {!search && !isCollapsed && shouldPrepend && (
+          {!search?.query && !isCollapsed && shouldPrepend && (
             <ItemForm
               addItems={addItems}
               hideButton={isCompactPrepend}
@@ -199,7 +199,7 @@ function DraggableLaneRaw({
             </DroppableComponent>
           )}
 
-          {!search && !isCollapsed && !shouldPrepend && (
+          {!search?.query && !isCollapsed && !shouldPrepend && (
             <ItemForm addItems={addItems} editState={editState} setEditState={setEditState} />
           )}
         </CollapsedDropArea>
@@ -223,7 +223,7 @@ function LanesRaw({ lanes, collapseDir }: LanesProps) {
         return (
           <DraggableLane
             collapseDir={collapseDir}
-            forceCollapse={search && !search.lanes.has(lane)}
+            forceCollapse={search?.query && !search.lanes.has(lane)}
             key={lane.id}
             lane={lane}
             laneIndex={i}

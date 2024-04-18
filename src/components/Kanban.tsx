@@ -19,7 +19,7 @@ import { Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
 import { TableView } from './Table/Table';
 import { KanbanContext, SearchContext } from './context';
-import { baseClassName, c, getDateColorFn, getSearchHits, getTagColorFn } from './helpers';
+import { baseClassName, c, getDateColorFn, getTagColorFn, useSearchValue } from './helpers';
 import { DataTypes } from './types';
 
 const boardScrollTiggers = [DataTypes.Item, DataTypes.Lane];
@@ -182,16 +182,18 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   }
 
   const axis = boardView === 'list' ? 'vertical' : 'horizontal';
-
-  const searchHits = useMemo(
-    () => getSearchHits(boardData, debouncedSearchQuery),
-    [boardData, debouncedSearchQuery]
+  const searchValue = useSearchValue(
+    boardData,
+    debouncedSearchQuery,
+    setSearchQuery,
+    setDebouncedSearchQuery,
+    setIsSearching
   );
 
   return (
     <DndScope id={view.id}>
       <KanbanContext.Provider value={kanbanContext}>
-        <SearchContext.Provider value={searchHits}>
+        <SearchContext.Provider value={searchValue}>
           <div
             ref={rootRef}
             className={classcat([

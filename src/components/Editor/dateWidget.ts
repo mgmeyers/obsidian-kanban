@@ -166,7 +166,6 @@ export function usePreprocessedStr(
       str = str.replace(
         new RegExp(`${dateTrigger}\\[\\[([^\\]]+)\\]\\]`, 'g'),
         (match, content) => {
-          console.log(match, content);
           const parsed = moment(content, dateFormat);
           if (!parsed.isValid()) return match;
           const linkPath = app.metadataCache.getFirstLinkpathDest(content, stateManager.file.path);

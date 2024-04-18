@@ -18,7 +18,7 @@ import {
   MarkdownClonedPreviewRenderer,
   MarkdownPreviewRenderer,
 } from '../MarkdownRenderer/MarkdownRenderer';
-import { KanbanContext } from '../context';
+import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
@@ -137,6 +137,7 @@ export function Tags({
   isDisplay?: boolean;
 }) {
   const { stateManager, getTagColor } = useContext(KanbanContext);
+  const search = useContext(SearchContext);
 
   const hideTagsDisplay = isDisplay && stateManager.useSetting('hide-tags-display');
   if (hideTagsDisplay || !tags?.length) return null;
@@ -150,6 +151,13 @@ export function Tags({
             href={tag}
             onClick={(e) => {
               e.preventDefault();
+
+              const tagAction = stateManager.getSetting('tag-action');
+              if (search && tagAction === 'kanban') {
+                search.search(tag, true);
+                return;
+              }
+
               (stateManager.app as any).internalPlugins
                 .getPluginById('global-search')
                 .instance.openGlobalSearch(`tag:${tag}`);

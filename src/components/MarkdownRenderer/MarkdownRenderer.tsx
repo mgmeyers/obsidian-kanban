@@ -23,7 +23,7 @@ import {
   renderMarkdown,
 } from '../../helpers/renderMarkdown';
 import { usePreprocessedStr } from '../Editor/dateWidget';
-import { KanbanContext } from '../context';
+import { KanbanContext, SearchContext } from '../context';
 import { c, noop } from '../helpers';
 
 interface MarkdownRendererProps extends HTMLAttributes<HTMLDivElement> {
@@ -52,6 +52,7 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
   searchQuery,
   ...divProps
 }: MarkdownRendererProps) {
+  const search = useContext(SearchContext);
   const { stateManager, view, filePath } = useContext(KanbanContext);
   const wrapperRef = useRef<HTMLDivElement>();
   const contentRef = useRef<HTMLDivElement>();
@@ -161,11 +162,8 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
         const tag = closestAnchor.getAttr('href');
         const tagAction = stateManager.getSetting('tag-action');
 
-        if (tagAction === 'kanban') {
-          setSearchQuery(tag);
-          setDebouncedSearchQuery(tag);
-          setIsSearching(true);
-
+        if (search && tagAction === 'kanban') {
+          search.search(tag, true);
           return;
         }
 
@@ -181,7 +179,7 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
         window.open(closestAnchor.getAttr('href'), '_blank');
       }
     },
-    [stateManager, filePath]
+    [stateManager, filePath, search]
   );
 
   const onContextMenu = useCallback(
@@ -411,7 +409,8 @@ export function postProcessor(plugin: KanbanPlugin) {
     if (!tagAs.length) return;
 
     tagAs.forEach((a) => {
-      const color = tagColors.find((c) => c.tagKey === a.getAttr('href'));
+      const tag = a.getAttr('href');
+      const color = tagColors.find((c) => c.tagKey === tag);
       if (!color) return;
 
       a.setCssProps({
@@ -429,6 +428,7 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
   searchQuery,
   ...divProps
 }: MarkdownPreviewRendererProps) {
+  const search = useContext(SearchContext);
   const { view, stateManager, getDateColor } = useContext(KanbanContext);
   const markRef = useRef<Mark>();
   const renderer = useRef<MarkdownRenderer>();
@@ -527,6 +527,28 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
     }
   }, []);
 
+  const onClick = useCallback(
+    async (e: MouseEvent) => {
+      if (e.type === 'auxclick' || e.button === 2) return;
+
+      const targetEl = e.targetNode as HTMLElement;
+      const closestAnchor = targetEl.tagName === 'A' ? targetEl : targetEl.closest('a');
+
+      if (!closestAnchor) return;
+      if (closestAnchor.hasClass('tag')) {
+        const tagAction = stateManager.getSetting('tag-action');
+        if (search && tagAction === 'kanban') {
+          e.preventDefault();
+          e.stopPropagation();
+          const tag = closestAnchor.getAttr('href');
+          search.search(tag, true);
+          return;
+        }
+      }
+    },
+    [stateManager, search]
+  );
+
   let styles: CSSProperties | undefined = undefined;
   if (!renderer.current && view.previewCache.has(entityId)) {
     const preview = view.previewCache.get(entityId);
@@ -541,6 +563,7 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
   return (
     <div
       style={styles}
+      onClickCapture={onClick}
       ref={(el) => {
         elRef.current = el;
         const preview = renderer.current;

@@ -320,7 +320,7 @@ function useTableColumns(boardData: Board, stateManager: StateManager) {
     },
     [setSortingRaw]
   );
-  const state = useMemo(() => ({ sorting, globalFilter: search?.query }), [sorting, search]);
+  const state = useMemo(() => ({ sorting, globalFilter: search?.query }), [sorting, search?.query]);
 
   const { items, metadata, fileMetadata } = useTableData(boardData, stateManager);
   const withMetadata: ColumnDef<TableItem, any>[] = useMemo(() => {

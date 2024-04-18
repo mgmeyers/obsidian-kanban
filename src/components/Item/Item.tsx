@@ -149,7 +149,7 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
 
   useDragHandle(measureRef, measureRef);
 
-  const isMatch = search ? innerProps.item.data.titleSearch.includes(search.query) : false;
+  const isMatch = search?.query ? innerProps.item.data.titleSearch.includes(search.query) : false;
   const classModifiers: string[] = getItemClassModifiers(innerProps.item);
 
   return (
@@ -189,7 +189,7 @@ export const Items = memo(function Items({ isStatic, items, shouldMarkItemsCompl
   return (
     <>
       {items.map((item, i) => {
-        return search && !search.items.has(item) ? null : (
+        return search?.query && !search.items.has(item) ? null : (
           <DraggableItem
             key={item.id}
             item={item}
