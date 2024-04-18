@@ -8,6 +8,7 @@ import { Instance } from './flatpickr/types/instance';
 
 export function applyDate(ctx: EditorSuggestContext, stateManager: StateManager, date: Date) {
   const dateFormat = stateManager.getSetting('date-format');
+  const dateTrigger = stateManager.getSetting('date-trigger');
   const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
 
   const formattedDate = moment(date).format(dateFormat);
@@ -15,7 +16,7 @@ export function applyDate(ctx: EditorSuggestContext, stateManager: StateManager,
     ? buildLinkToDailyNote(stateManager.app, formattedDate)
     : `{${formattedDate}} `;
 
-  const start = { line: ctx.start.line, ch: ctx.start.ch + 1 };
+  const start = { line: ctx.start.line, ch: ctx.start.ch + dateTrigger.length };
 
   ctx.editor.replaceRange(wrappedDate, start, ctx.end);
   ctx.editor.setCursor({
