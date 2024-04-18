@@ -54,6 +54,7 @@ export interface KanbanSettings {
   'hide-date-in-title'?: boolean;
   'hide-tags-display'?: boolean;
   'hide-tags-in-title'?: boolean;
+  'tag-action'?: 'kanban' | 'obsidian';
   'lane-width'?: number;
   'full-list-lane-width'?: boolean;
   'link-date-to-daily-note'?: boolean;
@@ -96,6 +97,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'hide-date-in-title',
   'hide-tags-display',
   'hide-tags-in-title',
+  'tag-action',
   'lane-width',
   'link-date-to-daily-note',
   'list-collapse',
@@ -533,6 +535,27 @@ export class SettingsManager {
                 });
               });
           });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Tag action'))
+      .setDesc(
+        t('This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.')
+      )
+      .addDropdown((dropdown) => {
+        dropdown.addOption('kanban', t('Search Kanban Board'));
+        dropdown.addOption('obsidian', t('Search Obsidian Vault'));
+
+        const [value, globalValue] = this.getSetting('tag-action', local);
+
+        dropdown.setValue((value as string) || (globalValue as string) || 'obsidian');
+        dropdown.onChange((value) => {
+          this.applySettingsUpdate({
+            'tag-action': {
+              $set: value as 'kanban' | 'obsidian',
+            },
+          });
+        });
       });
 
     new Setting(contentEl)
