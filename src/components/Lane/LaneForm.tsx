@@ -100,7 +100,7 @@ export function LaneForm({ onNewLane, closeLaneForm }: LaneFormProps) {
           {t('Add list')}
         </button>
         <button className={c('lane-action-cancel')} onClick={closeLaneForm}>
-          {t('Cancel')}
+          {t('Done')}
         </button>
       </div>
     </div>

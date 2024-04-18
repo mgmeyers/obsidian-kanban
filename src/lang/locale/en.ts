@@ -182,6 +182,7 @@ export default {
   // components/Item/Item.tsx
   'More options': 'More options',
   Cancel: 'Cancel',
+  Done: 'Done',
   Save: 'Save',
 
   // components/Item/ItemContent.tsx

@@ -346,7 +346,7 @@ export default class KanbanPlugin extends Plugin {
   async newKanban(folder?: TFolder) {
     const targetFolder = folder
       ? folder
-      : app.fileManager.getNewFileParent(app.workspace.getActiveFile()?.path || '');
+      : this.app.fileManager.getNewFileParent(app.workspace.getActiveFile()?.path || '');
 
     try {
       const kanban: TFile = await (app.fileManager as any).createNewMarkdownFile(
@@ -354,8 +354,8 @@ export default class KanbanPlugin extends Plugin {
         t('Untitled Kanban')
       );
 
-      await app.vault.modify(kanban, basicFrontmatter);
-      await app.workspace.getLeaf().setViewState({
+      await this.app.vault.modify(kanban, basicFrontmatter);
+      await this.app.workspace.getLeaf().setViewState({
         type: kanbanViewType,
         state: { file: kanban.path },
       });
@@ -366,11 +366,16 @@ export default class KanbanPlugin extends Plugin {
 
   registerEvents() {
     this.registerEvent(
-      app.workspace.on('file-menu', (menu, file, source, leaf) => {
+      this.app.workspace.on('file-menu', (menu, file, source, leaf) => {
         if (source === 'link-context-menu') return;
 
+        const fileIsFile = file instanceof TFile;
+        const fileIsFolder = file instanceof TFolder;
+        const leafIsMarkdown = leaf?.view instanceof MarkdownView;
+        const leafIsKanban = leaf?.view instanceof KanbanView;
+
         // Add a menu item to the folder context menu to create a board
-        if (file instanceof TFolder) {
+        if (fileIsFolder) {
           menu.addItem((item) => {
             item
               .setSection('action-primary')
@@ -378,13 +383,12 @@ export default class KanbanPlugin extends Plugin {
               .setIcon(kanbanIcon)
               .onClick(() => this.newKanban(file));
           });
-
           return;
         }
 
         if (
           !Platform.isMobile &&
-          file instanceof TFile &&
+          fileIsFile &&
           leaf &&
           source === 'sidebar-context-menu' &&
           hasFrontmatterKey(file)
@@ -417,9 +421,9 @@ export default class KanbanPlugin extends Plugin {
         }
 
         if (
-          leaf?.view instanceof MarkdownView &&
-          file instanceof TFile &&
-          ['pane-more-options', 'tab-header'].includes(source) &&
+          leafIsMarkdown &&
+          fileIsFile &&
+          ['more-options', 'pane-more-options', 'tab-header'].includes(source) &&
           hasFrontmatterKey(file)
         ) {
           menu.addItem((item) => {
@@ -434,21 +438,86 @@ export default class KanbanPlugin extends Plugin {
           });
         }
 
-        if (
-          leaf?.view instanceof KanbanView &&
-          file instanceof TFile &&
-          ['pane-more-options', 'tab-header'].includes(source)
-        ) {
-          menu.addItem((item) => {
-            item
-              .setTitle(t('Open as markdown'))
-              .setIcon(kanbanIcon)
-              .setSection('pane')
-              .onClick(() => {
-                this.kanbanFileModes[(leaf as any).id || file.path] = 'markdown';
-                this.setMarkdownView(leaf);
-              });
-          });
+        if (fileIsFile && leafIsKanban) {
+          if (['pane-more-options', 'tab-header'].includes(source)) {
+            menu.addItem((item) => {
+              item
+                .setTitle(t('Open as markdown'))
+                .setIcon(kanbanIcon)
+                .setSection('pane')
+                .onClick(() => {
+                  this.kanbanFileModes[(leaf as any).id || file.path] = 'markdown';
+                  this.setMarkdownView(leaf);
+                });
+            });
+          }
+
+          if (Platform.isMobile) {
+            const stateManager = this.stateManagers.get(file);
+            const view = stateManager.getSetting(frontmatterKey);
+            const kanbanView = leaf.view as KanbanView;
+
+            menu
+              .addItem((item) => {
+                item
+                  .setTitle(t('Add a list'))
+                  .setIcon('lucide-plus-circle')
+                  .setSection('pane')
+                  .onClick(() => {
+                    kanbanView.emitter.emit('showLaneForm', undefined);
+                  });
+              })
+              .addItem((item) => {
+                item
+                  .setTitle(t('Archive completed cards'))
+                  .setIcon('lucide-archive')
+                  .setSection('pane')
+                  .onClick(() => {
+                    stateManager.archiveCompletedCards();
+                  });
+              })
+              .addItem((item) => {
+                item
+                  .setTitle(t('Archive completed cards'))
+                  .setIcon('lucide-archive')
+                  .setSection('pane')
+                  .onClick(() => {
+                    const stateManager = this.stateManagers.get(file);
+                    stateManager.archiveCompletedCards();
+                  });
+              })
+              .addItem((item) =>
+                item
+                  .setTitle(t('View as board'))
+                  .setSection('pane')
+                  .setIcon('lucide-trello')
+                  .setChecked(view === 'basic' || view === 'board')
+                  .onClick(() => kanbanView.setView('board'))
+              )
+              .addItem((item) =>
+                item
+                  .setTitle(t('View as table'))
+                  .setSection('pane')
+                  .setIcon('lucide-table')
+                  .setChecked(view === 'table')
+                  .onClick(() => kanbanView.setView('table'))
+              )
+              .addItem((item) =>
+                item
+                  .setTitle(t('View as list'))
+                  .setSection('pane')
+                  .setIcon('lucide-server')
+                  .setChecked(view === 'list')
+                  .onClick(() => kanbanView.setView('list'))
+              )
+              .addItem((item) =>
+                item
+                  .setTitle(t('Open board settings'))
+                  .setSection('pane')
+                  .setIcon('lucide-settings')
+                  .onClick(() => kanbanView.getBoardSettings())
+              );
+          }
         }
       })
     );

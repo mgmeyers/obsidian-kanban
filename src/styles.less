@@ -651,6 +651,25 @@ button.kanban-plugin__lane-settings-button + button.kanban-plugin__lane-settings
   }
 }
 
+.is-mobile .kanban-plugin__lane-form-wrapper {
+  --input-height: auto;
+
+  button {
+    padding-block: var(--size-4-2);
+  }
+
+  .markdown-source-view.mod-cm6 {
+    font-size: var(--font-ui-medium);
+  }
+}
+
+.is-mobile
+  .kanban-plugin
+  .kanban-plugin__lane-input-wrapper
+  button.kanban-plugin__item-submit-button {
+  display: none;
+}
+
 button.kanban-plugin__new-item-button {
   background-color: transparent;
   color: var(--text-muted);
@@ -1101,76 +1120,6 @@ button.kanban-plugin__confirm-action-button {
 
 button.kanban-plugin__cancel-action-button {
   border: 1px solid var(--background-modifier-border);
-}
-
-/* Inputs */
-
-.kanban-plugin__autocomplete {
-  font-size: 0.875rem;
-  border: 1px solid var(--background-modifier-border);
-  background-color: var(--background-primary);
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  min-width: 20ch;
-  max-width: 40ch;
-  max-height: 200px;
-  border-radius: 6px;
-  box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.2);
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.kanban-plugin__autocomplete li {
-  margin: 0;
-  & em {
-    opacity: 0.6;
-  }
-}
-
-.kanban-plugin .textcomplete-footer,
-.kanban-plugin .textcomplete-header {
-  display: none;
-}
-
-.kanban-plugin__autocomplete-item-active,
-.kanban-plugin__autocomplete-item {
-  border-top: 1px solid var(--background-modifier-border);
-  padding-inline: 6px;
-  padding-block: 4px;
-  cursor: var(--cursor);
-}
-
-.kanban-plugin__autocomplete .textcomplete-header + .kanban-plugin__autocomplete-item,
-.kanban-plugin__autocomplete .textcomplete-header + .kanban-plugin__autocomplete-item-active {
-  border-top: none;
-}
-
-.kanban-plugin__autocomplete-item:hover,
-.kanban-plugin__autocomplete-item-active {
-  color: var(--text-on-accent);
-  background-color: var(--interactive-accent-hover);
-}
-
-.kanban-plugin__file-suggestion-wrapper {
-  display: flex;
-  line-height: 1.2;
-}
-
-.kanban-plugin__file-suggestion-icon {
-  flex-shrink: 0;
-  flex-grow: 0;
-  padding-inline-end: 4px;
-}
-
-.kanban-plugin__file-suggestion-subtitle {
-  font-size: 0.875em;
-  color: var(--text-muted);
-}
-
-.kanban-plugin__autocomplete-item:hover .kanban-plugin__file-suggestion-subtitle,
-.kanban-plugin__autocomplete-item-active .kanban-plugin__file-suggestion-subtitle {
-  color: var(--text-on-accent);
 }
 
 .modal.kanban-plugin__board-settings-modal {

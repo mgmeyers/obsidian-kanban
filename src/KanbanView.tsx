@@ -284,6 +284,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   initHeaderButtons() {
+    if (Platform.isPhone) return;
     const stateManager = this.plugin.getStateManager(this.file);
 
     if (!stateManager) return;
