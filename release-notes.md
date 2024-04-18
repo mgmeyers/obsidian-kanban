@@ -1,2 +1,1 @@
-ab0850c Fix stuck mobile toolbar
-7d3d6e5 rm styles
+d394e85 Fix #920 - Multi-byte date triggers break when date is selected
