@@ -152,9 +152,20 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
       // Open a tag search
       if (closestAnchor.hasClass('tag')) {
         e.preventDefault();
+        const tag = closestAnchor.getAttr('href');
+        const tagAction = stateManager.getSetting('tag-action');
+
+        if (tagAction === 'kanban') {
+          setSearchQuery(tag);
+          setDebouncedSearchQuery(tag);
+          setIsSearching(true);
+
+          return;
+        }
+
         (stateManager.app as any).internalPlugins
           .getPluginById('global-search')
-          .instance.openGlobalSearch(`tag:${closestAnchor.getAttr('href')}`);
+          .instance.openGlobalSearch(`tag:${tag}`);
         return;
       }
 
