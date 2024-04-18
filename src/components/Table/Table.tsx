@@ -402,7 +402,7 @@ function useTableColumns(boardData: Board, stateManager: StateManager) {
     }
 
     return columns;
-  }, metadata);
+  }, [shouldShowRelativeDate, hideDateDisplay, hideTagsDisplay, ...metadata]);
 
   const withFileMetadata = useMemo(() => {
     const columns = [...withMetadata];

@@ -724,7 +724,6 @@ button.kanban-plugin__new-item-button {
 .kanban-plugin__item-title {
   width: 100%;
   line-height: var(--line-height-tight);
-  overflow: hidden;
 }
 
 .kanban-plugin__meta-value,
@@ -864,7 +863,7 @@ button.kanban-plugin__new-item-button {
 
 .kanban-plugin__item-tags .kanban-plugin__item-tag {
   font-size: 12px;
-  background-color: var(--tag-background-color, hsla(var(--interactive-accent-hsl), 0.1));
+  background-color: var(--tag-background, hsla(var(--interactive-accent-hsl), 0.1));
   color: var(--tag-color, var(--text-accent));
   margin-block: 3px 0;
   margin-inline: 0 3px;
@@ -1824,17 +1823,21 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   border-radius: var(--radius-s);
   background-color: rgba(var(--mono-rgb-100), 0.05);
 
+  &:hover {
+    background-color: rgba(var(--mono-rgb-100), 0.1);
+  }
+
+  &.kanban-plugin__preview-date-link {
+    --link-decoration: none;
+    --link-unresolved-decoration-style: unset;
+  }
+
   &.has-background {
     background-color: var(--date-background-color, transparent);
   }
 
-  > span {
+  > span,
+  > a {
     padding-inline: var(--size-2-1);
-
-    @media (hover: hover) {
-      &:hover {
-        background-color: rgba(var(--mono-rgb-100), 0.1);
-      }
-    }
   }
 }

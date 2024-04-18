@@ -2,13 +2,19 @@
 import classcat from 'classcat';
 import Mark from 'mark.js';
 import moment from 'moment';
-import { MarkdownRenderer as ObsidianRenderer, TFile, getLinkpath } from 'obsidian';
+import {
+  MarkdownPostProcessorContext,
+  MarkdownRenderer as ObsidianRenderer,
+  TFile,
+  getLinkpath,
+} from 'obsidian';
 import { appHasDailyNotesPluginLoaded, createDailyNote } from 'obsidian-daily-notes-interface';
 import { CSSProperties, memo, useEffect, useRef } from 'preact/compat';
-import { useCallback, useContext, useMemo } from 'preact/hooks';
+import { useCallback, useContext } from 'preact/hooks';
 import { KanbanView } from 'src/KanbanView';
 import { DndManagerContext, EntityManagerContext } from 'src/dnd/components/context';
 import { PromiseCapability } from 'src/helpers/util';
+import KanbanPlugin from 'src/main';
 import { frontmatterKey } from 'src/parsers/common';
 
 import {
@@ -16,7 +22,7 @@ import {
   getNormalizedPath,
   renderMarkdown,
 } from '../../helpers/renderMarkdown';
-import { preprocess } from '../Editor/dateWidget';
+import { usePreprocessedStr } from '../Editor/dateWidget';
 import { KanbanContext } from '../context';
 import { c, noop } from '../helpers';
 
@@ -379,6 +385,32 @@ export class MarkdownRenderer extends ObsidianRenderer {
   }
 }
 
+export function postProcessor(plugin: KanbanPlugin) {
+  return (el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+    const file = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
+    if (!file || !(file instanceof TFile)) return;
+
+    const stateManager = plugin.getStateManager(file);
+    if (!stateManager) return;
+
+    const tagColors = stateManager.getSetting('tag-colors');
+    if (!tagColors.length) return;
+
+    const tagAs = el.querySelectorAll<HTMLAnchorElement>('a.tag');
+    if (!tagAs.length) return;
+
+    tagAs.forEach((a) => {
+      const color = tagColors.find((c) => c.tagKey === a.getAttr('href'));
+      if (!color) return;
+
+      a.setCssProps({
+        '--tag-color': color.color,
+        '--tag-background': color.backgroundColor,
+      });
+    });
+  };
+}
+
 export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
   entityId,
   className,
@@ -393,11 +425,7 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
 
   const entityManager = useContext(EntityManagerContext);
   const dndManager = useContext(DndManagerContext);
-
-  const processed = useMemo(
-    () => preprocess(stateManager, markdownString, getDateColor),
-    [stateManager, markdownString]
-  );
+  const processed = usePreprocessedStr(stateManager, markdownString, getDateColor);
 
   useEffect(() => {
     const renderCapability = new PromiseCapability();
@@ -470,7 +498,7 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
     preview.set(processed);
     preview.renderer.onRendered(() => {
       preview.showChildren();
-      if (!entityManager.isVisible) preview.hideChildren();
+      if (!entityManager?.isVisible) preview.hideChildren();
     });
   }, [processed]);
 

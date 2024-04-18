@@ -161,7 +161,7 @@ export function Tags({
             style={
               tagColor && {
                 '--tag-color': tagColor.color,
-                '--tag-background-color': tagColor.backgroundColor,
+                '--tag-background': tagColor.backgroundColor,
               }
             }
           >

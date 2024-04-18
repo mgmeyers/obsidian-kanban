@@ -509,6 +509,8 @@ export class SettingsManager {
               toggle.setValue(value as boolean);
             } else if (globalValue !== undefined) {
               toggle.setValue(globalValue as boolean);
+            } else {
+              toggle.setValue(true);
             }
 
             toggle.onChange((newValue) => {
@@ -524,7 +526,7 @@ export class SettingsManager {
               .setTooltip(t('Reset to default'))
               .onClick(() => {
                 const [, globalValue] = this.getSetting('hide-tags-display', local);
-                toggleComponent.setValue(!!globalValue);
+                toggleComponent.setValue((globalValue as boolean) ?? true);
 
                 this.applySettingsUpdate({
                   $unset: ['hide-tags-display'],
@@ -1072,6 +1074,8 @@ export class SettingsManager {
               toggle.setValue(value as boolean);
             } else if (globalValue !== undefined) {
               toggle.setValue(globalValue as boolean);
+            } else {
+              toggle.setValue(true);
             }
 
             toggle.onChange((newValue) => {
@@ -1087,7 +1091,7 @@ export class SettingsManager {
               .setTooltip(t('Reset to default'))
               .onClick(() => {
                 const [, globalValue] = this.getSetting('hide-date-display', local);
-                toggleComponent.setValue(!!globalValue);
+                toggleComponent.setValue((globalValue as boolean) ?? true);
 
                 this.applySettingsUpdate({
                   $unset: ['hide-date-display'],

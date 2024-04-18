@@ -132,7 +132,7 @@ function Item({ tagColorKey, deleteKey, updateKey, defaultColors }: ItemProps) {
                   className={`tag ${c('item-tag')}`}
                   style={{
                     '--tag-color': tagColorKey.color,
-                    '--tag-background-color': tagColorKey.backgroundColor,
+                    '--tag-background': tagColorKey.backgroundColor,
                   }}
                 >
                   {tagColorKey.tagKey || '#tag'}
