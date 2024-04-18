@@ -189,6 +189,46 @@ export class SettingsManager {
     }
 
     new Setting(contentEl)
+      .setName(t('Display card checkbox'))
+      .setDesc(t('When toggled, a checkbox will be displayed with each card'))
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('show-checkboxes', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'show-checkboxes': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('show-checkboxes', local);
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ['show-checkboxes'],
+                });
+              });
+          });
+      });
+
+    new Setting(contentEl)
       .setName(t('New line trigger'))
       .setDesc(
         t(
@@ -232,37 +272,6 @@ export class SettingsManager {
           });
         });
       });
-
-    new Setting(contentEl)
-      .setName(t('Note template'))
-      .setDesc(t('This template will be used when creating new notes from Kanban cards.'))
-      .then(
-        createSearchSelect({
-          choices: templateFiles,
-          key: 'new-note-template',
-          warningText: templateWarning,
-          local,
-          placeHolderStr: t('No template'),
-          manager: this,
-        })
-      );
-
-    new Setting(contentEl)
-      .setName(t('Note folder'))
-      .setDesc(
-        t(
-          'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.'
-        )
-      )
-      .then(
-        createSearchSelect({
-          choices: vaultFolders,
-          key: 'new-note-folder',
-          local,
-          placeHolderStr: t('Default folder'),
-          manager: this,
-        })
-      );
 
     new Setting(contentEl)
       .setName(t('Hide card counts in list titles'))
@@ -412,44 +421,37 @@ export class SettingsManager {
       });
 
     new Setting(contentEl)
-      .setName(t('Display card checkbox'))
-      .setDesc(t('When toggled, a checkbox will be displayed with each card'))
-      .then((setting) => {
-        let toggleComponent: ToggleComponent;
+      .setName(t('Note template'))
+      .setDesc(t('This template will be used when creating new notes from Kanban cards.'))
+      .then(
+        createSearchSelect({
+          choices: templateFiles,
+          key: 'new-note-template',
+          warningText: templateWarning,
+          local,
+          placeHolderStr: t('No template'),
+          manager: this,
+        })
+      );
 
-        setting
-          .addToggle((toggle) => {
-            toggleComponent = toggle;
+    new Setting(contentEl)
+      .setName(t('Note folder'))
+      .setDesc(
+        t(
+          'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.'
+        )
+      )
+      .then(
+        createSearchSelect({
+          choices: vaultFolders,
+          key: 'new-note-folder',
+          local,
+          placeHolderStr: t('Default folder'),
+          manager: this,
+        })
+      );
 
-            const [value, globalValue] = this.getSetting('show-checkboxes', local);
-
-            if (value !== undefined) {
-              toggle.setValue(value as boolean);
-            } else if (globalValue !== undefined) {
-              toggle.setValue(globalValue as boolean);
-            }
-
-            toggle.onChange((newValue) => {
-              this.applySettingsUpdate({
-                'show-checkboxes': {
-                  $set: newValue,
-                },
-              });
-            });
-          })
-          .addExtraButton((b) => {
-            b.setIcon('lucide-rotate-ccw')
-              .setTooltip(t('Reset to default'))
-              .onClick(() => {
-                const [, globalValue] = this.getSetting('show-checkboxes', local);
-                toggleComponent.setValue(!!globalValue);
-
-                this.applySettingsUpdate({
-                  $unset: ['show-checkboxes'],
-                });
-              });
-          });
-      });
+    contentEl.createEl('h4', { text: t('Tags') });
 
     new Setting(contentEl)
       .setName(t('Hide tags in card titles'))
@@ -588,248 +590,6 @@ export class SettingsManager {
           }
         });
       });
-
-    contentEl.createEl('h4', { text: t('Board Header Buttons') });
-
-    new Setting(contentEl).setName(t('Add a list')).then((setting) => {
-      let toggleComponent: ToggleComponent;
-
-      setting
-        .addToggle((toggle) => {
-          toggleComponent = toggle;
-
-          const [value, globalValue] = this.getSetting('show-add-list', local);
-
-          if (value !== undefined && value !== null) {
-            toggle.setValue(value as boolean);
-          } else if (globalValue !== undefined && globalValue !== null) {
-            toggle.setValue(globalValue as boolean);
-          } else {
-            // default
-            toggle.setValue(true);
-          }
-
-          toggle.onChange((newValue) => {
-            this.applySettingsUpdate({
-              'show-add-list': {
-                $set: newValue,
-              },
-            });
-          });
-        })
-        .addExtraButton((b) => {
-          b.setIcon('lucide-rotate-ccw')
-            .setTooltip(t('Reset to default'))
-            .onClick(() => {
-              const [, globalValue] = this.getSetting('show-add-list', local);
-              toggleComponent.setValue(!!globalValue);
-
-              this.applySettingsUpdate({
-                $unset: ['show-add-list'],
-              });
-            });
-        });
-    });
-
-    new Setting(contentEl).setName(t('Archive completed cards')).then((setting) => {
-      let toggleComponent: ToggleComponent;
-
-      setting
-        .addToggle((toggle) => {
-          toggleComponent = toggle;
-
-          const [value, globalValue] = this.getSetting('show-archive-all', local);
-
-          if (value !== undefined && value !== null) {
-            toggle.setValue(value as boolean);
-          } else if (globalValue !== undefined && globalValue !== null) {
-            toggle.setValue(globalValue as boolean);
-          } else {
-            // default
-            toggle.setValue(true);
-          }
-
-          toggle.onChange((newValue) => {
-            this.applySettingsUpdate({
-              'show-archive-all': {
-                $set: newValue,
-              },
-            });
-          });
-        })
-        .addExtraButton((b) => {
-          b.setIcon('lucide-rotate-ccw')
-            .setTooltip(t('Reset to default'))
-            .onClick(() => {
-              const [, globalValue] = this.getSetting('show-archive-all', local);
-              toggleComponent.setValue(!!globalValue);
-
-              this.applySettingsUpdate({
-                $unset: ['show-archive-all'],
-              });
-            });
-        });
-    });
-
-    new Setting(contentEl).setName(t('Open as markdown')).then((setting) => {
-      let toggleComponent: ToggleComponent;
-
-      setting
-        .addToggle((toggle) => {
-          toggleComponent = toggle;
-
-          const [value, globalValue] = this.getSetting('show-view-as-markdown', local);
-
-          if (value !== undefined && value !== null) {
-            toggle.setValue(value as boolean);
-          } else if (globalValue !== undefined && globalValue !== null) {
-            toggle.setValue(globalValue as boolean);
-          } else {
-            // default
-            toggle.setValue(true);
-          }
-
-          toggle.onChange((newValue) => {
-            this.applySettingsUpdate({
-              'show-view-as-markdown': {
-                $set: newValue,
-              },
-            });
-          });
-        })
-        .addExtraButton((b) => {
-          b.setIcon('lucide-rotate-ccw')
-            .setTooltip(t('Reset to default'))
-            .onClick(() => {
-              const [, globalValue] = this.getSetting('show-view-as-markdown', local);
-              toggleComponent.setValue(!!globalValue);
-
-              this.applySettingsUpdate({
-                $unset: ['show-view-as-markdown'],
-              });
-            });
-        });
-    });
-
-    new Setting(contentEl).setName(t('Open board settings')).then((setting) => {
-      let toggleComponent: ToggleComponent;
-
-      setting
-        .addToggle((toggle) => {
-          toggleComponent = toggle;
-
-          const [value, globalValue] = this.getSetting('show-board-settings', local);
-
-          if (value !== undefined && value !== null) {
-            toggle.setValue(value as boolean);
-          } else if (globalValue !== undefined && globalValue !== null) {
-            toggle.setValue(globalValue as boolean);
-          } else {
-            // default
-            toggle.setValue(true);
-          }
-
-          toggle.onChange((newValue) => {
-            this.applySettingsUpdate({
-              'show-board-settings': {
-                $set: newValue,
-              },
-            });
-          });
-        })
-        .addExtraButton((b) => {
-          b.setIcon('lucide-rotate-ccw')
-            .setTooltip(t('Reset to default'))
-            .onClick(() => {
-              const [, globalValue] = this.getSetting('show-board-settings', local);
-              toggleComponent.setValue(!!globalValue);
-
-              this.applySettingsUpdate({
-                $unset: ['show-board-settings'],
-              });
-            });
-        });
-    });
-
-    new Setting(contentEl).setName(t('Search...')).then((setting) => {
-      let toggleComponent: ToggleComponent;
-
-      setting
-        .addToggle((toggle) => {
-          toggleComponent = toggle;
-
-          const [value, globalValue] = this.getSetting('show-search', local);
-
-          if (value !== undefined && value !== null) {
-            toggle.setValue(value as boolean);
-          } else if (globalValue !== undefined && globalValue !== null) {
-            toggle.setValue(globalValue as boolean);
-          } else {
-            // default
-            toggle.setValue(true);
-          }
-
-          toggle.onChange((newValue) => {
-            this.applySettingsUpdate({
-              'show-search': {
-                $set: newValue,
-              },
-            });
-          });
-        })
-        .addExtraButton((b) => {
-          b.setIcon('lucide-rotate-ccw')
-            .setTooltip(t('Reset to default'))
-            .onClick(() => {
-              const [, globalValue] = this.getSetting('show-search', local);
-              toggleComponent.setValue(!!globalValue);
-
-              this.applySettingsUpdate({
-                $unset: ['show-search'],
-              });
-            });
-        });
-    });
-
-    new Setting(contentEl).setName(t('Board view')).then((setting) => {
-      let toggleComponent: ToggleComponent;
-
-      setting
-        .addToggle((toggle) => {
-          toggleComponent = toggle;
-
-          const [value, globalValue] = this.getSetting('show-set-view', local);
-
-          if (value !== undefined && value !== null) {
-            toggle.setValue(value as boolean);
-          } else if (globalValue !== undefined && globalValue !== null) {
-            toggle.setValue(globalValue as boolean);
-          } else {
-            // default
-            toggle.setValue(true);
-          }
-
-          toggle.onChange((newValue) => {
-            this.applySettingsUpdate({
-              'show-set-view': {
-                $set: newValue,
-              },
-            });
-          });
-        })
-        .addExtraButton((b) => {
-          b.setIcon('lucide-rotate-ccw')
-            .setTooltip(t('Reset to default'))
-            .onClick(() => {
-              const [, globalValue] = this.getSetting('show-set-view', local);
-              toggleComponent.setValue(!!globalValue);
-
-              this.applySettingsUpdate({
-                $unset: ['show-set-view'],
-              });
-            });
-        });
-    });
 
     contentEl.createEl('h4', { text: t('Date & Time') });
 
@@ -1486,6 +1246,248 @@ export class SettingsManager {
           cleanupMetadataSettings(setting.settingEl);
         }
       });
+    });
+
+    contentEl.createEl('h4', { text: t('Board Header Buttons') });
+
+    new Setting(contentEl).setName(t('Add a list')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting('show-add-list', local);
+
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'show-add-list': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('lucide-rotate-ccw')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('show-add-list', local);
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['show-add-list'],
+              });
+            });
+        });
+    });
+
+    new Setting(contentEl).setName(t('Archive completed cards')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting('show-archive-all', local);
+
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'show-archive-all': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('lucide-rotate-ccw')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('show-archive-all', local);
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['show-archive-all'],
+              });
+            });
+        });
+    });
+
+    new Setting(contentEl).setName(t('Open as markdown')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting('show-view-as-markdown', local);
+
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'show-view-as-markdown': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('lucide-rotate-ccw')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('show-view-as-markdown', local);
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['show-view-as-markdown'],
+              });
+            });
+        });
+    });
+
+    new Setting(contentEl).setName(t('Open board settings')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting('show-board-settings', local);
+
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'show-board-settings': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('lucide-rotate-ccw')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('show-board-settings', local);
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['show-board-settings'],
+              });
+            });
+        });
+    });
+
+    new Setting(contentEl).setName(t('Search...')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting('show-search', local);
+
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'show-search': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('lucide-rotate-ccw')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('show-search', local);
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['show-search'],
+              });
+            });
+        });
+    });
+
+    new Setting(contentEl).setName(t('Board view')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting('show-set-view', local);
+
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'show-set-view': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('lucide-rotate-ccw')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('show-set-view', local);
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['show-set-view'],
+              });
+            });
+        });
     });
   }
 

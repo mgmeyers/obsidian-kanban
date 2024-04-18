@@ -143,30 +143,6 @@
     display: block;
   }
 
-  .kanban-plugin__item-metadata-date-wrapper {
-    display: inline-flex;
-    margin-block: 0;
-    margin-inline: -4px;
-    text-wrap: nowrap;
-
-    &.has-background {
-      font-size: 12px;
-      margin-block-start: 0;
-      padding-inline: 2px;
-      padding-block: 1px;
-    }
-
-    > span {
-      display: flex;
-      padding-block: var(--size-2-1);
-      padding-inline: var(--size-4-1);
-      border-radius: 4px;
-      &:hover {
-        background-color: var(--background-modifier-hover);
-      }
-    }
-  }
-
   .kanban-plugin__item-metadata-time::before {
     display: none;
   }
@@ -1655,26 +1631,6 @@ button.kanban-plugin__cancel-action-button {
   line-height: 1.5;
 }
 
-.kanban-plugin__item-metadata-date-relative,
-.kanban-plugin__item-metadata-date-wrapper .is-button:hover,
-.kanban-plugin__item-metadata-date-wrapper {
-  display: inline-block;
-  color: var(--date-color, var(--text-muted));
-  line-height: 1;
-}
-
-.kanban-plugin__item-metadata-date-relative + .kanban-plugin__item-metadata-date-wrapper {
-  margin-block-start: 4px;
-}
-
-.kanban-plugin__item-metadata-date-wrapper.has-background {
-  background-color: var(--date-background-color, transparent);
-  margin-block-start: 4px;
-  border-radius: var(--tag-radius);
-  padding-block: var(--tag-padding-y);
-  padding-inline: var(--tag-padding-x);
-}
-
 .kanban-plugin__date-color-input-wrapper input[type='number'] {
   width: 75px;
   padding-block: 0.6em;
@@ -1814,17 +1770,16 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   transform: translate(0, -100%);
 }
 
-.kanban-plugin__preview-time-wrapper,
-.kanban-plugin__preview-date-wrapper,
+.kanban-plugin__date,
 .cm-kanban-time-wrapper,
 .cm-kanban-date-wrapper {
   display: inline-block;
   color: var(--date-color);
   border-radius: var(--radius-s);
-  background-color: rgba(var(--mono-rgb-100), 0.05);
+  background-color: var(--date-background-color, rgba(var(--mono-rgb-100), 0.05));
 
   &:hover {
-    background-color: rgba(var(--mono-rgb-100), 0.1);
+    background-color: var(--date-background-color, rgba(var(--mono-rgb-100), 0.1));
   }
 
   &.kanban-plugin__preview-date-link {
@@ -1832,12 +1787,14 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
     --link-unresolved-decoration-style: unset;
   }
 
-  &.has-background {
-    background-color: var(--date-background-color, transparent);
-  }
-
   > span,
   > a {
     padding-inline: var(--size-2-1);
+  }
+}
+
+.kanban-plugin__meta-value {
+  .kanban-plugin__date:hover {
+    background-color: var(--date-background-color, rgba(var(--mono-rgb-100), 0.05));
   }
 }

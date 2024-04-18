@@ -156,6 +156,7 @@ function Item({
                   }}
                   className={classcat([
                     c('item-metadata-date-wrapper'),
+                    c('date'),
                     { 'has-background': !!dateColorKey?.backgroundColor },
                   ])}
                 >

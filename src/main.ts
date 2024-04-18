@@ -16,7 +16,6 @@ import { KanbanView, kanbanIcon, kanbanViewType } from './KanbanView';
 import { KanbanSettings, KanbanSettingsTab } from './Settings';
 import { StateManager } from './StateManager';
 import { DateSuggest, TimeSuggest } from './components/Editor/suggest';
-import { postProcessor } from './components/MarkdownRenderer/MarkdownRenderer';
 import { getParentWindow } from './dnd/util/getWindow';
 import { hasFrontmatterKey } from './helpers';
 import { t } from './lang/helpers';
@@ -105,7 +104,6 @@ export default class KanbanPlugin extends Plugin {
 
     this.registerEditorSuggest(new DateSuggest(this.app, this));
     this.registerEditorSuggest(new TimeSuggest(this.app, this));
-    this.registerMarkdownPostProcessor(postProcessor(this));
 
     this.registerEvent(
       this.app.workspace.on('window-open', (_: any, win: Window) => {

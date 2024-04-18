@@ -2,19 +2,13 @@
 import classcat from 'classcat';
 import Mark from 'mark.js';
 import moment from 'moment';
-import {
-  MarkdownPostProcessorContext,
-  MarkdownRenderer as ObsidianRenderer,
-  TFile,
-  getLinkpath,
-} from 'obsidian';
+import { MarkdownRenderer as ObsidianRenderer, TFile, getLinkpath } from 'obsidian';
 import { appHasDailyNotesPluginLoaded, createDailyNote } from 'obsidian-daily-notes-interface';
 import { CSSProperties, memo, useEffect, useRef } from 'preact/compat';
 import { useCallback, useContext } from 'preact/hooks';
 import { KanbanView } from 'src/KanbanView';
 import { DndManagerContext, EntityManagerContext } from 'src/dnd/components/context';
 import { PromiseCapability } from 'src/helpers/util';
-import KanbanPlugin from 'src/main';
 import { frontmatterKey } from 'src/parsers/common';
 
 import {
@@ -25,6 +19,7 @@ import {
 import { usePreprocessedStr } from '../Editor/dateWidget';
 import { KanbanContext, SearchContext } from '../context';
 import { c, noop } from '../helpers';
+import { DateColorKey, TagColorKey } from '../types';
 
 interface MarkdownRendererProps extends HTMLAttributes<HTMLDivElement> {
   className?: string;
@@ -60,7 +55,7 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
   ...divProps
 }: MarkdownRendererProps) {
   const search = useContext(SearchContext);
-  const { stateManager, view, filePath } = useContext(KanbanContext);
+  const { stateManager, view, filePath, getDateColor, getTagColor } = useContext(KanbanContext);
   const wrapperRef = useRef<HTMLDivElement>();
   const contentRef = useRef<HTMLDivElement>();
   const markRef = useRef<Mark>();
@@ -70,6 +65,8 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
       .then((el) => {
         contentRef.current = el;
         markRef.current = new Mark(el);
+        colorizeDates(el, getDateColor);
+        colorizeTags(el, getTagColor);
         if (wrapperRef.current) appendOrReplaceFirstChild(wrapperRef.current, el);
       })
       .catch((e) => {
@@ -77,6 +74,11 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
         console.error(e);
       });
   }, [stateManager, markdownString]);
+
+  useEffect(() => {
+    colorizeTags(contentRef.current, getTagColor);
+    colorizeDates(contentRef.current, getDateColor);
+  }, [getTagColor, getDateColor]);
 
   useEffect(() => {
     markRef.current?.unmark();
@@ -401,31 +403,41 @@ export class MarkdownRenderer extends ObsidianRenderer {
   }
 }
 
-export function postProcessor(plugin: KanbanPlugin) {
-  return (el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-    const file = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
-    if (!file || !(file instanceof TFile)) return;
+function colorizeTags(wrapperEl: HTMLElement, getTagColor: (tag: string) => TagColorKey) {
+  if (!wrapperEl) return;
+  const tagEls = wrapperEl.querySelectorAll<HTMLAnchorElement>('a.tag');
+  if (!tagEls?.length) return;
 
-    const stateManager = plugin.getStateManager(file);
-    if (!stateManager) return;
-
-    const tagColors = stateManager.getSetting('tag-colors');
-    if (!tagColors.length) return;
-
-    const tagAs = el.querySelectorAll<HTMLAnchorElement>('a.tag');
-    if (!tagAs.length) return;
-
-    tagAs.forEach((a) => {
-      const tag = a.getAttr('href');
-      const color = tagColors.find((c) => c.tagKey === tag);
-      if (!color) return;
-
-      a.setCssProps({
-        '--tag-color': color.color,
-        '--tag-background': color.backgroundColor,
-      });
+  tagEls.forEach((a) => {
+    const color = getTagColor(a.getAttr('href'));
+    if (!color) return;
+    a.setCssProps({
+      '--tag-color': color.color,
+      '--tag-background': color.backgroundColor,
     });
-  };
+  });
+}
+
+function colorizeDates(
+  wrapperEl: HTMLElement,
+  getDateColor: (date: moment.Moment) => DateColorKey
+) {
+  if (!wrapperEl) return;
+  const dateEls = wrapperEl.querySelectorAll<HTMLElement>('.' + c('date'));
+  if (!dateEls?.length) return;
+  dateEls.forEach((el) => {
+    const dateStr = el.dataset.date;
+    if (!dateStr) return;
+    const parsed = moment(dateStr);
+    if (!parsed.isValid()) return;
+    const color = getDateColor(parsed);
+    el.toggleClass('has-background', !!color?.backgroundColor);
+    if (!color) return;
+    el.setCssProps({
+      '--date-color': color.color,
+      '--date-background-color': color.backgroundColor,
+    });
+  });
 }
 
 export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
@@ -436,7 +448,7 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
   ...divProps
 }: MarkdownPreviewRendererProps) {
   const search = useContext(SearchContext);
-  const { view, stateManager, getDateColor } = useContext(KanbanContext);
+  const { view, stateManager, getDateColor, getTagColor } = useContext(KanbanContext);
   const markRef = useRef<Mark>();
   const renderer = useRef<MarkdownRenderer>();
   const elRef = useRef<HTMLDivElement>();
@@ -482,17 +494,18 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
         const containerEl = elRef.current.createDiv();
         const preview = (renderer.current = view.addChild(new MarkdownRenderer(view, containerEl)));
 
-        preview.wrapperEl = elRef.current;
-
         containerEl.onNodeInserted(() => {
           preview.renderer.queueRender();
           renderCapability.resolve();
         }, true);
-
-        preview.renderer.onRendered(() => {
-          if (!entityManager?.isVisible) preview.hideChildren();
-        });
         view.previewCache.set(entityId, preview);
+
+        preview.wrapperEl = elRef.current;
+        preview.renderer.onRendered(() => {
+          colorizeTags(elRef.current, getTagColor);
+          colorizeDates(elRef.current, getDateColor);
+          if (entityManager && !entityManager.isVisible) preview.hideChildren();
+        });
 
         markRef.current = new Mark(elRef.current);
         preview.set(processed);
@@ -516,9 +529,16 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
     preview.set(processed);
     preview.renderer.onRendered(() => {
       preview.showChildren();
-      if (!entityManager?.isVisible) preview.hideChildren();
+      colorizeTags(elRef.current, getTagColor);
+      colorizeDates(elRef.current, getDateColor);
+      if (entityManager && !entityManager.isVisible) preview.hideChildren();
     });
   }, [processed]);
+
+  useEffect(() => {
+    colorizeTags(elRef.current, getTagColor);
+    colorizeDates(elRef.current, getDateColor);
+  }, [getTagColor, getDateColor]);
 
   useEffect(() => {
     markRef.current?.unmark();

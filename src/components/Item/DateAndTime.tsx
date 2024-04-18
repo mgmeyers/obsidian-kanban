@@ -69,20 +69,21 @@ export function DateAndTime({
   const dateDisplayFormat = stateManager.useSetting('date-display-format');
   const shouldLinkDate = stateManager.useSetting('link-date-to-daily-note');
 
+  const targetDate = item.data.metadata.time ?? item.data.metadata.date;
   const dateColor = useMemo(() => {
-    if (!item.data.metadata.date) return null;
-    return getDateColor(item.data.metadata.date);
-  }, [item.data.metadata.date, getDateColor]);
+    if (!targetDate) return null;
+    return getDateColor(targetDate);
+  }, [targetDate, getDateColor]);
 
-  if (hideDateDisplay || !item.data.metadata.date) return null;
+  if (hideDateDisplay || !targetDate) return null;
 
-  const dateStr = item.data.metadata.date.format(dateFormat);
+  const dateStr = targetDate.format(dateFormat);
 
   if (!dateStr) return null;
 
   const hasTime = !!item.data.metadata.time;
-  const dateDisplayStr = item.data.metadata.date.format(dateDisplayFormat);
-  const timeDisplayStr = !hasTime ? null : item.data.metadata.time.format(timeFormat);
+  const dateDisplayStr = targetDate.format(dateDisplayFormat);
+  const timeDisplayStr = !hasTime ? null : targetDate.format(timeFormat);
 
   const datePath = dateStr ? getLinkpath(dateStr) : null;
   const isResolved = dateStr
@@ -120,6 +121,7 @@ export function DateAndTime({
       }
       className={classcat([
         c('item-metadata-date-wrapper'),
+        c('date'),
         {
           'has-background': !!dateColor?.backgroundColor,
         },

@@ -148,6 +148,7 @@ export function usePreprocessedStr(
   const tagColors = stateManager.getSetting('tag-colors');
 
   return useMemo(() => {
+    let date: moment.Moment;
     let dateColor: DateColorKey;
     const getWrapperStyles = (baseClass: string) => {
       let wrapperStyle = '';
@@ -168,10 +169,11 @@ export function usePreprocessedStr(
         (match, content) => {
           const parsed = moment(content, dateFormat);
           if (!parsed.isValid()) return match;
+          date = parsed;
           const linkPath = app.metadataCache.getFirstLinkpathDest(content, stateManager.file.path);
           if (!dateColor) dateColor = getDateColor(parsed);
           const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-date-wrapper'));
-          return `<span class="${wrapperClass} ${c('preview-date-link')}"${wrapperStyle}><a class="${c('preview-date')} internal-link" data-href="${linkPath?.path ?? content}" href="${linkPath?.path ?? content}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
+          return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')} ${c('preview-date-link')}"${wrapperStyle}><a class="${c('preview-date')} internal-link" data-href="${linkPath?.path ?? content}" href="${linkPath?.path ?? content}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
         }
       );
       str = str.replace(
@@ -179,32 +181,39 @@ export function usePreprocessedStr(
         (match, content) => {
           const parsed = moment(content, dateFormat);
           if (!parsed.isValid()) return match;
+          date = parsed;
           const linkPath = app.metadataCache.getFirstLinkpathDest(content, stateManager.file.path);
-          if (!linkPath) return match;
           if (!dateColor) dateColor = getDateColor(parsed);
           const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-date-wrapper'));
-          return `<span class="${wrapperClass} ${c('preview-date-link')}"${wrapperStyle}><a class="${c('preview-date')} internal-link" data-href="${linkPath.path}" href="${linkPath.path}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
+          return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')} ${c('preview-date-link')}"${wrapperStyle}><a class="${c('preview-date')} internal-link" data-href="${linkPath.path}" href="${linkPath.path}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
         }
       );
     } else {
       str = str.replace(new RegExp(`${dateTrigger}{([^}]+)}`, 'g'), (match, content) => {
         const parsed = moment(content, dateFormat);
         if (!parsed.isValid()) return match;
+        date = parsed;
         if (!dateColor) dateColor = getDateColor(parsed);
         const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-date-wrapper'));
-        return `<span class="${wrapperClass}"${wrapperStyle}><span class="${c('preview-date')} ${c('item-metadata-date')}">${parsed.format(dateDisplayFormat)}</span></span>`;
+        return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')}"${wrapperStyle}><span class="${c('preview-date')} ${c('item-metadata-date')}">${parsed.format(dateDisplayFormat)}</span></span>`;
       });
     }
 
     str = str.replace(new RegExp(`${timeTrigger}{([^}]+)}`, 'g'), (match, content) => {
       const parsed = moment(content, timeFormat);
       if (!parsed.isValid()) return match;
+
+      date.hour(parsed.hour());
+      date.minute(parsed.minute());
+      date.second(parsed.second());
+
       const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-time-wrapper'));
-      return `<span class="${wrapperClass}"${wrapperStyle}><span class="${c('preview-time')} ${c('item-metadata-time')}">${parsed.format(timeFormat)}</span></span>`;
+      return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')}"${wrapperStyle}><span class="${c('preview-time')} ${c('item-metadata-time')}">${parsed.format(timeFormat)}</span></span>`;
     });
 
     return str;
   }, [
+    getDateColor,
     dateTrigger,
     dateFormat,
     dateDisplayFormat,

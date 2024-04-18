@@ -1,5 +1,6 @@
 import classcat from 'classcat';
 import { TFile, moment } from 'obsidian';
+import { ComponentChild } from 'preact';
 import { memo, useContext } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
@@ -69,13 +70,19 @@ export function getLinkFromObj(v: any, view: KanbanView) {
   return `${v.embed ? '!' : ''}[[${v.path}${v.display ? `|${v.display}` : ''}]]`;
 }
 
+function getDate(v: any) {
+  if (moment.isMoment(v)) return v;
+  if (v.ts) return moment(v.ts);
+  if (v instanceof Date) return moment(v);
+  return null;
+}
+
 export function anyToString(v: any, stateManager: StateManager): string {
   if (v.value) v = v.value;
   if (typeof v === 'string') return v;
   if (v instanceof TFile) return v.path;
-  if (moment.isMoment(v)) return getDateFromObj(v, stateManager);
-  if (v instanceof Date) return getDateFromObj(v, stateManager);
-  if (v.ts) return getDateFromObj(v, stateManager);
+  const date = getDate(v);
+  if (date) return getDateFromObj(date, stateManager);
   if (typeof v === 'object' && v.path) return v.display || v.path;
   if (Array.isArray(v)) {
     return v.map((v2) => anyToString(v2, stateManager)).join(' ');
@@ -88,57 +95,67 @@ export function pageDataToString(data: PageData, stateManager: StateManager): st
 }
 
 export function MetadataValue({ data, searchQuery }: MetadataValueProps) {
-  const { view, stateManager } = useContext(KanbanContext);
+  const { view, stateManager, getDateColor } = useContext(KanbanContext);
+
+  const renderChild = (v: any, sep?: string) => {
+    const link = getLinkFromObj(v, view);
+    const date = getDate(v);
+    const str = anyToString(v, stateManager);
+    const isMatch = searchQuery && str.toLocaleLowerCase().contains(searchQuery);
+
+    let content: ComponentChild;
+    if (link || data.containsMarkdown) {
+      content = (
+        <StaticMarkdownRenderer
+          className="inline"
+          markdownString={link ? link : str}
+          searchQuery={searchQuery}
+        />
+      );
+    } else if (date) {
+      const dateColor = getDateColor(date);
+      content = (
+        <span
+          className={classcat({
+            [c('date')]: true,
+            'is-search-match': isMatch,
+            'has-background': dateColor?.backgroundColor,
+          })}
+          style={
+            dateColor && {
+              '--date-color': dateColor.color,
+              '--date-background-color': dateColor.backgroundColor,
+            }
+          }
+        >
+          <span className={c('item-metadata-date')}>{str}</span>
+        </span>
+      );
+    } else if (isMatch) {
+      content = <span className="is-search-match">{str}</span>;
+    } else {
+      content = str;
+    }
+
+    return (
+      <>
+        {content}
+        {sep ? <span>{sep}</span> : null}
+      </>
+    );
+  };
 
   if (Array.isArray(data.value)) {
     return (
       <span className={classcat([c('meta-value'), 'mod-array'])}>
         {data.value.map((v, i, arr) => {
-          const str = anyToString(v, stateManager);
-          const link = getLinkFromObj(v, view);
-          const isMatch = searchQuery && str.toLocaleLowerCase().contains(searchQuery);
-
-          return (
-            <>
-              {link || data.containsMarkdown ? (
-                <StaticMarkdownRenderer
-                  className="inline"
-                  markdownString={link ? link : str}
-                  searchQuery={searchQuery}
-                />
-              ) : isMatch ? (
-                <span className="is-search-match">{str}</span>
-              ) : (
-                str
-              )}
-              {i < arr.length - 1 ? <span>{', '}</span> : ''}
-            </>
-          );
+          return renderChild(v, i < arr.length - 1 ? ', ' : undefined);
         })}
       </span>
     );
   }
 
-  const str = anyToString(data.value, stateManager);
-  const link = getLinkFromObj(data.value, view);
-  const isMatch = searchQuery && str.toLocaleLowerCase().contains(searchQuery);
-
-  return (
-    <span
-      className={classcat([
-        c('meta-value'),
-        {
-          'is-search-match': isMatch && !data.containsMarkdown,
-        },
-      ])}
-    >
-      {data.containsMarkdown || !!link ? (
-        <StaticMarkdownRenderer markdownString={link ? link : str} searchQuery={searchQuery} />
-      ) : (
-        str
-      )}
-    </span>
-  );
+  return <span className={classcat([c('meta-value')])}>{renderChild(data.value)}</span>;
 }
 
 export interface MetadataTableProps {
