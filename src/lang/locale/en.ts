@@ -131,9 +131,8 @@ export default {
   'Search Obsidian Vault': 'Search Obsidian Vault',
   'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.':
     'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.',
-  'Display tag colors': 'Display tag colors',
-  'Set colors for the tags displayed below the card title.':
-    'Set colors for the tags displayed below the card title.',
+  'Tag colors': 'Tag colors',
+  'Set colors for tags displayed in cards.': 'Set colors for tags displayed in cards.',
   'Linked Page Metadata': 'Linked Page Metadata',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.',
@@ -157,8 +156,8 @@ export default {
   'Before now': 'Before now',
   'Between now and': 'Between now and',
   'Display date colors': 'Display date colors',
-  'Set colors for the date displayed below the card based on the rules below':
-    'Set colors for the date displayed below the card based on the rules below',
+  'Set colors for dates displayed in cards based on the rules below.':
+    'Set colors for dates displayed in cards based on the rules below.',
   'Add date color': 'Add date color',
 
   // MetadataSettings.tsx

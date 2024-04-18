@@ -199,7 +199,6 @@ export function getScrollIntersection(
  * Returns the coordinates of the corners of a given rectangle:
  * [TopLeft {x, y}, TopRight {x, y}, BottomLeft {x, y}, BottomRight {x, y}]
  */
-
 function cornersOfRectangle(hitbox: Hitbox): Coordinates[] {
   return [
     {
@@ -273,15 +272,23 @@ export function getBestIntersect(
   dragId: string
 ): Entity | null {
   const dragTopLeft = cornersOfRectangle(dragHitbox)[0];
+  const dragCenter = centerOfRectangle(dragHitbox);
   const distances = hits.map((entity) => {
     if (entity.entityId === dragId) {
       return Infinity;
     }
 
+    const data = entity.getData();
+    const isDropArea = data.acceptsSort;
     const entityHitbox = entity.getHitbox();
+    const entityCenter = centerOfRectangle(entityHitbox);
+
+    if (isDropArea) {
+      return distanceBetween(dragCenter, entityCenter);
+    }
+
     const entityTopLeft = cornersOfRectangle(entityHitbox)[0];
-    const entityCenter = centerOfRectangle(dragHitbox);
-    const axis = entity.getData().sortAxis === 'horizontal' ? 'x' : 'y';
+    const axis = data.sortAxis === 'horizontal' ? 'x' : 'y';
 
     const modifier = entityCenter[axis] > dragTopLeft[axis] ? 1000 : 0;
 

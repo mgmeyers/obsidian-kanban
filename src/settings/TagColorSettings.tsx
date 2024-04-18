@@ -236,9 +236,9 @@ function TagSettings({ dataKeys, onChange }: TagSettingsProps) {
   return (
     <div className={c('tag-color-input-wrapper')}>
       <div className="setting-item-info">
-        <div className="setting-item-name">{t('Display tag colors')}</div>
+        <div className="setting-item-name">{t('Tag colors')}</div>
         <div className="setting-item-description">
-          {t('Set colors for the tags displayed below the card title.')}
+          {t('Set colors for tags displayed in cards.')}
         </div>
       </div>
       {keys.map((key, index) => (

@@ -119,9 +119,8 @@ export default {
   'Hide card display tags': 'Отключить показ меток карточек',
   'When toggled, tags will not be displayed below the card title.':
     'Когда включено, метки под заголовками карточек не будут показаны.',
-  'Display tag colors': 'Показывать цвета меток',
-  'Set colors for the tags displayed below the card title.':
-    'Установить цвета для меток под заголовками карточек.',
+  'Tag colors': 'Показывать цвета меток',
+  'Set colors for tags displayed in cards.': 'Установить цвета для меток под заголовками карточек.',
   'Linked Page Metadata': 'Метаданные связанных страниц',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     'Отображение метаданных для первой заметки, связанной с карточкой. Ниже укажите, какие ключи метаданных отображать. Можно указать дополнительную метку, либо скрыть метки полностью.',
@@ -145,7 +144,7 @@ export default {
   'Before now': 'До текущего момента',
   'Between now and': 'Между сейчас и',
   'Display date colors': 'Показывать цвета даты',
-  'Set colors for the date displayed below the card based on the rules below':
+  'Set colors for dates displayed in cards based on the rules below.':
     'Установить цвета для даты, отображаемой под карточкой, базируясь на правилах ниже',
   'Add date color': 'Добавить цвет даты',
 

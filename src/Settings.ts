@@ -563,8 +563,8 @@ export class SettingsManager {
       });
 
     new Setting(contentEl)
-      .setName(t('Display tag colors'))
-      .setDesc(t('Set colors for the tags displayed below the card title.'))
+      .setName(t('Tag colors'))
+      .setDesc(t('Set colors for tags displayed in cards.'))
       .then((setting) => {
         const [value] = this.getSetting('tag-colors', local);
 
@@ -931,7 +931,7 @@ export class SettingsManager {
 
     new Setting(contentEl)
       .setName(t('Display date colors'))
-      .setDesc(t('Set colors for the date displayed below the card based on the rules below'))
+      .setDesc(t('Set colors for dates displayed in cards based on the rules below.'))
       .then((setting) => {
         const [value] = this.getSetting('date-colors', local);
 

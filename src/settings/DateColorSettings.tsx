@@ -261,7 +261,7 @@ function DateSettings({ dataKeys, onChange, getTimeFormat, getDateFormat }: Date
       <div className="setting-item-info">
         <div className="setting-item-name">{t('Display date colors')}</div>
         <div className="setting-item-description">
-          {t('Set colors for the date displayed below the card based on the rules below')}
+          {t('Set colors for dates displayed in cards based on the rules below.')}
         </div>
       </div>
       {keys.map((key, index) => (

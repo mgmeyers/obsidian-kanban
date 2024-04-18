@@ -217,6 +217,9 @@ export interface LanesProps {
 
 function LanesRaw({ lanes, collapseDir }: LanesProps) {
   const search = useContext(SearchContext);
+  const { stateManager } = useContext(KanbanContext);
+  const view = stateManager.useSetting(frontmatterKey);
+
   return (
     <>
       {lanes.map((lane, i) => {
@@ -224,7 +227,7 @@ function LanesRaw({ lanes, collapseDir }: LanesProps) {
           <DraggableLane
             collapseDir={collapseDir}
             forceCollapse={search?.query && !search.lanes.has(lane)}
-            key={lane.id}
+            key={view + lane.id}
             lane={lane}
             laneIndex={i}
           />

@@ -12,6 +12,7 @@ import {
 import { Droppable, useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { DndManagerContext } from 'src/dnd/components/context';
 import { useDragHandle } from 'src/dnd/managers/DragManager';
+import { frontmatterKey } from 'src/parsers/common';
 
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
@@ -186,12 +187,15 @@ interface ItemsProps {
 
 export const Items = memo(function Items({ isStatic, items, shouldMarkItemsComplete }: ItemsProps) {
   const search = useContext(SearchContext);
+  const { stateManager } = useContext(KanbanContext);
+  const view = stateManager.useSetting(frontmatterKey);
+
   return (
     <>
       {items.map((item, i) => {
         return search?.query && !search.items.has(item) ? null : (
           <DraggableItem
-            key={item.id}
+            key={view + item.id}
             item={item}
             itemIndex={i}
             shouldMarkItemsComplete={shouldMarkItemsComplete}

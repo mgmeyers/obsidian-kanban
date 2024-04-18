@@ -119,9 +119,8 @@ export default {
   'Hide card display tags': '카드 태그 숨기기',
   'When toggled, tags will not be displayed below the card title.':
     '활성화하면 카드 제목 아래에 태그가 표시되지 않습니다.',
-  'Display tag colors': '태그 색상 표시',
-  'Set colors for the tags displayed below the card title.':
-    '카드 제목 아래에 표시되는 태그의 색상을 설정합니다.',
+  'Tag colors': '태그 색상 표시',
+  'Set colors for tags displayed in cards.': '카드 제목 아래에 표시되는 태그의 색상을 설정합니다.',
   'Linked Page Metadata': '링크된 페이지 메타데이터',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     '카드 내에서 첫 번째로 링크된 노트의 메타데이터를 표시합니다. 아래에 표시할 메타데이터 키를 지정합니다. 선택적으로 레이블을 제공할 수 있으며, 레이블을 완전히 숨길 수 있습니다.',
@@ -145,7 +144,7 @@ export default {
   'Before now': '이전',
   'Between now and': '과의 사이',
   'Display date colors': '날짜 색상 표시',
-  'Set colors for the date displayed below the card based on the rules below':
+  'Set colors for dates displayed in cards based on the rules below.':
     '아래 카드에 표시된 날짜의 색상을 아래의 규칙에 따라 설정하세요.',
   'Add date color': '날짜 색상 추가',
 
