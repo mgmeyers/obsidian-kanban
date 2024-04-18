@@ -46,6 +46,13 @@ function appendOrReplaceFirstChild(wrapper?: HTMLDivElement, child?: HTMLDivElem
   }
 }
 
+function preventDragOnLink(e: DragEvent) {
+  const targetEl = e.target as HTMLElement;
+  if (targetEl.tagName === 'A') {
+    e.preventDefault();
+  }
+}
+
 export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
   className,
   markdownString,
@@ -205,8 +212,8 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
       className={classcat([c('markdown-preview-wrapper'), className])}
       {...divProps}
       onMouseOver={onMouseOver}
-      onPointerDown={onClick}
       onClick={onClick}
+      onDragStart={preventDragOnLink}
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       onAuxClick={onClick}
@@ -564,6 +571,7 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
     <div
       style={styles}
       onClickCapture={onClick}
+      onDragStart={preventDragOnLink}
       ref={(el) => {
         elRef.current = el;
         const preview = renderer.current;
