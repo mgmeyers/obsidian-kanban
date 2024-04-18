@@ -147,6 +147,10 @@ export default class KanbanPlugin extends Plugin {
 
     window.addEventListener('keydown', this.handleShift);
     window.addEventListener('keyup', this.handleShift);
+
+    this.addRibbonIcon(kanbanIcon, t('Create new board'), () => {
+      this.newKanban();
+    });
   }
 
   handleShift = (e: KeyboardEvent) => {
