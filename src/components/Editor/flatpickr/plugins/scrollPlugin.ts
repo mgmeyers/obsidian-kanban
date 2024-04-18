@@ -33,9 +33,7 @@ function scrollPlugin(): Plugin {
         }
 
         if (fp.yearElements) {
-          fp.yearElements.forEach((yearElem) =>
-            yearElem.addEventListener('wheel', scroll)
-          );
+          fp.yearElements.forEach((yearElem) => yearElem.addEventListener('wheel', scroll));
         }
 
         if (fp.monthElements) {
@@ -52,9 +50,7 @@ function scrollPlugin(): Plugin {
         }
 
         if (fp.yearElements) {
-          fp.yearElements.forEach((yearElem) =>
-            yearElem.removeEventListener('wheel', scroll)
-          );
+          fp.yearElements.forEach((yearElem) => yearElem.removeEventListener('wheel', scroll));
         }
 
         if (fp.monthElements) {

@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Bangla locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,15 +13,7 @@ const fp =
 export const Bangla: CustomLocale = {
   weekdays: {
     shorthand: ['রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহস্পতি', 'শুক্র', 'শনি'],
-    longhand: [
-      'রবিবার',
-      'সোমবার',
-      'মঙ্গলবার',
-      'বুধবার',
-      'বৃহস্পতিবার',
-      'শুক্রবার',
-      'শনিবার',
-    ],
+    longhand: ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'],
   },
 
   months: {

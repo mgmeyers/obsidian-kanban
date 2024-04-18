@@ -1,31 +1,25 @@
 import animateScrollTo from 'animated-scroll-to';
 import classcat from 'classcat';
 import update from 'immutability-helper';
-import { TFile, moment } from 'obsidian';
-import {
-  appHasDailyNotesPluginLoaded,
-  createDailyNote,
-} from 'obsidian-daily-notes-interface';
-import Preact from 'preact/compat';
-
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/compat';
+import { KanbanView } from 'src/KanbanView';
+import { StateManager } from 'src/StateManager';
 import { useIsAnythingDragging } from 'src/dnd/components/DragOverlay';
 import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
-import { Sortable } from 'src/dnd/components/Sortable';
 import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
+import { Sortable } from 'src/dnd/components/Sortable';
 import { createHTMLDndHandlers } from 'src/dnd/managers/DragManager';
-import { getNormalizedPath } from 'src/helpers/renderMarkdown';
-import { KanbanView } from 'src/KanbanView';
 import { t } from 'src/lang/helpers';
-import { StateManager } from 'src/StateManager';
 
 import { DndScope } from '../dnd/components/Scope';
 import { getBoardModifiers } from '../helpers/boardModifiers';
-import { frontMatterKey } from '../parsers/common';
-import { KanbanContext, SearchContext } from './context';
-import { baseClassName, c, getDateColorFn, getTagColorFn } from './helpers';
+import { frontmatterKey } from '../parsers/common';
 import { Icon } from './Icon/Icon';
 import { Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
+import { TableView } from './Table/Table';
+import { KanbanContext, SearchContext } from './context';
+import { baseClassName, c, getDateColorFn, getSearchHits, getTagColorFn } from './helpers';
 import { DataTypes } from './types';
 
 const boardScrollTiggers = [DataTypes.Item, DataTypes.Lane];
@@ -40,14 +34,13 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const boardData = stateManager.useState();
   const isAnythingDragging = useIsAnythingDragging();
 
-  const rootRef = Preact.useRef<HTMLDivElement>(null);
-  const searchRef = Preact.useRef<HTMLInputElement>(null);
-  const [searchQuery, setSearchQuery] = Preact.useState<string>('');
-  const [isSearching, setIsSearching] = Preact.useState<boolean>(false);
-  const [debouncedSearchQuery, setDebouncedSearchQuery] =
-    Preact.useState<string>('');
+  const rootRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
+  const [isSearching, setIsSearching] = useState<boolean>(false);
 
-  const [isLaneFormVisible, setIsLaneFormVisible] = Preact.useState<boolean>(
+  const [isLaneFormVisible, setIsLaneFormVisible] = useState<boolean>(
     boardData?.children.length === 0
   );
 
@@ -55,20 +48,21 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const maxArchiveLength = stateManager.useSetting('max-archive-size');
   const dateColors = stateManager.useSetting('date-colors');
   const tagColors = stateManager.useSetting('tag-colors');
+  const boardView = stateManager.useSetting(frontmatterKey);
 
-  const closeLaneForm = Preact.useCallback(() => {
+  const closeLaneForm = useCallback(() => {
     if (boardData?.children.length > 0) {
       setIsLaneFormVisible(false);
     }
   }, [boardData?.children.length]);
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     if (boardData?.children.length === 0 && !stateManager.hasError()) {
       setIsLaneFormVisible(true);
     }
   }, [boardData?.children.length, stateManager]);
 
-  const onNewLane = Preact.useCallback(() => {
+  const onNewLane = useCallback(() => {
     rootRef.current?.win.setTimeout(() => {
       const board = rootRef.current?.getElementsByClassName(c('board'));
 
@@ -85,9 +79,9 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     });
   }, []);
 
-  Preact.useEffect(() => {
-    const onSearchHotkey = (e: string) => {
-      if (e === 'editor:open-search') {
+  useEffect(() => {
+    const onSearchHotkey = (command: string) => {
+      if (command === 'editor:open-search') {
         setIsSearching((val) => !val);
       }
     };
@@ -105,13 +99,13 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     };
   }, [view]);
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     if (isSearching) {
       searchRef.current?.focus();
     }
   }, [isSearching]);
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     const win = view.getWindow();
     const trimmed = searchQuery.trim();
     let id: number;
@@ -129,15 +123,12 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     };
   }, [searchQuery, view]);
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     if (maxArchiveLength === undefined || maxArchiveLength === -1) {
       return;
     }
 
-    if (
-      typeof maxArchiveLength === 'number' &&
-      boardData?.data.archive.length > maxArchiveLength
-    ) {
+    if (typeof maxArchiveLength === 'number' && boardData?.data.archive.length > maxArchiveLength) {
       stateManager.setState((board) =>
         update(board, {
           data: {
@@ -150,116 +141,11 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     }
   }, [boardData?.data.archive.length, maxArchiveLength]);
 
-  const boardModifiers = Preact.useMemo(() => {
+  const boardModifiers = useMemo(() => {
     return getBoardModifiers(stateManager);
   }, [stateManager]);
 
-  const onMouseOver = Preact.useCallback(
-    (e: MouseEvent) => {
-      const targetEl = e.target as HTMLElement;
-
-      if (targetEl.tagName !== 'A') return;
-
-      if (targetEl.hasClass('internal-link')) {
-        view.app.workspace.trigger('hover-link', {
-          event: e,
-          source: frontMatterKey,
-          hoverParent: view,
-          targetEl,
-          linktext: targetEl.getAttr('href'),
-          sourcePath: view.file.path,
-        });
-      }
-    },
-    [view]
-  );
-
-  const onClick = Preact.useCallback(
-    async (e: MouseEvent) => {
-      if (e.type === 'auxclick' || e.button === 2) {
-        return;
-      }
-
-      const targetEl = e.target as HTMLElement;
-      const closestAnchor =
-        targetEl.tagName === 'A' ? targetEl : targetEl.closest('a');
-
-      if (!closestAnchor) return;
-
-      if (closestAnchor.hasClass('file-link')) {
-        e.preventDefault();
-        const href = closestAnchor.getAttribute('href');
-        const normalizedPath = getNormalizedPath(href);
-        const target =
-          typeof href === 'string' &&
-          view.app.metadataCache.getFirstLinkpathDest(
-            normalizedPath.root,
-            view.file.path
-          );
-
-        if (!target) return;
-
-        (stateManager.app as any).openWithDefaultApp(target.path);
-
-        return;
-      }
-
-      // Open an internal link in a new pane
-      if (closestAnchor.hasClass('internal-link')) {
-        e.preventDefault();
-        const destination = closestAnchor.getAttr('href');
-        const inNewLeaf = e.button === 1 || e.ctrlKey || e.metaKey;
-        const isUnresolved = closestAnchor.hasClass('is-unresolved');
-
-        if (isUnresolved && appHasDailyNotesPluginLoaded()) {
-          const dateFormat = stateManager.getSetting('date-format');
-          const parsed = moment(destination, dateFormat, true);
-
-          if (parsed.isValid()) {
-            try {
-              const dailyNote = await createDailyNote(parsed);
-              const leaf = inNewLeaf
-                ? app.workspace.getLeaf(true)
-                : app.workspace.getLeaf(false);
-
-              await leaf.openFile(dailyNote as TFile, { active: true });
-            } catch (e) {
-              console.error(e);
-              stateManager.setError(e);
-            }
-            return;
-          }
-        }
-
-        stateManager.app.workspace.openLinkText(
-          destination,
-          filePath,
-          inNewLeaf
-        );
-
-        return;
-      }
-
-      // Open a tag search
-      if (closestAnchor.hasClass('tag')) {
-        e.preventDefault();
-        (stateManager.app as any).internalPlugins
-          .getPluginById('global-search')
-          .instance.openGlobalSearch(`tag:${closestAnchor.getAttr('href')}`);
-
-        return;
-      }
-
-      // Open external link
-      if (closestAnchor.hasClass('external-link')) {
-        e.preventDefault();
-        window.open(closestAnchor.getAttr('href'), '_blank');
-      }
-    },
-    [stateManager, filePath]
-  );
-
-  const kanbanContext = Preact.useMemo(() => {
+  const kanbanContext = useMemo(() => {
     return {
       view,
       stateManager,
@@ -295,16 +181,17 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     );
   }
 
+  const axis = boardView === 'list' ? 'vertical' : 'horizontal';
+
+  const searchHits = useMemo(
+    () => getSearchHits(boardData, debouncedSearchQuery),
+    [boardData, debouncedSearchQuery]
+  );
+
   return (
     <DndScope id={view.id}>
       <KanbanContext.Provider value={kanbanContext}>
-        <SearchContext.Provider
-          value={
-            debouncedSearchQuery
-              ? debouncedSearchQuery.toLocaleLowerCase()
-              : null
-          }
-        >
+        <SearchContext.Provider value={searchHits}>
           <div
             ref={rootRef}
             className={classcat([
@@ -312,13 +199,10 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
               {
                 'something-is-dragging': isAnythingDragging,
               },
+              // TODO
+              ...((boardData.data.frontmatter.cssclass || []) as string[]),
+              ...((boardData.data.frontmatter.cssclasses || []) as string[]),
             ])}
-            onMouseOver={onMouseOver}
-            onPointerDown={onClick}
-            onClick={onClick}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            onAuxClick={onClick}
             {...html5DragHandlers}
           >
             {(isLaneFormVisible || boardData.children.length === 0) && (
@@ -357,28 +241,33 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                 </a>
               </div>
             )}
-            <ScrollContainer
-              id={view.id}
-              className={classcat([
-                c('board'),
-                c('horizontal'),
-                {
-                  'is-adding-lane': isLaneFormVisible,
-                },
-              ])}
-              triggerTypes={boardScrollTiggers}
-            >
-              <div>
-                <Sortable axis="horizontal">
-                  <Lanes lanes={boardData.children} />
-                  <SortPlaceholder
-                    className={c('lane-placeholder')}
-                    accepts={boardAccepts}
-                    index={boardData.children.length}
-                  />
-                </Sortable>
-              </div>
-            </ScrollContainer>
+            {boardView === 'table' ? (
+              <TableView boardData={boardData} stateManager={stateManager} />
+            ) : (
+              <ScrollContainer
+                id={view.id}
+                className={classcat([
+                  c('board'),
+                  {
+                    [c('horizontal')]: boardView !== 'list',
+                    [c('vertical')]: boardView === 'list',
+                    'is-adding-lane': isLaneFormVisible,
+                  },
+                ])}
+                triggerTypes={boardScrollTiggers}
+              >
+                <div>
+                  <Sortable axis={axis}>
+                    <Lanes lanes={boardData.children} collapseDir={axis} />
+                    <SortPlaceholder
+                      accepts={boardAccepts}
+                      className={c('lane-placeholder')}
+                      index={boardData.children.length}
+                    />
+                  </Sortable>
+                </div>
+              </ScrollContainer>
+            )}
           </div>
         </SearchContext.Provider>
       </KanbanContext.Provider>

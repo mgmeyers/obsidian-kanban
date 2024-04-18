@@ -23,15 +23,8 @@ export class DndManager {
     this.scrollEntities = new Map();
     this.onDrop = onDrop;
 
-    this.resizeObserver = new ResizeObserver(
-      debounce(this.handleResize, 100, true)
-    );
-    this.dragManager = new DragManager(
-      win,
-      this.emitter,
-      this.hitboxEntities,
-      this.scrollEntities
-    );
+    this.resizeObserver = new ResizeObserver(debounce(this.handleResize, 100, true));
+    this.dragManager = new DragManager(win, this.emitter, this.hitboxEntities, this.scrollEntities);
   }
 
   destroy() {

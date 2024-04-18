@@ -1,11 +1,12 @@
+/* eslint-disable no-undef */
 module.exports = {
   arrowParens: 'always',
   bracketSpacing: true,
   endOfLine: 'lf',
   htmlWhitespaceSensitivity: 'css',
-  jsxBracketSameLine: false,
+  bracketSameLine: false,
   jsxSingleQuote: false,
-  printWidth: 80,
+  printWidth: 100,
   proseWrap: 'preserve',
   quoteProps: 'as-needed',
   semi: true,
@@ -13,4 +14,8 @@ module.exports = {
   tabWidth: 2,
   trailingComma: 'es5',
   useTabs: false,
-}
+  importOrder: ['^[./]'],
+  importOrderSeparation: true,
+  importOrderSortSpecifiers: true,
+  plugins: ['@trivago/prettier-plugin-sort-imports'],
+};

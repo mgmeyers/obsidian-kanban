@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Uzbek locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,31 +13,10 @@ const fp =
 export const Uzbek: CustomLocale = {
   weekdays: {
     shorthand: ['Якш', 'Душ', 'Сеш', 'Чор', 'Пай', 'Жум', 'Шан'],
-    longhand: [
-      'Якшанба',
-      'Душанба',
-      'Сешанба',
-      'Чоршанба',
-      'Пайшанба',
-      'Жума',
-      'Шанба',
-    ],
+    longhand: ['Якшанба', 'Душанба', 'Сешанба', 'Чоршанба', 'Пайшанба', 'Жума', 'Шанба'],
   },
   months: {
-    shorthand: [
-      'Янв',
-      'Фев',
-      'Мар',
-      'Апр',
-      'Май',
-      'Июн',
-      'Июл',
-      'Авг',
-      'Сен',
-      'Окт',
-      'Ноя',
-      'Дек',
-    ],
+    shorthand: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
     longhand: [
       'Январ',
       'Феврал',

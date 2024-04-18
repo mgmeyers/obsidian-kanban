@@ -1,12 +1,8 @@
+import { RefObject } from 'preact/compat';
 import { generateInstanceId } from 'src/components/helpers';
 
-import {
-  Entity,
-  EntityData,
-  Path,
-  initialScrollShift,
-  initialScrollState,
-} from '../types';
+import { Entity, EntityData, Path, initialScrollShift, initialScrollState } from '../types';
+import { Emitter, createEmitter } from '../util/emitter';
 import { getParentWindow } from '../util/getWindow';
 import { adjustHitbox, calculateHitbox, emptyDomRect } from '../util/hitbox';
 import { DndManager } from './DndManager';
@@ -29,11 +25,13 @@ export class EntityManager {
   scrollParent: ScrollManager | null;
   sortManager: SortManager | null;
   isVisible: boolean = false;
+  mounted: boolean = false;
 
   id: string;
   instanceId: string;
   entityId: string;
   scopeId: string;
+  emitter: Emitter;
 
   constructor(
     dndManager: DndManager,
@@ -43,40 +41,25 @@ export class EntityManager {
     parent: EntityManager | null,
     scrollParent: ScrollManager | null,
     sortManager: SortManager | null,
-    getEntityNode: () => HTMLElement,
-    getMeasureNode: () => HTMLElement,
-    getEntityData: () => EntityData
+    data: RefObject<EntityData>
   ) {
     this.id = id;
     this.instanceId = generateInstanceId();
     this.scopeId = scopeId;
     this.entityId = `${scopeId}-${id}`;
+    this.emitter = createEmitter(true);
 
     this.dndManager = dndManager;
     this.index = index;
     this.children = new Map();
     this.parent = parent;
     this.scrollParent = scrollParent;
-    this.getEntityData = getEntityData;
+    this.getEntityData = () => data.current;
     this.sortManager = sortManager;
-
-    this.pollForNodes(getEntityNode, getMeasureNode);
-  }
-
-  pollForNodes(
-    getEntityNode: () => HTMLElement | null,
-    getMeasureNode: () => HTMLElement | null
-  ) {
-    if (!getEntityNode() || !getMeasureNode()) {
-      this.dndManager.win.requestAnimationFrame(() =>
-        this.pollForNodes(getEntityNode, getMeasureNode)
-      );
-    } else {
-      this.initNodes(getEntityNode(), getMeasureNode());
-    }
   }
 
   initNodes(entityNode: HTMLElement, measureNode: HTMLElement) {
+    this.mounted = true;
     this.entityNode = entityNode;
     this.measureNode = measureNode;
 
@@ -89,51 +72,39 @@ export class EntityManager {
     );
 
     if (this.scrollParent) {
-      this.scrollParent.registerObserverHandler(
-        this.entityId,
-        measureNode,
-        (entry) => {
-          const win = getParentWindow(entry.target);
+      this.scrollParent.registerObserverHandler(this.entityId, measureNode, (entry) => {
+        const win = getParentWindow(entry.target);
 
-          if (entry.isIntersecting) {
-            const entity = this.getEntity(entry.boundingClientRect);
-            this.parent?.children.set(this.entityId, {
-              entity,
-              manager: this,
+        if (entry.isIntersecting) {
+          const entity = this.getEntity(entry.boundingClientRect);
+          this.parent?.children.set(this.entityId, {
+            entity,
+            manager: this,
+          });
+
+          this.dndManager.observeResize(measureNode);
+
+          if (!this.parent || this.parent.isVisible) {
+            this.dndManager.registerHitboxEntity(this.entityId, entity, win);
+            this.children.forEach((child, childId) => {
+              this.dndManager.registerHitboxEntity(childId, child.entity, win);
             });
-
-            this.dndManager.observeResize(measureNode);
-
-            if (!this.parent || this.parent.isVisible) {
-              this.dndManager.registerHitboxEntity(this.entityId, entity, win);
-              this.children.forEach((child, childId) => {
-                this.dndManager.registerHitboxEntity(
-                  childId,
-                  child.entity,
-                  win
-                );
-              });
-              this.setVisibility(true);
-            }
-          } else {
-            this.dndManager.unregisterHitboxEntity(this.entityId, win);
-            this.children.forEach((_, childId) => {
-              this.dndManager.unregisterHitboxEntity(childId, win);
-            });
-            this.parent?.children.delete(this.entityId);
-            this.dndManager.unobserveResize(measureNode);
-            this.setVisibility(false);
+            this.setVisibility(true);
           }
+        } else {
+          this.dndManager.unregisterHitboxEntity(this.entityId, win);
+          this.children.forEach((_, childId) => {
+            this.dndManager.unregisterHitboxEntity(childId, win);
+          });
+          this.parent?.children.delete(this.entityId);
+          this.dndManager.unobserveResize(measureNode);
+          this.setVisibility(false);
         }
-      );
+      });
     } else {
       const entity = this.getEntity(measureNode.getBoundingClientRect());
       this.dndManager.observeResize(measureNode);
-      this.dndManager.registerHitboxEntity(
-        this.entityId,
-        entity,
-        getParentWindow(entityNode)
-      );
+      this.dndManager.registerHitboxEntity(this.entityId, entity, getParentWindow(entityNode));
       this.parent?.children.set(this.entityId, {
         entity,
         manager: this,
@@ -143,6 +114,7 @@ export class EntityManager {
   }
 
   setVisibility(isVisible: boolean) {
+    this.emitter.emit('visibility-change', isVisible);
     this.isVisible = isVisible;
     this.children.forEach((child) => {
       child.manager.setVisibility(isVisible);
@@ -150,17 +122,13 @@ export class EntityManager {
   }
 
   destroy() {
+    if (!this.mounted) return;
+    this.mounted = true;
     this.dndManager.unobserveResize(this.measureNode);
     this.sortManager?.unregisterSortable(this.entityId);
-    this.scrollParent?.unregisterObserverHandler(
-      this.entityId,
-      this.measureNode
-    );
+    this.scrollParent?.unregisterObserverHandler(this.entityId, this.measureNode);
     if (this.entityNode) {
-      this.dndManager.unregisterHitboxEntity(
-        this.entityId,
-        getParentWindow(this.entityNode)
-      );
+      this.dndManager.unregisterHitboxEntity(this.entityId, getParentWindow(this.entityNode));
     }
     this.parent?.children.delete(this.entityId);
   }

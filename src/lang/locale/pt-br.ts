@@ -5,17 +5,14 @@ export default {
   // main.ts
   'Open as Kanban board': 'Abrir como quadro Kanban',
   'Create new board': 'Criar um novo quadro',
-  'Archive completed cards in active board':
-    'Arquivar cartões concluídos no quadro ativo',
-  'Error: current file is not a Kanban board':
-    'Erro: o arquivo atual não é um quadro Kanban',
+  'Archive completed cards in active board': 'Arquivar cartões concluídos no quadro ativo',
+  'Error: current file is not a Kanban board': 'Erro: o arquivo atual não é um quadro Kanban',
   'Convert empty note to Kanban': 'Converter nota vazia em Kanban',
   'Error: cannot create Kanban, the current note is not empty':
     'Erro: não é possível criar o quadro Kanban, a nota atual não está vazia',
   'New Kanban board': 'Novo quadro Kanban',
   'Untitled Kanban': 'Kanban sem título',
-  'Toggle between Kanban and markdown mode':
-    'Alternar entre os modos Kanban e Markdown',
+  'Toggle between Kanban and markdown mode': 'Alternar entre os modos Kanban e Markdown',
 
   // KanbanView.tsx
   'Open as markdown': 'Abrir como markdown',
@@ -65,8 +62,7 @@ export default {
   'Date format': 'Formado da data',
   'This format will be used when saving dates in markdown.':
     'Este formato será usado quando datas forem armazenadas no Markdown.',
-  'For more syntax, refer to':
-    'Para mais informações sobre esta sintaxe, consulte os',
+  'For more syntax, refer to': 'Para mais informações sobre esta sintaxe, consulte os',
   'format reference': 'modelos de formato.',
   'Your current syntax looks like this': 'Sua atual sintaxe está assim',
   'Time format': 'Formato da hora',
@@ -85,8 +81,7 @@ export default {
   'Link dates to daily notes': 'Vincular datas a notas diárias',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     'Ao ativar, as datas serão vinculadas às notas diárias. Ex.: [[2021-04-26]]',
-  'Add date and time to archived cards':
-    'Adicionar data e hora aos cartões arquivados',
+  'Add date and time to archived cards': 'Adicionar data e hora aos cartões arquivados',
   'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     'Quando ativada, a data e a hora atuais serão adicionadas ao início de um cartão quando ele for arquivado. Ex.: - [] 2021-05-14 10:00 Título do meu cartão',
   'Archive date/time separator': 'Separador de data/hora do arquivo',
@@ -143,8 +138,7 @@ export default {
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Insira o título da lista...',
-  'Mark cards in this list as complete':
-    'Marcar os itens nesta lista como concluídos',
+  'Mark cards in this list as complete': 'Marcar os itens nesta lista como concluídos',
   'Add list': 'Adicionar lista',
   'Add a list': 'Adicionar uma lista',
 

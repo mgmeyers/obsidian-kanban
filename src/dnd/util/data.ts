@@ -29,10 +29,7 @@ export function buildUpdateMutation(path: Path, mutation: Spec<Nestable>) {
   return pathedMutation;
 }
 
-export function buildUpdateParentMutation(
-  path: Path,
-  mutation: Spec<Nestable>
-) {
+export function buildUpdateParentMutation(path: Path, mutation: Spec<Nestable>) {
   let pathedMutation: Spec<Nestable> = mutation;
 
   for (let i = path.length - 2; i >= 0; i--) {
@@ -61,13 +58,7 @@ export function buildInsertMutation(
 ) {
   return buildUpdateParentMutation(destination, {
     children: {
-      $splice: [
-        [
-          destination[destination.length - 1] + destinationModifier,
-          0,
-          ...entities,
-        ],
-      ],
+      $splice: [[destination[destination.length - 1] + destinationModifier, 0, ...entities]],
     },
   });
 }
@@ -99,15 +90,10 @@ export function moveEntity(
     : getEntityFromPath(root, source);
   const siblingDirection = getSiblingDirection(source, destination);
 
-  const destinationModifier =
-    siblingDirection === SiblingDirection.After ? -1 : 0;
+  const destinationModifier = siblingDirection === SiblingDirection.After ? -1 : 0;
 
   const removeMutation = buildRemoveMutation(source);
-  const insertMutation = buildInsertMutation(
-    destination,
-    [entity],
-    destinationModifier
-  );
+  const insertMutation = buildInsertMutation(destination, [entity], destinationModifier);
 
   const mutation = merge<Spec<Nestable>>(removeMutation, insertMutation, {
     isMergeableObject: (val) => {
@@ -124,42 +110,22 @@ export function removeEntity(root: Nestable, target: Path) {
   return update(root, buildRemoveMutation(target));
 }
 
-export function insertEntity(
-  root: Nestable,
-  destination: Path,
-  entities: Nestable[]
-) {
+export function insertEntity(root: Nestable, destination: Path, entities: Nestable[]) {
   return update(root, buildInsertMutation(destination, entities));
 }
 
-export function appendEntities(
-  root: Nestable,
-  destination: Path,
-  entities: Nestable[]
-) {
+export function appendEntities(root: Nestable, destination: Path, entities: Nestable[]) {
   return update(root, buildAppendMutation(destination, entities));
 }
 
-export function prependEntities(
-  root: Nestable,
-  destination: Path,
-  entities: Nestable[]
-) {
+export function prependEntities(root: Nestable, destination: Path, entities: Nestable[]) {
   return update(root, buildPrependMutation(destination, entities));
 }
 
-export function updateEntity(
-  root: Nestable,
-  path: Path,
-  mutation: Spec<Nestable>
-) {
+export function updateEntity(root: Nestable, path: Path, mutation: Spec<Nestable>) {
   return update(root, buildUpdateMutation(path, mutation));
 }
 
-export function updateParentEntity(
-  root: Nestable,
-  path: Path,
-  mutation: Spec<Nestable>
-) {
+export function updateParentEntity(root: Nestable, path: Path, mutation: Spec<Nestable>) {
   return update(root, buildUpdateParentMutation(path, mutation));
 }

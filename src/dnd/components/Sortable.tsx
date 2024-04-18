@@ -1,4 +1,4 @@
-import Preact from 'preact/compat';
+import { useContext, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
 import { SortManager } from '../managers/SortManager';
 import { Axis, WithChildren } from '../types';
@@ -9,10 +9,14 @@ interface SortableProps extends WithChildren {
   onSortChange?: (isSorting: boolean) => void;
 }
 
+export function StaticSortable(props: SortableProps) {
+  return <>{props.children}</>;
+}
+
 export function Sortable({ axis, children, onSortChange }: SortableProps) {
-  const dndManager = Preact.useContext(DndManagerContext);
-  const managerRef = Preact.useRef<SortManager>();
-  const sortManager = Preact.useMemo(() => {
+  const dndManager = useContext(DndManagerContext);
+  const managerRef = useRef<SortManager>();
+  const sortManager = useMemo(() => {
     if (dndManager) {
       if (managerRef.current) {
         managerRef.current.destroy();
@@ -28,7 +32,7 @@ export function Sortable({ axis, children, onSortChange }: SortableProps) {
     return null;
   }, [dndManager, axis, onSortChange]);
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     return () => managerRef.current?.destroy();
   }, []);
 
@@ -36,23 +40,16 @@ export function Sortable({ axis, children, onSortChange }: SortableProps) {
     return null;
   }
 
-  return (
-    <SortManagerContext.Provider value={sortManager}>
-      {children}
-    </SortManagerContext.Provider>
-  );
+  return <SortManagerContext.Provider value={sortManager}>{children}</SortManagerContext.Provider>;
 }
 
 export function useIsSorting() {
-  const sortManager = Preact.useContext(SortManagerContext);
-  const [isSorting, setIsSorting] = Preact.useState(false);
+  const sortManager = useContext(SortManagerContext);
+  const [isSorting, setIsSorting] = useState(false);
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     sortManager.addSortNotifier(setIsSorting);
-
-    return () => {
-      sortManager.removeSortNotifier(setIsSorting);
-    };
+    return () => sortManager.removeSortNotifier(setIsSorting);
   }, [sortManager]);
 
   return isSorting;

@@ -1,8 +1,4 @@
-export function toggleClass(
-  elem: HTMLElement,
-  className: string,
-  bool: boolean
-) {
+export function toggleClass(elem: HTMLElement, className: string, bool: boolean) {
   if (bool === true) return elem.classList.add(className);
   elem.classList.remove(className);
 }
@@ -28,13 +24,9 @@ export function clearNode(node: HTMLElement) {
   while (node.firstChild) node.removeChild(node.firstChild);
 }
 
-export function findParent(
-  node: Element,
-  condition: (n: Element) => boolean
-): Element | undefined {
+export function findParent(node: Element, condition: (n: Element) => boolean): Element | undefined {
   if (condition(node)) return node;
-  else if (node.parentNode)
-    return findParent(node.parentNode as Element, condition);
+  else if (node.parentNode) return findParent(node.parentNode as Element, condition);
 
   return undefined; // nothing found
 }
@@ -45,11 +37,7 @@ export function createNumberInput(
   opts?: Record<string, any>
 ) {
   const wrapper = createElement<HTMLDivElement>(doc, 'div', 'numInputWrapper'),
-    numInput = createElement<HTMLInputElement>(
-      doc,
-      'input',
-      'numInput ' + inputClassName
-    ),
+    numInput = createElement<HTMLInputElement>(doc, 'input', 'numInput ' + inputClassName),
     arrowUp = createElement<HTMLSpanElement>(doc, 'span', 'arrowUp'),
     arrowDown = createElement<HTMLSpanElement>(doc, 'span', 'arrowDown');
 
@@ -60,8 +48,7 @@ export function createNumberInput(
     numInput.pattern = '\\d*';
   }
 
-  if (opts !== undefined)
-    for (const key in opts) numInput.setAttribute(key, opts[key]);
+  if (opts !== undefined) for (const key in opts) numInput.setAttribute(key, opts[key]);
 
   wrapper.appendChild(numInput);
   wrapper.appendChild(arrowUp);

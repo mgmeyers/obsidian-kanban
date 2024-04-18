@@ -1,5 +1,4 @@
 import { moment } from 'obsidian';
-
 import { StateManager } from 'src/StateManager';
 
 import l10n from './flatpickr/l10n';

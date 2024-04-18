@@ -1,9 +1,8 @@
 import classcat from 'classcat';
 import { getLinkpath, moment } from 'obsidian';
-import Preact from 'preact/compat';
-
-import { t } from 'src/lang/helpers';
+import { JSX, useMemo } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
+import { t } from 'src/lang/helpers';
 
 import { c } from '../helpers';
 import { DateColorKey, Item } from '../types';
@@ -44,19 +43,14 @@ export function RelativeDate({ item, stateManager }: DateProps) {
     return null;
   }
 
-  const relativeDate = getRelativeDate(
-    item.data.metadata.date,
-    item.data.metadata.time
-  );
+  const relativeDate = getRelativeDate(item.data.metadata.date, item.data.metadata.time);
 
-  return (
-    <span className={c('item-metadata-date-relative')}>{relativeDate}</span>
-  );
+  return <span className={c('item-metadata-date-relative')}>{relativeDate}</span>;
 }
 
 interface DateAndTimeProps {
-  onEditDate?: Preact.JSX.MouseEventHandler<HTMLSpanElement>;
-  onEditTime?: Preact.JSX.MouseEventHandler<HTMLSpanElement>;
+  onEditDate?: JSX.MouseEventHandler<HTMLSpanElement>;
+  onEditTime?: JSX.MouseEventHandler<HTMLSpanElement>;
   filePath: string;
   getDateColor: (date: moment.Moment) => DateColorKey;
 }
@@ -75,7 +69,7 @@ export function DateAndTime({
   const dateDisplayFormat = stateManager.useSetting('date-display-format');
   const shouldLinkDate = stateManager.useSetting('link-date-to-daily-note');
 
-  const dateColor = Preact.useMemo(() => {
+  const dateColor = useMemo(() => {
     if (!item.data.metadata.date) return null;
     return getDateColor(item.data.metadata.date);
   }, [item.data.metadata.date, getDateColor]);
@@ -88,9 +82,7 @@ export function DateAndTime({
 
   const hasTime = !!item.data.metadata.time;
   const dateDisplayStr = item.data.metadata.date.format(dateDisplayFormat);
-  const timeDisplayStr = !hasTime
-    ? null
-    : item.data.metadata.time.format(timeFormat);
+  const timeDisplayStr = !hasTime ? null : item.data.metadata.time.format(timeFormat);
 
   const datePath = dateStr ? getLinkpath(dateStr) : null;
   const isResolved = dateStr
@@ -135,9 +127,7 @@ export function DateAndTime({
     >
       <span
         {...dateProps}
-        className={`${c('item-metadata-date')} ${
-          !shouldLinkDate ? 'is-button' : ''
-        }`}
+        className={`${c('item-metadata-date')} ${!shouldLinkDate ? 'is-button' : ''}`}
       >
         {date}
       </span>{' '}

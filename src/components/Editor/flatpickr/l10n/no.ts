@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Norwegian locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,32 +13,11 @@ const fp =
 export const Norwegian: CustomLocale = {
   weekdays: {
     shorthand: ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'],
-    longhand: [
-      'Søndag',
-      'Mandag',
-      'Tirsdag',
-      'Onsdag',
-      'Torsdag',
-      'Fredag',
-      'Lørdag',
-    ],
+    longhand: ['Søndag', 'Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lørdag'],
   },
 
   months: {
-    shorthand: [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'Mai',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Okt',
-      'Nov',
-      'Des',
-    ],
+    shorthand: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Des'],
     longhand: [
       'Januar',
       'Februar',

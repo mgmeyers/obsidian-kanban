@@ -1,118 +1,104 @@
+import { EditorView, ViewUpdate } from '@codemirror/view';
 import classcat from 'classcat';
-import { getLinkpath } from 'obsidian';
-import Preact from 'preact/compat';
-
+import { Dispatch, StateUpdater, useCallback, useContext, useEffect, useRef } from 'preact/hooks';
 import { laneTitleWithMaxItems } from 'src/helpers';
 
-import { KanbanContext } from '../context';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
+import { StaticMarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
+import { KanbanContext } from '../context';
 import { c } from '../helpers';
-import { MarkdownRenderer } from '../MarkdownRenderer';
+import { EditState, EditingState, isEditing } from '../types';
 
 export interface LaneTitleProps {
-  itemCount: number;
   title: string;
   maxItems?: number;
-  isEditing: boolean;
-  setIsEditing: Preact.StateUpdater<boolean>;
-  onChange: Preact.ChangeEventHandler<HTMLTextAreaElement>;
+  editState: EditState;
+  setEditState: Dispatch<StateUpdater<EditState>>;
+  onChange: (str: string) => void;
+  id: string;
 }
 
-export function LaneTitle({
-  itemCount,
+export function LaneLimitCounter({
   maxItems,
-  isEditing,
-  setIsEditing,
-  title,
-  onChange,
-}: LaneTitleProps) {
-  const { stateManager } = Preact.useContext(KanbanContext);
-  const inputRef = Preact.useRef<HTMLTextAreaElement>();
+  itemCount,
+  editState,
+}: {
+  maxItems: number;
+  itemCount: number;
+  editState: EditState;
+}) {
+  const { stateManager } = useContext(KanbanContext);
   const hideCount = stateManager.getSetting('hide-card-count');
 
-  const onEnter = (e: KeyboardEvent) => {
-    if (!allowNewLine(e, stateManager)) {
-      e.preventDefault();
-      isEditing && setIsEditing(false);
-    }
-  };
-
-  const onSubmit = () => {
-    isEditing && setIsEditing(false);
-  };
-
-  const onEscape = () => {
-    isEditing && setIsEditing(false);
-  };
-
-  Preact.useEffect(() => {
-    if (isEditing && inputRef.current) {
-      const input = inputRef.current;
-
-      inputRef.current.focus();
-      input.selectionStart = input.selectionEnd = input.value.length;
-    }
-  }, [isEditing]);
-
-  const counterClasses = [c('lane-title-count')];
-
-  if (maxItems && maxItems < itemCount) {
-    counterClasses.push('wip-exceeded');
-  }
+  if (hideCount || isEditing(editState)) return null;
 
   return (
-    <>
-      <div className={c('lane-title')}>
-        {isEditing ? (
-          <MarkdownEditor
-            ref={inputRef}
-            className={c('lane-input')}
-            onChange={onChange}
-            onEnter={onEnter}
-            onEscape={onEscape}
-            onSubmit={onSubmit}
-            value={laneTitleWithMaxItems(title, maxItems)}
-          />
-        ) : (
-          <>
-            <div
-              className={c('lane-title-text')}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
+    <div
+      className={classcat([
+        c('lane-title-count'),
+        {
+          'wip-exceeded': maxItems && maxItems < itemCount,
+        },
+      ])}
+    >
+      {itemCount}
+      {maxItems > 0 && (
+        <>
+          <span className={c('lane-title-count-separator')}>/</span>
+          <span className={c('lane-title-count-limit')}>{maxItems}</span>
+        </>
+      )}
+    </div>
+  );
+}
 
-                const internalLinkPath =
-                  e.target instanceof
-                    (e.view as Window & typeof globalThis).HTMLAnchorElement &&
-                  e.target.hasClass('internal-link')
-                    ? e.target.dataset.href
-                    : undefined;
+export function LaneTitle({ maxItems, editState, setEditState, title, onChange }: LaneTitleProps) {
+  const { stateManager } = useContext(KanbanContext);
+  const titleRef = useRef<string | null>(null);
 
-                if (internalLinkPath) {
-                  (stateManager.app.workspace as any).onLinkContextMenu(
-                    e,
-                    getLinkpath(internalLinkPath),
-                    stateManager.file.path
-                  );
-                }
-              }}
-            >
-              <MarkdownRenderer markdownString={title} />
-            </div>
-          </>
-        )}
-      </div>
-      {!isEditing && !hideCount && (
-        <div className={classcat(counterClasses)}>
-          {itemCount}
-          {maxItems > 0 && (
-            <>
-              <span className={c('lane-title-count-separator')}>/</span>
-              <span className={c('lane-title-count-limit')}>{maxItems}</span>
-            </>
-          )}
+  useEffect(() => {
+    if (editState === EditingState.complete) {
+      if (titleRef.current !== null) onChange(titleRef.current);
+      titleRef.current = null;
+    } else if (editState === EditingState.cancel && titleRef.current !== null) {
+      titleRef.current = null;
+    }
+  }, [editState]);
+
+  const onUpdate = useCallback((update: ViewUpdate) => {
+    if (update.docChanged) {
+      titleRef.current = update.state.doc.toString().trim();
+    }
+  }, []);
+  const onEnter = useCallback(
+    (cm: EditorView, mod: boolean, shift: boolean) => {
+      if (!allowNewLine(stateManager, mod, shift)) {
+        setEditState(EditingState.complete);
+        return true;
+      }
+    },
+    [setEditState, stateManager]
+  );
+  const onSubmit = useCallback(() => setEditState(EditingState.complete), [setEditState]);
+  const onEscape = useCallback(() => setEditState(EditingState.cancel), [setEditState]);
+
+  return (
+    <div className={c('lane-title')}>
+      {isEditing(editState) ? (
+        <MarkdownEditor
+          editState={editState}
+          className={c('lane-input')}
+          onChange={onUpdate}
+          onEnter={onEnter}
+          onEscape={onEscape}
+          onSubmit={onSubmit}
+          value={laneTitleWithMaxItems(title, maxItems)}
+        />
+      ) : (
+        <div className={c('lane-title-text')}>
+          <StaticMarkdownRenderer markdownString={title} />
         </div>
       )}
-    </>
+    </div>
   );
 }

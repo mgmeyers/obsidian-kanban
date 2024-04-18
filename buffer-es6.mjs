@@ -236,7 +236,7 @@ var isArray =
  * @license  MIT
  */
 
-var INSPECT_MAX_BYTES = 50;
+export var INSPECT_MAX_BYTES = 50;
 
 /**
  * If `Buffer.TYPED_ARRAY_SUPPORT`:
@@ -261,20 +261,22 @@ var INSPECT_MAX_BYTES = 50;
  * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
  * get the Object implementation, which is slower but behaves correctly.
  */
+const win = typeof window === 'undefined' ? global : window;
 Buffer.TYPED_ARRAY_SUPPORT =
-  window.TYPED_ARRAY_SUPPORT !== undefined ? window.TYPED_ARRAY_SUPPORT : true;
+  win.TYPED_ARRAY_SUPPORT !== undefined ? win.TYPED_ARRAY_SUPPORT : true;
 
 /*
  * Export kMaxLength after typed array support is determined.
  */
-var _kMaxLength = kMaxLength();
+var _kMaxLength = getKMaxLength();
+export const kMaxLength = _kMaxLength;
 
-function kMaxLength() {
+function getKMaxLength() {
   return Buffer.TYPED_ARRAY_SUPPORT ? 0x7fffffff : 0x3fffffff;
 }
 
 function createBuffer(that, length) {
-  if (kMaxLength() < length) {
+  if (getKMaxLength() < length) {
     throw new RangeError('Invalid typed array length');
   }
   if (Buffer.TYPED_ARRAY_SUPPORT) {
@@ -302,7 +304,7 @@ function createBuffer(that, length) {
  * The `Uint8Array` prototype remains unmodified.
  */
 
-function Buffer(arg, encodingOrOffset, length) {
+export function Buffer(arg, encodingOrOffset, length) {
   if (!Buffer.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer)) {
     return new Buffer(arg, encodingOrOffset, length);
   }
@@ -517,18 +519,18 @@ function fromObject(that, obj) {
 function checked(length) {
   // Note: cannot use `length < kMaxLength()` here because that fails when
   // length is NaN (which is otherwise coerced to zero.)
-  if (length >= kMaxLength()) {
+  if (length >= getKMaxLength()) {
     throw new RangeError(
       'Attempt to allocate Buffer larger than maximum ' +
         'size: 0x' +
-        kMaxLength().toString(16) +
+        getKMaxLength().toString(16) +
         ' bytes'
     );
   }
   return length | 0;
 }
 
-function SlowBuffer(length) {
+export function SlowBuffer(length) {
   if (+length != length) {
     // eslint-disable-line eqeqeq
     length = 0;
@@ -2104,7 +2106,7 @@ function isnan(val) {
 // the following is from is-buffer, also by Feross Aboukhadijeh and with same lisence
 // The _isBuffer check is for Safari 5-7 support, because it's missing
 // Object.prototype.constructor. Remove this eventually
-function isBuffer(obj) {
+export function isBuffer(obj) {
   return (
     obj != null && (!!obj._isBuffer || isFastBuffer(obj) || isSlowBuffer(obj))
   );
@@ -2126,11 +2128,3 @@ function isSlowBuffer(obj) {
     isFastBuffer(obj.slice(0, 0))
   );
 }
-
-export {
-  Buffer,
-  INSPECT_MAX_BYTES,
-  SlowBuffer,
-  isBuffer,
-  _kMaxLength as kMaxLength,
-};

@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Romanian locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,32 +13,11 @@ const fp =
 export const Romanian: CustomLocale = {
   weekdays: {
     shorthand: ['Dum', 'Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm'],
-    longhand: [
-      'Duminică',
-      'Luni',
-      'Marți',
-      'Miercuri',
-      'Joi',
-      'Vineri',
-      'Sâmbătă',
-    ],
+    longhand: ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă'],
   },
 
   months: {
-    shorthand: [
-      'Ian',
-      'Feb',
-      'Mar',
-      'Apr',
-      'Mai',
-      'Iun',
-      'Iul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Noi',
-      'Dec',
-    ],
+    shorthand: ['Ian', 'Feb', 'Mar', 'Apr', 'Mai', 'Iun', 'Iul', 'Aug', 'Sep', 'Oct', 'Noi', 'Dec'],
     longhand: [
       'Ianuarie',
       'Februarie',

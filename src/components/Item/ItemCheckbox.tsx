@@ -1,12 +1,11 @@
 import update from 'immutability-helper';
 import Preact from 'preact/compat';
-
-import { Path } from 'src/dnd/types';
 import { StateManager } from 'src/StateManager';
+import { Path } from 'src/dnd/types';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
-import { c } from '../helpers';
 import { Icon } from '../Icon/Icon';
+import { c } from '../helpers';
 import { Item } from '../types';
 
 interface ItemCheckboxProps {
@@ -26,8 +25,7 @@ export const ItemCheckbox = Preact.memo(function ItemCheckbox({
 }: ItemCheckboxProps) {
   const shouldShowCheckbox = stateManager.useSetting('show-checkboxes');
 
-  const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] =
-    Preact.useState(false);
+  const [isCtrlHoveringCheckbox, setIsCtrlHoveringCheckbox] = Preact.useState(false);
   const [isHoveringCheckbox, setIsHoveringCheckbox] = Preact.useState(false);
 
   Preact.useEffect(() => {
@@ -89,8 +87,7 @@ export const ItemCheckbox = Preact.memo(function ItemCheckbox({
           checked={!!item.data.isComplete}
         />
       )}
-      {(isCtrlHoveringCheckbox ||
-        (!shouldShowCheckbox && shouldMarkItemsComplete)) && (
+      {(isCtrlHoveringCheckbox || (!shouldShowCheckbox && shouldMarkItemsComplete)) && (
         <a
           onClick={() => {
             boardModifiers.archiveItem(path);

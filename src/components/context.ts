@@ -1,10 +1,9 @@
-import Preact from 'preact/compat';
-
+import { createContext } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
 
 import { BoardModifiers } from '../helpers/boardModifiers';
-import { DateColorKey, TagColorKey } from './types';
+import { DateColorKey, Item, Lane, TagColorKey } from './types';
 
 export interface KanbanContextProps {
   filePath?: string;
@@ -15,5 +14,12 @@ export interface KanbanContextProps {
   getDateColor: (date: moment.Moment) => DateColorKey;
 }
 
-export const KanbanContext = Preact.createContext<KanbanContextProps>(null);
-export const SearchContext = Preact.createContext<string | null>(null);
+export const KanbanContext = createContext<KanbanContextProps>(null);
+
+export interface SearchContextProps {
+  query: string;
+  items: Set<Item>;
+  lanes: Set<Lane>;
+}
+
+export const SearchContext = createContext<SearchContextProps | null>(null);

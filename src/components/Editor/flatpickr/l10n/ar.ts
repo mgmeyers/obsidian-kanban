@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Arabic locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,15 +13,7 @@ const fp =
 export const Arabic: CustomLocale = {
   weekdays: {
     shorthand: ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'],
-    longhand: [
-      'الأحد',
-      'الاثنين',
-      'الثلاثاء',
-      'الأربعاء',
-      'الخميس',
-      'الجمعة',
-      'السبت',
-    ],
+    longhand: ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
   },
 
   months: {

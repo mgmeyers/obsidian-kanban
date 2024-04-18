@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Macedonian locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,32 +13,11 @@ const fp =
 export const Macedonian: CustomLocale = {
   weekdays: {
     shorthand: ['Не', 'По', 'Вт', 'Ср', 'Че', 'Пе', 'Са'],
-    longhand: [
-      'Недела',
-      'Понеделник',
-      'Вторник',
-      'Среда',
-      'Четврток',
-      'Петок',
-      'Сабота',
-    ],
+    longhand: ['Недела', 'Понеделник', 'Вторник', 'Среда', 'Четврток', 'Петок', 'Сабота'],
   },
 
   months: {
-    shorthand: [
-      'Јан',
-      'Фев',
-      'Мар',
-      'Апр',
-      'Мај',
-      'Јун',
-      'Јул',
-      'Авг',
-      'Сеп',
-      'Окт',
-      'Ное',
-      'Дек',
-    ],
+    shorthand: ['Јан', 'Фев', 'Мар', 'Апр', 'Мај', 'Јун', 'Јул', 'Авг', 'Сеп', 'Окт', 'Ное', 'Дек'],
     longhand: [
       'Јануари',
       'Февруари',

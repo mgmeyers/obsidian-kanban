@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Estonian locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,15 +13,7 @@ const fp =
 export const Estonian: CustomLocale = {
   weekdays: {
     shorthand: ['P', 'E', 'T', 'K', 'N', 'R', 'L'],
-    longhand: [
-      'Pühapäev',
-      'Esmaspäev',
-      'Teisipäev',
-      'Kolmapäev',
-      'Neljapäev',
-      'Reede',
-      'Laupäev',
-    ],
+    longhand: ['Pühapäev', 'Esmaspäev', 'Teisipäev', 'Kolmapäev', 'Neljapäev', 'Reede', 'Laupäev'],
   },
 
   months: {

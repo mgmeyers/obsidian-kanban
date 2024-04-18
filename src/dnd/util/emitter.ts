@@ -12,18 +12,8 @@ export interface Unsubscribe {
 
 export interface Emitter<Events extends EventsMap = DefaultEvents> {
   events: Partial<{ [E in keyof Events]: Array<Events[E]> }>;
-  on<K extends keyof Events>(
-    this: this,
-    event: K,
-    cb: Events[K],
-    id?: string
-  ): Unsubscribe;
-  off<K extends keyof Events>(
-    this: this,
-    event: K,
-    cb: Events[K],
-    id?: string
-  ): void;
+  on<K extends keyof Events>(this: this, event: K, cb: Events[K], id?: string): Unsubscribe;
+  off<K extends keyof Events>(this: this, event: K, cb: Events[K], id?: string): void;
   emit<K extends keyof Events>(
     this: this,
     event: K,
@@ -32,9 +22,9 @@ export interface Emitter<Events extends EventsMap = DefaultEvents> {
   ): void;
 }
 
-export function createEmitter<
-  Events extends EventsMap = DefaultEvents
->(): Emitter<Events> {
+export function createEmitter<Events extends EventsMap = DefaultEvents>(
+  allowUnhandled?: boolean
+): Emitter<Events> {
   return {
     events: {},
 
@@ -45,7 +35,7 @@ export function createEmitter<
       const scopedHandlers = this.events[scopedKey];
 
       if (!globalHandlers && !scopedHandlers) {
-        console.warn('Event emitted with no handler', event, id);
+        if (!allowUnhandled) console.warn('Event emitted with no handler', event, id);
         return;
       }
 

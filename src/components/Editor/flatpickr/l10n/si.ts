@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Sinhala locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,15 +13,7 @@ const fp =
 export const Sinhala: CustomLocale = {
   weekdays: {
     shorthand: ['ඉ', 'ස', 'අ', 'බ', 'බ්‍ර', 'සි', 'සෙ'],
-    longhand: [
-      'ඉරිදා',
-      'සඳුදා',
-      'අඟහරුවාදා',
-      'බදාදා',
-      'බ්‍රහස්පතින්දා',
-      'සිකුරාදා',
-      'සෙනසුරාදා',
-    ],
+    longhand: ['ඉරිදා', 'සඳුදා', 'අඟහරුවාදා', 'බදාදා', 'බ්‍රහස්පතින්දා', 'සිකුරාදා', 'සෙනසුරාදා'],
   },
 
   months: {

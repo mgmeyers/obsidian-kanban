@@ -1,42 +1,39 @@
 import Preact from 'preact/compat';
-
+import { Dispatch, StateUpdater } from 'preact/hooks';
 import { t } from 'src/lang/helpers';
 
-import { c } from '../helpers';
 import { Icon } from '../Icon/Icon';
+import { c } from '../helpers';
+import { EditState, EditingState, isEditing } from '../types';
 
 interface ItemMenuButtonProps {
-  isEditing: boolean;
-  setIsEditing: Preact.StateUpdater<boolean>;
+  editState: EditState;
+  setEditState: Dispatch<StateUpdater<EditState>>;
   showMenu: (e: MouseEvent, internalLinkPath?: string) => void;
 }
 
 export const ItemMenuButton = Preact.memo(function ItemMenuButton({
-  isEditing,
-  setIsEditing,
+  editState,
+  setEditState,
   showMenu,
 }: ItemMenuButtonProps) {
   const ignoreAttr = Preact.useMemo(() => {
-    if (isEditing) {
+    if (editState) {
       return {
         'data-ignore-drag': true,
       };
     }
 
     return {};
-  }, [isEditing]);
+  }, [editState]);
 
   return (
     <div {...ignoreAttr} className={c('item-postfix-button-wrapper')}>
-      {isEditing ? (
+      {isEditing(editState) ? (
         <a
           data-ignore-drag={true}
-          onPointerDown={(e) => {
-            e.preventDefault();
-          }}
-          onClick={() => {
-            setIsEditing(false);
-          }}
+          onPointerDown={(e) => e.preventDefault()}
+          onClick={() => setEditState(EditingState.cancel)}
           className={`${c('item-postfix-button')} is-enabled clickable-icon`}
           aria-label={t('Cancel')}
         >

@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Kazakh locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,31 +13,10 @@ const fp =
 export const Kazakh: CustomLocale = {
   weekdays: {
     shorthand: ['Жс', 'Дс', 'Сc', 'Ср', 'Бс', 'Жм', 'Сб'],
-    longhand: [
-      'Жексенбi',
-      'Дүйсенбi',
-      'Сейсенбi',
-      'Сәрсенбi',
-      'Бейсенбi',
-      'Жұма',
-      'Сенбi',
-    ],
+    longhand: ['Жексенбi', 'Дүйсенбi', 'Сейсенбi', 'Сәрсенбi', 'Бейсенбi', 'Жұма', 'Сенбi'],
   },
   months: {
-    shorthand: [
-      'Қаң',
-      'Ақп',
-      'Нау',
-      'Сәу',
-      'Мам',
-      'Мау',
-      'Шiл',
-      'Там',
-      'Қыр',
-      'Қаз',
-      'Қар',
-      'Жел',
-    ],
+    shorthand: ['Қаң', 'Ақп', 'Нау', 'Сәу', 'Мам', 'Мау', 'Шiл', 'Там', 'Қыр', 'Қаз', 'Қар', 'Жел'],
     longhand: [
       'Қаңтар',
       'Ақпан',

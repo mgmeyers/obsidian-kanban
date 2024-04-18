@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Slovenian locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,32 +13,11 @@ const fp =
 export const Slovenian: CustomLocale = {
   weekdays: {
     shorthand: ['Ned', 'Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob'],
-    longhand: [
-      'Nedelja',
-      'Ponedeljek',
-      'Torek',
-      'Sreda',
-      'Četrtek',
-      'Petek',
-      'Sobota',
-    ],
+    longhand: ['Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Četrtek', 'Petek', 'Sobota'],
   },
 
   months: {
-    shorthand: [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'Maj',
-      'Jun',
-      'Jul',
-      'Avg',
-      'Sep',
-      'Okt',
-      'Nov',
-      'Dec',
-    ],
+    shorthand: ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Avg', 'Sep', 'Okt', 'Nov', 'Dec'],
     longhand: [
       'Januar',
       'Februar',

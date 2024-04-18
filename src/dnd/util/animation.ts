@@ -81,9 +81,7 @@ export const isEqual = (point1: Coordinates, point2: Coordinates): boolean =>
 export const origin: Coordinates = { x: 0, y: 0 };
 
 const moveTo = (offset: Coordinates): string | undefined =>
-  isEqual(offset, origin)
-    ? undefined
-    : `translate(${offset.x}px, ${offset.y}px)`;
+  isEqual(offset, origin) ? undefined : `translate(${offset.x}px, ${offset.y}px)`;
 
 export const transforms = {
   moveTo,
@@ -125,9 +123,7 @@ export function getDropDuration({
   const percentage: number = distance / maxDropTimeAtDistance;
   const duration: number = timings.minDropTime + dropTimeRange * percentage;
 
-  const withDuration: number = isCancel
-    ? duration * cancelDropModifier
-    : duration;
+  const withDuration: number = isCancel ? duration * cancelDropModifier : duration;
 
   return Math.round(withDuration);
 }

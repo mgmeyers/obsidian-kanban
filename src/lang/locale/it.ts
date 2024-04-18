@@ -4,10 +4,8 @@ export default {
   // main.ts
   'Open as kanban board': 'Apri come bacheca Kanban',
   'Create new board': 'Crea nuova bacheca',
-  'Archive completed cards in active board':
-    'Archivia schede completate nella bacheca attiva',
-  'Error: current file is not a Kanban board':
-    'Errore: il file corrente non è una bacheca Kanban',
+  'Archive completed cards in active board': 'Archivia schede completate nella bacheca attiva',
+  'Error: current file is not a Kanban board': 'Errore: il file corrente non è una bacheca Kanban',
   'Convert empty note to Kanban': 'Converti nota vuota in Kanban',
   'Error: cannot create Kanban, the current note is not empty':
     'Errore: Impossibile creare Kanban, la nota corrente non è vuota',
@@ -81,8 +79,7 @@ export default {
   'Link dates to daily notes': 'Collega date alle Note del giorno',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     'Se attiva, le date verranno collegate alle Note del giorno. Eg. [[2021-04-26]]',
-  'Add date and time to archived cards':
-    'Aggiungi data e ora alle schede archiviate',
+  'Add date and time to archived cards': 'Aggiungi data e ora alle schede archiviate',
   'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     "Se attiva, la data e l'ora corrente verranno aggiunte all'inizio della scheda quando viene archiviata. Eg. - [ ] 2021-05-14 10:00am Mia scheda",
   'Archive date/time separator': "Separatore data/ora dell'archivio",
@@ -121,8 +118,7 @@ export default {
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Inserisci titolo lista...',
-  'Mark cards in this list as complete':
-    'Segna elementi della lista come completati',
+  'Mark cards in this list as complete': 'Segna elementi della lista come completati',
   'Add list': 'Aggiungi lista',
   'Add a list': "Aggiungi un'altra lista",
 

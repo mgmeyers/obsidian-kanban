@@ -6,15 +6,10 @@ export interface FileAccessor {
   stats?: Stat;
 }
 
-export function markRangeForDeletion(
-  str: string,
-  range: { start: number; end: number }
-): string {
+export function markRangeForDeletion(str: string, range: { start: number; end: number }): string {
   const len = range.end - range.start;
 
-  return (
-    str.slice(0, range.start) + '\u0000'.repeat(len) + str.slice(range.end)
-  );
+  return str.slice(0, range.start) + '\u0000'.repeat(len) + str.slice(range.end);
 }
 
 export function executeDeletion(str: string) {
@@ -22,11 +17,20 @@ export function executeDeletion(str: string) {
 }
 
 export function replaceNewLines(str: string) {
-  return str.trim().replace(/(\r\n|\n)/g, '<br>');
+  return str.trim().replace(/(?:\r\n|\n)/g, '<br>');
 }
 
 export function replaceBrs(str: string) {
   return str.replace(/<br>/g, '\n').trim();
+}
+
+export function indentNewLines(str: string) {
+  const useTab = (app.vault as any).getConfig('useTab');
+  return str.trim().replace(/(?:\r\n|\n)/g, useTab ? '\n\t' : '\n    ');
+}
+
+export function dedentNewLines(str: string) {
+  return str.trim().replace(/(?:\r\n|\n)(?: {4}|\t)/g, '\n');
 }
 
 export function parseLaneTitle(str: string) {

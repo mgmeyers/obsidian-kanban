@@ -1,110 +1,50 @@
-import { moment } from 'obsidian';
-import Preact from 'preact';
-
-import { getParentWindow } from 'src/dnd/util/getWindow';
-import { buildLinkToDailyNote } from 'src/helpers';
+import { EditorSuggestContext, moment } from 'obsidian';
 import { StateManager } from 'src/StateManager';
+import { buildLinkToDailyNote } from 'src/helpers';
 
-import { escapeRegExpStr } from '../helpers';
-import { buildTimeArray } from '../Item/helpers';
 import { getDefaultLocale } from './datePickerLocale';
 import flatpickr from './flatpickr';
 import { Instance } from './flatpickr/types/instance';
-import { replaceSelection } from './helpers';
-import { CursorOffset, StrategyProps } from './textcomplete/textcomplete-core';
 
-export function applyDate(
-  date: Date,
-  inputRef: Preact.RefObject<HTMLTextAreaElement>,
-  stateManager: StateManager
-) {
+export function applyDate(ctx: EditorSuggestContext, stateManager: StateManager, date: Date) {
   const dateFormat = stateManager.getSetting('date-format');
+  const dateTrigger = stateManager.getSetting('date-trigger');
   const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
 
   const formattedDate = moment(date).format(dateFormat);
   const wrappedDate = shouldLinkDates
     ? buildLinkToDailyNote(stateManager.app, formattedDate)
-    : `{${formattedDate}}`;
+    : `{${formattedDate}} `;
 
-  replaceSelection(inputRef.current, wrappedDate);
+  const start = { line: ctx.start.line, ch: ctx.start.ch + dateTrigger.length };
 
-  inputRef.current.focus();
+  ctx.editor.replaceRange(wrappedDate, start, ctx.end);
+  ctx.editor.setCursor({
+    line: start.line,
+    ch: start.ch + wrappedDate.length,
+  });
+  ctx.editor.focus();
 }
 
-export interface ConstructDatePickerParams {
-  div: HTMLElement;
-  inputRef: Preact.RefObject<HTMLTextAreaElement>;
-  cb: (picker: Instance) => void;
-  stateManager: StateManager;
-}
-
-export function constructDatePicker({
-  div,
-  inputRef,
-  cb,
-  stateManager,
-}: ConstructDatePickerParams) {
+export function constructDatePicker(
+  ctx: EditorSuggestContext,
+  stateManager: StateManager,
+  div: HTMLElement,
+  cb: (picker: Instance) => void
+) {
   div.createEl('input', { type: 'text' }, (input) => {
     div.win.setTimeout(() =>
       cb(
         flatpickr(input, {
-          now: new Date(),
-          locale: getDefaultLocale(stateManager),
-          inline: true,
-          onChange: (dates) => {
-            applyDate(dates[0], inputRef, stateManager);
-          },
           win: input.win,
+          now: new Date(),
+          inline: true,
+          locale: getDefaultLocale(stateManager),
+          onChange: (dates) => applyDate(ctx, stateManager, dates[0]),
         })
       )
     );
   });
-}
-
-export function ensureDatePickerIsOnScreen(
-  position: CursorOffset,
-  div: HTMLElement
-) {
-  const height = div.clientHeight;
-  const width = div.clientWidth;
-  const window = getParentWindow(div);
-
-  if (position.top + height > window.innerHeight) {
-    div.style.top = `${(position.clientTop || 0) - height}px`;
-  }
-
-  if (position.left + width > window.innerWidth) {
-    div.style.left = `${(position.left || 0) - width}px`;
-  }
-}
-
-export function getTimePickerConfig(
-  stateManager: StateManager
-): StrategyProps<string> {
-  const timeTrigger = stateManager.getSetting('time-trigger');
-  const timeTriggerRegex = new RegExp(
-    `\\B${escapeRegExpStr(timeTrigger as string)}{?([^}]*)$`
-  );
-  const times = buildTimeArray(stateManager);
-
-  return {
-    id: 'time',
-    match: timeTriggerRegex,
-    index: 1,
-    search: (term: string, callback: (results: string[]) => void) => {
-      if (!term) {
-        callback(times);
-      } else {
-        callback(times.filter((t) => t.startsWith(term)));
-      }
-    },
-    template: (result: string) => {
-      return result;
-    },
-    replace: (result: string): string => {
-      return `${timeTrigger}{${result}} `;
-    },
-  };
 }
 
 export function toPreviousMonth(date: moment.Moment) {

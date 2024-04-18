@@ -3,24 +3,24 @@ import {
   HoverParent,
   HoverPopover,
   Menu,
+  Platform,
   TFile,
   TextFileView,
   WorkspaceLeaf,
 } from 'obsidian';
+import PQueue from 'p-queue';
 
-import { c } from './components/helpers';
+import { KanbanFormat, SettingsModal } from './Settings';
 import { Kanban } from './components/Kanban';
+import { MarkdownRenderer } from './components/MarkdownRenderer/MarkdownRenderer';
+import { c } from './components/helpers';
 import { Board } from './components/types';
 import { Emitter, createEmitter } from './dnd/util/emitter';
 import { getParentWindow } from './dnd/util/getWindow';
-import {
-  gotoNextDailyNote,
-  gotoPrevDailyNote,
-  hasFrontmatterKeyRaw,
-} from './helpers';
+import { gotoNextDailyNote, gotoPrevDailyNote, hasFrontmatterKeyRaw } from './helpers';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
-import { SettingsModal } from './Settings';
+import { frontmatterKey } from './parsers/common';
 
 export const kanbanViewType = 'kanban';
 export const kanbanIcon = 'lucide-trello';
@@ -36,10 +36,22 @@ export class KanbanView extends TextFileView implements HoverParent {
   emitter: Emitter<ViewEvents>;
   actionButtons: Record<string, HTMLElement> = {};
 
+  previewCache: Map<string, MarkdownRenderer>;
+  previewQueue: PQueue;
+
   constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
     super(leaf);
     this.plugin = plugin;
     this.emitter = createEmitter();
+    this.previewCache = new Map();
+    this.previewQueue = new PQueue({
+      autoStart: true,
+      concurrency: 100,
+    });
+
+    this.previewQueue.on('error', (...args) => {
+      console.error('Error processing Kanban render queue', ...args);
+    });
 
     this.emitter.on('hotkey', (commmandId) => {
       switch (commmandId) {
@@ -62,6 +74,23 @@ export class KanbanView extends TextFileView implements HoverParent {
     );
   }
 
+  validatePreviewCache(board: Board) {
+    const seenKeys = new Set<string>();
+    board.children.forEach((lane) => {
+      seenKeys.add(lane.id);
+      lane.children.forEach((item) => {
+        seenKeys.add(item.id);
+      });
+    });
+
+    for (const k of this.previewCache.keys()) {
+      if (!seenKeys.has(k)) {
+        this.removeChild(this.previewCache.get(k));
+        this.previewCache.delete(k);
+      }
+    }
+  }
+
   get isPrimary(): boolean {
     return this.plugin.getStateManager(this.file)?.getAView() === this;
   }
@@ -72,6 +101,12 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   get isShiftPressed(): boolean {
     return this.plugin.isShiftPressed;
+  }
+
+  setView(view: KanbanFormat) {
+    this.app.fileManager.processFrontMatter(this.file, (frontmatter) => {
+      frontmatter[frontmatterKey] = view;
+    });
   }
 
   setBoard(board: Board, shouldSave: boolean = true) {
@@ -115,18 +150,31 @@ export class KanbanView extends TextFileView implements HoverParent {
   destroy() {
     // Remove draggables from render, as the DOM has already detached
     this.plugin.removeView(this);
+    this.previewQueue.clear();
+    this.previewCache.clear();
 
     Object.values(this.actionButtons).forEach((b) => b.remove());
     this.actionButtons = {};
   }
 
-  async onClose() {
+  onload() {
+    super.onload();
+    this.destroy();
+    if (Platform.isMobile) {
+      this.containerEl.setCssProps({
+        '--mobile-navbar-height': (this.app as any).mobileNavbar.containerEl.clientHeight + 'px',
+      });
+    }
+  }
+
+  onunload(): void {
+    super.onunload();
     this.destroy();
   }
 
-  async onUnloadFile(file: TFile) {
+  onUnloadFile(file: TFile) {
     this.destroy();
-    return await super.onUnloadFile(file);
+    return super.onUnloadFile(file);
   }
 
   handleRename(newPath: string, oldPath: string) {
@@ -154,8 +202,7 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   setViewData(data: string, clear?: boolean) {
     if (!hasFrontmatterKeyRaw(data)) {
-      this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] =
-        'markdown';
+      this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] = 'markdown';
       this.plugin.removeView(this);
       this.plugin.setMarkdownView(this.leaf, false);
 
@@ -194,7 +241,6 @@ export class KanbanView extends TextFileView implements HoverParent {
     ).open();
   }
 
-
   onPaneMenu(menu: Menu, source: string, callSuper: boolean = true) {
     if (source !== 'more-options') {
       super.onPaneMenu(menu, source);
@@ -208,9 +254,7 @@ export class KanbanView extends TextFileView implements HoverParent {
           .setIcon('lucide-file-text')
           .setSection('pane')
           .onClick(() => {
-            this.plugin.kanbanFileModes[
-              (this.leaf as any).id || this.file.path
-            ] = 'markdown';
+            this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] = 'markdown';
             this.plugin.setMarkdownView(this.leaf);
           });
       })
@@ -263,21 +307,47 @@ export class KanbanView extends TextFileView implements HoverParent {
       delete this.actionButtons['show-board-settings'];
     }
 
-    if (
-      stateManager.getSetting('show-search') &&
-      !this.actionButtons['show-search']
-    ) {
-      this.actionButtons['show-search'] = this.addAction(
-        'lucide-search',
-        t('Search...'),
-        () => {
-          this.emitter.emit('hotkey', 'editor:open-search');
+    if (stateManager.getSetting('show-set-view') && !this.actionButtons['show-set-view']) {
+      this.actionButtons['show-set-view'] = this.addAction(
+        'lucide-view',
+        t('Board view'),
+        (evt) => {
+          const view = stateManager.getSetting(frontmatterKey);
+          new Menu()
+            .addItem((item) =>
+              item
+                .setTitle(t('View as board'))
+                .setIcon('lucide-trello')
+                .setChecked(view === 'basic' || view === 'board')
+                .onClick(() => this.setView('board'))
+            )
+            .addItem((item) =>
+              item
+                .setTitle(t('View as table'))
+                .setIcon('lucide-table')
+                .setChecked(view === 'table')
+                .onClick(() => this.setView('table'))
+            )
+            .addItem((item) =>
+              item
+                .setTitle(t('View as list'))
+                .setIcon('lucide-server')
+                .setChecked(view === 'list')
+                .onClick(() => this.setView('list'))
+            )
+            .showAtMouseEvent(evt);
         }
       );
-    } else if (
-      !stateManager.getSetting('show-search') &&
-      this.actionButtons['show-search']
-    ) {
+    } else if (!stateManager.getSetting('show-set-view') && this.actionButtons['show-set-view']) {
+      this.actionButtons['show-set-view'].remove();
+      delete this.actionButtons['show-set-view'];
+    }
+
+    if (stateManager.getSetting('show-search') && !this.actionButtons['show-search']) {
+      this.actionButtons['show-search'] = this.addAction('lucide-search', t('Search...'), () => {
+        this.emitter.emit('hotkey', 'editor:open-search');
+      });
+    } else if (!stateManager.getSetting('show-search') && this.actionButtons['show-search']) {
       this.actionButtons['show-search'].remove();
       delete this.actionButtons['show-search'];
     }
@@ -290,8 +360,7 @@ export class KanbanView extends TextFileView implements HoverParent {
         'lucide-file-text',
         t('Open as markdown'),
         () => {
-          this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] =
-            'markdown';
+          this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] = 'markdown';
           this.plugin.setMarkdownView(this.leaf);
         }
       );
@@ -303,10 +372,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       delete this.actionButtons['show-view-as-markdown'];
     }
 
-    if (
-      stateManager.getSetting('show-archive-all') &&
-      !this.actionButtons['show-archive-all']
-    ) {
+    if (stateManager.getSetting('show-archive-all') && !this.actionButtons['show-archive-all']) {
       this.actionButtons['show-archive-all'] = this.addAction(
         'lucide-archive',
         t('Archive completed cards'),
@@ -323,10 +389,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       delete this.actionButtons['show-archive-all'];
     }
 
-    if (
-      stateManager.getSetting('show-add-list') &&
-      !this.actionButtons['show-add-list']
-    ) {
+    if (stateManager.getSetting('show-add-list') && !this.actionButtons['show-add-list']) {
       const btn = this.addAction('lucide-plus-circle', t('Add a list'), () => {
         this.emitter.emit('showLaneForm', undefined);
       });
@@ -334,10 +397,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       btn.addClass(c('ignore-click-outside'));
 
       this.actionButtons['show-add-list'] = btn;
-    } else if (
-      !stateManager.getSetting('show-add-list') &&
-      this.actionButtons['show-add-list']
-    ) {
+    } else if (!stateManager.getSetting('show-add-list') && this.actionButtons['show-add-list']) {
       this.actionButtons['show-add-list'].remove();
       delete this.actionButtons['show-add-list'];
     }

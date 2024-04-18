@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Belarusian locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,31 +13,10 @@ const fp =
 export const Belarusian: CustomLocale = {
   weekdays: {
     shorthand: ['Нд', 'Пн', 'Аў', 'Ср', 'Чц', 'Пт', 'Сб'],
-    longhand: [
-      'Нядзеля',
-      'Панядзелак',
-      'Аўторак',
-      'Серада',
-      'Чацвер',
-      'Пятніца',
-      'Субота',
-    ],
+    longhand: ['Нядзеля', 'Панядзелак', 'Аўторак', 'Серада', 'Чацвер', 'Пятніца', 'Субота'],
   },
   months: {
-    shorthand: [
-      'Сту',
-      'Лют',
-      'Сак',
-      'Кра',
-      'Тра',
-      'Чэр',
-      'Ліп',
-      'Жні',
-      'Вер',
-      'Кас',
-      'Ліс',
-      'Сне',
-    ],
+    shorthand: ['Сту', 'Лют', 'Сак', 'Кра', 'Тра', 'Чэр', 'Ліп', 'Жні', 'Вер', 'Кас', 'Ліс', 'Сне'],
     longhand: [
       'Студзень',
       'Люты',

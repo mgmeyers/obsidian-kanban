@@ -1,14 +1,15 @@
 import { TFile } from 'obsidian';
-
+import { KanbanSettings } from 'src/Settings';
 import { Nestable } from 'src/dnd/types';
 import { FileAccessor } from 'src/parsers/helpers/parser';
-import { KanbanSettings } from 'src/Settings';
 
 export enum LaneSort {
   TitleAsc,
   TitleDsc,
   DateAsc,
   DateDsc,
+  TagsAsc,
+  TagsDsc,
 }
 
 export interface LaneData {
@@ -18,6 +19,7 @@ export interface LaneData {
   dom?: HTMLDivElement;
   forceEditMode?: boolean;
   sorted?: LaneSort;
+  isCollapsed?: boolean;
 }
 
 export interface DataKey {
@@ -75,7 +77,8 @@ export interface ItemData {
   isComplete?: boolean;
   title: string;
   titleRaw: string;
-  titleSearch?: string;
+  titleSearch: string;
+  titleSearchRaw: string;
   metadata: ItemMetaData;
   dom?: HTMLDivElement;
   forceEditMode?: boolean;
@@ -145,3 +148,21 @@ export const DateColorSettingTemplate = {
   type: DataTypes.DateColorSetting,
   children: [] as any[],
 };
+
+export interface EditCoordinates {
+  x: number;
+  y: number;
+}
+
+export enum EditingState {
+  cancel,
+  complete,
+}
+
+export type EditState = EditCoordinates | EditingState;
+
+export function isEditing(state: EditState): state is EditCoordinates {
+  if (state === null) return false;
+  if (typeof state === 'number') return false;
+  return true;
+}

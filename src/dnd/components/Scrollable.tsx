@@ -1,30 +1,23 @@
-import Preact from 'preact/compat';
+import { RefObject, useContext, useMemo, useRef } from 'preact/compat';
+import { useOnMount } from 'src/components/helpers';
 
 import { ScrollManager } from '../managers/ScrollManager';
 import { WithChildren } from '../types';
-import {
-  DndManagerContext,
-  ScopeIdContext,
-  ScrollManagerContext,
-} from './context';
+import { DndManagerContext, ScopeIdContext, ScrollManagerContext } from './context';
 
 interface ScrollContextProps extends WithChildren {
-  scrollRef: Preact.RefObject<HTMLElement | null>;
+  scrollRef: RefObject<HTMLElement | null>;
   triggerTypes?: string[];
 }
 
-export function Scrollable({
-  scrollRef,
-  triggerTypes,
-  children,
-}: ScrollContextProps) {
-  const dndManager = Preact.useContext(DndManagerContext);
-  const scopeId = Preact.useContext(ScopeIdContext);
-  const parentScrollManager = Preact.useContext(ScrollManagerContext);
+export function Scrollable({ scrollRef, triggerTypes, children }: ScrollContextProps) {
+  const dndManager = useContext(DndManagerContext);
+  const scopeId = useContext(ScopeIdContext);
+  const parentScrollManager = useContext(ScrollManagerContext);
 
-  const managerRef = Preact.useRef<ScrollManager>();
+  const managerRef = useRef<ScrollManager>();
 
-  const scrollManager = Preact.useMemo(() => {
+  const scrollManager = useMemo(() => {
     if (dndManager) {
       if (managerRef.current) {
         managerRef.current.destroy();
@@ -34,8 +27,7 @@ export function Scrollable({
         dndManager,
         scopeId,
         triggerTypes || ([] as string[]),
-        parentScrollManager,
-        () => scrollRef.current
+        parentScrollManager
       );
 
       managerRef.current = manager;
@@ -46,17 +38,17 @@ export function Scrollable({
     return null;
   }, [dndManager, scopeId, scrollRef, triggerTypes, parentScrollManager]);
 
-  Preact.useEffect(() => {
-    return () => managerRef.current?.destroy();
-  }, []);
+  useOnMount(
+    [scrollRef],
+    () => managerRef.current?.initNodes(scrollRef.current),
+    () => managerRef.current?.destroy()
+  );
 
   if (!scrollManager) {
     return null;
   }
 
   return (
-    <ScrollManagerContext.Provider value={scrollManager}>
-      {children}
-    </ScrollManagerContext.Provider>
+    <ScrollManagerContext.Provider value={scrollManager}>{children}</ScrollManagerContext.Provider>
   );
 }

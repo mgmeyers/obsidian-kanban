@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Ukrainian locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -14,32 +15,11 @@ export const Ukrainian: CustomLocale = {
 
   weekdays: {
     shorthand: ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
-    longhand: [
-      'Неділя',
-      'Понеділок',
-      'Вівторок',
-      'Середа',
-      'Четвер',
-      "П'ятниця",
-      'Субота',
-    ],
+    longhand: ['Неділя', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота'],
   },
 
   months: {
-    shorthand: [
-      'Січ',
-      'Лют',
-      'Бер',
-      'Кві',
-      'Тра',
-      'Чер',
-      'Лип',
-      'Сер',
-      'Вер',
-      'Жов',
-      'Лис',
-      'Гру',
-    ],
+    shorthand: ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'],
     longhand: [
       'Січень',
       'Лютий',

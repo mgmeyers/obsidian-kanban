@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Japanese locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,15 +13,7 @@ const fp =
 export const Japanese: CustomLocale = {
   weekdays: {
     shorthand: ['日', '月', '火', '水', '木', '金', '土'],
-    longhand: [
-      '日曜日',
-      '月曜日',
-      '火曜日',
-      '水曜日',
-      '木曜日',
-      '金曜日',
-      '土曜日',
-    ],
+    longhand: ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'],
   },
 
   months: {

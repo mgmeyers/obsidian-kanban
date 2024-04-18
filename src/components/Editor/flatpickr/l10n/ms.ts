@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Malaysian locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -16,20 +17,7 @@ export const Malaysian: CustomLocale = {
   },
 
   months: {
-    shorthand: [
-      'Jan',
-      'Feb',
-      'Mac',
-      'Apr',
-      'Mei',
-      'Jun',
-      'Jul',
-      'Ogo',
-      'Sep',
-      'Okt',
-      'Nov',
-      'Dis',
-    ],
+    shorthand: ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis'],
     longhand: [
       'Januari',
       'Februari',

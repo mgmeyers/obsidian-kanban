@@ -29,9 +29,7 @@ export function areSiblings(source: Path, sib: Path): boolean {
 }
 
 export function isSamePath(source: Path, sib: Path): boolean {
-  return (
-    source.length === sib.length && source.every((step, i) => step === sib[i])
-  );
+  return source.length === sib.length && source.every((step, i) => step === sib[i]);
 }
 
 export enum SiblingDirection {

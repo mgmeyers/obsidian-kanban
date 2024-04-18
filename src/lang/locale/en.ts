@@ -4,17 +4,19 @@ export default {
   // main.ts
   'Open as kanban board': 'Open as kanban board',
   'Create new board': 'Create new board',
-  'Archive completed cards in active board':
-    'Archive completed cards in active board',
-  'Error: current file is not a Kanban board':
-    'Error: current file is not a Kanban board',
+  'Archive completed cards in active board': 'Archive completed cards in active board',
+  'Error: current file is not a Kanban board': 'Error: current file is not a Kanban board',
   'Convert empty note to Kanban': 'Convert empty note to Kanban',
   'Error: cannot create Kanban, the current note is not empty':
     'Error: cannot create Kanban, the current note is not empty',
   'New kanban board': 'New kanban board',
   'Untitled Kanban': 'Untitled Kanban',
-  'Toggle between Kanban and markdown mode':
-    'Toggle between Kanban and markdown mode',
+  'Toggle between Kanban and markdown mode': 'Toggle between Kanban and markdown mode',
+
+  'View as board': 'View as board',
+  'View as list': 'View as list',
+  'View as table': 'View as table',
+  'Board view': 'Board view',
 
   // KanbanView.tsx
   'Open as markdown': 'Open as markdown',
@@ -31,8 +33,7 @@ export default {
   Archive: 'Archive',
   'Invalid Kanban file: problems parsing frontmatter':
     'Invalid Kanban file: problems parsing frontmatter',
-  "I don't know how to interpret this line:":
-    "I don't know how to interpret this line:",
+  "I don't know how to interpret this line:": "I don't know how to interpret this line:",
   Untitled: 'Untitled', // auto-created column
 
   // settingHelpers.ts
@@ -66,6 +67,7 @@ export default {
     'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.',
   'Default folder': 'Default folder',
   'List width': 'List width',
+  'Expand lists to full width in list view': 'Expand lists to full width in list view',
   'Enter a number to set the list width in pixels.':
     'Enter a number to set the list width in pixels.',
   'Maximum number of archived cards': 'Maximum number of archived cards',
@@ -110,8 +112,7 @@ export default {
   'Add date and time to archived cards': 'Add date and time to archived cards',
   'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title',
-  'Add archive date/time after card title':
-    'Add archive date/time after card title',
+  'Add archive date/time after card title': 'Add archive date/time after card title',
   'When toggled, the archived date/time will be added after the card title, e.g.- [ ] My card title 2021-05-14 10:00am. By default, it is inserted before the title.':
     'When toggled, the archived date/time will be added after the card title, e.g.- [ ] My card title 2021-05-14 10:00am. By default, it is inserted before the title.',
   'Archive date/time separator': 'Archive date/time separator',
@@ -125,6 +126,11 @@ export default {
   'Hide card display tags': 'Hide card display tags',
   'When toggled, tags will not be displayed below the card title.':
     'When toggled, tags will not be displayed below the card title.',
+  'Tag action': 'Tag action',
+  'Search Kanban Board': 'Search Kanban Board',
+  'Search Obsidian Vault': 'Search Obsidian Vault',
+  'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.':
+    'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.',
   'Display tag colors': 'Display tag colors',
   'Set colors for the tags displayed below the card title.':
     'Set colors for the tags displayed below the card title.',
@@ -167,9 +173,16 @@ export default {
   // TagColorSettings.tsx
   'Add tag color': 'Add tag color',
 
+  // components/Table.tsx
+  List: 'List',
+  Card: 'Card',
+  Date: 'Date',
+  Tags: 'Tags',
+
   // components/Item/Item.tsx
   'More options': 'More options',
   Cancel: 'Cancel',
+  Save: 'Save',
 
   // components/Item/ItemContent.tsx
   today: 'today',
@@ -231,6 +244,7 @@ export default {
   'Insert list after': 'Insert list after',
   'Sort by card text': 'Sort by card text',
   'Sort by date': 'Sort by date',
+  'Sort by tags': 'Sort by tags',
 
   // components/helpers/renderMarkdown.ts
   'Unable to find': 'Unable to find',

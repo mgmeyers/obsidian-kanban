@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Vietnamese locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,15 +13,7 @@ const fp =
 export const Vietnamese: CustomLocale = {
   weekdays: {
     shorthand: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
-    longhand: [
-      'Chủ nhật',
-      'Thứ hai',
-      'Thứ ba',
-      'Thứ tư',
-      'Thứ năm',
-      'Thứ sáu',
-      'Thứ bảy',
-    ],
+    longhand: ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'],
   },
 
   months: {

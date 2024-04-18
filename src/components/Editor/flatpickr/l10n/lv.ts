@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Latvian locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -26,20 +27,7 @@ export const Latvian: CustomLocale = {
   },
 
   months: {
-    shorthand: [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'Mai',
-      'Jūn',
-      'Jūl',
-      'Aug',
-      'Sep',
-      'Okt',
-      'Nov',
-      'Dec',
-    ],
+    shorthand: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jūn', 'Jūl', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'],
     longhand: [
       'Janvāris',
       'Februāris',

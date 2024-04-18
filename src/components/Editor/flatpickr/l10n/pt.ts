@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Portuguese locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -24,20 +25,7 @@ export const Portuguese: CustomLocale = {
   },
 
   months: {
-    shorthand: [
-      'Jan',
-      'Fev',
-      'Mar',
-      'Abr',
-      'Mai',
-      'Jun',
-      'Jul',
-      'Ago',
-      'Set',
-      'Out',
-      'Nov',
-      'Dez',
-    ],
+    shorthand: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
     longhand: [
       'Janeiro',
       'Fevereiro',

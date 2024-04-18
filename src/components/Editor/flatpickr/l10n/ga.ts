@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Gaelic Irish locale for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -26,20 +27,7 @@ export const Irish: CustomLocale = {
   },
 
   months: {
-    shorthand: [
-      'Ean',
-      'Fea',
-      'Már',
-      'Aib',
-      'Bea',
-      'Mei',
-      'Iúi',
-      'Lún',
-      'MFo',
-      'DFo',
-      'Sam',
-      'Nol',
-    ],
+    shorthand: ['Ean', 'Fea', 'Már', 'Aib', 'Bea', 'Mei', 'Iúi', 'Lún', 'MFo', 'DFo', 'Sam', 'Nol'],
     longhand: [
       'Eanáir',
       'Feabhra',

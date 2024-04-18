@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Burmese locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,15 +13,7 @@ const fp =
 export const Burmese: CustomLocale = {
   weekdays: {
     shorthand: ['နွေ', 'လာ', 'ဂါ', 'ဟူး', 'ကြာ', 'သော', 'နေ'],
-    longhand: [
-      'တနင်္ဂနွေ',
-      'တနင်္လာ',
-      'အင်္ဂါ',
-      'ဗုဒ္ဓဟူး',
-      'ကြာသပတေး',
-      'သောကြာ',
-      'စနေ',
-    ],
+    longhand: ['တနင်္ဂနွေ', 'တနင်္လာ', 'အင်္ဂါ', 'ဗုဒ္ဓဟူး', 'ကြာသပတေး', 'သောကြာ', 'စနေ'],
   },
 
   months: {

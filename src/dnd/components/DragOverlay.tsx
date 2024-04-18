@@ -1,5 +1,5 @@
 import { JSX } from 'preact';
-import Preact from 'preact/compat';
+import { CSSProperties, createPortal, useContext, useEffect, useState } from 'preact/compat';
 
 import { DragEventData } from '../managers/DragManager';
 import { Coordinates, Entity, Hitbox } from '../types';
@@ -18,7 +18,7 @@ function getDragOverlayStyles(
   margin: Hitbox,
   transition?: string,
   transform?: string
-): Preact.CSSProperties {
+): CSSProperties {
   const adjustedHitbox = [
     originHitbox[0] - margin[0],
     originHitbox[1] - margin[1],
@@ -39,14 +39,12 @@ function getDragOverlayStyles(
 }
 
 export function DragOverlay({ children }: DragOverlayProps) {
-  const dndManager = Preact.useContext(DndManagerContext);
+  const dndManager = useContext(DndManagerContext);
 
-  const [dragEntity, setDragEntity] = Preact.useState<Entity | undefined>();
-  const [styles, setStyles] = Preact.useState<
-    Preact.CSSProperties | undefined
-  >();
+  const [dragEntity, setDragEntity] = useState<Entity | undefined>();
+  const [styles, setStyles] = useState<CSSProperties | undefined>();
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     if (!dndManager) return;
 
     let dragOriginHitbox: Hitbox = emptyHitbox;
@@ -62,32 +60,14 @@ export function DragOverlay({ children }: DragOverlayProps) {
       }
       dragOriginHitbox = dragEntity.getHitbox();
       setDragEntity(dragEntity);
-      setStyles(
-        getDragOverlayStyles(
-          dragPosition,
-          dragOrigin,
-          dragOriginHitbox,
-          dragEntityMargin
-        )
-      );
+      setStyles(getDragOverlayStyles(dragPosition, dragOrigin, dragOriginHitbox, dragEntityMargin));
     };
 
-    const dragMove = ({
-      dragOrigin,
-      dragPosition,
-      dragEntityMargin,
-    }: DragEventData) => {
+    const dragMove = ({ dragOrigin, dragPosition, dragEntityMargin }: DragEventData) => {
       if (!dragPosition || !dragOrigin) {
         return;
       }
-      setStyles(
-        getDragOverlayStyles(
-          dragPosition,
-          dragOrigin,
-          dragOriginHitbox,
-          dragEntityMargin
-        )
-      );
+      setStyles(getDragOverlayStyles(dragPosition, dragOrigin, dragOriginHitbox, dragEntityMargin));
     };
 
     const dragEnd = ({
@@ -131,14 +111,15 @@ export function DragOverlay({ children }: DragOverlayProps) {
       }
     };
 
-    dndManager.dragManager.emitter.on('dragStart', dragStart);
-    dndManager.dragManager.emitter.on('dragMove', dragMove);
-    dndManager.dragManager.emitter.on('dragEnd', dragEnd);
+    const { emitter } = dndManager.dragManager;
+    emitter.on('dragStart', dragStart);
+    emitter.on('dragMove', dragMove);
+    emitter.on('dragEnd', dragEnd);
 
     return () => {
-      dndManager.dragManager.emitter.off('dragStart', dragStart);
-      dndManager.dragManager.emitter.off('dragMove', dragMove);
-      dndManager.dragManager.emitter.off('dragEnd', dragEnd);
+      emitter.off('dragStart', dragStart);
+      emitter.off('dragMove', dragMove);
+      emitter.off('dragEnd', dragEnd);
     };
   }, [dndManager]);
 
@@ -146,25 +127,16 @@ export function DragOverlay({ children }: DragOverlayProps) {
     return null;
   }
 
-  return Preact.createPortal(
-    children(dragEntity, styles),
-    dragEntity.getData().win.document.body
-  );
+  return createPortal(children(dragEntity, styles), dragEntity.getData().win.document.body);
 }
 
 export function useIsAnythingDragging() {
-  const dndManager = Preact.useContext(DndManagerContext);
-  const [isDragging, setIsDragging] = Preact.useState(false);
+  const dndManager = useContext(DndManagerContext);
+  const [isDragging, setIsDragging] = useState(false);
 
-  Preact.useEffect(() => {
-    const onDragStart = () => {
-      setIsDragging(true);
-    };
-
-    const onDragEnd = ({
-      primaryIntersection,
-      dragPosition,
-    }: DragEventData) => {
+  useEffect(() => {
+    const onDragStart = () => setIsDragging(true);
+    const onDragEnd = ({ primaryIntersection, dragPosition }: DragEventData) => {
       const dropHitbox = primaryIntersection?.getHitbox() || [0, 0];
       const dropDestination = {
         x: dropHitbox[0],
@@ -175,17 +147,17 @@ export function useIsAnythingDragging() {
         destination: dropDestination,
       });
 
-      activeWindow.setTimeout(() => {
-        setIsDragging(false);
-      }, dropDuration);
+      activeWindow.setTimeout(() => setIsDragging(false), dropDuration);
     };
 
-    dndManager.dragManager.emitter.on('dragStart', onDragStart);
-    dndManager.dragManager.emitter.on('dragEnd', onDragEnd);
+    const { emitter } = dndManager.dragManager;
+
+    emitter.on('dragStart', onDragStart);
+    emitter.on('dragEnd', onDragEnd);
 
     return () => {
-      dndManager.dragManager.emitter.off('dragStart', onDragStart);
-      dndManager.dragManager.emitter.off('dragEnd', onDragEnd);
+      emitter.off('dragStart', onDragStart);
+      emitter.off('dragEnd', onDragEnd);
     };
   }, [dndManager]);
 

@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Bulgarian locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,15 +13,7 @@ const fp =
 export const Bulgarian: CustomLocale = {
   weekdays: {
     shorthand: ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
-    longhand: [
-      'Неделя',
-      'Понеделник',
-      'Вторник',
-      'Сряда',
-      'Четвъртък',
-      'Петък',
-      'Събота',
-    ],
+    longhand: ['Неделя', 'Понеделник', 'Вторник', 'Сряда', 'Четвъртък', 'Петък', 'Събота'],
   },
 
   months: {

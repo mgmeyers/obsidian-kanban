@@ -1,24 +1,30 @@
-import Preact from 'preact/compat';
+import { RefObject, memo, useContext, useMemo, useRef } from 'preact/compat';
+import { useOnMount } from 'src/components/helpers';
 
 import { EntityManager } from '../managers/EntityManager';
 import { EntityData, WithChildren } from '../types';
 import {
   DndManagerContext,
   EntityManagerContext,
+  ExplicitPathContext,
   ScopeIdContext,
   ScrollManagerContext,
   SortManagerContext,
 } from './context';
 
-interface DraggableProps extends WithChildren {
+export interface DraggableProps extends WithChildren {
   id: string;
   index: number;
-  elementRef: Preact.RefObject<HTMLElement | null>;
-  measureRef: Preact.RefObject<HTMLElement | null>;
+  elementRef: RefObject<HTMLElement | null>;
+  measureRef: RefObject<HTMLElement | null>;
   data: EntityData;
 }
 
-export const Droppable = Preact.memo(function Droppable({
+export function StaticDroppable(props: DraggableProps) {
+  return <>{props.children}</>;
+}
+
+export const Droppable = memo(function Droppable({
   id,
   index,
   elementRef,
@@ -26,17 +32,17 @@ export const Droppable = Preact.memo(function Droppable({
   children,
   data,
 }: DraggableProps) {
-  const dndManager = Preact.useContext(DndManagerContext);
-  const sortManager = Preact.useContext(SortManagerContext);
-  const scopeId = Preact.useContext(ScopeIdContext);
-  const parentEntityManager = Preact.useContext(EntityManagerContext);
-  const parentScrollManager = Preact.useContext(ScrollManagerContext);
-  const dataRef = Preact.useRef(data);
-  const managerRef = Preact.useRef<EntityManager>();
+  const dndManager = useContext(DndManagerContext);
+  const sortManager = useContext(SortManagerContext);
+  const scopeId = useContext(ScopeIdContext);
+  const parentEntityManager = useContext(EntityManagerContext);
+  const parentScrollManager = useContext(ScrollManagerContext);
+  const dataRef = useRef(data);
+  const managerRef = useRef<EntityManager>();
 
   dataRef.current = data;
 
-  const entityManager = Preact.useMemo(() => {
+  const entityManager = useMemo(() => {
     if (dndManager) {
       if (managerRef.current) {
         managerRef.current.destroy();
@@ -50,10 +56,12 @@ export const Droppable = Preact.memo(function Droppable({
         parentEntityManager,
         parentScrollManager,
         sortManager,
-        () => elementRef.current,
-        () => measureRef.current,
-        () => dataRef.current
+        dataRef
       );
+
+      if (elementRef.current && measureRef.current) {
+        manager.initNodes(elementRef.current, measureRef.current);
+      }
 
       managerRef.current = manager;
 
@@ -73,28 +81,33 @@ export const Droppable = Preact.memo(function Droppable({
     sortManager,
   ]);
 
-  Preact.useEffect(() => {
-    return () => managerRef.current?.destroy();
-  }, []);
+  useOnMount(
+    [elementRef, measureRef],
+    () => {
+      managerRef.current?.initNodes(elementRef.current, measureRef.current);
+    },
+    () => {
+      managerRef.current?.destroy();
+    }
+  );
 
   if (!entityManager) {
     return null;
   }
 
   return (
-    <EntityManagerContext.Provider value={entityManager}>
-      {children}
-    </EntityManagerContext.Provider>
+    <EntityManagerContext.Provider value={entityManager}>{children}</EntityManagerContext.Provider>
   );
 });
 
 export function useNestedEntityPath(selfIndex?: number) {
-  const entityManager = Preact.useContext(EntityManagerContext);
-  const currentPath = entityManager?.getPath() || [];
+  const entityManager = useContext(EntityManagerContext);
+  const explicitPath = useContext(ExplicitPathContext);
+  const currentPath = explicitPath ?? entityManager?.getPath() ?? [];
 
   if (selfIndex !== undefined) {
     currentPath.push(selfIndex);
   }
 
-  return Preact.useMemo(() => currentPath, currentPath);
+  return useMemo(() => currentPath, currentPath);
 }

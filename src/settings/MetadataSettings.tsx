@@ -1,25 +1,17 @@
 import update from 'immutability-helper';
-import Preact from 'preact/compat';
+import { JSX, createPortal, render, unmountComponentAtNode } from 'preact/compat';
+import { Dispatch, StateUpdater, useContext, useEffect, useRef, useState } from 'preact/hooks';
 
-import {
-  c,
-  generateInstanceId,
-  noop,
-  useIMEInputProps,
-} from '../components/helpers';
 import { Icon } from '../components/Icon/Icon';
-import {
-  DataTypes,
-  MetadataSetting,
-  MetadataSettingTemplate,
-} from '../components/types';
-import { DndManagerContext } from '../dnd/components/context';
+import { c, generateInstanceId, noop, useIMEInputProps } from '../components/helpers';
+import { DataTypes, MetadataSetting, MetadataSettingTemplate } from '../components/types';
 import { DndContext } from '../dnd/components/DndContext';
 import { DragOverlay } from '../dnd/components/DragOverlay';
 import { Droppable } from '../dnd/components/Droppable';
 import { DndScope } from '../dnd/components/Scope';
-import { Sortable } from '../dnd/components/Sortable';
 import { SortPlaceholder } from '../dnd/components/SortPlaceholder';
+import { Sortable } from '../dnd/components/Sortable';
+import { DndManagerContext } from '../dnd/components/context';
 import { useDragHandle } from '../dnd/managers/DragManager';
 import { Entity } from '../dnd/types';
 import { getParentBodyElement, getParentWindow } from '../dnd/util/getWindow';
@@ -46,9 +38,9 @@ function Item({
   updateKey,
   updateLabel,
 }: ItemProps) {
-  const elementRef = Preact.useRef<HTMLDivElement>(null);
-  const measureRef = Preact.useRef<HTMLDivElement>(null);
-  const dragHandleRef = Preact.useRef<HTMLDivElement>(null);
+  const elementRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
+  const dragHandleRef = useRef<HTMLDivElement>(null);
 
   useDragHandle(measureRef, dragHandleRef);
 
@@ -75,9 +67,7 @@ function Item({
       <div className={c('setting-toggle-wrapper')}>
         <div>
           <div
-            className={`checkbox-container ${
-              item.data.shouldHideLabel ? 'is-enabled' : ''
-            }`}
+            className={`checkbox-container ${item.data.shouldHideLabel ? 'is-enabled' : ''}`}
             onClick={toggleShouldHideLabel}
             aria-label={t('Hide label')}
           />
@@ -85,15 +75,11 @@ function Item({
         </div>
         <div>
           <div
-            className={`checkbox-container ${
-              item.data.containsMarkdown ? 'is-enabled' : ''
-            }`}
+            className={`checkbox-container ${item.data.containsMarkdown ? 'is-enabled' : ''}`}
             onClick={toggleContainsMarkdown}
             aria-label={t('Field contains markdown')}
           />
-          <div className={c('setting-item-label')}>
-            {t('Field contains markdown')}
-          </div>
+          <div className={c('setting-item-label')}>{t('Field contains markdown')}</div>
         </div>
       </div>
     </div>
@@ -116,11 +102,7 @@ function Item({
           </Droppable>
         )}
         <div className={c('setting-button-wrapper')}>
-          <div
-            className="clickable-icon"
-            onClick={deleteKey}
-            aria-label={t('Delete')}
-          >
+          <div className="clickable-icon" onClick={deleteKey} aria-label={t('Delete')}>
             <Icon name="lucide-trash-2" />
           </div>
           <div
@@ -147,16 +129,11 @@ interface UseKeyModifiersParams {
   onChange(keys: MetadataSetting[]): void;
   inputValue: string;
   keys: MetadataSetting[];
-  setKeys: Preact.StateUpdater<MetadataSetting[]>;
+  setKeys: Dispatch<StateUpdater<MetadataSetting[]>>;
   win: Window;
 }
 
-function useKeyModifiers({
-  onChange,
-  inputValue,
-  keys,
-  setKeys,
-}: UseKeyModifiersParams) {
+function useKeyModifiers({ onChange, inputValue, keys, setKeys }: UseKeyModifiersParams) {
   const updateKeys = (keys: MetadataSetting[]) => {
     onChange(keys);
     setKeys(keys);
@@ -264,14 +241,13 @@ function useKeyModifiers({
 
 const accepts = [DataTypes.MetadataSetting];
 
-function Overlay({
-  keys,
-  portalContainer,
-}: {
+interface OverlayProps {
   keys: MetadataSetting[];
   portalContainer: HTMLElement;
-}) {
-  return Preact.createPortal(
+}
+
+function Overlay({ keys, portalContainer }: OverlayProps) {
+  return createPortal(
     <DragOverlay>
       {(entity, styles) => {
         const path = entity.getPath();
@@ -298,14 +274,10 @@ function Overlay({
   );
 }
 
-function RespondToScroll({
-  scrollEl,
-}: {
-  scrollEl: HTMLElement;
-}): Preact.JSX.Element {
-  const dndManager = Preact.useContext(DndManagerContext);
+function RespondToScroll({ scrollEl }: { scrollEl: HTMLElement }): JSX.Element {
+  const dndManager = useContext(DndManagerContext);
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     let debounce = 0;
 
     const onScroll = () => {
@@ -331,8 +303,8 @@ function RespondToScroll({
 }
 
 function MetadataSettings(props: MetadataSettingsProps) {
-  const [keys, setKeys] = Preact.useState(props.dataKeys);
-  const [inputValue, setInputValue] = Preact.useState('');
+  const [keys, setKeys] = useState(props.dataKeys);
+  const [inputValue, setInputValue] = useState('');
   const { getShouldIMEBlockAction, ...inputProps } = useIMEInputProps();
   const win = getParentWindow(props.scrollEl);
 
@@ -429,7 +401,7 @@ export function renderMetadataSettings(
   keys: MetadataSetting[],
   onChange: (key: MetadataSetting[]) => void
 ) {
-  Preact.render(
+  render(
     <MetadataSettings
       dataKeys={keys}
       scrollEl={scrollEl}
@@ -441,5 +413,5 @@ export function renderMetadataSettings(
 }
 
 export function cleanupMetadataSettings(containerEl: HTMLElement) {
-  Preact.unmountComponentAtNode(containerEl);
+  unmountComponentAtNode(containerEl);
 }

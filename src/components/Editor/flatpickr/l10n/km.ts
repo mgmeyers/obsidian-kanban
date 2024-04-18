@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Khmer locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,15 +13,7 @@ const fp =
 export const Khmer: CustomLocale = {
   weekdays: {
     shorthand: ['អាទិត្យ', 'ចន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស.', 'សុក្រ', 'សៅរ៍'],
-    longhand: [
-      'អាទិត្យ',
-      'ចន្ទ',
-      'អង្គារ',
-      'ពុធ',
-      'ព្រហស្បតិ៍',
-      'សុក្រ',
-      'សៅរ៍',
-    ],
+    longhand: ['អាទិត្យ', 'ចន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'],
   },
   months: {
     shorthand: [

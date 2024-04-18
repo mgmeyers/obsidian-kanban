@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Catalan locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,15 +13,7 @@ const fp =
 export const Catalan: CustomLocale = {
   weekdays: {
     shorthand: ['Dg', 'Dl', 'Dt', 'Dc', 'Dj', 'Dv', 'Ds'],
-    longhand: [
-      'Diumenge',
-      'Dilluns',
-      'Dimarts',
-      'Dimecres',
-      'Dijous',
-      'Divendres',
-      'Dissabte',
-    ],
+    longhand: ['Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'],
   },
 
   months: {

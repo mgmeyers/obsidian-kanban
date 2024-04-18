@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Thai locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,15 +13,7 @@ const fp =
 export const Thai: CustomLocale = {
   weekdays: {
     shorthand: ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'],
-    longhand: [
-      'อาทิตย์',
-      'จันทร์',
-      'อังคาร',
-      'พุธ',
-      'พฤหัสบดี',
-      'ศุกร์',
-      'เสาร์',
-    ],
+    longhand: ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'],
   },
 
   months: {

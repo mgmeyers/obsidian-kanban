@@ -1,5 +1,4 @@
 import { Parent } from 'mdast';
-
 import { FileMetadata } from 'src/components/types';
 
 import { FileAccessor } from '../helpers/parser';

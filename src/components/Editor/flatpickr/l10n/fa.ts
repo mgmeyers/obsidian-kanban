@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Farsi (Persian) locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,15 +13,7 @@ const fp =
 export const Persian: CustomLocale = {
   weekdays: {
     shorthand: ['یک', 'دو', 'سه', 'چهار', 'پنج', 'جمعه', 'شنبه'],
-    longhand: [
-      'یک‌شنبه',
-      'دوشنبه',
-      'سه‌شنبه',
-      'چهارشنبه',
-      'پنچ‌شنبه',
-      'جمعه',
-      'شنبه',
-    ],
+    longhand: ['یک‌شنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنچ‌شنبه', 'جمعه', 'شنبه'],
   },
 
   months: {

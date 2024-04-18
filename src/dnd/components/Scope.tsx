@@ -1,5 +1,4 @@
 import Preact from 'preact/compat';
-
 import { generateInstanceId } from 'src/components/helpers';
 
 import { WithChildren } from '../types';
@@ -19,9 +18,5 @@ export function DndScope({ id, children }: ScopeProps) {
     };
   }, [id]);
 
-  return (
-    <ScopeIdContext.Provider value={scopeId}>
-      {children}
-    </ScopeIdContext.Provider>
-  );
+  return <ScopeIdContext.Provider value={scopeId}>{children}</ScopeIdContext.Provider>;
 }

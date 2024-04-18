@@ -29,17 +29,10 @@ export type token =
 
 const doNothing = (): undefined => undefined;
 
-export const monthToStr = (
-  monthNumber: number,
-  shorthand: boolean,
-  locale: Locale
-) => locale.months[shorthand ? 'shorthand' : 'longhand'][monthNumber];
+export const monthToStr = (monthNumber: number, shorthand: boolean, locale: Locale) =>
+  locale.months[shorthand ? 'shorthand' : 'longhand'][monthNumber];
 
-export type RevFormatFn = (
-  date: Date,
-  data: string,
-  locale: Locale
-) => Date | void | undefined;
+export type RevFormatFn = (date: Date, data: string, locale: Locale) => Date | void | undefined;
 export type RevFormat = Record<string, RevFormatFn>;
 export const revFormat: RevFormat = {
   D: doNothing,
@@ -57,8 +50,7 @@ export const revFormat: RevFormat = {
   },
   K: (dateObj: Date, amPM: string, locale: Locale) => {
     dateObj.setHours(
-      (dateObj.getHours() % 12) +
-        12 * int(new RegExp(locale.amPM[1], 'i').test(amPM))
+      (dateObj.getHours() % 12) + 12 * int(new RegExp(locale.amPM[1], 'i').test(amPM))
     );
   },
   M: function (dateObj: Date, shortMonth: string, locale: Locale) {
@@ -71,15 +63,7 @@ export const revFormat: RevFormat = {
 
   W: function (dateObj: Date, weekNum: string, locale: Locale) {
     const weekNumber = parseInt(weekNum);
-    const date = new Date(
-      dateObj.getFullYear(),
-      0,
-      2 + (weekNumber - 1) * 7,
-      0,
-      0,
-      0,
-      0
-    );
+    const date = new Date(dateObj.getFullYear(), 0, 2 + (weekNumber - 1) * 7, 0, 0, 0, 0);
     date.setDate(date.getDate() - date.getDay() + locale.firstDayOfWeek);
 
     return date;
@@ -111,8 +95,7 @@ export const revFormat: RevFormat = {
   s: (dateObj: Date, seconds: string) => {
     dateObj.setSeconds(parseFloat(seconds));
   },
-  u: (_: Date, unixMillSeconds: string) =>
-    new Date(parseFloat(unixMillSeconds)),
+  u: (_: Date, unixMillSeconds: string) => new Date(parseFloat(unixMillSeconds)),
   w: doNothing,
   y: (dateObj: Date, year: string) => {
     dateObj.setFullYear(2000 + parseFloat(year));
@@ -156,18 +139,12 @@ export const formats: Formats = {
 
   // weekday name, short, e.g. Thu
   D: function (date: Date, locale: Locale, options: ParsedOptions) {
-    return locale.weekdays.shorthand[
-      formats.w(date, locale, options) as number
-    ];
+    return locale.weekdays.shorthand[formats.w(date, locale, options) as number];
   },
 
   // full month name e.g. January
   F: function (date: Date, locale: Locale, options: ParsedOptions) {
-    return monthToStr(
-      (formats.n(date, locale, options) as number) - 1,
-      false,
-      locale
-    );
+    return monthToStr((formats.n(date, locale, options) as number) - 1, false, locale);
   },
 
   // padded hour 1-12

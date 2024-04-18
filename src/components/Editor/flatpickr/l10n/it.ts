@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Italian locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,32 +13,11 @@ const fp =
 export const Italian: CustomLocale = {
   weekdays: {
     shorthand: ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'],
-    longhand: [
-      'Domenica',
-      'Lunedì',
-      'Martedì',
-      'Mercoledì',
-      'Giovedì',
-      'Venerdì',
-      'Sabato',
-    ],
+    longhand: ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'],
   },
 
   months: {
-    shorthand: [
-      'Gen',
-      'Feb',
-      'Mar',
-      'Apr',
-      'Mag',
-      'Giu',
-      'Lug',
-      'Ago',
-      'Set',
-      'Ott',
-      'Nov',
-      'Dic',
-    ],
+    shorthand: ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'],
     longhand: [
       'Gennaio',
       'Febbraio',

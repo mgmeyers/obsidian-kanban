@@ -1,167 +1,246 @@
-import { Platform } from 'obsidian';
-import { Ref } from 'preact';
-import Preact from 'preact/compat';
-
-import { t } from 'src/lang/helpers';
+import { insertBlankLine } from '@codemirror/commands';
+import { EditorSelection, Extension, Prec } from '@codemirror/state';
+import { EditorView, ViewUpdate, keymap, placeholder as placeholderExt } from '@codemirror/view';
+import classcat from 'classcat';
+import { Editor, Platform } from 'obsidian';
+import { MutableRefObject, useContext, useEffect, useRef } from 'preact/compat';
+import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
+import { t } from 'src/lang/helpers';
 
 import { KanbanContext } from '../context';
-import { c } from '../helpers';
-import { useAutocompleteInputProps } from './autocomplete';
-import {
-  autoPairBracketsCommands,
-  autoPairMarkdownCommands,
-  commands,
-  handleNewLine,
-  handleTab,
-  unpairBrackets,
-  unpairMarkdown,
-} from './commands';
+import { c, noop } from '../helpers';
+import { EditState, isEditing } from '../types';
+import { datePlugins, stateManagerField } from './dateWidget';
 
-interface MarkdownEditorProps
-  extends Preact.DetailedHTMLProps<Preact.HTMLAttributes<HTMLTextAreaElement>> {
-  onEnter: (e: KeyboardEvent) => void;
-  onEscape: (e: KeyboardEvent) => void;
-  onSubmit: () => void;
+interface MarkdownEditorProps {
+  editorRef?: MutableRefObject<EditorView>;
+  editState?: EditState;
+  onEnter: (cm: EditorView, mod: boolean, shift: boolean) => boolean;
+  onEscape: (cm: EditorView) => void;
+  onSubmit: (cm: EditorView) => void;
+  onPaste?: (e: ClipboardEvent, cm: EditorView) => void;
+  onChange?: (update: ViewUpdate) => void;
+  value?: string;
+  className: string;
+  placeholder?: string;
 }
 
-export function allowNewLine(e: KeyboardEvent, stateManager: StateManager) {
-  if (Platform.isMobile) {
-    return e.key === 'Enter' && true;
-  }
-
-  const newLineTrigger = stateManager.getSetting('new-line-trigger');
-
-  if (newLineTrigger === 'enter') {
-    return e.key === 'Enter' && !(e.shiftKey || e.metaKey || e.ctrlKey);
-  }
-
-  return e.key === 'Enter' && e.shiftKey;
+export function allowNewLine(stateManager: StateManager, mod: boolean, shift: boolean) {
+  if (Platform.isMobile) return true;
+  return stateManager.getSetting('new-line-trigger') === 'enter' ? !(mod || shift) : mod || shift;
 }
 
-export const MarkdownEditor = Preact.forwardRef(function MarkdownEditor(
-  { onEnter, onEscape, onSubmit, ...textareaProps }: MarkdownEditorProps,
-  ref: Ref<HTMLTextAreaElement>
-) {
-  const { view, stateManager } = Preact.useContext(KanbanContext);
-
-  const shouldAutoPairMarkdown = (app.vault as any).getConfig(
-    'autoPairMarkdown'
-  );
-  const shouldAutoPairBrackets = (app.vault as any).getConfig(
-    'autoPairBrackets'
-  );
-  const shouldUseTab = (app.vault as any).getConfig('useTab');
-  const tabWidth = (app.vault as any).getConfig('tabSize');
-  const shouldUseMarkdownLinks = !!(app.vault as any).getConfig(
-    'useMarkdownLinks'
-  );
-
-  const autocompleteProps = useAutocompleteInputProps({
-    isInputVisible: true,
-    onEnter,
-    onEscape,
-    onKeyDown: (e) => {
-      if (e.key === 'Backspace') {
-        const handledBrackets = unpairBrackets(e.target as HTMLTextAreaElement);
-        if (handledBrackets) return handledBrackets;
-
-        return unpairMarkdown(e.target as HTMLTextAreaElement);
+function getEditorAppProxy(view: KanbanView) {
+  return new Proxy(view.app, {
+    get(target, prop, reveiver) {
+      if (prop === 'vault') {
+        return new Proxy(view.app.vault, {
+          get(target, prop, reveiver) {
+            if (prop === 'config') {
+              return new Proxy((view.app.vault as any).config, {
+                get(target, prop, reveiver) {
+                  if (['showLineNumber', 'foldHeading', 'foldIndent'].includes(prop as string)) {
+                    return false;
+                  }
+                  return Reflect.get(target, prop, reveiver);
+                },
+              });
+            }
+            return Reflect.get(target, prop, reveiver);
+          },
+        });
       }
-
-      if (allowNewLine(e, stateManager)) {
-        const handled = handleNewLine(e.target as HTMLTextAreaElement);
-        if (handled) {
-          e.preventDefault();
-          return handled;
-        }
-      }
-
-      if (e.key === 'Tab') {
-        e.preventDefault();
-
-        return handleTab(
-          e.target as HTMLTextAreaElement,
-          e.shiftKey,
-          shouldUseTab,
-          tabWidth
-        );
-      }
-
-      if (shouldAutoPairMarkdown) {
-        const command = autoPairMarkdownCommands[e.key];
-        if (command) {
-          const handled = command(e.target as HTMLTextAreaElement);
-          if (handled) {
-            e.preventDefault();
-            return true;
-          }
-        }
-      }
-
-      if (shouldAutoPairBrackets) {
-        if (shouldUseMarkdownLinks && e.key === '[') {
-          return false;
-        }
-
-        const command = autoPairBracketsCommands[e.key];
-        if (command) {
-          const handled = command(e.target as HTMLTextAreaElement);
-          if (handled) {
-            e.preventDefault();
-            return true;
-          }
-        }
-      }
-
-      return false;
+      return Reflect.get(target, prop, reveiver);
     },
   });
+}
 
-  Preact.useEffect(() => {
-    const onHotkey = (command: string) => {
-      const fn = commands[command];
+function getMarkdownController(view: KanbanView, getEditor: () => Editor): Record<any, any> {
+  return {
+    app: view.app,
+    showSearch: noop,
+    toggleMode: noop,
+    onMarkdownScroll: noop,
+    getMode: () => 'source',
+    scroll: 0,
+    editMode: null,
+    get editor() {
+      return getEditor();
+    },
+    get file() {
+      return view.file;
+    },
+    get path() {
+      return view.file.path;
+    },
+  };
+}
 
-      if (fn) {
-        fn(autocompleteProps.ref.current);
+export function MarkdownEditor({
+  editorRef,
+  onEnter,
+  onEscape,
+  onChange,
+  onPaste,
+  className,
+  onSubmit,
+  editState,
+  value,
+  placeholder,
+}: MarkdownEditorProps) {
+  const { view, stateManager } = useContext(KanbanContext);
+  const elRef = useRef<HTMLDivElement>();
+  const internalRef = useRef<EditorView>();
+
+  useEffect(() => {
+    class Editor extends view.plugin.MarkdownEditor {
+      updateBottomPadding() {}
+      onUpdate(update: ViewUpdate, changed: boolean) {
+        super.onUpdate(update, changed);
+        onChange && onChange(update);
       }
+      buildLocalExtensions(): Extension[] {
+        const extensions = super.buildLocalExtensions();
+
+        extensions.push(stateManagerField.init(() => stateManager));
+        extensions.push(datePlugins);
+        extensions.push(
+          Prec.high(
+            EditorView.domEventHandlers({
+              focus: (evt) => {
+                if (Platform.isMobile) {
+                  view.contentEl.addClass('is-mobile-editing');
+                }
+
+                evt.win.setTimeout(() => {
+                  this.app.workspace.activeEditor = this.owner;
+                  if (Platform.isMobile) {
+                    this.app.mobileToolbar.update();
+                  }
+                });
+                return true;
+              },
+              blur: () => {
+                this.app.workspace.activeEditor = null;
+                if (Platform.isMobile) {
+                  view.contentEl.removeClass('is-mobile-editing');
+                  this.app.mobileToolbar.update();
+                }
+                return true;
+              },
+            })
+          )
+        );
+
+        if (placeholder) extensions.push(placeholderExt(placeholder));
+        if (onPaste) {
+          extensions.push(
+            Prec.high(
+              EditorView.domEventHandlers({
+                paste: onPaste,
+              })
+            )
+          );
+        }
+
+        const makeEnterHandler = (mod: boolean, shift: boolean) => (cm: EditorView) => {
+          const didRun = onEnter(cm, mod, shift);
+          if (didRun) return true;
+          if (this.app.vault.getConfig('smartIndentList')) {
+            this.editor.newlineAndIndentContinueMarkdownList();
+          } else {
+            insertBlankLine(cm as any);
+          }
+          return true;
+        };
+
+        extensions.push(
+          Prec.highest(
+            keymap.of([
+              {
+                key: 'Enter',
+                run: makeEnterHandler(false, false),
+                shift: makeEnterHandler(false, true),
+                preventDefault: true,
+              },
+              {
+                key: 'Mod-Enter',
+                run: makeEnterHandler(true, false),
+                shift: makeEnterHandler(true, true),
+                preventDefault: true,
+              },
+              {
+                key: 'Escape',
+                run: (cm) => {
+                  onEscape(cm);
+                  return false;
+                },
+                preventDefault: true,
+              },
+            ])
+          )
+        );
+
+        return extensions;
+      }
+    }
+
+    const controller = getMarkdownController(view, () => editor.editor);
+    const app = getEditorAppProxy(view);
+    const editor = view.plugin.addChild(new (Editor as any)(app, elRef.current, controller));
+    const cm: EditorView = editor.cm;
+
+    internalRef.current = cm;
+    if (editorRef) editorRef.current = cm;
+
+    controller.editMode = editor;
+    editor.set(value || '');
+    if (isEditing(editState)) {
+      cm.dispatch({
+        userEvent: 'select.pointer',
+        selection: EditorSelection.single(cm.posAtCoords(editState, false)),
+      });
+    }
+
+    const onShow = () => {
+      elRef.current.scrollIntoView({ block: 'end' });
     };
 
-    view.emitter.on('hotkey', onHotkey);
+    if (Platform.isMobile) {
+      window.addEventListener('keyboardDidShow', onShow);
+    }
 
     return () => {
-      view.emitter.off('hotkey', onHotkey);
+      if (Platform.isMobile) {
+        window.removeEventListener('keyboardDidShow', onShow);
+
+        if (app.workspace.activeEditor === controller) {
+          app.workspace.activeEditor = null;
+          (app as any).mobileToolbar.update();
+          view.contentEl.removeClass('is-mobile-editing');
+        }
+      }
+      view.plugin.removeChild(editor);
+      internalRef.current = null;
+      if (editorRef) editorRef.current = null;
     };
-  }, [view]);
+  }, []);
+
+  const cls = ['cm-table-widget'];
+  if (className) cls.push(className);
 
   return (
     <>
-      <div
-        data-replicated-value={textareaProps.value}
-        className={c('grow-wrap')}
-      >
-        <textarea
-          data-ignore-drag={true}
-          rows={1}
-          className={c('item-input')}
-          {...textareaProps}
-          {...autocompleteProps}
-          ref={(c: HTMLTextAreaElement) => {
-            autocompleteProps.ref.current = c;
-
-            if (ref && typeof ref === 'function') {
-              ref(c);
-            } else if (ref) {
-              (ref as Preact.RefObject<HTMLTextAreaElement>).current = c;
-            }
-          }}
-        />
-      </div>
+      <div className={classcat(cls)} ref={elRef}></div>
       {Platform.isMobile && (
-        <button onPointerDown={onSubmit} className={c('item-submit-button')}>
+        <button
+          onPointerDown={() => onSubmit(internalRef.current)}
+          className={c('item-submit-button')}
+        >
           {t('Submit')}
         </button>
       )}
     </>
   );
-});
+}

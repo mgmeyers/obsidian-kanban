@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Greek locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -12,15 +13,7 @@ const fp =
 export const Greek: CustomLocale = {
   weekdays: {
     shorthand: ['Κυ', 'Δε', 'Τρ', 'Τε', 'Πέ', 'Πα', 'Σά'],
-    longhand: [
-      'Κυριακή',
-      'Δευτέρα',
-      'Τρίτη',
-      'Τετάρτη',
-      'Πέμπτη',
-      'Παρασκευή',
-      'Σάββατο',
-    ],
+    longhand: ['Κυριακή', 'Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο'],
   },
 
   months: {

@@ -5,6 +5,7 @@ module.exports = {
     node: true,
     jest: true,
   },
+  ignorePatterns: ['./src/docs'],
   extends: [
     'eslint:recommended',
     'plugin:react/recommended',

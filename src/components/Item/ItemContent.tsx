@@ -1,14 +1,26 @@
+import { EditorView } from '@codemirror/view';
 import { TFile } from 'obsidian';
-import Preact from 'preact/compat';
-
+import { memo } from 'preact/compat';
+import {
+  Dispatch,
+  StateUpdater,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'preact/hooks';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
+import { Path } from 'src/dnd/types';
 
-import { KanbanContext } from '../context';
-import { handlePaste } from '../Editor/helpers';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
+import {
+  MarkdownClonedPreviewRenderer,
+  MarkdownPreviewRenderer,
+} from '../MarkdownRenderer/MarkdownRenderer';
+import { KanbanContext } from '../context';
 import { c } from '../helpers';
-import { MarkdownDomRenderer } from '../MarkdownRenderer';
-import { Item } from '../types';
+import { EditState, EditingState, Item, isEditing } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
 import {
   constructDatePicker,
@@ -17,12 +29,12 @@ import {
   constructTimePicker,
 } from './helpers';
 
-function useDatePickers(item: Item) {
-  const { stateManager, boardModifiers } = Preact.useContext(KanbanContext);
-  const path = useNestedEntityPath();
+export function useDatePickers(item: Item, explicitPath?: Path) {
+  const { stateManager, boardModifiers } = useContext(KanbanContext);
+  const path = explicitPath || useNestedEntityPath();
 
-  return Preact.useMemo(() => {
-    const onEditDate: Preact.JSX.MouseEventHandler<HTMLSpanElement> = (e) => {
+  return useMemo(() => {
+    const onEditDate = (e: MouseEvent) => {
       constructDatePicker(
         e.view,
         stateManager,
@@ -38,7 +50,7 @@ function useDatePickers(item: Item) {
       );
     };
 
-    const onEditTime: Preact.JSX.MouseEventHandler<HTMLSpanElement> = (e) => {
+    const onEditTime = (e: MouseEvent) => {
       constructTimePicker(
         e.view, // Preact uses real events, so this is safe
         stateManager,
@@ -63,32 +75,31 @@ function useDatePickers(item: Item) {
 
 export interface ItemContentProps {
   item: Item;
-  isEditing: boolean;
-  setIsEditing: Preact.StateUpdater<boolean>;
+  setEditState: Dispatch<StateUpdater<EditState>>;
   searchQuery?: string;
+  showMetadata?: boolean;
+  editState: EditState;
+  isStatic: boolean;
 }
 
 function checkCheckbox(title: string, checkboxIndex: number) {
   let count = 0;
 
-  return title.replace(
-    /^(\s*[-+*]\s+?\[)([^\]])(\]\s+)/gm,
-    (sub, before, check, after) => {
-      let match = sub;
+  return title.replace(/^(\s*[-+*]\s+?\[)([^\]])(\]\s+)/gm, (sub, before, check, after) => {
+    let match = sub;
 
-      if (count === checkboxIndex) {
-        if (check === ' ') {
-          match = `${before}x${after}`;
-        } else {
-          match = `${before} ${after}`;
-        }
+    if (count === checkboxIndex) {
+      if (check === ' ') {
+        match = `${before}x${after}`;
+      } else {
+        match = `${before} ${after}`;
       }
-
-      count++;
-
-      return match;
     }
-  );
+
+    count++;
+
+    return match;
+  });
 }
 
 async function checkEmbeddedCheckbox(checkbox: HTMLElement) {
@@ -113,46 +124,72 @@ async function checkEmbeddedCheckbox(checkbox: HTMLElement) {
     return `${g1}[x]${g3}`;
   });
 
-  await app.vault.modify(
-    file,
-    `${content.substring(0, start)}${updated}${content.substring(end)}`
+  await app.vault.modify(file, `${content.substring(0, start)}${updated}${content.substring(end)}`);
+}
+
+export function Tags({
+  tags,
+  searchQuery,
+  isDisplay = true,
+}: {
+  tags?: string[];
+  searchQuery?: string;
+  isDisplay?: boolean;
+}) {
+  const { stateManager, getTagColor } = useContext(KanbanContext);
+
+  const hideTagsDisplay = isDisplay && stateManager.useSetting('hide-tags-display');
+  if (hideTagsDisplay || !tags?.length) return null;
+  return (
+    <div className={c('item-tags')}>
+      {tags.map((tag, i) => {
+        const tagColor = getTagColor(tag);
+
+        return (
+          <a
+            href={tag}
+            onClick={(e) => {
+              e.preventDefault();
+              (stateManager.app as any).internalPlugins
+                .getPluginById('global-search')
+                .instance.openGlobalSearch(`tag:${tag}`);
+            }}
+            key={i}
+            className={`tag ${c('item-tag')} ${
+              searchQuery && tag.toLocaleLowerCase().contains(searchQuery) ? 'is-search-match' : ''
+            }`}
+            style={
+              tagColor && {
+                '--tag-color': tagColor.color,
+                '--tag-background': tagColor.backgroundColor,
+              }
+            }
+          >
+            <span>{tag[0]}</span>
+            {tag.slice(1)}
+          </a>
+        );
+      })}
+    </div>
   );
 }
 
-export const ItemContent = Preact.memo(function ItemContent({
+export const ItemContent = memo(function ItemContent({
   item,
-  isEditing,
-  setIsEditing,
+  editState,
+  setEditState,
   searchQuery,
+  showMetadata = true,
+  isStatic,
 }: ItemContentProps) {
-  const [editState, setEditState] = Preact.useState(item.data.titleRaw);
-  const {
-    stateManager,
-    filePath,
-    boardModifiers,
-    view,
-    getTagColor,
-    getDateColor,
-  } = Preact.useContext(KanbanContext);
+  const { stateManager, filePath, boardModifiers, getDateColor } = useContext(KanbanContext);
+  const titleRef = useRef<string | null>(null);
 
-  const hideTagsDisplay = stateManager.useSetting('hide-tags-display');
-  const path = useNestedEntityPath();
-
-  const { onEditDate, onEditTime } = useDatePickers(item);
-
-  Preact.useEffect(() => {
-    if (isEditing) {
-      setEditState(item.data.titleRaw);
-    }
-  }, [isEditing]);
-
-  const onEnter = Preact.useCallback(
-    (e: KeyboardEvent) => {
-      if (!allowNewLine(e, stateManager)) {
-        e.preventDefault();
-
+  useEffect(() => {
+    if (editState === EditingState.complete) {
+      if (titleRef.current !== null) {
         stateManager
-          .updateItemContent(item, editState)
+          .updateItemContent(item, titleRef.current)
           .then((item) => {
             boardModifiers.updateItem(path, item);
           })
@@ -160,35 +197,46 @@ export const ItemContent = Preact.memo(function ItemContent({
             stateManager.setError(e);
             console.error(e);
           });
+      }
+      titleRef.current = null;
+    } else if (editState === EditingState.cancel) {
+      titleRef.current = null;
+    }
+  }, [editState, stateManager, item]);
 
-        setIsEditing(false);
+  const path = useNestedEntityPath();
+  const { onEditDate, onEditTime } = useDatePickers(item);
+  const onEnter = useCallback(
+    (cm: EditorView, mod: boolean, shift: boolean) => {
+      if (!allowNewLine(stateManager, mod, shift)) {
+        setEditState(EditingState.complete);
         return true;
       }
     },
-    [stateManager, editState, item, path]
+    [stateManager]
   );
 
-  const onSubmit = Preact.useCallback(() => {
-    stateManager
-      .updateItemContent(item, editState)
-      .then((item) => {
-        boardModifiers.updateItem(path, item);
-      })
-      .catch((e) => {
-        stateManager.setError(e);
-        console.error(e);
-      });
+  const onWrapperClick = useCallback(
+    (e: MouseEvent) => {
+      if (e.targetNode.instanceOf(HTMLElement)) {
+        if (e.targetNode.hasClass(c('item-metadata-date'))) {
+          onEditDate(e);
+        } else if (e.targetNode.hasClass(c('item-metadata-time'))) {
+          onEditTime(e);
+        }
+      }
+    },
+    [onEditDate, onEditTime]
+  );
 
-    setIsEditing(false);
-  }, [stateManager, editState, item, path]);
+  const onSubmit = useCallback(() => setEditState(EditingState.complete), []);
 
-  const onEscape = Preact.useCallback(() => {
-    setIsEditing(false);
-    setEditState(item.data.titleRaw);
+  const onEscape = useCallback(() => {
+    setEditState(EditingState.cancel);
     return true;
   }, [item]);
 
-  const onCheckboxContainerClick = Preact.useCallback(
+  const onCheckboxContainerClick = useCallback(
     (e: PointerEvent) => {
       const target = e.target as HTMLElement;
 
@@ -200,10 +248,7 @@ export const ItemContent = Preact.memo(function ItemContent({
         const checkboxIndex = parseInt(target.dataset.checkboxIndex, 10);
 
         stateManager
-          .updateItemContent(
-            item,
-            checkCheckbox(item.data.titleRaw, checkboxIndex)
-          )
+          .updateItemContent(item, checkCheckbox(item.data.titleRaw, checkboxIndex))
           .then((item) => {
             boardModifiers.updateItem(path, item);
           })
@@ -216,20 +261,20 @@ export const ItemContent = Preact.memo(function ItemContent({
     [path, boardModifiers, stateManager, item]
   );
 
-  if (isEditing) {
+  if (!isStatic && isEditing(editState)) {
     return (
       <div className={c('item-input-wrapper')}>
         <MarkdownEditor
+          editState={editState}
           className={c('item-input')}
-          onChange={(e) =>
-            setEditState((e.target as HTMLTextAreaElement).value)
-          }
           onEnter={onEnter}
           onEscape={onEscape}
           onSubmit={onSubmit}
-          value={editState}
-          onPaste={(e) => {
-            handlePaste(e, stateManager, view.getWindow());
+          value={item.data.titleRaw}
+          onChange={(update) => {
+            if (update.docChanged) {
+              titleRef.current = update.state.doc.toString().trim();
+            }
           }}
         />
       </div>
@@ -237,52 +282,36 @@ export const ItemContent = Preact.memo(function ItemContent({
   }
 
   return (
-    <div className={c('item-title')}>
-      <MarkdownDomRenderer
-        className={c('item-markdown')}
-        dom={item.data.dom}
-        searchQuery={searchQuery}
-        onPointerDown={onCheckboxContainerClick}
-      />
-      <div className={c('item-metadata')}>
-        <RelativeDate item={item} stateManager={stateManager} />
-        <DateAndTime
-          item={item}
-          stateManager={stateManager}
-          filePath={filePath}
-          onEditDate={onEditDate}
-          onEditTime={onEditTime}
-          getDateColor={getDateColor}
+    <div onClick={onWrapperClick} className={c('item-title')}>
+      {isStatic ? (
+        <MarkdownClonedPreviewRenderer
+          entityId={item.id}
+          className={c('item-markdown')}
+          markdownString={item.data.title}
+          searchQuery={searchQuery}
+          onPointerUp={onCheckboxContainerClick}
         />
-        {!hideTagsDisplay && !!item.data.metadata.tags?.length && (
-          <div className={c('item-tags')}>
-            {item.data.metadata.tags.map((tag, i) => {
-              const tagColor = getTagColor(tag);
-
-              return (
-                <a
-                  href={tag}
-                  key={i}
-                  className={`tag ${c('item-tag')} ${
-                    tag.toLocaleLowerCase().contains(searchQuery)
-                      ? 'is-search-match'
-                      : ''
-                  }`}
-                  style={
-                    tagColor && {
-                      '--tag-color': tagColor.color,
-                      '--tag-background-color': tagColor.backgroundColor,
-                    }
-                  }
-                >
-                  <span>{tag[0]}</span>
-                  {tag.slice(1)}
-                </a>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      ) : (
+        <MarkdownPreviewRenderer
+          entityId={item.id}
+          className={c('item-markdown')}
+          markdownString={item.data.title}
+          searchQuery={searchQuery}
+          onPointerUp={onCheckboxContainerClick}
+        />
+      )}
+      {showMetadata && (
+        <div className={c('item-metadata')}>
+          <RelativeDate item={item} stateManager={stateManager} />
+          <DateAndTime
+            item={item}
+            stateManager={stateManager}
+            filePath={filePath}
+            getDateColor={getDateColor}
+          />
+          <Tags tags={item.data.metadata.tags} searchQuery={searchQuery} />
+        </div>
+      )}
     </div>
   );
 });

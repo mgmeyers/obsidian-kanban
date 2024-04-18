@@ -1,4 +1,5 @@
 import { FlatpickrFn } from '../types/instance';
+
 /* Kurdish (Sorani) locals for flatpickr */
 import { CustomLocale } from '../types/locale';
 
@@ -11,24 +12,8 @@ const fp =
 
 export const Kurdish: CustomLocale = {
   weekdays: {
-    shorthand: [
-      'یەکشەممە',
-      'دووشەممە',
-      'سێشەممە',
-      'چوارشەممە',
-      'پێنجشەممە',
-      'هەینی',
-      'شەممە',
-    ],
-    longhand: [
-      'یەکشەممە',
-      'دووشەممە',
-      'سێشەممە',
-      'چوارشەممە',
-      'پێنجشەممە',
-      'هەینی',
-      'شەممە',
-    ],
+    shorthand: ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە'],
+    longhand: ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە'],
   },
 
   months: {

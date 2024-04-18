@@ -1,126 +1,171 @@
 import update from 'immutability-helper';
-import Preact from 'preact/compat';
-
+import { Menu } from 'obsidian';
+import { RefObject, memo } from 'preact/compat';
+import { Dispatch, StateUpdater, useCallback, useContext, useEffect, useState } from 'preact/hooks';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { t } from 'src/lang/helpers';
 import { parseLaneTitle } from 'src/parsers/helpers/parser';
 
-import { KanbanContext } from '../context';
 import { getDropAction } from '../Editor/helpers';
-import { c } from '../helpers';
 import { GripIcon } from '../Icon/GripIcon';
 import { Icon } from '../Icon/Icon';
-import { Lane } from '../types';
+import { KanbanContext } from '../context';
+import { c } from '../helpers';
+import { EditState, EditingState, Lane, isEditing } from '../types';
 import { ConfirmAction, useSettingsMenu } from './LaneMenu';
 import { LaneSettings } from './LaneSettings';
-import { LaneTitle } from './LaneTitle';
+import { LaneLimitCounter, LaneTitle } from './LaneTitle';
 
 interface LaneHeaderProps {
   lane: Lane;
   laneIndex: number;
-  dragHandleRef: Preact.RefObject<HTMLDivElement>;
-  setIsItemInputVisible?: Preact.StateUpdater<boolean>;
+  dragHandleRef: RefObject<HTMLDivElement>;
+  setIsItemInputVisible?: Dispatch<StateUpdater<EditState>>;
+  isCollapsed: boolean;
+  toggleIsCollapsed: () => void;
 }
 
-export const LaneHeader = Preact.memo(function LaneHeader({
+interface LaneButtonProps {
+  settingsMenu: Menu;
+  editState: EditState;
+  setEditState: Dispatch<StateUpdater<EditState>>;
+  setIsItemInputVisible?: Dispatch<StateUpdater<EditState>>;
+}
+
+function LaneButtons({
+  settingsMenu,
+  editState,
+  setEditState,
+  setIsItemInputVisible,
+}: LaneButtonProps) {
+  const { stateManager } = useContext(KanbanContext);
+  return (
+    <div className={c('lane-settings-button-wrapper')}>
+      {isEditing(editState) ? (
+        <a
+          onClick={() => setEditState(null)}
+          aria-label={t('Close')}
+          className={`${c('lane-settings-button')} is-enabled clickable-icon`}
+        >
+          <Icon name="lucide-x" />
+        </a>
+      ) : (
+        <>
+          {setIsItemInputVisible && (
+            <a
+              aria-label={t('Add a card')}
+              className={`${c('lane-settings-button')} clickable-icon`}
+              onClick={() => setIsItemInputVisible({ x: 0, y: 0 })}
+              onDragOver={(e) => {
+                if (getDropAction(stateManager, e.dataTransfer)) {
+                  setIsItemInputVisible({ x: 0, y: 0 });
+                }
+              }}
+            >
+              <Icon name="lucide-plus-circle" />
+            </a>
+          )}
+          <a
+            aria-label={t('More options')}
+            className={`${c('lane-settings-button')} clickable-icon`}
+            onClick={(e) => {
+              settingsMenu.showAtMouseEvent(e);
+            }}
+          >
+            <Icon name="lucide-more-vertical" />
+          </a>
+        </>
+      )}
+    </div>
+  );
+}
+
+export const LaneHeader = memo(function LaneHeader({
   lane,
   laneIndex,
   dragHandleRef,
   setIsItemInputVisible,
+  isCollapsed,
+  toggleIsCollapsed,
 }: LaneHeaderProps) {
-  const { boardModifiers, stateManager } = Preact.useContext(KanbanContext);
-  const [isEditing, setIsEditing] = Preact.useState(false);
+  const [editState, setEditState] = useState<EditState>(EditingState.cancel);
   const lanePath = useNestedEntityPath(laneIndex);
 
+  const { boardModifiers } = useContext(KanbanContext);
   const { settingsMenu, confirmAction, setConfirmAction } = useSettingsMenu({
-    setIsEditing,
+    setEditState,
     path: lanePath,
     lane,
   });
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     if (lane.data.forceEditMode) {
-      setIsEditing(true);
+      setEditState(null);
     }
   }, [lane.data.forceEditMode]);
+
+  const onLaneTitleChange = useCallback(
+    (str: string) => {
+      const { title, maxItems } = parseLaneTitle(str);
+      boardModifiers.updateLane(
+        lanePath,
+        update(lane, {
+          data: {
+            title: { $set: title },
+            maxItems: { $set: maxItems },
+          },
+        })
+      );
+    },
+    [boardModifiers, lane, lanePath]
+  );
+
+  const onDoubleClick = useCallback(
+    (e: MouseEvent) => {
+      !isCollapsed && setEditState({ x: e.clientX, y: e.clientY });
+    },
+    [isCollapsed, setEditState]
+  );
 
   return (
     <>
       <div
-        onDblClick={() => setIsEditing(true)}
+        // eslint-disable-next-line react/no-unknown-property
+        onDblClick={onDoubleClick}
         className={c('lane-header-wrapper')}
       >
         <div className={c('lane-grip')} ref={dragHandleRef}>
           <GripIcon />
         </div>
 
+        <div onClick={toggleIsCollapsed} className={c('lane-collapse')}>
+          <Icon name="chevron-down" />
+        </div>
+
         <LaneTitle
-          isEditing={isEditing}
-          setIsEditing={setIsEditing}
+          id={lane.id}
+          editState={editState}
+          maxItems={lane.data.maxItems}
+          onChange={onLaneTitleChange}
+          setEditState={setEditState}
+          title={lane.data.title}
+        />
+
+        <LaneLimitCounter
+          editState={editState}
           itemCount={lane.children.length}
           maxItems={lane.data.maxItems}
-          title={lane.data.title}
-          onChange={(e) => {
-            const { title, maxItems } = parseLaneTitle(
-              (e.target as HTMLTextAreaElement).value
-            );
-            boardModifiers.updateLane(
-              lanePath,
-              update(lane, {
-                data: {
-                  title: { $set: title },
-                  maxItems: { $set: maxItems },
-                },
-              })
-            );
-          }}
         />
-        <div className={c('lane-settings-button-wrapper')}>
-          {isEditing ? (
-            <a
-              onClick={() => {
-                setIsEditing(false);
-              }}
-              aria-label={t('Close')}
-              className={`${c(
-                'lane-settings-button'
-              )} is-enabled clickable-icon`}
-            >
-              <Icon name="lucide-x" />
-            </a>
-          ) : (
-            <>
-              {setIsItemInputVisible && (
-                <a
-                  aria-label={t('Add a card')}
-                  className={`${c('lane-settings-button')} clickable-icon`}
-                  onClick={() => {
-                    setIsItemInputVisible(true);
-                  }}
-                  onDragOver={(e) => {
-                    if (getDropAction(stateManager, e.dataTransfer)) {
-                      setIsItemInputVisible(true);
-                    }
-                  }}
-                >
-                  <Icon name="lucide-plus-circle" />
-                </a>
-              )}
-              <a
-                aria-label={t('More options')}
-                className={`${c('lane-settings-button')} clickable-icon`}
-                onClick={(e) => {
-                  settingsMenu.showAtPosition({ x: e.clientX, y: e.clientY });
-                }}
-              >
-                <Icon name="lucide-more-vertical" />
-              </a>
-            </>
-          )}
-        </div>
+
+        <LaneButtons
+          editState={editState}
+          setEditState={setEditState}
+          setIsItemInputVisible={setIsItemInputVisible}
+          settingsMenu={settingsMenu}
+        />
       </div>
 
-      {isEditing && <LaneSettings lane={lane} lanePath={lanePath} />}
+      <LaneSettings editState={editState} lane={lane} lanePath={lanePath} />
 
       {confirmAction && (
         <ConfirmAction
