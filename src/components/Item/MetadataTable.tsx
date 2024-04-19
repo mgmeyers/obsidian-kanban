@@ -13,12 +13,11 @@ import { Tags } from './ItemContent';
 
 export interface ItemMetadataProps {
   item: Item;
-  isSettingsVisible: boolean;
   searchQuery?: string;
 }
 
-export function ItemMetadata({ item, isSettingsVisible, searchQuery }: ItemMetadataProps) {
-  if (isSettingsVisible || !item.data.metadata.fileMetadata) return null;
+export function ItemMetadata({ item, searchQuery }: ItemMetadataProps) {
+  if (!item.data.metadata.fileMetadata) return null;
 
   return (
     <div className={c('item-metadata-wrapper')}>
