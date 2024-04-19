@@ -7,7 +7,7 @@ import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
 
 import { SearchContextProps } from './context';
-import { Board, DateColorKey, Item, Lane, TagColorKey } from './types';
+import { Board, DateColor, Item, Lane, TagColor } from './types';
 
 export const baseClassName = 'kanban-plugin';
 
@@ -187,10 +187,10 @@ export function getTemplatePlugins(app: App) {
   };
 }
 
-export function getTagColorFn(stateManager: StateManager): (tag: string) => TagColorKey {
+export function getTagColorFn(stateManager: StateManager): (tag: string) => TagColor {
   const tagColors = stateManager.getSetting('tag-colors');
 
-  const tagMap = (tagColors || []).reduce<Record<string, TagColorKey>>((total, current) => {
+  const tagMap = (tagColors || []).reduce<Record<string, TagColor>>((total, current) => {
     if (!current.tagKey) return total;
     total[current.tagKey] = current;
     return total;
@@ -204,30 +204,30 @@ export function getTagColorFn(stateManager: StateManager): (tag: string) => TagC
 
 export function getDateColorFn(
   stateManager: StateManager
-): (date: moment.Moment) => DateColorKey | null {
+): (date: moment.Moment) => DateColor | null {
   const dateColors = stateManager.getSetting('date-colors');
-  const orders = (dateColors || []).map<
-    [moment.Moment | 'today' | 'before' | 'after', DateColorKey]
-  >((c) => {
-    if (c.isToday) {
-      return ['today', c];
+  const orders = (dateColors || []).map<[moment.Moment | 'today' | 'before' | 'after', DateColor]>(
+    (c) => {
+      if (c.isToday) {
+        return ['today', c];
+      }
+
+      if (c.isBefore) {
+        return ['before', c];
+      }
+
+      if (c.isAfter) {
+        return ['after', c];
+      }
+
+      const modifier = c.direction === 'after' ? 1 : -1;
+      const date = moment();
+
+      date.add(c.distance * modifier, c.unit);
+
+      return [date, c];
     }
-
-    if (c.isBefore) {
-      return ['before', c];
-    }
-
-    if (c.isAfter) {
-      return ['after', c];
-    }
-
-    const modifier = c.direction === 'after' ? 1 : -1;
-    const date = moment();
-
-    date.add(c.distance * modifier, c.unit);
-
-    return [date, c];
-  });
+  );
 
   const now = moment();
   orders.sort((a, b) => {

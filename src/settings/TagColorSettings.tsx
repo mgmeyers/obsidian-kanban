@@ -1,20 +1,27 @@
 import { colord } from 'colord';
 import update from 'immutability-helper';
-import Preact from 'preact/compat';
+import {
+  render,
+  unmountComponentAtNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'preact/compat';
 import { RgbaStringColorPicker } from 'react-colorful';
 import useOnclickOutside from 'react-cool-onclickoutside';
 
 import { Icon } from '../components/Icon/Icon';
 import { c, generateInstanceId } from '../components/helpers';
-import { TagColorKey, TagColorSetting, TagColorSettingTemplate } from '../components/types';
+import { TagColor, TagColorSetting, TagColorSettingTemplate } from '../components/types';
 import { getParentBodyElement } from '../dnd/util/getWindow';
 import { t } from '../lang/helpers';
 
 interface ItemProps {
-  tagColorKey: TagColorKey;
-  deleteKey: () => void;
-  updateKey: (tagKey: string, color: string, backgroundColor: string) => void;
   defaultColors: { color: string; backgroundColor: string };
+  deleteKey: () => void;
+  tagColorKey: TagColor;
+  updateKey: (tagKey: string, color: string, backgroundColor: string) => void;
 }
 
 export function colorToRgbaString(color: string) {
@@ -38,10 +45,10 @@ export interface ColorPickerInputProps {
 }
 
 export function ColorPickerInput({ color, setColor, defaultColor }: ColorPickerInputProps) {
-  const [localRGB, setLocalRGB] = Preact.useState(color || defaultColor);
-  const [localHEX, setLocalHEX] = Preact.useState(color || defaultColor);
-  const [isPickerVisible, setIsPickerVisible] = Preact.useState(false);
-  const onChange = Preact.useCallback(
+  const [localRGB, setLocalRGB] = useState(color || defaultColor);
+  const [localHEX, setLocalHEX] = useState(color || defaultColor);
+  const [isPickerVisible, setIsPickerVisible] = useState(false);
+  const onChange = useCallback(
     (newColor: string) => {
       const normalized = colorToRgbaString(newColor || defaultColor);
       if (normalized) {
@@ -53,7 +60,7 @@ export function ColorPickerInput({ color, setColor, defaultColor }: ColorPickerI
     [setColor]
   );
 
-  Preact.useEffect(() => {
+  useEffect(() => {
     if (!color || !defaultColor) return;
 
     const normalized = colorToRgbaString(color || defaultColor);
@@ -99,7 +106,12 @@ function Item({ tagColorKey, deleteKey, updateKey, defaultColors }: ItemProps) {
                 placeholder="#tag"
                 value={tagColorKey.tagKey}
                 onChange={(e) => {
-                  updateKey(e.currentTarget.value, tagColorKey.color, tagColorKey.backgroundColor);
+                  const val = e.currentTarget.value;
+                  updateKey(
+                    val[0] === '#' ? val : '#' + val,
+                    tagColorKey.color,
+                    tagColorKey.backgroundColor
+                  );
                 }}
               />
             </div>
@@ -159,8 +171,8 @@ interface TagSettingsProps {
 }
 
 function TagSettings({ dataKeys, onChange }: TagSettingsProps) {
-  const [keys, setKeys] = Preact.useState(dataKeys);
-  const defaultColors = Preact.useMemo(() => {
+  const [keys, setKeys] = useState(dataKeys);
+  const defaultColors = useMemo(() => {
     const wrapper = createDiv(c('item-tags'));
     const tag = wrapper.createEl('a', c('item-tag'));
 
@@ -241,15 +253,17 @@ function TagSettings({ dataKeys, onChange }: TagSettingsProps) {
           {t('Set colors for tags displayed in cards.')}
         </div>
       </div>
-      {keys.map((key, index) => (
-        <Item
-          key={key.id}
-          tagColorKey={key.data}
-          deleteKey={() => deleteKey(index)}
-          updateKey={updateTagColor(index)}
-          defaultColors={defaultColors}
-        />
-      ))}
+      <div>
+        {keys.map((key, index) => (
+          <Item
+            key={key.id}
+            tagColorKey={key.data}
+            deleteKey={() => deleteKey(index)}
+            updateKey={updateTagColor(index)}
+            defaultColors={defaultColors}
+          />
+        ))}
+      </div>
       <button
         className={c('add-tag-color-button')}
         onClick={() => {
@@ -267,7 +281,7 @@ export function renderTagSettings(
   keys: TagColorSetting[],
   onChange: (key: TagColorSetting[]) => void
 ) {
-  Preact.render(
+  render(
     <TagSettings
       dataKeys={keys}
       onChange={onChange}
@@ -278,5 +292,5 @@ export function renderTagSettings(
 }
 
 export function cleanUpTagSettings(containerEl: HTMLElement) {
-  Preact.unmountComponentAtNode(containerEl);
+  unmountComponentAtNode(containerEl);
 }

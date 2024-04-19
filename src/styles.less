@@ -1553,11 +1553,21 @@ button.kanban-plugin__cancel-action-button {
 }
 
 .kanban-plugin__date-color-input-wrapper,
+.kanban-plugin__tag-sort-input-wrapper,
 .kanban-plugin__tag-color-input-wrapper {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   gap: 1rem;
+}
+
+.kanban-plugin__tag-sort-input-wrapper {
+  .kanban-plugin__setting-key-input-wrapper {
+    margin-block-start: 0;
+  }
+  .kanban-plugin__setting-input-wrapper {
+    margin: 0;
+  }
 }
 
 .kanban-plugin__add-tag-color-button {

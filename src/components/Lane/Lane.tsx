@@ -16,7 +16,7 @@ import { frontmatterKey } from 'src/parsers/common';
 
 import { Items } from '../Item/Item';
 import { ItemForm } from '../Item/ItemForm';
-import { KanbanContext, SearchContext } from '../context';
+import { KanbanContext, SearchContext, SortContext } from '../context';
 import { c, generateInstanceId } from '../helpers';
 import { DataTypes, EditState, EditingState, Item, Lane } from '../types';
 import { LaneHeader } from './LaneHeader';
@@ -132,79 +132,81 @@ function DraggableLaneRaw({
   }, [isCollapsed, laneIndex, isStatic]);
 
   return (
-    <div
-      ref={measureRef}
-      className={classcat([
-        c('lane-wrapper'),
-        {
-          'is-sorting': isSorting,
-          'collapse-horizontal': isCollapsed && collapseDir === 'horizontal',
-          'collapse-vertical': isCollapsed && collapseDir === 'vertical',
-        },
-      ])}
-      style={laneStyles}
-    >
+    <SortContext.Provider value={lane.data.sorted ?? null}>
       <div
-        data-count={lane.children.length}
-        ref={elementRef}
-        className={classcat([c('lane'), { 'will-prepend': shouldPrepend }])}
+        ref={measureRef}
+        className={classcat([
+          c('lane-wrapper'),
+          {
+            'is-sorting': isSorting,
+            'collapse-horizontal': isCollapsed && collapseDir === 'horizontal',
+            'collapse-vertical': isCollapsed && collapseDir === 'vertical',
+          },
+        ])}
+        style={laneStyles}
       >
-        <CollapsedDropArea {...dropAreaProps}>
-          <LaneHeader
-            dragHandleRef={dragHandleRef}
-            laneIndex={laneIndex}
-            lane={lane}
-            setIsItemInputVisible={isCompactPrepend ? setEditState : undefined}
-            isCollapsed={isCollapsed}
-            toggleIsCollapsed={toggleIsCollapsed}
-          />
-
-          {!search?.query && !isCollapsed && shouldPrepend && (
-            <ItemForm
-              addItems={addItems}
-              hideButton={isCompactPrepend}
-              editState={editState}
-              setEditState={setEditState}
+        <div
+          data-count={lane.children.length}
+          ref={elementRef}
+          className={classcat([c('lane'), { 'will-prepend': shouldPrepend }])}
+        >
+          <CollapsedDropArea {...dropAreaProps}>
+            <LaneHeader
+              dragHandleRef={dragHandleRef}
+              laneIndex={laneIndex}
+              lane={lane}
+              setIsItemInputVisible={isCompactPrepend ? setEditState : undefined}
+              isCollapsed={isCollapsed}
+              toggleIsCollapsed={toggleIsCollapsed}
             />
-          )}
 
-          {!isCollapsed && (
-            <DroppableComponent
-              elementRef={elementRef}
-              measureRef={measureRef}
-              id={lane.id}
-              index={laneIndex}
-              data={lane}
-            >
-              <ScrollContainer
-                className={classcat([c('lane-items'), c('vertical')])}
+            {!search?.query && !isCollapsed && shouldPrepend && (
+              <ItemForm
+                addItems={addItems}
+                hideButton={isCompactPrepend}
+                editState={editState}
+                setEditState={setEditState}
+              />
+            )}
+
+            {!isCollapsed && (
+              <DroppableComponent
+                elementRef={elementRef}
+                measureRef={measureRef}
                 id={lane.id}
                 index={laneIndex}
-                isStatic={isStatic}
-                triggerTypes={laneAccepts}
+                data={lane}
               >
-                <SortableComponent onSortChange={setIsSorting} axis="vertical">
-                  <Items
-                    items={lane.children}
-                    isStatic={isStatic}
-                    shouldMarkItemsComplete={shouldMarkItemsComplete}
-                  />
-                  <SortPlaceholder
-                    accepts={laneAccepts}
-                    index={lane.children.length}
-                    isStatic={isStatic}
-                  />
-                </SortableComponent>
-              </ScrollContainer>
-            </DroppableComponent>
-          )}
+                <ScrollContainer
+                  className={classcat([c('lane-items'), c('vertical')])}
+                  id={lane.id}
+                  index={laneIndex}
+                  isStatic={isStatic}
+                  triggerTypes={laneAccepts}
+                >
+                  <SortableComponent onSortChange={setIsSorting} axis="vertical">
+                    <Items
+                      items={lane.children}
+                      isStatic={isStatic}
+                      shouldMarkItemsComplete={shouldMarkItemsComplete}
+                    />
+                    <SortPlaceholder
+                      accepts={laneAccepts}
+                      index={lane.children.length}
+                      isStatic={isStatic}
+                    />
+                  </SortableComponent>
+                </ScrollContainer>
+              </DroppableComponent>
+            )}
 
-          {!search?.query && !isCollapsed && !shouldPrepend && (
-            <ItemForm addItems={addItems} editState={editState} setEditState={setEditState} />
-          )}
-        </CollapsedDropArea>
+            {!search?.query && !isCollapsed && !shouldPrepend && (
+              <ItemForm addItems={addItems} editState={editState} setEditState={setEditState} />
+            )}
+          </CollapsedDropArea>
+        </div>
       </div>
-    </div>
+    </SortContext.Provider>
   );
 }
 

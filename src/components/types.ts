@@ -29,13 +29,17 @@ export interface DataKey {
   containsMarkdown: boolean;
 }
 
-export interface TagColorKey {
+export interface TagColor {
   tagKey: string;
   color: string;
   backgroundColor: string;
 }
 
-export interface DateColorKey {
+export interface TagSort {
+  tag: string;
+}
+
+export interface DateColor {
   isToday?: boolean;
   isBefore?: boolean;
   isAfter?: boolean;
@@ -101,8 +105,9 @@ export type Item = Nestable<ItemData>;
 export type Lane = Nestable<LaneData, Item>;
 export type Board = Nestable<BoardData, Lane>;
 export type MetadataSetting = Nestable<DataKey>;
-export type TagColorSetting = Nestable<TagColorKey>;
-export type DateColorSetting = Nestable<DateColorKey>;
+export type TagColorSetting = Nestable<TagColor>;
+export type TagSortSetting = Nestable<TagSort>;
+export type DateColorSetting = Nestable<DateColor>;
 
 export const DataTypes = {
   Item: 'item',
@@ -110,6 +115,7 @@ export const DataTypes = {
   Board: 'board',
   MetadataSetting: 'metadata-setting',
   TagColorSetting: 'tag-color',
+  TagSortSetting: 'tag-sort',
   DateColorSetting: 'date-color',
 };
 
@@ -132,6 +138,12 @@ export const BoardTemplate = {
 export const MetadataSettingTemplate = {
   accepts: [DataTypes.MetadataSetting],
   type: DataTypes.MetadataSetting,
+  children: [] as any[],
+};
+
+export const TagSortSettingTemplate = {
+  accepts: [DataTypes.TagSortSetting],
+  type: DataTypes.TagSortSetting,
   children: [] as any[],
 };
 

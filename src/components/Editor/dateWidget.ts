@@ -14,7 +14,7 @@ import { useMemo } from 'preact/hooks';
 
 import { StateManager } from '../../StateManager';
 import { c } from '../helpers';
-import { DateColorKey } from '../types';
+import { DateColor } from '../types';
 
 export const stateManagerField = StateField.define<StateManager | null>({
   create() {
@@ -137,7 +137,7 @@ export const datePlugins: Extension[] = [
 export function usePreprocessedStr(
   stateManager: StateManager,
   str: string,
-  getDateColor: (date: moment.Moment) => DateColorKey
+  getDateColor: (date: moment.Moment) => DateColor
 ) {
   const dateTrigger = stateManager.useSetting('date-trigger');
   const dateFormat = stateManager.useSetting('date-format');
@@ -149,7 +149,7 @@ export function usePreprocessedStr(
 
   return useMemo(() => {
     let date: moment.Moment;
-    let dateColor: DateColorKey;
+    let dateColor: DateColor;
     const getWrapperStyles = (baseClass: string) => {
       let wrapperStyle = '';
       if (dateColor) {

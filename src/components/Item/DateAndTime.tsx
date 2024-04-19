@@ -5,7 +5,7 @@ import { StateManager } from 'src/StateManager';
 import { t } from 'src/lang/helpers';
 
 import { c } from '../helpers';
-import { DateColorKey, Item } from '../types';
+import { DateColor, Item } from '../types';
 
 export function getRelativeDate(date: moment.Moment, time: moment.Moment) {
   if (time) {
@@ -52,7 +52,7 @@ interface DateAndTimeProps {
   onEditDate?: JSX.MouseEventHandler<HTMLSpanElement>;
   onEditTime?: JSX.MouseEventHandler<HTMLSpanElement>;
   filePath: string;
-  getDateColor: (date: moment.Moment) => DateColorKey;
+  getDateColor: (date: moment.Moment) => DateColor;
 }
 
 export function DateAndTime({

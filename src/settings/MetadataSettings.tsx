@@ -361,11 +361,6 @@ function MetadataSettings(props: MetadataSettingsProps) {
             if (e.key === 'Enter') {
               newKey();
               setInputValue('');
-              const target = e.target as HTMLInputElement;
-
-              target.win.setTimeout(() => {
-                target.scrollIntoView();
-              });
               return;
             }
 
@@ -377,15 +372,9 @@ function MetadataSettings(props: MetadataSettingsProps) {
           {...inputProps}
         />
         <button
-          onClick={(e) => {
+          onClick={() => {
             newKey();
             setInputValue('');
-            const target = e.target as HTMLElement;
-
-            target.win.setTimeout(() => {
-              target.scrollIntoView();
-            });
-            return;
           }}
         >
           {t('Add key')}

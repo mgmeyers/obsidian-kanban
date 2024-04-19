@@ -157,6 +157,7 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
           .setIcon('lucide-move-vertical')
           .setTitle(t('Sort by tags'))
           .onClick(() => {
+            const tagSortOrder = stateManager.getSetting('tag-sort');
             const children = lane.children.slice();
             const desc = lane.data.sorted === LaneSort.TagsAsc ? true : false;
 
@@ -167,6 +168,15 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
               if (!tagsA?.length && !tagsB?.length) return 0;
               if (!tagsA?.length) return 1;
               if (!tagsB?.length) return -1;
+
+              const aSortOrder = tagSortOrder?.findIndex((sort) => tagsA.includes(sort.tag)) ?? -1;
+              const bSortOrder = tagSortOrder?.findIndex((sort) => tagsB.includes(sort.tag)) ?? -1;
+
+              if (aSortOrder > -1 && bSortOrder < 0) return desc ? 1 : -1;
+              if (bSortOrder > -1 && aSortOrder < 0) return desc ? -1 : 1;
+              if (aSortOrder > -1 && bSortOrder > -1) {
+                return desc ? bSortOrder - aSortOrder : aSortOrder - bSortOrder;
+              }
 
               if (desc) return defaultSort(tagsB.join(''), tagsA.join(''));
               return defaultSort(tagsA.join(''), tagsB.join(''));

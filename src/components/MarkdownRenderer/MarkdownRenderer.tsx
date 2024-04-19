@@ -17,9 +17,9 @@ import {
   renderMarkdown,
 } from '../../helpers/renderMarkdown';
 import { usePreprocessedStr } from '../Editor/dateWidget';
-import { KanbanContext, SearchContext } from '../context';
+import { KanbanContext, SearchContext, SortContext } from '../context';
 import { c, noop } from '../helpers';
-import { DateColorKey, TagColorKey } from '../types';
+import { DateColor, TagColor } from '../types';
 
 interface MarkdownRendererProps extends HTMLAttributes<HTMLDivElement> {
   className?: string;
@@ -403,7 +403,7 @@ export class MarkdownRenderer extends ObsidianRenderer {
   }
 }
 
-function colorizeTags(wrapperEl: HTMLElement, getTagColor: (tag: string) => TagColorKey) {
+function colorizeTags(wrapperEl: HTMLElement, getTagColor: (tag: string) => TagColor) {
   if (!wrapperEl) return;
   const tagEls = wrapperEl.querySelectorAll<HTMLAnchorElement>('a.tag');
   if (!tagEls?.length) return;
@@ -418,10 +418,7 @@ function colorizeTags(wrapperEl: HTMLElement, getTagColor: (tag: string) => TagC
   });
 }
 
-function colorizeDates(
-  wrapperEl: HTMLElement,
-  getDateColor: (date: moment.Moment) => DateColorKey
-) {
+function colorizeDates(wrapperEl: HTMLElement, getDateColor: (date: moment.Moment) => DateColor) {
   if (!wrapperEl) return;
   const dateEls = wrapperEl.querySelectorAll<HTMLElement>('.' + c('date'));
   if (!dateEls?.length) return;
@@ -455,7 +452,14 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
 
   const entityManager = useContext(EntityManagerContext);
   const dndManager = useContext(DndManagerContext);
+  const sortContext = useContext(SortContext);
   const processed = usePreprocessedStr(stateManager, markdownString, getDateColor);
+
+  useEffect(() => {
+    if (!renderer.current) return;
+    entityManager?.scrollParent?.observer?.unobserve(entityManager.measureNode);
+    entityManager?.scrollParent?.observer?.observe(entityManager.measureNode);
+  }, [sortContext]);
 
   useEffect(() => {
     const renderCapability = new PromiseCapability();

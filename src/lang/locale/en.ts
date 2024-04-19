@@ -167,7 +167,11 @@ export default {
   'Drag to rearrange': 'Drag to rearrange',
   Delete: 'Delete',
   'Add key': 'Add key',
+  'Add tag': 'Add tag',
   'Field contains markdown': 'Field contains markdown',
+  'Tag sort order': 'Tag sort order',
+  'Set an explicit sort order for the specified tags.':
+    'Set an explicit sort order for the specified tags.',
 
   // TagColorSettings.tsx
   'Add tag color': 'Add tag color',

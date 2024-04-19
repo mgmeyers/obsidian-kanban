@@ -210,6 +210,18 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
                     if (!tagsA?.length) return desc.current ? -1 : 1;
                     if (!tagsB?.length) return desc.current ? 1 : -1;
 
+                    const tagSortOrder = stateManager.getSetting('tag-sort');
+                    const aSortOrder =
+                      tagSortOrder?.findIndex((sort) => tagsA.includes(sort.tag)) ?? -1;
+                    const bSortOrder =
+                      tagSortOrder?.findIndex((sort) => tagsB.includes(sort.tag)) ?? -1;
+
+                    if (aSortOrder > -1 && bSortOrder < 0) return -1;
+                    if (bSortOrder > -1 && aSortOrder < 0) return 1;
+                    if (aSortOrder > -1 && bSortOrder > -1) {
+                      return aSortOrder - bSortOrder;
+                    }
+
                     return defaultSort(tagsA.join(''), tagsB.join(''));
                   }
                   return sorted;
@@ -250,6 +262,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
               }
               return <MetadataValue data={val} searchQuery={searchQuery} />;
             },
+            sortDescFirst: false,
             sortingFn: (a, b, id) => {
               const valA = a.getValue(id) as any;
               const valB = b.getValue(id) as any;
@@ -260,6 +273,20 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
 
               const sorted = fuzzySort(a, b, id);
               if (sorted === null) {
+                if (id === 'tags') {
+                  const tagSortOrder = stateManager.getSetting('tag-sort');
+                  const aSortOrder =
+                    tagSortOrder?.findIndex((sort) => valA.value.includes(sort.tag)) ?? -1;
+                  const bSortOrder =
+                    tagSortOrder?.findIndex((sort) => valB.value.includes(sort.tag)) ?? -1;
+
+                  if (aSortOrder > -1 && bSortOrder < 0) return -1;
+                  if (bSortOrder > -1 && aSortOrder < 0) return 1;
+                  if (aSortOrder > -1 && bSortOrder > -1) {
+                    return aSortOrder - bSortOrder;
+                  }
+                }
+
                 return defaultSort(
                   anyToString(valA.value, stateManager),
                   anyToString(valB.value, stateManager)

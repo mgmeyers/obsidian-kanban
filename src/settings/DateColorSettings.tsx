@@ -5,15 +5,15 @@ import Preact from 'preact/compat';
 
 import { Icon } from '../components/Icon/Icon';
 import { c, generateInstanceId } from '../components/helpers';
-import { DateColorKey, DateColorSetting, DateColorSettingTemplate } from '../components/types';
+import { DateColor, DateColorSetting, DateColorSettingTemplate } from '../components/types';
 import { getParentBodyElement } from '../dnd/util/getWindow';
 import { t } from '../lang/helpers';
 import { ColorPickerInput } from './TagColorSettings';
 
 interface ItemProps {
-  dateColorKey: DateColorKey;
+  dateColorKey: DateColor;
   deleteKey: () => void;
-  updateKey: (newKey: DateColorKey) => void;
+  updateKey: (newKey: DateColor) => void;
   defaultColors: { color: string; backgroundColor: string };
   getTimeFormat: () => string;
   getDateFormat: () => string;
@@ -244,7 +244,7 @@ function DateSettings({ dataKeys, onChange, getTimeFormat, getDateFormat }: Date
     );
   };
 
-  const updateDateColor = (i: number) => (newDateKey: DateColorKey) => {
+  const updateDateColor = (i: number) => (newDateKey: DateColor) => {
     updateKeys(
       update(keys, {
         [i]: {
@@ -264,17 +264,19 @@ function DateSettings({ dataKeys, onChange, getTimeFormat, getDateFormat }: Date
           {t('Set colors for dates displayed in cards based on the rules below.')}
         </div>
       </div>
-      {keys.map((key, index) => (
-        <Item
-          key={key.id}
-          dateColorKey={key.data}
-          deleteKey={() => deleteKey(index)}
-          updateKey={updateDateColor(index)}
-          defaultColors={defaultColors}
-          getTimeFormat={getTimeFormat}
-          getDateFormat={getDateFormat}
-        />
-      ))}
+      <div>
+        {keys.map((key, index) => (
+          <Item
+            key={key.id}
+            dateColorKey={key.data}
+            deleteKey={() => deleteKey(index)}
+            updateKey={updateDateColor(index)}
+            defaultColors={defaultColors}
+            getTimeFormat={getTimeFormat}
+            getDateFormat={getDateFormat}
+          />
+        ))}
+      </div>
       <button className={c('add-tag-color-button')} onClick={newKey}>
         {t('Add date color')}
       </button>

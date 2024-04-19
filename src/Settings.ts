@@ -10,14 +10,17 @@ import {
 } from './components/helpers';
 import {
   DataKey,
-  DateColorKey,
+  DateColor,
   DateColorSetting,
   DateColorSettingTemplate,
   MetadataSetting,
   MetadataSettingTemplate,
-  TagColorKey,
+  TagColor,
   TagColorSetting,
   TagColorSettingTemplate,
+  TagSort,
+  TagSortSetting,
+  TagSortSettingTemplate,
 } from './components/types';
 import { getParentWindow } from './dnd/util/getWindow';
 import { t } from './lang/helpers';
@@ -32,6 +35,7 @@ import {
 import { cleanUpDateSettings, renderDateSettings } from './settings/DateColorSettings';
 import { cleanupMetadataSettings, renderMetadataSettings } from './settings/MetadataSettings';
 import { cleanUpTagSettings, renderTagSettings } from './settings/TagColorSettings';
+import { cleanUpTagSortSettings, renderTagSortSettings } from './settings/TagSortSettings';
 
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
@@ -43,7 +47,7 @@ export interface KanbanSettings {
   'archive-date-format'?: string;
   'archive-date-separator'?: string;
   'archive-with-date'?: boolean;
-  'date-colors'?: DateColorKey[];
+  'date-colors'?: DateColor[];
   'date-display-format'?: string;
   'date-format'?: string;
   'date-picker-week-start'?: number;
@@ -74,7 +78,8 @@ export interface KanbanSettings {
   'show-view-as-markdown'?: boolean;
   'show-set-view'?: boolean;
   'table-sizing'?: Record<string, number>;
-  'tag-colors'?: TagColorKey[];
+  'tag-sort'?: TagSort[];
+  'tag-colors'?: TagColor[];
   'time-format'?: string;
   'time-trigger'?: string;
 }
@@ -117,6 +122,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'show-set-view',
   'table-sizing',
   'tag-colors',
+  'tag-sort',
   'time-format',
   'time-trigger',
 ]);
@@ -562,34 +568,57 @@ export class SettingsManager {
         });
       });
 
-    new Setting(contentEl)
-      .setName(t('Tag colors'))
-      .setDesc(t('Set colors for tags displayed in cards.'))
-      .then((setting) => {
-        const [value] = this.getSetting('tag-colors', local);
+    new Setting(contentEl).then((setting) => {
+      const [value, globalValue] = this.getSetting('tag-sort', local);
 
-        const keys: TagColorSetting[] = ((value || []) as TagColorKey[]).map((k) => {
-          return {
-            ...TagColorSettingTemplate,
-            id: generateInstanceId(),
-            data: k,
-          };
-        });
-
-        renderTagSettings(setting.settingEl, keys, (keys: TagColorSetting[]) =>
-          this.applySettingsUpdate({
-            'tag-colors': {
-              $set: keys.map((k) => k.data),
-            },
-          })
-        );
-
-        this.cleanupFns.push(() => {
-          if (setting.settingEl) {
-            cleanUpTagSettings(setting.settingEl);
-          }
-        });
+      const keys: TagSortSetting[] = ((value || globalValue || []) as TagSort[]).map((k) => {
+        return {
+          ...TagSortSettingTemplate,
+          id: generateInstanceId(),
+          data: k,
+        };
       });
+
+      renderTagSortSettings(setting.settingEl, contentEl, keys, (keys: TagSortSetting[]) =>
+        this.applySettingsUpdate({
+          'tag-sort': {
+            $set: keys.map((k) => k.data),
+          },
+        })
+      );
+
+      this.cleanupFns.push(() => {
+        if (setting.settingEl) {
+          cleanUpTagSortSettings(setting.settingEl);
+        }
+      });
+    });
+
+    new Setting(contentEl).then((setting) => {
+      const [value] = this.getSetting('tag-colors', local);
+
+      const keys: TagColorSetting[] = ((value || []) as TagColor[]).map((k) => {
+        return {
+          ...TagColorSettingTemplate,
+          id: generateInstanceId(),
+          data: k,
+        };
+      });
+
+      renderTagSettings(setting.settingEl, keys, (keys: TagColorSetting[]) =>
+        this.applySettingsUpdate({
+          'tag-colors': {
+            $set: keys.map((k) => k.data),
+          },
+        })
+      );
+
+      this.cleanupFns.push(() => {
+        if (setting.settingEl) {
+          cleanUpTagSettings(setting.settingEl);
+        }
+      });
+    });
 
     contentEl.createEl('h4', { text: t('Date & Time') });
 
@@ -929,47 +958,44 @@ export class SettingsManager {
           });
       });
 
-    new Setting(contentEl)
-      .setName(t('Display date colors'))
-      .setDesc(t('Set colors for dates displayed in cards based on the rules below.'))
-      .then((setting) => {
-        const [value] = this.getSetting('date-colors', local);
+    new Setting(contentEl).then((setting) => {
+      const [value] = this.getSetting('date-colors', local);
 
-        const keys: DateColorSetting[] = ((value || []) as DateColorKey[]).map((k) => {
-          return {
-            ...DateColorSettingTemplate,
-            id: generateInstanceId(),
-            data: k,
-          };
-        });
-
-        renderDateSettings(
-          setting.settingEl,
-          keys,
-          (keys: DateColorSetting[]) =>
-            this.applySettingsUpdate({
-              'date-colors': {
-                $set: keys.map((k) => k.data),
-              },
-            }),
-          () => {
-            const [value, globalValue] = this.getSetting('date-display-format', local);
-            const defaultFormat = getDefaultDateFormat(this.app);
-            return value || globalValue || defaultFormat;
-          },
-          () => {
-            const [value, globalValue] = this.getSetting('time-format', local);
-            const defaultFormat = getDefaultTimeFormat(this.app);
-            return value || globalValue || defaultFormat;
-          }
-        );
-
-        this.cleanupFns.push(() => {
-          if (setting.settingEl) {
-            cleanUpDateSettings(setting.settingEl);
-          }
-        });
+      const keys: DateColorSetting[] = ((value || []) as DateColor[]).map((k) => {
+        return {
+          ...DateColorSettingTemplate,
+          id: generateInstanceId(),
+          data: k,
+        };
       });
+
+      renderDateSettings(
+        setting.settingEl,
+        keys,
+        (keys: DateColorSetting[]) =>
+          this.applySettingsUpdate({
+            'date-colors': {
+              $set: keys.map((k) => k.data),
+            },
+          }),
+        () => {
+          const [value, globalValue] = this.getSetting('date-display-format', local);
+          const defaultFormat = getDefaultDateFormat(this.app);
+          return value || globalValue || defaultFormat;
+        },
+        () => {
+          const [value, globalValue] = this.getSetting('time-format', local);
+          const defaultFormat = getDefaultTimeFormat(this.app);
+          return value || globalValue || defaultFormat;
+        }
+      );
+
+      this.cleanupFns.push(() => {
+        if (setting.settingEl) {
+          cleanUpDateSettings(setting.settingEl);
+        }
+      });
+    });
 
     new Setting(contentEl)
       .setName(t('Link dates to daily notes'))
