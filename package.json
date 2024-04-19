@@ -1,6 +1,6 @@
 {
   "name": "obsidian-kanban",
-  "version": "2.0.14-beta",
+  "version": "2.0.15-beta",
   "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
   "main": "main.js",
   "scripts": {
