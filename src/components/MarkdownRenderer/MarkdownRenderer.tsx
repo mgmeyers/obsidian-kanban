@@ -17,7 +17,7 @@ import {
   renderMarkdown,
 } from '../../helpers/renderMarkdown';
 import { usePreprocessedStr } from '../Editor/dateWidget';
-import { KanbanContext, SearchContext, SortContext } from '../context';
+import { IntersectionObserverContext, KanbanContext, SearchContext, SortContext } from '../context';
 import { c, noop } from '../helpers';
 import { DateColor, TagColor } from '../types';
 
@@ -444,15 +444,17 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
   searchQuery,
   ...divProps
 }: MarkdownPreviewRendererProps) {
-  const search = useContext(SearchContext);
   const { view, stateManager, getDateColor, getTagColor } = useContext(KanbanContext);
+  const search = useContext(SearchContext);
+  const entityManager = useContext(EntityManagerContext);
+  const dndManager = useContext(DndManagerContext);
+  const sortContext = useContext(SortContext);
+  const intersectionContext = useContext(IntersectionObserverContext);
+
   const markRef = useRef<Mark>();
   const renderer = useRef<MarkdownRenderer>();
   const elRef = useRef<HTMLDivElement>();
 
-  const entityManager = useContext(EntityManagerContext);
-  const dndManager = useContext(DndManagerContext);
-  const sortContext = useContext(SortContext);
   const processed = usePreprocessedStr(stateManager, markdownString, getDateColor);
 
   useEffect(() => {
@@ -590,6 +592,20 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
       };
     }
   }
+
+  useEffect(() => {
+    if (!intersectionContext || !elRef.current) return;
+
+    intersectionContext.registerHandler(elRef.current, (entry) => {
+      if (entry.isIntersecting) renderer.current?.showChildren();
+      else renderer.current?.hideChildren();
+    });
+    return () => {
+      if (elRef.current) {
+        intersectionContext?.unregisterHandler(elRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div

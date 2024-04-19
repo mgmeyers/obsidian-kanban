@@ -1,6 +1,7 @@
 import { createContext } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
+import { IntersectionObserverHandler } from 'src/dnd/managers/ScrollManager';
 
 import { BoardModifiers } from '../helpers/boardModifiers';
 import { DateColor, Item, Lane, LaneSort, TagColor } from './types';
@@ -25,3 +26,7 @@ export interface SearchContextProps {
 
 export const SearchContext = createContext<SearchContextProps | null>(null);
 export const SortContext = createContext<LaneSort | null>(null);
+export const IntersectionObserverContext = createContext<{
+  registerHandler: (el: HTMLElement, handler: IntersectionObserverHandler) => void;
+  unregisterHandler: (el: HTMLElement) => void;
+} | null>(null);

@@ -201,7 +201,6 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
               {
                 'something-is-dragging': isAnythingDragging,
               },
-              // TODO
               ...((boardData.data.frontmatter.cssclass || []) as string[]),
               ...((boardData.data.frontmatter.cssclasses || []) as string[]),
             ])}
