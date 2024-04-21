@@ -203,9 +203,14 @@ export function usePreprocessedStr(
       const parsed = moment(content, timeFormat);
       if (!parsed.isValid()) return match;
 
-      date.hour(parsed.hour());
-      date.minute(parsed.minute());
-      date.second(parsed.second());
+      if (!date) {
+        date = parsed;
+        date.year(1970);
+      } else {
+        date.hour(parsed.hour());
+        date.minute(parsed.minute());
+        date.second(parsed.second());
+      }
 
       const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-time-wrapper'));
       return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')}"${wrapperStyle}><span class="${c('preview-time')} ${c('item-metadata-time')}">${parsed.format(timeFormat)}</span></span>`;

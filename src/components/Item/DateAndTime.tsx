@@ -81,6 +81,7 @@ export function DateAndTime({
 
   if (!dateStr) return null;
 
+  const hasDate = !!item.data.metadata.date;
   const hasTime = !!item.data.metadata.time;
   const dateDisplayStr = targetDate.format(dateDisplayFormat);
   const timeDisplayStr = !hasTime ? null : targetDate.format(timeFormat);
@@ -127,12 +128,16 @@ export function DateAndTime({
         },
       ])}
     >
-      <span
-        {...dateProps}
-        className={`${c('item-metadata-date')} ${!shouldLinkDate ? 'is-button' : ''}`}
-      >
-        {date}
-      </span>{' '}
+      {hasDate && (
+        <>
+          <span
+            {...dateProps}
+            className={`${c('item-metadata-date')} ${!shouldLinkDate ? 'is-button' : ''}`}
+          >
+            {date}
+          </span>{' '}
+        </>
+      )}
       {hasTime && (
         <span
           onClick={onEditTime}

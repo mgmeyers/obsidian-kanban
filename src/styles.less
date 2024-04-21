@@ -143,10 +143,6 @@
     display: block;
   }
 
-  .kanban-plugin__item-metadata-time::before {
-    display: none;
-  }
-
   .kanban-plugin__item-input-wrapper,
   .cm-table-widget,
   .kanban-plugin__item-title,
@@ -838,14 +834,6 @@ button.kanban-plugin__new-item-button {
 
 .kanban-plugin__item-metadata a {
   text-decoration: none;
-}
-
-.kanban-plugin__item-metadata-date-wrapper > .kanban-plugin__item-metadata-time::before {
-  content: ' • ';
-}
-
-.kanban-plugin__item-metadata-time.is-button:hover::before {
-  color: var(--text-muted);
 }
 
 .kanban-plugin__item-tags:not(:empty) {
