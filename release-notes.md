@@ -1,2 +1,2 @@
-3df9fe2 Fix metadata table not showing
-cae948d Fix table content not rendering
+53a98e6 Fix errors with cards that only contain time
+820591c Add isKanbanEditor flag to editor
