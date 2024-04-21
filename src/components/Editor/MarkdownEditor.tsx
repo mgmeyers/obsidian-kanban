@@ -95,6 +95,8 @@ export function MarkdownEditor({
 
   useEffect(() => {
     class Editor extends view.plugin.MarkdownEditor {
+      isKanbanEditor = true;
+
       updateBottomPadding() {}
       onUpdate(update: ViewUpdate, changed: boolean) {
         super.onUpdate(update, changed);
