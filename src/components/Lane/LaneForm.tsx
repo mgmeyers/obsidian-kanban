@@ -19,7 +19,7 @@ export function LaneForm({ onNewLane, closeLaneForm }: LaneFormProps) {
   const editorRef = useRef<EditorView>();
   const inputRef = useRef<HTMLTextAreaElement>();
   const clickOutsideRef = useOnclickOutside(() => closeLaneForm(), {
-    ignoreClass: c('ignore-click-outside'),
+    ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],
   });
 
   const { boardModifiers, stateManager } = useContext(KanbanContext);
