@@ -1,1 +1,1 @@
-a9ccbec Ensure clicking on suggestions doesn't close the item form
+655a6cd Parse task plugin data
