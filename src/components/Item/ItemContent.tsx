@@ -21,7 +21,7 @@ import {
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
-import { DateAndTime, RelativeDate } from './DateAndTime';
+import { DateAndTime, RelativeDate, TaskMetadata } from './DateAndTime';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
@@ -317,6 +317,7 @@ export const ItemContent = memo(function ItemContent({
             filePath={filePath}
             getDateColor={getDateColor}
           />
+          <TaskMetadata item={item} stateManager={stateManager} />
           <Tags tags={item.data.metadata.tags} searchQuery={searchQuery} />
         </div>
       )}

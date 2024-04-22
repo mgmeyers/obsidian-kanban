@@ -6,6 +6,7 @@ import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
 
 import { getSearchValue } from '../common';
+import { parseDataviewTaskMetadata, parseDefaultTaskMetadata } from './obsidian-tasks';
 
 export async function hydrateLane(stateManager: StateManager, lane: Lane) {
   return lane;
@@ -42,6 +43,21 @@ export async function hydrateItem(stateManager: StateManager, item: Item) {
 
     if (file) {
       item.data.metadata.file = file;
+    }
+  }
+
+  const taskMetadata = parseDefaultTaskMetadata(item.data.title);
+  if (taskMetadata) {
+    item.data.metadata.taskMetadata = taskMetadata;
+    if (stateManager.getSetting('hide-date-in-title')) {
+      item.data.title = taskMetadata.description;
+    }
+  }
+  const dataviewTaskMetadata = parseDataviewTaskMetadata(item.data.title);
+  if (dataviewTaskMetadata) {
+    item.data.metadata.taskMetadata = dataviewTaskMetadata;
+    if (stateManager.getSetting('hide-date-in-title')) {
+      item.data.title = dataviewTaskMetadata.description;
     }
   }
 

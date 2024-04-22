@@ -7,10 +7,13 @@ import {
   SortingState,
   createColumnHelper,
 } from '@tanstack/react-table';
+import moment from 'moment';
 import { useCallback, useContext, useMemo, useRef, useState } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
+import { c } from 'src/components/helpers';
 import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
+import { lableToIcon, lableToName } from 'src/parsers/helpers/obsidian-tasks';
 
 import { Tags } from '../Item/ItemContent';
 import { MetadataValue, anyToString } from '../Item/MetadataTable';
@@ -51,6 +54,8 @@ export function useTableData(board: Board, stateManager: StateManager): TableDat
     const items: TableItem[] = [];
     const metadata: Set<string> = new Set();
     const fileMetadata: Set<string> = new Set();
+    const fileMetadataLabels: Map<string, string> = new Map();
+    const taskMetadata: Set<string> = new Set();
     const lanes: Lane[] = board?.children || [];
 
     for (let i = 0, len = lanes.length; i < len; i++) {
@@ -60,6 +65,7 @@ export function useTableData(board: Board, stateManager: StateManager): TableDat
         const itemMetadata = item.data.metadata;
         const itemfileMetadata = itemMetadata.fileMetadata || {};
         const fileMetaOrder = itemMetadata.fileMetadataOrder || [];
+        const itemTaskMetadata = itemMetadata.taskMetadata;
 
         if (!metadata.has('date') && itemMetadata.date) {
           metadata.add('date');
@@ -71,7 +77,14 @@ export function useTableData(board: Board, stateManager: StateManager): TableDat
         for (const key of fileMetaOrder) {
           if (!fileMetadata.has(key) && itemfileMetadata[key]) {
             fileMetadata.add(key);
+            fileMetadataLabels.set(key, itemfileMetadata[key].label);
           }
+        }
+
+        if (itemTaskMetadata) {
+          Object.keys(itemTaskMetadata).forEach((k) => {
+            if (k !== 'description' && !taskMetadata.has(k)) taskMetadata.add(k);
+          });
         }
 
         items.push({ item, lane, path: [i, j], stateManager });
@@ -82,6 +95,8 @@ export function useTableData(board: Board, stateManager: StateManager): TableDat
       items,
       metadata: Array.from(metadata),
       fileMetadata: Array.from(fileMetadata),
+      taskMetadata: Array.from(taskMetadata),
+      fileMetadataLabels,
     };
   }, [board]);
 }
@@ -128,6 +143,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
   const shouldShowRelativeDate = stateManager.useSetting('show-relative-date');
   const hideDateDisplay = stateManager.useSetting('hide-date-display');
   const hideTagsDisplay = stateManager.useSetting('hide-tags-display');
+  const dateDisplayFormat = stateManager.useSetting('date-display-format');
   const tableSizing = stateManager.useSetting('table-sizing') || {};
 
   const desc = useRef<boolean>(false);
@@ -143,7 +159,10 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
   );
   const state = useMemo(() => ({ sorting, globalFilter: search?.query }), [sorting, search?.query]);
 
-  const { items, metadata, fileMetadata } = useTableData(boardData, stateManager);
+  const { items, metadata, fileMetadata, taskMetadata, fileMetadataLabels } = useTableData(
+    boardData,
+    stateManager
+  );
   const withMetadata: ColumnDef<TableItem, any>[] = useMemo(() => {
     const columns = [...baseColumns(tableSizing)];
     for (const key of metadata) {
@@ -237,8 +256,69 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
     return columns;
   }, [shouldShowRelativeDate, hideDateDisplay, hideTagsDisplay, ...metadata]);
 
-  const withFileMetadata = useMemo(() => {
+  const withTaskMetadata = useMemo(() => {
     const columns = [...withMetadata];
+    for (const key of taskMetadata) {
+      columns.push(
+        columnHelper.accessor(
+          (row) => {
+            const metadata = row.item.data.metadata.taskMetadata;
+            if (metadata && metadata[key]) {
+              return metadata[key];
+            }
+            return null;
+          },
+          {
+            id: key,
+            header: lableToName(key) ?? key,
+            cell: (info) => {
+              const val = info.getValue();
+              if (!val) return null;
+
+              let str = val;
+              const label = lableToIcon(key, str);
+              if (!label) return null;
+
+              if (moment.isMoment(val)) {
+                str = str.format(dateDisplayFormat);
+              }
+
+              return (
+                <span className={c('item-task-metadata-item')}>
+                  <span className={c('item-task-metadata-item-key')}>{label}</span>
+                  {key !== 'priority' && (
+                    <span className={c('item-task-metadata-item-value')}>{str}</span>
+                  )}
+                </span>
+              );
+            },
+            sortDescFirst: false,
+            sortingFn: (a, b, id) => {
+              const valA = a.getValue(id) as any;
+              const valB = b.getValue(id) as any;
+
+              if (valA === null && valB === null) return 0;
+              if (valA === null) return desc.current ? -1 : 1;
+              if (valB === null) return desc.current ? 1 : -1;
+
+              const sorted = fuzzySort(a, b, id);
+              if (sorted === null) {
+                return defaultSort(
+                  anyToString(valA, stateManager),
+                  anyToString(valB, stateManager)
+                );
+              }
+              return sorted;
+            },
+          }
+        )
+      );
+    }
+    return columns;
+  }, [withMetadata, ...taskMetadata]);
+
+  const withFileMetadata = useMemo(() => {
+    const columns = [...withTaskMetadata];
     for (const key of fileMetadata) {
       columns.push(
         columnHelper.accessor(
@@ -251,6 +331,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
           },
           {
             id: key,
+            header: fileMetadataLabels.get(key) ?? key,
             cell: (info) => {
               const val = info.getValue();
               if (!val) return null;
@@ -299,7 +380,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
       );
     }
     return columns;
-  }, [withMetadata, ...fileMetadata]);
+  }, [withTaskMetadata, ...fileMetadata]);
 
   return { data: items, columns: withFileMetadata, state, setSorting };
 }

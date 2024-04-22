@@ -25,7 +25,7 @@ export interface SearchContextProps {
 }
 
 export const SearchContext = createContext<SearchContextProps | null>(null);
-export const SortContext = createContext<LaneSort | null>(null);
+export const SortContext = createContext<LaneSort | string | null>(null);
 export const IntersectionObserverContext = createContext<{
   registerHandler: (el: HTMLElement, handler: IntersectionObserverHandler) => void;
   unregisterHandler: (el: HTMLElement) => void;

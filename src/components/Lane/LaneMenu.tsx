@@ -4,7 +4,9 @@ import { Dispatch, StateUpdater, useContext, useEffect, useMemo, useState } from
 import { Path } from 'src/dnd/types';
 import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
+import { lableToIcon } from 'src/parsers/helpers/obsidian-tasks';
 
+import { anyToString } from '../Item/MetadataTable';
 import { KanbanContext } from '../context';
 import { c, generateInstanceId } from '../helpers';
 import { EditState, Lane, LaneSort, LaneTemplate } from '../types';
@@ -69,7 +71,19 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
   const [confirmAction, setConfirmAction] = useState<LaneAction>(null);
 
   const settingsMenu = useMemo(() => {
-    return new Menu()
+    const taskSortOptions = new Set<string>();
+
+    lane.children.forEach((item) => {
+      const taskData = item.data.metadata.taskMetadata;
+      if (taskData) {
+        Object.keys(taskData).forEach((k) => {
+          if (k === 'description') return;
+          if (!taskSortOptions.has(k)) taskSortOptions.add(k);
+        });
+      }
+    });
+
+    const menu = new Menu()
       .addItem((item) => {
         item
           .setIcon('lucide-edit-3')
@@ -197,7 +211,60 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
               })
             );
           });
-      })
+      });
+
+    if (taskSortOptions.size) {
+      taskSortOptions.forEach((k) => {
+        menu.addItem((i) => {
+          i.setIcon('lucide-move-vertical')
+            .setTitle(
+              t('Sort by') +
+                ' ' +
+                (k === 'priority' ? t('Priority').toLocaleLowerCase() : lableToIcon(k, null))
+            )
+            .onClick(() => {
+              const children = lane.children.slice();
+              const desc = lane.data.sorted === k + '-asc' ? true : false;
+
+              children.sort((a, b) => {
+                const valA = a.data.metadata.taskMetadata[k];
+                const valB = b.data.metadata.taskMetadata[k];
+
+                if (valA === undefined && valB === undefined) return 0;
+                if (valA === undefined) return 1;
+                if (valB === undefined) return -1;
+
+                if (desc) {
+                  return defaultSort(
+                    anyToString(valB, stateManager),
+                    anyToString(valA, stateManager)
+                  );
+                }
+                return defaultSort(
+                  anyToString(valA, stateManager),
+                  anyToString(valB, stateManager)
+                );
+              });
+
+              boardModifiers.updateLane(
+                path,
+                update(lane, {
+                  children: {
+                    $set: children,
+                  },
+                  data: {
+                    sorted: {
+                      $set: lane.data.sorted === k + '-asc' ? k + '-desc' : k + '-asc',
+                    },
+                  },
+                })
+              );
+            });
+        });
+      });
+    }
+
+    menu
       .addSeparator()
       .addItem((i) => {
         i.setIcon('corner-left-down')
@@ -248,6 +315,8 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
           .setTitle(t('Delete list'))
           .onClick(() => setConfirmAction('delete'));
       });
+
+    return menu;
   }, [stateManager, setConfirmAction, path, lane]);
 
   return {

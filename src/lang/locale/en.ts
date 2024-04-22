@@ -182,6 +182,16 @@ export default {
   Date: 'Date',
   Tags: 'Tags',
 
+  Priority: 'Priority',
+  Start: 'Start',
+  Created: 'Created',
+  Scheduled: 'Scheduled',
+  Due: 'Due',
+  Cancelled: 'Cancelled',
+  Recurrence: 'Recurrence',
+  'Depends on': 'Depends on',
+  ID: 'ID',
+
   // components/Item/Item.tsx
   'More options': 'More options',
   Cancel: 'Cancel',
@@ -249,6 +259,7 @@ export default {
   'Sort by card text': 'Sort by card text',
   'Sort by date': 'Sort by date',
   'Sort by tags': 'Sort by tags',
+  'Sort by': 'Sort by',
 
   // components/helpers/renderMarkdown.ts
   'Unable to find': 'Unable to find',

@@ -18,7 +18,7 @@ export interface LaneData {
   maxItems?: number;
   dom?: HTMLDivElement;
   forceEditMode?: boolean;
-  sorted?: LaneSort;
+  sorted?: LaneSort | string;
   isCollapsed?: boolean;
 }
 
@@ -64,7 +64,7 @@ export interface FileMetadata {
   [k: string]: PageData;
 }
 
-export interface ItemMetaData {
+export interface ItemMetadata {
   dateStr?: string;
   date?: moment.Moment;
   timeStr?: string;
@@ -74,6 +74,7 @@ export interface ItemMetaData {
   file?: TFile | null;
   fileMetadata?: FileMetadata;
   fileMetadataOrder?: string[];
+  taskMetadata?: Record<string, any>;
 }
 
 export interface ItemData {
@@ -83,7 +84,7 @@ export interface ItemData {
   titleRaw: string;
   titleSearch: string;
   titleSearchRaw: string;
-  metadata: ItemMetaData;
+  metadata: ItemMetadata;
   dom?: HTMLDivElement;
   forceEditMode?: boolean;
 }
