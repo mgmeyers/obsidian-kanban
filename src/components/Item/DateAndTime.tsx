@@ -180,6 +180,8 @@ export function TaskMetadata({ item, stateManager }: TaskMetadataProps) {
 
       if (moment.isMoment(val)) {
         val = val.format(dateDisplayFormat);
+      } else if (k === 'recurrence') {
+        val = val.toText();
       }
 
       return (

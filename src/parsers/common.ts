@@ -13,11 +13,11 @@ export enum ParserFormats {
 }
 
 export interface BaseFormat {
-  newItem(content: string, isComplete?: boolean, forceEdit?: boolean): Promise<Item>;
-  updateItemContent(item: Item, content: string): Promise<Item>;
+  newItem(content: string, isComplete?: boolean, forceEdit?: boolean): Item;
+  updateItemContent(item: Item, content: string): Item;
   boardToMd(board: Board): string;
-  mdToBoard(md: string): Promise<Board>;
-  reparseBoard(): Promise<Board>;
+  mdToBoard(md: string): Board;
+  reparseBoard(): Board;
 }
 
 export const completeString = `**${t('Complete')}**`;

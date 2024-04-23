@@ -83,7 +83,7 @@ export function moveEntity(
   root: Nestable,
   source: Path,
   destination: Path,
-  transform?: (entity: Nestable) => Nestable
+  transform?: (entity: Nestable) => Nestable | Nestable[]
 ) {
   const entity = transform
     ? transform(getEntityFromPath(root, source))
@@ -93,7 +93,11 @@ export function moveEntity(
   const destinationModifier = siblingDirection === SiblingDirection.After ? -1 : 0;
 
   const removeMutation = buildRemoveMutation(source);
-  const insertMutation = buildInsertMutation(destination, [entity], destinationModifier);
+  const insertMutation = buildInsertMutation(
+    destination,
+    Array.isArray(entity) ? entity : [entity],
+    destinationModifier
+  );
 
   const mutation = merge<Spec<Nestable>>(removeMutation, insertMutation, {
     isMergeableObject: (val) => {

@@ -85,15 +85,7 @@ export function useItemMenu({
                 stateManager.app.fileManager.generateMarkdownLink(newFile, stateManager.file.path)
               );
 
-              stateManager
-                .updateItemContent(item, newTitleRaw)
-                .then((item) => {
-                  boardModifiers.updateItem(path, item);
-                })
-                .catch((e) => {
-                  stateManager.setError(e);
-                  console.error(e);
-                });
+              boardModifiers.updateItem(path, stateManager.updateItemContent(item, newTitleRaw));
             });
         })
         .addItem((i) => {
@@ -115,15 +107,10 @@ export function useItemMenu({
                   `${this.app.fileManager.generateMarkdownLink(stateManager.file, '', '#^' + id)}`
                 );
 
-                stateManager
-                  .updateItemContent(item, `${item.data.titleRaw} ^${id}`)
-                  .then((item) => {
-                    boardModifiers.updateItem(path, item);
-                  })
-                  .catch((e) => {
-                    stateManager.setError(e);
-                    console.error(e);
-                  });
+                boardModifiers.updateItem(
+                  path,
+                  stateManager.updateItemContent(item, `${item.data.titleRaw} ^${id}`)
+                );
               }
             });
         })
@@ -155,19 +142,19 @@ export function useItemMenu({
         .addItem((i) => {
           i.setIcon('lucide-list-start')
             .setTitle(t('Insert card before'))
-            .onClick(async () =>
-              boardModifiers.insertItems(path, [await stateManager.getNewItem('', false, true)])
+            .onClick(() =>
+              boardModifiers.insertItems(path, [stateManager.getNewItem('', false, true)])
             );
         })
         .addItem((i) => {
           i.setIcon('lucide-list-end')
             .setTitle(t('Insert card after'))
-            .onClick(async () => {
+            .onClick(() => {
               const newPath = [...path];
 
               newPath[newPath.length - 1] = newPath[newPath.length - 1] + 1;
 
-              boardModifiers.insertItems(newPath, [await stateManager.getNewItem('', false, true)]);
+              boardModifiers.insertItems(newPath, [stateManager.getNewItem('', false, true)]);
             });
         })
         .addItem((i) => {
@@ -227,15 +214,7 @@ export function useItemMenu({
 
               const titleRaw = item.data.titleRaw.replace(dateRegEx, '').trim();
 
-              stateManager
-                .updateItemContent(item, titleRaw)
-                .then((item) => {
-                  boardModifiers.updateItem(path, item);
-                })
-                .catch((e) => {
-                  stateManager.setError(e);
-                  console.error(e);
-                });
+              boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRaw));
             });
         });
 
@@ -270,16 +249,7 @@ export function useItemMenu({
                 );
 
                 const titleRaw = item.data.titleRaw.replace(timeRegEx, '').trim();
-
-                stateManager
-                  .updateItemContent(item, titleRaw)
-                  .then((item) => {
-                    boardModifiers.updateItem(path, item);
-                  })
-                  .catch((e) => {
-                    stateManager.setError(e);
-                    console.error(e);
-                  });
+                boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRaw));
               });
           });
         }

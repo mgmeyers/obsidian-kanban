@@ -120,15 +120,7 @@ export function constructMenuDatePickerOnChange({
       titleRaw = `${item.data.titleRaw} ${dateTrigger}${wrappedDate}`;
     }
 
-    stateManager
-      .updateItemContent(item, titleRaw)
-      .then((item) => {
-        boardModifiers.updateItem(path, item);
-      })
-      .catch((e) => {
-        stateManager.setError(e);
-        console.error(e);
-      });
+    boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRaw));
   };
 }
 
@@ -276,15 +268,7 @@ export function constructMenuTimePickerOnChange({
       titleRaw = `${item.data.titleRaw} ${timeTrigger}{${time}}`;
     }
 
-    stateManager
-      .updateItemContent(item, titleRaw)
-      .then((item) => {
-        boardModifiers.updateItem(path, item);
-      })
-      .catch((e) => {
-        stateManager.setError(e);
-        console.error(e);
-      });
+    boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRaw));
   };
 }
 

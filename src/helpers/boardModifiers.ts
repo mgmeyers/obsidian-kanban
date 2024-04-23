@@ -20,6 +20,7 @@ export interface BoardModifiers {
   appendItems: (path: Path, items: Item[]) => void;
   prependItems: (path: Path, items: Item[]) => void;
   insertItems: (path: Path, items: Item[]) => void;
+  replaceItem: (path: Path, items: Item[]) => void;
   splitItem: (path: Path, items: Item[]) => void;
   moveItemToTop: (path: Path) => void;
   moveItemToBottom: (path: Path) => void;
@@ -77,6 +78,16 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
       stateManager.setState((boardData) => insertEntity(boardData, path, items));
     },
 
+    replaceItem: (path: Path, items: Item[]) => {
+      items.forEach((item) =>
+        stateManager.app.workspace.trigger('kanban:card-added', stateManager.file, item)
+      );
+
+      stateManager.setState((boardData) =>
+        insertEntity(removeEntity(boardData, path), path, items)
+      );
+    },
+
     splitItem: (path: Path, items: Item[]) => {
       items.forEach((item) =>
         stateManager.app.workspace.trigger('kanban:card-added', stateManager.file, item)
@@ -126,7 +137,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     },
 
     archiveLane: (path: Path) => {
-      stateManager.setState(async (boardData) => {
+      stateManager.setState((boardData) => {
         const lane = getEntityFromPath(boardData, path);
         const items = lane.children;
 
@@ -137,7 +148,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
             data: {
               archive: {
                 $unshift: stateManager.getSetting('archive-with-date')
-                  ? await Promise.all(items.map(appendArchiveDate))
+                  ? items.map(appendArchiveDate)
                   : items,
               },
             },
@@ -150,7 +161,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     },
 
     archiveLaneItems: (path: Path) => {
-      stateManager.setState(async (boardData) => {
+      stateManager.setState((boardData) => {
         const lane = getEntityFromPath(boardData, path);
         const items = lane.children;
 
@@ -167,7 +178,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
               data: {
                 archive: {
                   $unshift: stateManager.getSetting('archive-with-date')
-                    ? await Promise.all(items.map(appendArchiveDate))
+                    ? items.map(appendArchiveDate)
                     : items,
                 },
               },
@@ -211,7 +222,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     },
 
     archiveItem: (path: Path) => {
-      stateManager.setState(async (boardData) => {
+      stateManager.setState((boardData) => {
         const item = getEntityFromPath(boardData, path);
 
         stateManager.app.workspace.trigger('kanban:card-archived', stateManager.file, path, item);
@@ -221,9 +232,7 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
             data: {
               archive: {
                 $push: [
-                  stateManager.getSetting('archive-with-date')
-                    ? await appendArchiveDate(item)
-                    : item,
+                  stateManager.getSetting('archive-with-date') ? appendArchiveDate(item) : item,
                 ],
               },
             },

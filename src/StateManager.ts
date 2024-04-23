@@ -50,7 +50,6 @@ export class StateManager {
     return !!this.state?.data?.errors?.length;
   }
 
-  newBoardPromise: Promise<void> | null = null;
   registerView(view: KanbanView, data: string, shouldParseData: boolean) {
     if (!this.viewSet.has(view)) {
       this.viewSet.add(view);
@@ -58,20 +57,7 @@ export class StateManager {
     }
 
     if (shouldParseData) {
-      if (this.newBoardPromise !== null) {
-        this.newBoardPromise.then(() => {
-          return this.newBoard(data);
-        });
-      } else {
-        this.newBoardPromise = this.newBoard(data)
-          .then(() => {
-            this.newBoardPromise = null;
-          })
-          .catch((e) => {
-            console.error(e);
-            this.setError(e);
-          });
-      }
+      this.newBoard(data);
     }
   }
 
@@ -93,9 +79,9 @@ export class StateManager {
     };
   }
 
-  async newBoard(md: string) {
+  newBoard(md: string) {
     try {
-      await this.setState(await this.getParsedBoard(md), false);
+      this.setState(this.getParsedBoard(md), false);
     } catch (e) {
       this.setError(e);
     }
@@ -122,11 +108,11 @@ export class StateManager {
     this.stateReceivers.forEach((receiver) => receiver({ ...this.state }));
   }
 
-  async forceRefresh() {
+  forceRefresh() {
     if (this.state) {
       try {
         this.compileSettings();
-        this.state = await this.parser.reparseBoard();
+        this.state = this.parser.reparseBoard();
 
         this.stateReceivers.forEach((receiver) => receiver(this.state));
         this.settingsNotifiers.forEach((notifiers) => {
@@ -140,13 +126,10 @@ export class StateManager {
     }
   }
 
-  async setState(
-    state: Board | ((board: Board) => Board) | ((board: Board) => Promise<Board>),
-    shouldSave: boolean = true
-  ) {
+  setState(state: Board | ((board: Board) => Board), shouldSave: boolean = true) {
     try {
       const oldSettings = this.state?.data.settings;
-      const newState = typeof state === 'function' ? await state(this.state) : state;
+      const newState = typeof state === 'function' ? state(this.state) : state;
       const newSettings = newState?.data.settings;
 
       if (oldSettings && newSettings && shouldRefreshBoard(oldSettings, newSettings)) {
@@ -158,7 +141,7 @@ export class StateManager {
           },
         });
         this.compileSettings();
-        this.state = await this.parser.reparseBoard();
+        this.state = this.parser.reparseBoard();
       } else {
         this.state = newState;
         this.compileSettings();
@@ -307,7 +290,7 @@ export class StateManager {
     return null;
   };
 
-  async getParsedBoard(data: string) {
+  getParsedBoard(data: string) {
     const trimmedContent = data.trim();
 
     let board: Board = {
@@ -325,7 +308,7 @@ export class StateManager {
 
     try {
       if (trimmedContent) {
-        board = await this.parser.mdToBoard(trimmedContent);
+        board = this.parser.mdToBoard(trimmedContent);
       }
     } catch (e) {
       console.error(e);
@@ -361,7 +344,7 @@ export class StateManager {
 
   async reparseBoardFromMd() {
     try {
-      this.setState(await this.getParsedBoard(this.getAView().data), false);
+      this.setState(this.getParsedBoard(this.getAView().data), false);
     } catch (e) {
       console.error(e);
       this.setError(e);

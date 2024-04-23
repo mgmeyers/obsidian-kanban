@@ -25,8 +25,8 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
     ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],
   });
 
-  const createItem = async (title: string) => {
-    addItems([await stateManager.getNewItem(title)]);
+  const createItem = (title: string) => {
+    addItems([stateManager.getNewItem(title)]);
     const cm = editorRef.current;
     if (cm) {
       cm.dispatch({

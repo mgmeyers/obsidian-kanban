@@ -17,6 +17,8 @@ module.exports = {
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
+    parser: '@typescript-eslint/parser',
+    project: './tsconfig.json',
     ecmaFeatures: {
       jsx: true,
     },
@@ -25,6 +27,7 @@ module.exports = {
   },
   plugins: ['react', '@typescript-eslint'],
   rules: {
+    '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/member-delimiter-style': 'off',
     '@typescript-eslint/no-explicit-any': 'off',

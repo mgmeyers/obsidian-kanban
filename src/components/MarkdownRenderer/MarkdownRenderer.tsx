@@ -270,7 +270,7 @@ export class MarkdownRenderer extends ObsidianRenderer {
     renderer.onResize = noop;
 
     // @ts-ignore
-    renderer.previewEl.toggleClass('rtl', app.vault.getConfig('rightToLeft'));
+    renderer.previewEl.toggleClass('rtl', owner.app.vault.getConfig('rightToLeft'));
     renderer.previewEl.toggleClass('show-indentation-guide', false);
     renderer.previewEl.toggleClass('allow-fold-headings', false);
     renderer.previewEl.toggleClass('allow-fold-lists', false);
@@ -315,7 +315,11 @@ export class MarkdownRenderer extends ObsidianRenderer {
       'pointerdown',
       (evt) => {
         const { targetNode } = evt;
-        if (targetNode.instanceOf(HTMLElement) && targetNode.hasClass('task-list-item-checkbox')) {
+        if (
+          targetNode.instanceOf(HTMLElement) &&
+          targetNode.hasClass('task-list-item-checkbox') &&
+          !targetNode.closest('.markdown-embed')
+        ) {
           if (targetNode.dataset.checkboxIndex === undefined) {
             applyCheckboxIndexes(containerEl);
           }
@@ -328,7 +332,11 @@ export class MarkdownRenderer extends ObsidianRenderer {
       'click',
       (evt) => {
         const { targetNode } = evt;
-        if (targetNode.instanceOf(HTMLElement) && targetNode.hasClass('task-list-item-checkbox')) {
+        if (
+          targetNode.instanceOf(HTMLElement) &&
+          targetNode.hasClass('task-list-item-checkbox') &&
+          !targetNode.closest('.markdown-embed')
+        ) {
           evt.preventDefault();
           evt.stopPropagation();
         }

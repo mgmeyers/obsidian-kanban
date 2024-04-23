@@ -163,8 +163,8 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
           const toInsert =
             entity.type === DataTypes.Item
               ? maybeCompleteForMove(sourceBoard, dragPath, destinationBoard, dropPath, entity)
-              : entity;
-          return insertEntity(destinationBoard, dropPath, [toInsert]);
+              : [entity];
+          return insertEntity(destinationBoard, dropPath, toInsert);
         });
 
         return removeEntity(sourceBoard, dragPath);

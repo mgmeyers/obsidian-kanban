@@ -292,11 +292,7 @@ export function astToUnhydratedBoard(
   };
 }
 
-export async function updateItemContent(
-  stateManager: StateManager,
-  oldItem: Item,
-  newContent: string
-) {
+export function updateItemContent(stateManager: StateManager, oldItem: Item, newContent: string) {
   const md = `- [${oldItem.data.isComplete ? 'x' : ' '}] ${indentNewLines(newContent)}${
     oldItem.data.blockId ? ` ^${oldItem.data.blockId}` : ''
   }`;
@@ -310,7 +306,7 @@ export async function updateItemContent(
   });
 
   try {
-    await hydrateItem(stateManager, newItem);
+    hydrateItem(stateManager, newItem);
   } catch (e) {
     console.error(e);
   }
@@ -318,7 +314,7 @@ export async function updateItemContent(
   return newItem;
 }
 
-export async function newItem(
+export function newItem(
   stateManager: StateManager,
   newContent: string,
   isComplete?: boolean,
@@ -337,7 +333,7 @@ export async function newItem(
   };
 
   try {
-    await hydrateItem(stateManager, newItem);
+    hydrateItem(stateManager, newItem);
   } catch (e) {
     console.error(e);
   }
@@ -345,28 +341,19 @@ export async function newItem(
   return newItem;
 }
 
-export async function reparseBoard(stateManager: StateManager, board: Board) {
+export function reparseBoard(stateManager: StateManager, board: Board) {
   try {
     return update(board, {
       children: {
-        $set: await Promise.all(
-          board.children.map(async (lane) => {
-            try {
-              return update(lane, {
-                children: {
-                  $set: await Promise.all(
-                    lane.children.map((item) => {
-                      return updateItemContent(stateManager, item, item.data.titleRaw);
-                    })
-                  ),
-                },
-              });
-            } catch (e) {
-              stateManager.setError(e);
-              throw e;
-            }
-          })
-        ),
+        $set: board.children.map((lane) => {
+          return update(lane, {
+            children: {
+              $set: lane.children.map((item) => {
+                return updateItemContent(stateManager, item, item.data.titleRaw);
+              }),
+            },
+          });
+        }),
       },
     });
   } catch (e) {

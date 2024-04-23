@@ -33,7 +33,7 @@ export function maybeCompleteForMove(
   destinationBoard: Board,
   destinationPath: Path,
   item: Item
-): Item {
+): Item[] {
   const sourceParent = getEntityFromPath(sourceBoard, sourcePath.slice(0, -1));
   const destinationParent = getEntityFromPath(destinationBoard, destinationPath.slice(0, -1));
 
@@ -41,19 +41,21 @@ export function maybeCompleteForMove(
   const newShouldComplete = destinationParent?.data?.shouldMarkItemsComplete;
 
   // If neither the old or new lane set it complete, leave it alone
-  if (!oldShouldComplete && !newShouldComplete) return item;
+  if (!oldShouldComplete && !newShouldComplete) return [item];
 
   // If it already matches the new lane, leave it alone
-  if (newShouldComplete === !!item.data.isComplete) return item;
+  if (newShouldComplete === !!item.data.isComplete) return [item];
 
   // It's different, update it
-  return update(item, {
-    data: {
-      isComplete: {
-        $set: newShouldComplete,
+  return [
+    update(item, {
+      data: {
+        isComplete: {
+          $set: newShouldComplete,
+        },
       },
-    },
-  });
+    }),
+  ];
 }
 
 export function useIMEInputProps() {

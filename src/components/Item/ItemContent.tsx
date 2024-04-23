@@ -1,5 +1,4 @@
 import { EditorView } from '@codemirror/view';
-import { TFile } from 'obsidian';
 import { memo } from 'preact/compat';
 import {
   Dispatch,
@@ -10,8 +9,10 @@ import {
   useMemo,
   useRef,
 } from 'preact/hooks';
+import { StateManager } from 'src/StateManager';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { Path } from 'src/dnd/types';
+import { toggleItemString } from 'src/parsers/helpers/obsidian-tasks';
 
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import {
@@ -82,49 +83,38 @@ export interface ItemContentProps {
   isStatic: boolean;
 }
 
-function checkCheckbox(title: string, checkboxIndex: number) {
+function checkCheckbox(stateManager: StateManager, title: string, checkboxIndex: number) {
   let count = 0;
 
-  return title.replace(/^(\s*[-+*]\s+?\[)([^\]])(\]\s+)/gm, (sub, before, check, after) => {
-    let match = sub;
+  const lines = title.split(/\n\r?/g);
+  const results: string[] = [];
 
-    if (count === checkboxIndex) {
-      if (check === ' ') {
-        match = `${before}x${after}`;
-      } else {
-        match = `${before} ${after}`;
+  lines.forEach((line) => {
+    if (count > checkboxIndex) {
+      results.push(line);
+      return;
+    }
+
+    const match = line.match(/^(\s*[-+*]\s+?\[)([^\]])(\]\s+)/);
+
+    if (match) {
+      if (count === checkboxIndex) {
+        const updates = toggleItemString(line, stateManager.file);
+        if (updates) {
+          results.push(updates);
+        } else {
+          const check = match[2] === ' ' ? 'x' : ' ';
+          results.push(match[1] + check + match[3] + line.slice(match[0].length));
+        }
       }
+      count++;
+      return;
     }
 
-    count++;
-
-    return match;
-  });
-}
-
-async function checkEmbeddedCheckbox(checkbox: HTMLElement) {
-  const file = app.vault.getAbstractFileByPath(checkbox.dataset.src);
-
-  if (!(file instanceof TFile)) return;
-
-  const content = await app.vault.cachedRead(file);
-  const start = parseInt(checkbox.dataset.oStart);
-  const end = parseInt(checkbox.dataset.oEnd);
-  const li = content.substring(start, end);
-
-  const updated = li.replace(/^(.+?)\[(.)\](.+)$/, (_, g1, g2, g3) => {
-    if (g2 !== ' ') {
-      checkbox.parentElement.removeClass('is-checked');
-      checkbox.parentElement.dataset.task = '';
-      return `${g1}[ ]${g3}`;
-    }
-
-    checkbox.parentElement.addClass('is-checked');
-    checkbox.parentElement.dataset.task = 'x';
-    return `${g1}[x]${g3}`;
+    results.push(line);
   });
 
-  await app.vault.modify(file, `${content.substring(0, start)}${updated}${content.substring(end)}`);
+  return results.join('\n');
 }
 
 export function Tags({
@@ -196,15 +186,7 @@ export const ItemContent = memo(function ItemContent({
   useEffect(() => {
     if (editState === EditingState.complete) {
       if (titleRef.current !== null) {
-        stateManager
-          .updateItemContent(item, titleRef.current)
-          .then((item) => {
-            boardModifiers.updateItem(path, item);
-          })
-          .catch((e) => {
-            stateManager.setError(e);
-            console.error(e);
-          });
+        boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRef.current));
       }
       titleRef.current = null;
     } else if (editState === EditingState.cancel) {
@@ -250,20 +232,14 @@ export const ItemContent = memo(function ItemContent({
 
       if (target.hasClass('task-list-item-checkbox')) {
         if (target.dataset.src) {
-          return checkEmbeddedCheckbox(target);
+          return;
         }
 
         const checkboxIndex = parseInt(target.dataset.checkboxIndex, 10);
+        const checked = checkCheckbox(stateManager, item.data.titleRaw, checkboxIndex);
+        const updated = stateManager.updateItemContent(item, checked);
 
-        stateManager
-          .updateItemContent(item, checkCheckbox(item.data.titleRaw, checkboxIndex))
-          .then((item) => {
-            boardModifiers.updateItem(path, item);
-          })
-          .catch((e) => {
-            stateManager.setError(e);
-            console.error(e);
-          });
+        boardModifiers.updateItem(path, updated);
       }
     },
     [path, boardModifiers, stateManager, item]

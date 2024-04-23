@@ -706,7 +706,7 @@ button.kanban-plugin__new-item-button {
   display: flex;
   padding-block: 6px;
   padding-inline: 8px;
-  align-items: center;
+  // align-items: center;
 
   &:not(:only-child) {
     border-bottom: 1px solid var(--background-modifier-border);
@@ -716,6 +716,7 @@ button.kanban-plugin__new-item-button {
 .kanban-plugin__item-title {
   width: 100%;
   line-height: var(--line-height-tight);
+  margin-block-start: 1px;
 }
 
 .kanban-plugin__meta-value,
@@ -939,7 +940,7 @@ button.kanban-plugin__new-item-button {
 }
 
 .kanban-plugin__item-prefix-button-wrapper input[type='checkbox'] {
-  margin-block: 4px 4px;
+  margin-block: 2px;
   margin-inline: 0px 7px;
   + button {
     margin-block-start: 10px;

@@ -210,12 +210,12 @@ export function MarkdownEditor({
     };
 
     if (Platform.isMobile) {
-      window.addEventListener('keyboardDidShow', onShow);
+      cm.dom.win.addEventListener('keyboardDidShow', onShow);
     }
 
     return () => {
       if (Platform.isMobile) {
-        window.removeEventListener('keyboardDidShow', onShow);
+        cm.dom.win.removeEventListener('keyboardDidShow', onShow);
 
         if (app.workspace.activeEditor === controller) {
           app.workspace.activeEditor = null;

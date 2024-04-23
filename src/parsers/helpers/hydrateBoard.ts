@@ -8,11 +8,11 @@ import { getEntityFromPath } from 'src/dnd/util/data';
 import { getSearchValue } from '../common';
 import { parseDataviewTaskMetadata, parseDefaultTaskMetadata } from './obsidian-tasks';
 
-export async function hydrateLane(stateManager: StateManager, lane: Lane) {
+export function hydrateLane(stateManager: StateManager, lane: Lane) {
   return lane;
 }
 
-export async function hydrateItem(stateManager: StateManager, item: Item) {
+export function hydrateItem(stateManager: StateManager, item: Item) {
   const { dateStr, timeStr, fileAccessor } = item.data.metadata;
 
   if (dateStr) {
@@ -46,43 +46,38 @@ export async function hydrateItem(stateManager: StateManager, item: Item) {
     }
   }
 
-  const taskMetadata = parseDefaultTaskMetadata(item.data.title);
+  const lines = item.data.title.split(/\n\r?/g);
+  const taskMetadata = parseDefaultTaskMetadata(lines[0]);
   if (taskMetadata) {
     item.data.metadata.taskMetadata = taskMetadata;
     if (stateManager.getSetting('hide-date-in-title')) {
-      item.data.title = taskMetadata.description;
+      lines[0] = taskMetadata.description;
     }
   }
-  const dataviewTaskMetadata = parseDataviewTaskMetadata(item.data.title);
+  const dataviewTaskMetadata = parseDataviewTaskMetadata(lines[0]);
   if (dataviewTaskMetadata) {
     item.data.metadata.taskMetadata = dataviewTaskMetadata;
     if (stateManager.getSetting('hide-date-in-title')) {
-      item.data.title = dataviewTaskMetadata.description;
+      lines[0] = dataviewTaskMetadata.description;
     }
   }
 
+  if (taskMetadata || dataviewTaskMetadata) {
+    item.data.title = lines.join('\n');
+  }
   item.data.titleSearch = getSearchValue(item, stateManager);
 
   return item;
 }
 
-export async function hydrateBoard(stateManager: StateManager, board: Board): Promise<Board> {
+export function hydrateBoard(stateManager: StateManager, board: Board): Board {
   try {
-    await Promise.all(
-      board.children.map(async (lane) => {
-        try {
-          await hydrateLane(stateManager, lane);
-          await Promise.all(
-            lane.children.map((item) => {
-              return hydrateItem(stateManager, item);
-            })
-          );
-        } catch (e) {
-          stateManager.setError(e);
-          throw e;
-        }
-      })
-    );
+    board.children.map((lane) => {
+      hydrateLane(stateManager, lane);
+      lane.children.map((item) => {
+        return hydrateItem(stateManager, item);
+      });
+    });
   } catch (e) {
     stateManager.setError(e);
     throw e;
@@ -106,11 +101,7 @@ function opAffectsHydration(op: Operation) {
   );
 }
 
-export async function hydratePostOp(
-  stateManager: StateManager,
-  board: Board,
-  ops: Operation[]
-): Promise<Board> {
+export function hydratePostOp(stateManager: StateManager, board: Board, ops: Operation[]): Board {
   const seen: Record<string, boolean> = {};
   const toHydrate = ops.reduce((paths, op) => {
     if (!opAffectsHydration(op)) {
@@ -135,24 +126,17 @@ export async function hydratePostOp(
     return paths;
   }, [] as Path[]);
 
-  try {
-    await Promise.all(
-      toHydrate.map((path) => {
-        const entity = getEntityFromPath(board, path);
+  toHydrate.map((path) => {
+    const entity = getEntityFromPath(board, path);
 
-        if (entity.type === DataTypes.Lane) {
-          return hydrateLane(stateManager, entity);
-        }
+    if (entity.type === DataTypes.Lane) {
+      return hydrateLane(stateManager, entity);
+    }
 
-        if (entity.type === DataTypes.Item) {
-          return hydrateItem(stateManager, entity);
-        }
-      })
-    );
-  } catch (e) {
-    stateManager.setError(e);
-    throw e;
-  }
+    if (entity.type === DataTypes.Item) {
+      return hydrateItem(stateManager, entity);
+    }
+  });
 
   return board;
 }

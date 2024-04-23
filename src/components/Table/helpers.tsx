@@ -281,6 +281,8 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
 
               if (moment.isMoment(val)) {
                 str = str.format(dateDisplayFormat);
+              } else if (key === 'recurrence') {
+                str = str.toText();
               }
 
               return (

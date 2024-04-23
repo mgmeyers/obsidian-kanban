@@ -86,6 +86,7 @@ export function anyToString(v: any, stateManager: StateManager): string {
   if (Array.isArray(v)) {
     return v.map((v2) => anyToString(v2, stateManager)).join(' ');
   }
+  if (v.rrule) return v.toText();
   return `${v}`;
 }
 
