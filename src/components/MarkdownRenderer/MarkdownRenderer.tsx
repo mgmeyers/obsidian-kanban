@@ -234,20 +234,6 @@ export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
   );
 });
 
-function getPreviewElProxy(previewEl: HTMLElement) {
-  return new Proxy(previewEl, {
-    get(target, prop) {
-      if (prop === 'scrollTop' || prop === 'offsetWidth') {
-        return 1;
-      }
-      // @ts-ignore
-      const val = target[prop];
-      if (val === 'function') return val.bind(target);
-      return val;
-    },
-  });
-}
-
 export class MarkdownRenderer extends ObsidianRenderer {
   search: null = null;
   owner: KanbanView;
@@ -263,7 +249,6 @@ export class MarkdownRenderer extends ObsidianRenderer {
     const { renderer } = this;
 
     renderer.sizerEl.addClass('kanban-renderer');
-    renderer.previewEl = getPreviewElProxy(renderer.previewEl);
     renderer.measureSection = noop;
     renderer.updateVirtualDisplay = noop;
     renderer.updateShownSections = noop;
@@ -358,6 +343,7 @@ export class MarkdownRenderer extends ObsidianRenderer {
   }
 
   unload(): void {
+    console.log('markdown unload');
     super.unload();
     this.observer.disconnect();
   }
