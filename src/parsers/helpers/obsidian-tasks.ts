@@ -138,7 +138,7 @@ export function parseDefaultTaskMetadata(str: string): Record<string, any> {
     return null;
   }
 
-  const defaultSerializer = plugin.apiV1.getDefaultTaskSerializer?.();
+  const defaultSerializer = plugin.apiV1?.getDefaultTaskSerializer?.();
   if (!defaultSerializer) return null;
 
   return removeNull(defaultSerializer.deserialize(str));
@@ -150,7 +150,7 @@ export function parseDataviewTaskMetadata(str: string): Record<string, any> {
     return null;
   }
 
-  const dataviewSerializer = plugin.apiV1.getDataviewTaskSerializer();
+  const dataviewSerializer = plugin.apiV1?.getDataviewTaskSerializer?.();
   if (!dataviewSerializer) return null;
   return removeNull(dataviewSerializer.deserialize(str));
 }
@@ -158,7 +158,7 @@ export function parseDataviewTaskMetadata(str: string): Record<string, any> {
 export function toggleItemString(item: string, file: TFile): string | null {
   const plugin = getTasksPlugin();
   if (!plugin) return null;
-  return plugin.apiV1.toggleLine(item, file.path).text;
+  return plugin.apiV1?.toggleLine?.(item, file.path)?.text ?? null;
 }
 
 export function toggleItem(item: Item, file: TFile): [string[], number] | null {
@@ -171,7 +171,9 @@ export function toggleItem(item: Item, file: TFile): [string[], number] | null {
   const originalLines = item.data.titleRaw.split(/\n\r?/g);
 
   let which = -1;
-  const result = plugin.apiV1.toggleLine(prefix + originalLines[0], file.path);
+  const result = plugin.apiV1?.toggleLine?.(prefix + originalLines[0], file.path);
+  if (!result) return null;
+
   const resultLines = result.text.split(/\n/g).map((line: string, index: number) => {
     if (item.data.isComplete && line.startsWith('- [ ]')) {
       which = index;
