@@ -2,9 +2,7 @@ import classcat from 'classcat';
 import { getLinkpath, moment } from 'obsidian';
 import { JSX, useMemo } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
-import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
-import { lableToIcon } from 'src/parsers/helpers/obsidian-tasks';
 
 import { c } from '../helpers';
 import { DateColor, Item } from '../types';
@@ -65,7 +63,7 @@ export function DateAndTime({
   onEditTime,
   getDateColor,
 }: DateProps & DateAndTimeProps) {
-  const hideDateDisplay = stateManager.useSetting('hide-date-display');
+  const moveDates = stateManager.useSetting('move-dates');
   const dateFormat = stateManager.useSetting('date-format');
   const timeFormat = stateManager.useSetting('time-format');
   const dateDisplayFormat = stateManager.useSetting('date-display-format');
@@ -77,7 +75,7 @@ export function DateAndTime({
     return getDateColor(targetDate);
   }, [targetDate, getDateColor]);
 
-  if (hideDateDisplay || !targetDate) return null;
+  if (!moveDates || !targetDate) return null;
 
   const dateStr = targetDate.format(dateFormat);
 
@@ -151,46 +149,4 @@ export function DateAndTime({
       )}
     </span>
   );
-}
-
-interface TaskMetadataProps {
-  item: Item;
-  stateManager: StateManager;
-}
-
-export function TaskMetadata({ item, stateManager }: TaskMetadataProps) {
-  const hideDateDisplay = stateManager.useSetting('hide-date-display');
-  const dateDisplayFormat = stateManager.useSetting('date-display-format');
-
-  const taskMetadata = item.data.metadata.taskMetadata;
-
-  if (hideDateDisplay || !taskMetadata) return null;
-
-  const data = Object.keys(taskMetadata)
-    .sort((a, b) => {
-      if (a === 'priority') return 1;
-      if (b === 'priority') return -1;
-      return defaultSort(a, b);
-    })
-    .map((k, i) => {
-      let val = taskMetadata[k];
-
-      const key = lableToIcon(k, val);
-      if (!key) return null;
-
-      if (moment.isMoment(val)) {
-        val = val.format(dateDisplayFormat);
-      } else if (k === 'recurrence') {
-        val = val.toText();
-      }
-
-      return (
-        <span className={c('item-task-metadata-item')} key={i}>
-          <span className={c('item-task-metadata-item-key')}>{key}</span>
-          {k !== 'priority' && <span className={c('item-task-metadata-item-value')}>{val}</span>}
-        </span>
-      );
-    });
-
-  return <span className={c('item-task-metadata')}>{data}</span>;
 }

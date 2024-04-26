@@ -32,6 +32,7 @@ export function ItemMetadata({ item, searchQuery }: ItemMetadataProps) {
 
 interface MetadataValueProps {
   data: PageData;
+  dateLabel?: string;
   searchQuery?: string;
 }
 
@@ -94,7 +95,7 @@ export function pageDataToString(data: PageData, stateManager: StateManager): st
   return anyToString(data.value, stateManager);
 }
 
-export function MetadataValue({ data, searchQuery }: MetadataValueProps) {
+export function MetadataValue({ data, dateLabel, searchQuery }: MetadataValueProps) {
   const { view, stateManager, getDateColor } = useContext(KanbanContext);
 
   const renderChild = (v: any, sep?: string) => {
@@ -128,6 +129,7 @@ export function MetadataValue({ data, searchQuery }: MetadataValueProps) {
             }
           }
         >
+          {!!dateLabel && <span className={c('item-metadata-date-label')}>{dateLabel}</span>}
           <span className={c('item-metadata-date')}>{str}</span>
         </span>
       );

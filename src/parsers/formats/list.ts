@@ -42,8 +42,8 @@ import {
 import { parseFragment } from '../parseMarkdown';
 
 export function listItemToItemData(stateManager: StateManager, md: string, item: ListItem) {
-  const hideTagsInTitle = stateManager.getSetting('hide-tags-in-title');
-  const hideDateInTitle = stateManager.getSetting('hide-date-in-title');
+  const moveTags = stateManager.getSetting('move-tags');
+  const moveDates = stateManager.getSetting('move-dates');
 
   const startNode = item.children.first();
   const endNode = item.children.last();
@@ -121,7 +121,7 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
 
         itemData.metadata.tags.push('#' + genericNode.value);
 
-        if (hideTagsInTitle) {
+        if (moveTags) {
           title = markRangeForDeletion(title, {
             start: node.position.start.offset - itemBoundary.start,
             end: node.position.end.offset - itemBoundary.start,
@@ -133,7 +133,7 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
       if (genericNode.type === 'date' || genericNode.type === 'dateLink') {
         itemData.metadata.dateStr = (genericNode as DateNode).date;
 
-        if (hideDateInTitle) {
+        if (moveDates) {
           title = markRangeForDeletion(title, {
             start: node.position.start.offset - itemBoundary.start,
             end: node.position.end.offset - itemBoundary.start,
@@ -144,7 +144,7 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
 
       if (genericNode.type === 'time') {
         itemData.metadata.timeStr = (genericNode as TimeNode).time;
-        if (hideDateInTitle) {
+        if (moveDates) {
           title = markRangeForDeletion(title, {
             start: node.position.start.offset - itemBoundary.start,
             end: node.position.end.offset - itemBoundary.start,

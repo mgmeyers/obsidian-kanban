@@ -4,7 +4,7 @@ import { Dispatch, StateUpdater, useContext, useEffect, useMemo, useState } from
 import { Path } from 'src/dnd/types';
 import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
-import { lableToIcon } from 'src/parsers/helpers/obsidian-tasks';
+import { lableToName } from 'src/parsers/helpers/inlineMetadata';
 
 import { anyToString } from '../Item/MetadataTable';
 import { KanbanContext } from '../context';
@@ -72,15 +72,20 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
 
   const settingsMenu = useMemo(() => {
     const taskSortOptions = new Set<string>();
+    let canSortDate = false;
+    let canSortTags = false;
 
     lane.children.forEach((item) => {
-      const taskData = item.data.metadata.taskMetadata;
+      const taskData = item.data.metadata.inlineMetadata;
       if (taskData) {
-        Object.keys(taskData).forEach((k) => {
-          if (k === 'description') return;
-          if (!taskSortOptions.has(k)) taskSortOptions.add(k);
+        taskData.forEach((m) => {
+          if (m.key === 'repeat') return;
+          if (!taskSortOptions.has(m.key)) taskSortOptions.add(m.key);
         });
       }
+
+      if (!canSortDate && item.data.metadata.date) canSortDate = true;
+      if (!canSortTags && item.data.metadata.tags?.length) canSortTags = true;
     });
 
     const menu = new Menu()
@@ -96,175 +101,6 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
           .setTitle(t('Archive cards'))
           .onClick(() => setConfirmAction('archive-items'));
       })
-      .addSeparator()
-      .addItem((item) => {
-        item
-          .setIcon('lucide-move-vertical')
-          .setTitle(t('Sort by card text'))
-          .onClick(() => {
-            const children = lane.children.slice();
-            const isAsc = lane.data.sorted === LaneSort.TitleAsc;
-
-            children.sort((a, b) => {
-              if (isAsc) {
-                return b.data.title.localeCompare(a.data.title);
-              }
-
-              return a.data.title.localeCompare(b.data.title);
-            });
-
-            boardModifiers.updateLane(
-              path,
-              update(lane, {
-                children: {
-                  $set: children,
-                },
-                data: {
-                  sorted: {
-                    $set:
-                      lane.data.sorted === LaneSort.TitleAsc
-                        ? LaneSort.TitleDsc
-                        : LaneSort.TitleAsc,
-                  },
-                },
-              })
-            );
-          });
-      })
-      .addItem((item) => {
-        item
-          .setIcon('lucide-move-vertical')
-          .setTitle(t('Sort by date'))
-          .onClick(() => {
-            const children = lane.children.slice();
-            const mod = lane.data.sorted === LaneSort.DateAsc ? -1 : 1;
-
-            children.sort((a, b) => {
-              const aDate: moment.Moment | undefined = a.data.metadata.time || a.data.metadata.date;
-              const bDate: moment.Moment | undefined = b.data.metadata.time || b.data.metadata.date;
-
-              if (aDate && !bDate) return -1 * mod;
-              if (bDate && !aDate) return 1 * mod;
-              if (!aDate && !bDate) return 0;
-
-              return (aDate.isBefore(bDate) ? -1 : 1) * mod;
-            });
-
-            boardModifiers.updateLane(
-              path,
-              update(lane, {
-                children: {
-                  $set: children,
-                },
-                data: {
-                  sorted: {
-                    $set:
-                      lane.data.sorted === LaneSort.DateAsc ? LaneSort.DateDsc : LaneSort.DateAsc,
-                  },
-                },
-              })
-            );
-          });
-      })
-      .addItem((item) => {
-        item
-          .setIcon('lucide-move-vertical')
-          .setTitle(t('Sort by tags'))
-          .onClick(() => {
-            const tagSortOrder = stateManager.getSetting('tag-sort');
-            const children = lane.children.slice();
-            const desc = lane.data.sorted === LaneSort.TagsAsc ? true : false;
-
-            children.sort((a, b) => {
-              const tagsA = a.data.metadata.tags;
-              const tagsB = b.data.metadata.tags;
-
-              if (!tagsA?.length && !tagsB?.length) return 0;
-              if (!tagsA?.length) return 1;
-              if (!tagsB?.length) return -1;
-
-              const aSortOrder = tagSortOrder?.findIndex((sort) => tagsA.includes(sort.tag)) ?? -1;
-              const bSortOrder = tagSortOrder?.findIndex((sort) => tagsB.includes(sort.tag)) ?? -1;
-
-              if (aSortOrder > -1 && bSortOrder < 0) return desc ? 1 : -1;
-              if (bSortOrder > -1 && aSortOrder < 0) return desc ? -1 : 1;
-              if (aSortOrder > -1 && bSortOrder > -1) {
-                return desc ? bSortOrder - aSortOrder : aSortOrder - bSortOrder;
-              }
-
-              if (desc) return defaultSort(tagsB.join(''), tagsA.join(''));
-              return defaultSort(tagsA.join(''), tagsB.join(''));
-            });
-
-            boardModifiers.updateLane(
-              path,
-              update(lane, {
-                children: {
-                  $set: children,
-                },
-                data: {
-                  sorted: {
-                    $set:
-                      lane.data.sorted === LaneSort.TagsAsc ? LaneSort.TagsDsc : LaneSort.TagsAsc,
-                  },
-                },
-              })
-            );
-          });
-      });
-
-    if (taskSortOptions.size) {
-      taskSortOptions.forEach((k) => {
-        menu.addItem((i) => {
-          i.setIcon('lucide-move-vertical')
-            .setTitle(
-              t('Sort by') +
-                ' ' +
-                (k === 'priority' ? t('Priority').toLocaleLowerCase() : lableToIcon(k, null))
-            )
-            .onClick(() => {
-              const children = lane.children.slice();
-              const desc = lane.data.sorted === k + '-asc' ? true : false;
-
-              children.sort((a, b) => {
-                const valA = a.data.metadata.taskMetadata[k];
-                const valB = b.data.metadata.taskMetadata[k];
-
-                if (valA === undefined && valB === undefined) return 0;
-                if (valA === undefined) return 1;
-                if (valB === undefined) return -1;
-
-                if (desc) {
-                  return defaultSort(
-                    anyToString(valB, stateManager),
-                    anyToString(valA, stateManager)
-                  );
-                }
-                return defaultSort(
-                  anyToString(valA, stateManager),
-                  anyToString(valB, stateManager)
-                );
-              });
-
-              boardModifiers.updateLane(
-                path,
-                update(lane, {
-                  children: {
-                    $set: children,
-                  },
-                  data: {
-                    sorted: {
-                      $set: lane.data.sorted === k + '-asc' ? k + '-desc' : k + '-asc',
-                    },
-                  },
-                })
-              );
-            });
-        });
-      });
-    }
-
-    menu
       .addSeparator()
       .addItem((i) => {
         i.setIcon('corner-left-down')
@@ -314,7 +150,176 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
           .setIcon('lucide-trash-2')
           .setTitle(t('Delete list'))
           .onClick(() => setConfirmAction('delete'));
+      })
+      .addSeparator()
+      .addItem((item) => {
+        item
+          .setIcon('lucide-move-vertical')
+          .setTitle(t('Sort by card text'))
+          .onClick(() => {
+            const children = lane.children.slice();
+            const isAsc = lane.data.sorted === LaneSort.TitleAsc;
+
+            children.sort((a, b) => {
+              if (isAsc) {
+                return b.data.title.localeCompare(a.data.title);
+              }
+
+              return a.data.title.localeCompare(b.data.title);
+            });
+
+            boardModifiers.updateLane(
+              path,
+              update(lane, {
+                children: {
+                  $set: children,
+                },
+                data: {
+                  sorted: {
+                    $set:
+                      lane.data.sorted === LaneSort.TitleAsc
+                        ? LaneSort.TitleDsc
+                        : LaneSort.TitleAsc,
+                  },
+                },
+              })
+            );
+          });
       });
+
+    if (canSortDate) {
+      menu.addItem((item) => {
+        item
+          .setIcon('lucide-move-vertical')
+          .setTitle(t('Sort by date'))
+          .onClick(() => {
+            const children = lane.children.slice();
+            const mod = lane.data.sorted === LaneSort.DateAsc ? -1 : 1;
+
+            children.sort((a, b) => {
+              const aDate: moment.Moment | undefined = a.data.metadata.time || a.data.metadata.date;
+              const bDate: moment.Moment | undefined = b.data.metadata.time || b.data.metadata.date;
+
+              if (aDate && !bDate) return -1 * mod;
+              if (bDate && !aDate) return 1 * mod;
+              if (!aDate && !bDate) return 0;
+
+              return (aDate.isBefore(bDate) ? -1 : 1) * mod;
+            });
+
+            boardModifiers.updateLane(
+              path,
+              update(lane, {
+                children: {
+                  $set: children,
+                },
+                data: {
+                  sorted: {
+                    $set:
+                      lane.data.sorted === LaneSort.DateAsc ? LaneSort.DateDsc : LaneSort.DateAsc,
+                  },
+                },
+              })
+            );
+          });
+      });
+    }
+
+    if (canSortTags) {
+      menu.addItem((item) => {
+        item
+          .setIcon('lucide-move-vertical')
+          .setTitle(t('Sort by tags'))
+          .onClick(() => {
+            const tagSortOrder = stateManager.getSetting('tag-sort');
+            const children = lane.children.slice();
+            const desc = lane.data.sorted === LaneSort.TagsAsc ? true : false;
+
+            children.sort((a, b) => {
+              const tagsA = a.data.metadata.tags;
+              const tagsB = b.data.metadata.tags;
+
+              if (!tagsA?.length && !tagsB?.length) return 0;
+              if (!tagsA?.length) return 1;
+              if (!tagsB?.length) return -1;
+
+              const aSortOrder = tagSortOrder?.findIndex((sort) => tagsA.includes(sort.tag)) ?? -1;
+              const bSortOrder = tagSortOrder?.findIndex((sort) => tagsB.includes(sort.tag)) ?? -1;
+
+              if (aSortOrder > -1 && bSortOrder < 0) return desc ? 1 : -1;
+              if (bSortOrder > -1 && aSortOrder < 0) return desc ? -1 : 1;
+              if (aSortOrder > -1 && bSortOrder > -1) {
+                return desc ? bSortOrder - aSortOrder : aSortOrder - bSortOrder;
+              }
+
+              if (desc) return defaultSort(tagsB.join(''), tagsA.join(''));
+              return defaultSort(tagsA.join(''), tagsB.join(''));
+            });
+
+            boardModifiers.updateLane(
+              path,
+              update(lane, {
+                children: {
+                  $set: children,
+                },
+                data: {
+                  sorted: {
+                    $set:
+                      lane.data.sorted === LaneSort.TagsAsc ? LaneSort.TagsDsc : LaneSort.TagsAsc,
+                  },
+                },
+              })
+            );
+          });
+      });
+    }
+
+    if (taskSortOptions.size) {
+      taskSortOptions.forEach((k) => {
+        menu.addItem((i) => {
+          i.setIcon('lucide-move-vertical')
+            .setTitle(t('Sort by') + ' ' + lableToName(k).toLocaleLowerCase())
+            .onClick(() => {
+              const children = lane.children.slice();
+              const desc = lane.data.sorted === k + '-asc' ? true : false;
+
+              children.sort((a, b) => {
+                const valA = a.data.metadata.inlineMetadata?.find((m) => m.key === k);
+                const valB = b.data.metadata.inlineMetadata?.find((m) => m.key === k);
+
+                if (valA === undefined && valB === undefined) return 0;
+                if (valA === undefined) return 1;
+                if (valB === undefined) return -1;
+
+                if (desc) {
+                  return defaultSort(
+                    anyToString(valB.value, stateManager),
+                    anyToString(valA.value, stateManager)
+                  );
+                }
+                return defaultSort(
+                  anyToString(valA.value, stateManager),
+                  anyToString(valB.value, stateManager)
+                );
+              });
+
+              boardModifiers.updateLane(
+                path,
+                update(lane, {
+                  children: {
+                    $set: children,
+                  },
+                  data: {
+                    sorted: {
+                      $set: lane.data.sorted === k + '-asc' ? k + '-desc' : k + '-asc',
+                    },
+                  },
+                })
+              );
+            });
+        });
+      });
+    }
 
     return menu;
   }, [stateManager, setConfirmAction, path, lane]);

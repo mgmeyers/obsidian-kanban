@@ -7,13 +7,14 @@ import {
   SortingState,
   createColumnHelper,
 } from '@tanstack/react-table';
+import classcat from 'classcat';
 import moment from 'moment';
 import { useCallback, useContext, useMemo, useRef, useState } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { c } from 'src/components/helpers';
 import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
-import { lableToIcon, lableToName } from 'src/parsers/helpers/obsidian-tasks';
+import { getDataviewPlugin, lableToName, taskFields } from 'src/parsers/helpers/inlineMetadata';
 
 import { Tags } from '../Item/ItemContent';
 import { MetadataValue, anyToString } from '../Item/MetadataTable';
@@ -65,7 +66,7 @@ export function useTableData(board: Board, stateManager: StateManager): TableDat
         const itemMetadata = item.data.metadata;
         const itemfileMetadata = itemMetadata.fileMetadata || {};
         const fileMetaOrder = itemMetadata.fileMetadataOrder || [];
-        const itemTaskMetadata = itemMetadata.taskMetadata;
+        const itemTaskMetadata = itemMetadata.inlineMetadata;
 
         if (!metadata.has('date') && itemMetadata.date) {
           metadata.add('date');
@@ -82,8 +83,8 @@ export function useTableData(board: Board, stateManager: StateManager): TableDat
         }
 
         if (itemTaskMetadata) {
-          Object.keys(itemTaskMetadata).forEach((k) => {
-            if (k !== 'description' && !taskMetadata.has(k)) taskMetadata.add(k);
+          itemTaskMetadata.forEach((m) => {
+            if (!taskMetadata.has(m.key)) taskMetadata.add(m.key);
           });
         }
 
@@ -141,9 +142,10 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
 
   const [sorting, setSortingRaw] = useState<SortingState>([]);
   const shouldShowRelativeDate = stateManager.useSetting('show-relative-date');
-  const hideDateDisplay = stateManager.useSetting('hide-date-display');
-  const hideTagsDisplay = stateManager.useSetting('hide-tags-display');
-  const dateDisplayFormat = stateManager.useSetting('date-display-format');
+  const moveDates = stateManager.useSetting('move-dates');
+  const moveTags = stateManager.useSetting('move-tags');
+  const moveMetadata = stateManager.useSetting('move-inline-metadata');
+  const moveTaskMetadata = stateManager.useSetting('move-task-metadata');
   const tableSizing = stateManager.useSetting('table-sizing') || {};
 
   const desc = useRef<boolean>(false);
@@ -168,7 +170,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
     for (const key of metadata) {
       switch (key) {
         case 'date':
-          if (shouldShowRelativeDate || !hideDateDisplay) {
+          if (shouldShowRelativeDate || moveDates) {
             columns.push(
               columnHelper.accessor((row) => row.item.data.metadata?.date || null, {
                 header: () => t('Date'),
@@ -181,7 +183,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
                     <DateCell
                       item={info.row.original}
                       shouldShowRelativeDate={shouldShowRelativeDate}
-                      hideDateDisplay={hideDateDisplay}
+                      hideDateDisplay={!moveDates}
                     />
                   );
                 },
@@ -206,7 +208,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
           }
           break;
         case 'tags':
-          if (!hideTagsDisplay) {
+          if (moveTags) {
             columns.push(
               columnHelper.accessor((row) => row.item.data.metadata?.tags || null, {
                 header: () => t('Tags'),
@@ -254,7 +256,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
     }
 
     return columns;
-  }, [shouldShowRelativeDate, hideDateDisplay, hideTagsDisplay, ...metadata]);
+  }, [shouldShowRelativeDate, moveDates, moveTags, ...metadata]);
 
   const withTaskMetadata = useMemo(() => {
     const columns = [...withMetadata];
@@ -262,34 +264,51 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
       columns.push(
         columnHelper.accessor(
           (row) => {
-            const metadata = row.item.data.metadata.taskMetadata;
-            if (metadata && metadata[key]) {
-              return metadata[key];
-            }
+            const data = row.item.data.metadata.inlineMetadata?.find((m) => m.key === key);
+            if (data) return data;
             return null;
           },
           {
             id: key,
             header: lableToName(key) ?? key,
             cell: (info) => {
-              const val = info.getValue();
-              if (!val) return null;
+              const m = info.getValue();
+              if (!m) return null;
 
-              let str = val;
-              const label = lableToIcon(key, str);
-              if (!label) return null;
+              const isTaskMetadata = taskFields.has(m.key);
+              if (!moveTaskMetadata && isTaskMetadata) return null;
+              if (!moveMetadata && !isTaskMetadata) return null;
 
-              if (moment.isMoment(val)) {
-                str = str.format(dateDisplayFormat);
-              } else if (key === 'recurrence') {
-                str = str.toText();
-              }
+              const isEmoji = m.wrapping === 'emoji-shorthand';
+              const val = getDataviewPlugin()?.api?.parse(m.value) ?? m.value;
+              const isEmojiPriority = isEmoji && m.key === 'priority';
+              const isDate = !!val?.ts;
 
               return (
-                <span className={c('item-task-metadata-item')}>
-                  <span className={c('item-task-metadata-item-key')}>{label}</span>
-                  {key !== 'priority' && (
-                    <span className={c('item-task-metadata-item-value')}>{str}</span>
+                <span
+                  className={classcat([
+                    c('item-task-inline-metadata-item'),
+                    m.key.replace(/[^a-z0-9]/g, '-'),
+                    {
+                      'is-task-metadata': isTaskMetadata,
+                      'is-emoji': isEmoji,
+                      'is-date': isDate,
+                    },
+                  ])}
+                >
+                  {!isEmojiPriority && (
+                    <span className={c('item-task-inline-metadata-item-value')}>
+                      <MetadataValue
+                        searchQuery={search?.query}
+                        data={{
+                          value: val,
+                          label: '',
+                          metadataKey: m.key,
+                          shouldHideLabel: false,
+                          containsMarkdown: false,
+                        }}
+                      />
+                    </span>
                   )}
                 </span>
               );
@@ -306,8 +325,8 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
               const sorted = fuzzySort(a, b, id);
               if (sorted === null) {
                 return defaultSort(
-                  anyToString(valA, stateManager),
-                  anyToString(valB, stateManager)
+                  anyToString(valA.value, stateManager),
+                  anyToString(valB.value, stateManager)
                 );
               }
               return sorted;

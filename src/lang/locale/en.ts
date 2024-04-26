@@ -95,17 +95,25 @@ export default {
   'This format will be used when displaying dates in Kanban cards.':
     'This format will be used when displaying dates in Kanban cards.',
   'Show relative date': 'Show relative date',
-  "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'":
-    "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'",
-  'Hide card display dates': 'Hide card display dates',
+  "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'. Relative dates will not be shown for dates from the Tasks and Dataview plugins.":
+    "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'. Relative dates will not be shown for dates from the Tasks and Dataview plugins.",
+
+  'Move dates to card footer': 'Move dates to card footer',
+  "When toggled, dates will be displayed in the card's footer instead of the card's body.":
+    "When toggled, dates will be displayed in the card's footer instead of the card's body.",
+  'Move tags to card footer': 'Move tags to card footer',
+  "When toggled, tags will be displayed in the card's footer instead of the card's body.":
+    "When toggled, tags will be displayed in the card's footer instead of the card's body.",
+  'Move task data to card footer': 'Move task data to card footer',
+  "When toggled, task data (from the Tasks plugin) will be displayed in the card's footer instead of the card's body.":
+    "When toggled, task data (from the Tasks plugin) will be displayed in the card's footer instead of the card's body.",
+  'Move inline metadata to card footer': 'Move inline metadata to card footer',
+  "When toggled, inline metadata (from the Dataview plugin) will be displayed in the card's footer instead of the card's body.":
+    "When toggled, inline metadata (from the Dataview plugin) will be displayed in the card's footer instead of the card's body.",
+
   'Hide card counts in list titles': 'Hide card counts in list titles',
   'When toggled, card counts are hidden from the list title':
     'When toggled, card counts are hidden from the list title',
-  'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.':
-    'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.',
-  'Hide dates in card titles': 'Hide dates in card titles',
-  'When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes.':
-    'When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes.',
   'Link dates to daily notes': 'Link dates to daily notes',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]',
@@ -120,12 +128,6 @@ export default {
     'This will be used to separate the archived date/time from the title',
   'Archive date/time format': 'Archive date/time format',
   'Kanban Plugin': 'Kanban Plugin',
-  'Hide tags in card titles': 'Hide tags in card titles',
-  'When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.':
-    'When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.',
-  'Hide card display tags': 'Hide card display tags',
-  'When toggled, tags will not be displayed below the card title.':
-    'When toggled, tags will not be displayed below the card title.',
   'Tag click action': 'Tag click action',
   'Search Kanban Board': 'Search Kanban Board',
   'Search Obsidian Vault': 'Search Obsidian Vault',
@@ -134,6 +136,7 @@ export default {
   'Tag colors': 'Tag colors',
   'Set colors for tags displayed in cards.': 'Set colors for tags displayed in cards.',
   'Linked Page Metadata': 'Linked Page Metadata',
+  'Inline Metadata': 'Inline Metadata',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.',
   'Board Header Buttons': 'Board Header Buttons',

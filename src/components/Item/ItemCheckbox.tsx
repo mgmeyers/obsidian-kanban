@@ -2,7 +2,7 @@ import update from 'immutability-helper';
 import { memo, useCallback, useEffect, useState } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
-import { toggleItem } from 'src/parsers/helpers/obsidian-tasks';
+import { toggleItem } from 'src/parsers/helpers/inlineMetadata';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { Icon } from '../Icon/Icon';

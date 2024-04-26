@@ -810,8 +810,11 @@ button.kanban-plugin__new-item-button {
 .kanban-plugin__item-metadata:not(:empty) {
   padding-block-start: 5px;
   font-size: 12px;
-  font-weight: 500;
-  color: var(--text-muted);
+
+  .markdown-preview-view {
+    line-height: var(--line-height-tight);
+    font-size: inherit;
+  }
 }
 
 .kanban-plugin__item-metadata > span {
@@ -837,11 +840,24 @@ button.kanban-plugin__new-item-button {
   text-decoration: none;
 }
 
+.kanban-plugin__item-task-inline-metadata-item,
 .kanban-plugin__item-task-metadata-item {
   display: inline-flex;
   margin-block: 3px 0;
   margin-inline: 0 6px;
   gap: 4px;
+}
+
+.kanban-plugin__item-task-inline-metadata-item {
+  padding-inline: 2px;
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-s);
+}
+
+.kanban-plugin__table-cell-wrapper .kanban-plugin__item-task-inline-metadata-item {
+  background-color: unset;
+  padding-inline: unset;
+  border-radius: unset;
 }
 
 .kanban-plugin__item-tags:not(:empty) {
@@ -1746,6 +1762,21 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   > span,
   > a {
     padding-inline: var(--size-2-1);
+  }
+}
+
+.completion .kanban-plugin__date.has-background {
+  color: inherit;
+  background-color: transparent;
+  &:hover {
+    background-color: transparent;
+  }
+}
+
+.is-date .kanban-plugin__date:not(.has-background) {
+  background-color: transparent;
+  &:hover {
+    background-color: transparent;
   }
 }
 

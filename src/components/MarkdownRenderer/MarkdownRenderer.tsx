@@ -343,7 +343,6 @@ export class MarkdownRenderer extends ObsidianRenderer {
   }
 
   unload(): void {
-    console.log('markdown unload');
     super.unload();
     this.observer.disconnect();
   }

@@ -559,13 +559,13 @@ export default class KanbanPlugin extends Plugin {
     );
 
     this.registerEvent(
-      app.metadataCache.on('dataview:metadata-change', (_, file) => {
+      (app as any).metadataCache.on('dataview:metadata-change', (_: any, file: TFile) => {
         notifyFileChange(file);
       })
     );
 
     this.registerEvent(
-      app.metadataCache.on('dataview:api-ready', () => {
+      (app as any).metadataCache.on('dataview:api-ready', () => {
         this.stateManagers.forEach((manager) => {
           manager.forceRefresh();
         });

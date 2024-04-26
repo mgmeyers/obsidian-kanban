@@ -1,6 +1,7 @@
 import { TFile } from 'obsidian';
 import { KanbanSettings } from 'src/Settings';
 import { Nestable } from 'src/dnd/types';
+import { InlineField } from 'src/parsers/helpers/inlineMetadata';
 import { FileAccessor } from 'src/parsers/helpers/parser';
 
 export enum LaneSort {
@@ -74,7 +75,7 @@ export interface ItemMetadata {
   file?: TFile | null;
   fileMetadata?: FileMetadata;
   fileMetadataOrder?: string[];
-  taskMetadata?: Record<string, any>;
+  inlineMetadata?: InlineField[];
 }
 
 export interface ItemData {

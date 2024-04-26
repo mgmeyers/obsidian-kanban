@@ -12,7 +12,7 @@ import {
 import { StateManager } from 'src/StateManager';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { Path } from 'src/dnd/types';
-import { toggleItemString } from 'src/parsers/helpers/obsidian-tasks';
+import { toggleItemString } from 'src/parsers/helpers/inlineMetadata';
 
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import {
@@ -22,7 +22,8 @@ import {
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
-import { DateAndTime, RelativeDate, TaskMetadata } from './DateAndTime';
+import { DateAndTime, RelativeDate } from './DateAndTime';
+import { InlineMetadata } from './InlineMetadata';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
@@ -129,8 +130,8 @@ export function Tags({
   const { stateManager, getTagColor } = useContext(KanbanContext);
   const search = useContext(SearchContext);
 
-  const hideTagsDisplay = isDisplay && stateManager.useSetting('hide-tags-display');
-  if (hideTagsDisplay || !tags?.length) return null;
+  const moveTags = isDisplay && stateManager.useSetting('move-tags');
+  if (!moveTags || !tags?.length) return null;
   return (
     <div className={c('item-tags')}>
       {tags.map((tag, i) => {
@@ -293,7 +294,7 @@ export const ItemContent = memo(function ItemContent({
             filePath={filePath}
             getDateColor={getDateColor}
           />
-          <TaskMetadata item={item} stateManager={stateManager} />
+          <InlineMetadata item={item} stateManager={stateManager} />
           <Tags tags={item.data.metadata.tags} searchQuery={searchQuery} />
         </div>
       )}

@@ -6,7 +6,7 @@ import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
 
 import { getSearchValue } from '../common';
-import { parseDataviewTaskMetadata, parseDefaultTaskMetadata } from './obsidian-tasks';
+import { extractInlineFields, taskFields } from './inlineMetadata';
 
 export function hydrateLane(stateManager: StateManager, lane: Lane) {
   return lane;
@@ -46,27 +46,35 @@ export function hydrateItem(stateManager: StateManager, item: Item) {
     }
   }
 
-  const lines = item.data.title.split(/\n\r?/g);
-  const taskMetadata = parseDefaultTaskMetadata(lines[0]);
-  if (taskMetadata) {
-    item.data.metadata.taskMetadata = taskMetadata;
-    if (stateManager.getSetting('hide-date-in-title')) {
-      lines[0] = taskMetadata.description;
-    }
-  }
-  const dataviewTaskMetadata = parseDataviewTaskMetadata(lines[0]);
-  if (dataviewTaskMetadata) {
-    item.data.metadata.taskMetadata = dataviewTaskMetadata;
-    if (stateManager.getSetting('hide-date-in-title')) {
-      lines[0] = dataviewTaskMetadata.description;
+  const firstLineEnd = item.data.title.indexOf('\n');
+  const inlineFields = extractInlineFields(item.data.title, true);
+
+  if (inlineFields?.length) {
+    const inlineMetadata = (item.data.metadata.inlineMetadata =
+      firstLineEnd > 0
+        ? inlineFields.filter((f) => taskFields.has(f.key) && f.end < firstLineEnd)
+        : inlineFields);
+
+    const moveTaskData = stateManager.getSetting('move-task-metadata');
+    const moveMetadata = stateManager.getSetting('move-inline-metadata');
+
+    if (moveTaskData || moveMetadata) {
+      let title = item.data.title;
+      for (let i = inlineMetadata.length - 1; i >= 0; i--) {
+        const item = inlineMetadata[i];
+        const isTask = taskFields.has(item.key);
+
+        if (isTask && !moveTaskData) continue;
+        if (!isTask && !moveMetadata) continue;
+
+        title = title.slice(0, item.start) + title.slice(item.end);
+      }
+
+      item.data.title = title;
     }
   }
 
-  if (taskMetadata || dataviewTaskMetadata) {
-    item.data.title = lines.join('\n');
-  }
   item.data.titleSearch = getSearchValue(item, stateManager);
-
   return item;
 }
 

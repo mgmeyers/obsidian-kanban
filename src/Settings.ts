@@ -54,10 +54,6 @@ export interface KanbanSettings {
   'date-time-display-format'?: string;
   'date-trigger'?: string;
   'hide-card-count'?: boolean;
-  'hide-date-display'?: boolean;
-  'hide-date-in-title'?: boolean;
-  'hide-tags-display'?: boolean;
-  'hide-tags-in-title'?: boolean;
   'tag-action'?: 'kanban' | 'obsidian';
   'lane-width'?: number;
   'full-list-lane-width'?: boolean;
@@ -82,6 +78,11 @@ export interface KanbanSettings {
   'tag-colors'?: TagColor[];
   'time-format'?: string;
   'time-trigger'?: string;
+
+  'move-dates'?: boolean;
+  'move-tags'?: boolean;
+  'move-task-metadata'?: boolean;
+  'move-inline-metadata'?: boolean;
 }
 
 export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
@@ -98,16 +99,15 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'date-trigger',
   'full-list-lane-width',
   'hide-card-count',
-  'hide-date-display',
-  'hide-date-in-title',
-  'hide-tags-display',
-  'hide-tags-in-title',
-  'tag-action',
   'lane-width',
   'link-date-to-daily-note',
   'list-collapse',
   'max-archive-size',
   'metadata-keys',
+  'move-dates',
+  'move-inline-metadata',
+  'move-tags',
+  'move-task-metadata',
   'new-card-insertion-method',
   'new-line-trigger',
   'new-note-folder',
@@ -118,9 +118,10 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'show-checkboxes',
   'show-relative-date',
   'show-search',
-  'show-view-as-markdown',
   'show-set-view',
+  'show-view-as-markdown',
   'table-sizing',
+  'tag-action',
   'tag-colors',
   'tag-sort',
   'time-format',
@@ -460,11 +461,9 @@ export class SettingsManager {
     contentEl.createEl('h4', { text: t('Tags') });
 
     new Setting(contentEl)
-      .setName(t('Hide tags in card titles'))
+      .setName(t('Move tags to card footer'))
       .setDesc(
-        t(
-          'When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.'
-        )
+        t("When toggled, tags will be displayed in the card's footer instead of the card's body.")
       )
       .then((setting) => {
         let toggleComponent: ToggleComponent;
@@ -473,7 +472,7 @@ export class SettingsManager {
           .addToggle((toggle) => {
             toggleComponent = toggle;
 
-            const [value, globalValue] = this.getSetting('hide-tags-in-title', local);
+            const [value, globalValue] = this.getSetting('move-tags', local);
 
             if (value !== undefined) {
               toggle.setValue(value as boolean);
@@ -483,7 +482,7 @@ export class SettingsManager {
 
             toggle.onChange((newValue) => {
               this.applySettingsUpdate({
-                'hide-tags-in-title': {
+                'move-tags': {
                   $set: newValue,
                 },
               });
@@ -493,53 +492,11 @@ export class SettingsManager {
             b.setIcon('lucide-rotate-ccw')
               .setTooltip(t('Reset to default'))
               .onClick(() => {
-                const [, globalValue] = this.getSetting('hide-tags-in-title', local);
+                const [, globalValue] = this.getSetting('move-tags', local);
                 toggleComponent.setValue(!!globalValue);
 
                 this.applySettingsUpdate({
-                  $unset: ['hide-tags-in-title'],
-                });
-              });
-          });
-      });
-
-    new Setting(contentEl)
-      .setName(t('Hide card display tags'))
-      .setDesc(t('When toggled, tags will not be displayed below the card title.'))
-      .then((setting) => {
-        let toggleComponent: ToggleComponent;
-
-        setting
-          .addToggle((toggle) => {
-            toggleComponent = toggle;
-
-            const [value, globalValue] = this.getSetting('hide-tags-display', local);
-
-            if (value !== undefined) {
-              toggle.setValue(value as boolean);
-            } else if (globalValue !== undefined) {
-              toggle.setValue(globalValue as boolean);
-            } else {
-              toggle.setValue(true);
-            }
-
-            toggle.onChange((newValue) => {
-              this.applySettingsUpdate({
-                'hide-tags-display': {
-                  $set: newValue,
-                },
-              });
-            });
-          })
-          .addExtraButton((b) => {
-            b.setIcon('lucide-rotate-ccw')
-              .setTooltip(t('Reset to default'))
-              .onClick(() => {
-                const [, globalValue] = this.getSetting('hide-tags-display', local);
-                toggleComponent.setValue((globalValue as boolean) ?? true);
-
-                this.applySettingsUpdate({
-                  $unset: ['hide-tags-display'],
+                  $unset: ['move-tags'],
                 });
               });
           });
@@ -621,6 +578,48 @@ export class SettingsManager {
     });
 
     contentEl.createEl('h4', { text: t('Date & Time') });
+
+    new Setting(contentEl)
+      .setName(t('Move dates to card footer'))
+      .setDesc(
+        t("When toggled, dates will be displayed in the card's footer instead of the card's body.")
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('move-dates', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'move-dates': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('move-dates', local);
+                toggleComponent.setValue((globalValue as boolean) ?? true);
+
+                this.applySettingsUpdate({
+                  $unset: ['move-dates'],
+                });
+              });
+          });
+      });
 
     new Setting(contentEl)
       .setName(t('Date trigger'))
@@ -828,7 +827,7 @@ export class SettingsManager {
       .setName(t('Show relative date'))
       .setDesc(
         t(
-          "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'"
+          "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'. Relative dates will not be shown for dates from the Tasks and Dataview plugins."
         )
       )
       .then((setting) => {
@@ -863,96 +862,6 @@ export class SettingsManager {
 
                 this.applySettingsUpdate({
                   $unset: ['show-relative-date'],
-                });
-              });
-          });
-      });
-
-    new Setting(contentEl)
-      .setName(t('Hide card display dates'))
-      .setDesc(
-        t(
-          'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.'
-        )
-      )
-      .then((setting) => {
-        let toggleComponent: ToggleComponent;
-
-        setting
-          .addToggle((toggle) => {
-            toggleComponent = toggle;
-
-            const [value, globalValue] = this.getSetting('hide-date-display', local);
-
-            if (value !== undefined) {
-              toggle.setValue(value as boolean);
-            } else if (globalValue !== undefined) {
-              toggle.setValue(globalValue as boolean);
-            } else {
-              toggle.setValue(true);
-            }
-
-            toggle.onChange((newValue) => {
-              this.applySettingsUpdate({
-                'hide-date-display': {
-                  $set: newValue,
-                },
-              });
-            });
-          })
-          .addExtraButton((b) => {
-            b.setIcon('lucide-rotate-ccw')
-              .setTooltip(t('Reset to default'))
-              .onClick(() => {
-                const [, globalValue] = this.getSetting('hide-date-display', local);
-                toggleComponent.setValue((globalValue as boolean) ?? true);
-
-                this.applySettingsUpdate({
-                  $unset: ['hide-date-display'],
-                });
-              });
-          });
-      });
-
-    new Setting(contentEl)
-      .setName(t('Hide dates in card titles'))
-      .setDesc(
-        t(
-          'When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes.'
-        )
-      )
-      .then((setting) => {
-        let toggleComponent: ToggleComponent;
-
-        setting
-          .addToggle((toggle) => {
-            toggleComponent = toggle;
-
-            const [value, globalValue] = this.getSetting('hide-date-in-title', local);
-
-            if (value !== undefined) {
-              toggle.setValue(value as boolean);
-            } else if (globalValue !== undefined) {
-              toggle.setValue(globalValue as boolean);
-            }
-
-            toggle.onChange((newValue) => {
-              this.applySettingsUpdate({
-                'hide-date-in-title': {
-                  $set: newValue,
-                },
-              });
-            });
-          })
-          .addExtraButton((b) => {
-            b.setIcon('lucide-rotate-ccw')
-              .setTooltip(t('Reset to default'))
-              .onClick(() => {
-                const [, globalValue] = this.getSetting('hide-date-in-title', local);
-                toggleComponent.setValue(!!globalValue);
-
-                this.applySettingsUpdate({
-                  $unset: ['hide-date-in-title'],
                 });
               });
           });
@@ -1234,6 +1143,97 @@ export class SettingsManager {
             });
           }
         });
+      });
+
+    contentEl.createEl('br');
+    contentEl.createEl('h4', { text: t('Inline Metadata') });
+
+    new Setting(contentEl)
+      .setName(t('Move inline metadata to card footer'))
+      .setDesc(
+        t(
+          "When toggled, inline metadata (from the Dataview plugin) will be displayed in the card's footer instead of the card's body."
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('move-inline-metadata', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'move-inline-metadata': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('move-inline-metadata', local);
+                toggleComponent.setValue((globalValue as boolean) ?? true);
+
+                this.applySettingsUpdate({
+                  $unset: ['move-inline-metadata'],
+                });
+              });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Move task data to card footer'))
+      .setDesc(
+        t(
+          "When toggled, task data (from the Tasks plugin) will be displayed in the card's footer instead of the card's body."
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('move-task-metadata', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'move-task-metadata': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('move-task-metadata', local);
+                toggleComponent.setValue((globalValue as boolean) ?? true);
+
+                this.applySettingsUpdate({
+                  $unset: ['move-task-metadata'],
+                });
+              });
+          });
       });
 
     contentEl.createEl('br');
