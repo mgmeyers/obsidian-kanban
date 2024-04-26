@@ -245,7 +245,7 @@ export function MarkdownEditor({
       <div className={classcat(cls)} ref={elRef}></div>
       {Platform.isMobile && (
         <button
-          onPointerDown={() => onSubmit(internalRef.current)}
+          onClick={() => onSubmit(internalRef.current)}
           className={classcat([c('item-submit-button'), 'mod-cta'])}
         >
           {t('Submit')}
