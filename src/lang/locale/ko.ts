@@ -1,6 +1,7 @@
 // 한국어
+import { Lang } from './en';
 
-export default {
+const lang: Partial<Lang> = {
   // main.ts
   'Open as kanban board': '칸반 보드로 열기',
   'Create new board': '새 보드 만들기',
@@ -88,17 +89,9 @@ export default {
   'This format will be used when displaying dates in Kanban cards.':
     '이 형식은 카반 보드에서 날짜를 표시할때 사용됩니다.',
   'Show relative date': '날짜를 상대적으로 표시',
-  "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'":
-    "활성화하면 '3일 후', '한달 전' 처럼 오늘과 설정된 날짜 사이의 거리로 표기합니다.",
-  'Hide card display dates': '카드 날짜 표시 숨기기',
   'Hide card counts in list titles': '목록 제목에 카드 수 표시 숨기기',
   'When toggled, card counts are hidden from the list title':
     '활성화하면 목록 제목에 총 카드 수가 표시되지 않습니다.',
-  'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.':
-    '활성화하면 카드에 날짜가 표시되지 않습니다. 상대적인 날짜는 활성화되어 있다면 표시됩니다.',
-  'Hide dates in card titles': '카드 제목에 날짜 숨기기',
-  'When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes.':
-    '활성화하면 카드 제목에 날짜가 표시되지 않습니다. 새 노트를 만들 때 제목에 날짜가 포함되는 것을 방지합니다.',
   'Link dates to daily notes': '일일 노트에 날짜 연결',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     '활성화하면 날짜가 일일 노트에 연결됩니다. 예: [[2021-04-26]]',
@@ -113,12 +106,6 @@ export default {
     '이 구분자는 카드 제목과 보관된 날짜/시간을 구분하는데 사용됩니다.',
   'Archive date/time format': '보관된 카드의 날짜/시간 형식',
   'Kanban Plugin': '칸반 플러그인',
-  'Hide tags in card titles': '카드 제목에 태그 숨기기',
-  'When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.':
-    '활성화하면 카드 제목에 태그가 표시되지 않습니다. 새 노트를 만들 때 제목에 태그가 포함되는 것을 방지합니다.',
-  'Hide card display tags': '카드 태그 숨기기',
-  'When toggled, tags will not be displayed below the card title.':
-    '활성화하면 카드 제목 아래에 태그가 표시되지 않습니다.',
   'Tag colors': '태그 색상 표시',
   'Set colors for tags displayed in cards.': '카드 제목 아래에 표시되는 태그의 색상을 설정합니다.',
   'Linked Page Metadata': '링크된 페이지 메타데이터',
@@ -232,3 +219,5 @@ export default {
   // components/Editor/MarkdownEditor.tsx
   Submit: '확인',
 };
+
+export default lang;

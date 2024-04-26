@@ -1,6 +1,6 @@
 // English
 
-export default {
+const en = {
   // main.ts
   'Open as kanban board': 'Open as kanban board',
   'Create new board': 'Create new board',
@@ -271,3 +271,6 @@ export default {
   // components/Editor/MarkdownEditor.tsx
   Submit: 'Submit',
 };
+
+export type Lang = typeof en;
+export default en;

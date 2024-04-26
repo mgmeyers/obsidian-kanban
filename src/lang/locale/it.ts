@@ -1,6 +1,7 @@
 // Italiano
+import { Lang } from './en';
 
-export default {
+const lang: Partial<Lang> = {
   // main.ts
   'Open as kanban board': 'Apri come bacheca Kanban',
   'Create new board': 'Crea nuova bacheca',
@@ -40,9 +41,6 @@ export default {
   'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.':
     'Le note create dalle schede Kanban verranno inserite in questa cartella. Se vuota, verranno inserite nella posizione predefinita del vault.',
   'Default folder': 'Cartella predefinita',
-  'Lane width': 'Larghezza colonna',
-  'Enter a number to set the lane width in pixels.':
-    'Inserire un numero per impostare la larghezza della colonna in pixel.',
   'Maximum number of archived cards': 'Numero massimo di schede archiviate',
   "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
     'Le schede archiviate possono essere visualizzate in modalità Markdown. Le vecchie schede verranno rimosse una volta raggiunto il limite. Impostando il valore -1 il numero di schede archiviate sarà illimitato.',
@@ -68,14 +66,6 @@ export default {
   'This format will be used when displaying dates in Kanban cards.':
     'Formato utilizzato per visualizzare le date nelle schede Kanban.',
   'Show relative date': 'Mostra data relativa',
-  "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'":
-    "Se attiva, le schede indicheranno la distanza tra la data odierna e la data della scheda. eg. 'Tra 3 giorni', 'Un mese fa'",
-  'Hide card display dates': 'Hide card display dates',
-  'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.':
-    'Se attiva, la data non verrà mostrata sulla scheda. Le date relative verranno comunque mostrate se sono state abilitate.',
-  'Hide dates in card titles': 'Nascondi date nei titoli delle schede',
-  'When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes.':
-    'Se attiva, la data non verrà mostrata nei titoli delle schede. Questo impedisce alle date di essere incluse quando vengono create nuove note.',
   'Link dates to daily notes': 'Collega date alle Note del giorno',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     'Se attiva, le date verranno collegate alle Note del giorno. Eg. [[2021-04-26]]',
@@ -141,3 +131,5 @@ export default {
   'Archive list': 'Archivia lista',
   'Delete list': 'Cancella lista',
 };
+
+export default lang;

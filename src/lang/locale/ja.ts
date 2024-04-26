@@ -1,6 +1,7 @@
 // 日本語
+import { Lang } from './en';
 
-export default {
+const lang: Partial<Lang> = {
   // main.ts
   'Open as kanban board': 'カンバンボードとして開く',
   'Create new board': 'カンバンボードを新規作成',
@@ -40,8 +41,6 @@ export default {
 
   // Settings.ts
   'New line trigger': '改行トリガー',
-  'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lanes.':
-    '改行に使うキーとしてEnterかShift+Enterのどちらを使うか選択してください。選択しなかった方のキーはカードとレーンの作成と編集完了のトリガーとなります。',
   'Shift + Enter': 'Shift + Enter',
   Enter: 'Enter',
   'Prepend / append new cards': '先頭または末尾に新規カードを追加する',
@@ -62,8 +61,6 @@ export default {
   'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.':
     'カンバンカードから作成されたノートはこのフォルダ内に置かれます。ブランクの場合には、この保管庫のデフォルトロケーションに置かれます。',
   'Default folder': 'デフォルトフォルダ',
-  'Lane width': 'レーンの幅',
-  'Enter a number to set the lane width in pixels.': 'レーンの幅をピクセル単位を入力してください。',
   'Maximum number of archived cards': 'アーカイブされたカードの最大数',
   "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
     'アーカイブされたカードはマークダウンモードで閲覧できます。この設定により指定されたアーカイブの限界数まで達した際には古いカードを削除します。この値を-1に設定するとボードのアーカイブ限界を無限にします。',
@@ -89,14 +86,6 @@ export default {
   'This format will be used when displaying dates in Kanban cards.':
     'このフォーマットはカンバンカード内にて日付の表示に使用されます。',
   'Show relative date': '相対日付を表示',
-  "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'":
-    "有効化するとカードの日付と今日の間の日数が表示されます。例: '3日後', '1ヶ月前'",
-  'Hide card display dates': 'カードに表示される日付を隠す',
-  'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.':
-    '有効化するとカード上のフォーマットされた日付が非表示になります。有効化された場合には相対日付は表示されままとなります。',
-  'Hide dates in card titles': 'カードタイトルの日付を隠す',
-  'When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes.':
-    '有効化するとカードタイトルの日付が非表示になります。これは新規ノートを作成した際にカードタイトルに日付が含まれるのを防ぎます。',
   'Link dates to daily notes': 'デイリーノートに日付をリンク',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     '有効化すると日付がデイリーノートにリンクされます。 例: [[2021-04-26]]',
@@ -108,12 +97,6 @@ export default {
     'これはアーカイブされた日付・時間をタイトルから分離するのに使用されます。',
   'Archive date/time format': '日付・時間フォーマットをアーカイブ',
   'Kanban Plugin': 'カンバンプラグイン',
-  'Hide tags in card titles': 'カードタイトル内のタグを隠す',
-  'When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.':
-    '有効化するとカードタイトル内のタグが非表示になります。これは新規ノートを作成した際にカードタイトルにタグが含まれるのを防ぎます。',
-  'Hide card display tags': 'カードに表示されるタグを隠す',
-  'When toggled, tags will not be displayed below the card title.':
-    '有効化するとカードタイトルの下のタグが非表示になります。',
   'Linked Page Metadata': 'リンクされたページのメタデータ',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     'カード内でリンクされている最初のノートのメタデータを表示します。下に表示するメタデータのキーを指定してください。オプションとしてラベルの付与が可能であり、ラベルは完全に非表示にすることができます。',
@@ -198,3 +181,5 @@ export default {
   'Unable to find': '見つかりません',
   'Open in default app': 'デフォルトアプリで開く',
 };
+
+export default lang;

@@ -2,7 +2,7 @@ import ar from './locale/ar';
 import cz from './locale/cz';
 import da from './locale/da';
 import de from './locale/de';
-import en from './locale/en';
+import en, { Lang } from './locale/en';
 import es from './locale/es';
 import fr from './locale/fr';
 import hi from './locale/hi';
@@ -23,7 +23,7 @@ import uk from './locale/tr';
 import zhCN from './locale/zh-cn';
 import zhTW from './locale/zh-tw';
 
-const localeMap: { [k: string]: Partial<typeof en> } = {
+const localeMap: { [k: string]: Partial<Lang> } = {
   ar,
   cz,
   da,

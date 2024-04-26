@@ -1,6 +1,7 @@
 // 简体中文
+import { Lang } from './en';
 
-export default {
+const lang: Partial<Lang> = {
   // main.ts
   'Open as kanban board': '打开为看板',
   'Create new board': '创建新看板',
@@ -85,16 +86,8 @@ export default {
   'Date display format': '日期展示格式',
   'This format will be used when displaying dates in Kanban cards.': '看板卡片会以该格式展示日期。',
   'Show relative date': '展示相对日期',
-  "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'":
-    '打开时，卡片会展示其所设日期与当前日期的差值，例如“3天内”“一个月前”等',
-  'Hide card display dates': '隐藏卡片日期',
   'Hide card counts in list titles': '在列标题上隐藏卡片计数',
   'When toggled, card counts are hidden from the list title': '打开时，列标题上的卡片计数将隐藏',
-  'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.':
-    '打开时，格式化日期不会在卡片上展示。如果开启了相对日期功能，相对日期还是会继续展示。',
-  'Hide dates in card titles': '在卡片标题中隐藏日期',
-  'When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes.':
-    '打开时，卡片标题中的日期将会隐藏。当基于卡片创建新笔记时可以避免日期混杂其中。',
   'Link dates to daily notes': '链接日期到日记',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     '打开时，日期会自动链接到日记页面，例如[[2021-04-26]]',
@@ -106,12 +99,6 @@ export default {
     '用于分隔标题与归档卡片的日期或时间',
   'Archive date/time format': '归档日期或时间格式',
   'Kanban Plugin': '看板插件',
-  'Hide tags in card titles': '隐藏卡片标题中的标签',
-  'When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.':
-    '打开时，卡片标题中的标签将会被隐藏。当基于卡片创建新笔记时可以避免标签混杂其中。',
-  'Hide card display tags': '隐藏卡片上的标签',
-  'When toggled, tags will not be displayed below the card title.':
-    '打开时，卡片标题下方的标签将不会展示。',
   'Linked Page Metadata': '连接的页面元数据',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     '展示卡片中第一个连接所对应的笔记元数据。请在下方指定哪些元数据可以展示。你可以选择展示哪些标志，所有标志都可以被隐藏。',
@@ -205,3 +192,5 @@ export default {
   // components/Editor/MarkdownEditor.tsx
   Submit: '提交',
 };
+
+export default lang;

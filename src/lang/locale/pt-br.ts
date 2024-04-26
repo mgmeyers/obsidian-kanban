@@ -1,16 +1,15 @@
 // Português do Brasil
 // Brazilian Portuguese
+import { Lang } from './en';
 
-export default {
+const lang: Partial<Lang> = {
   // main.ts
-  'Open as Kanban board': 'Abrir como quadro Kanban',
   'Create new board': 'Criar um novo quadro',
   'Archive completed cards in active board': 'Arquivar cartões concluídos no quadro ativo',
   'Error: current file is not a Kanban board': 'Erro: o arquivo atual não é um quadro Kanban',
   'Convert empty note to Kanban': 'Converter nota vazia em Kanban',
   'Error: cannot create Kanban, the current note is not empty':
     'Erro: não é possível criar o quadro Kanban, a nota atual não está vazia',
-  'New Kanban board': 'Novo quadro Kanban',
   'Untitled Kanban': 'Kanban sem título',
   'Toggle between Kanban and markdown mode': 'Alternar entre os modos Kanban e Markdown',
 
@@ -42,9 +41,6 @@ export default {
   'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.':
     'As notas criadas pelos links dos cartões Kanban serão colocadas nesta pasta. Se estiver em branco, serão colocadas no local configurado como padrão deste cofre.',
   'Default folder': 'Pasta padrão',
-  'Lane width': 'Largura das listas',
-  'Enter a number to set the lane width in pixels.':
-    'Insira um número para definir a largura das listas em pixels.',
   'Maximum number of archived cards': 'Quantidade máxima de cartões arquivados',
   "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
     'Os cartões arquivados podem ser vistos no modo Markdown. Esta configuração excluirá os cartões antigos assim que o limite for atingido. Inserir o valor -1 retira o limite para cartões arquivados.',
@@ -70,14 +66,6 @@ export default {
   'This format will be used when displaying dates in Kanban cards.':
     'Este será o formato das datas exibido nos cartões do Kanban.',
   'Show relative date': 'Exibir datas relativas',
-  "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'":
-    "Ao ativar, os cartões exibirão o intervalo de tempo entre hoje e a data do cartão: Ex.: 'Em 3 dias', 'Um mês atrás'",
-  'Hide card display dates': 'Ocultar datas dos cartões',
-  'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.':
-    'Ao ativar, as datas formatadas não serão exibidas no cartão. As datas relativas ainda serão exibidas se estiverem ativadas.',
-  'Hide dates in card titles': 'Ocultar datas dos títulos dos cartões',
-  'When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes.':
-    'Ao ativar, as datas serão títulos de cartões ocultos. Evita que datas sejam incluídas no título ao criar novas notas.',
   'Link dates to daily notes': 'Vincular datas a notas diárias',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     'Ao ativar, as datas serão vinculadas às notas diárias. Ex.: [[2021-04-26]]',
@@ -89,12 +77,6 @@ export default {
     'Isso será usado para separar a data/hora arquivada do título.',
   'Archive date/time format': 'Formato de data/hora do arquivo',
   'Kanban Plugin': 'Plugin Kanban',
-  'Hide tags in card titles': 'Ocultar ‘tags’ nos títulos dos cartões',
-  'When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.':
-    'Quando ativada, as ‘tags’ não serão exibidas nos títulos de cartas. Isso impedirá que as ‘tags’ sejam incluídas no título ao criar novas notas.',
-  'Hide card display tags': 'Ocultar ‘tags’ de exibição de cartão',
-  'When toggled, tags will not be displayed below the card title.':
-    'Quando ativada, as ‘tags’ não serão exibidas abaixo do título do cartão.',
   'Linked Page Metadata': "Metadados de páginas 'lincadas'",
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     "Exibe metadados para a primeira nota 'lincada' em um cartão. Especifique abaixo quais metadados serão exibidos. Um rótulo opcional pode ser fornecido e os rótulos podem ser ocultados completamente.",
@@ -161,3 +143,5 @@ export default {
   'Archive list': 'Arquivar lista',
   'Delete list': 'Excluir lista',
 };
+
+export default lang;

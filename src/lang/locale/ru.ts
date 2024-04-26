@@ -1,6 +1,7 @@
 // русский
+import { Lang } from './en';
 
-export default {
+const lang: Partial<Lang> = {
   // main.ts
   'Open as kanban board': 'Открыть как Kanban-доску',
   'Create new board': 'Создать новую доску',
@@ -87,17 +88,9 @@ export default {
   'This format will be used when displaying dates in Kanban cards.':
     'Этот формат будет использован при показе дат в Kanban-карточках.',
   'Show relative date': 'Показывать относительную дату',
-  "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'":
-    "Когда включено, карточки будут отображать разницу между сегодняшним днем ​​и датой карточки. Например. 'Через 3 дня', 'Месяц назад'",
-  'Hide card display dates': 'Скрыть показ даты в карточках',
   'Hide card counts in list titles': 'Скрыть счётчики карточек в заголовках списка',
   'When toggled, card counts are hidden from the list title':
     'Когда включено, счётчики карточек скрыты в заголовках списка',
-  'When toggled, formatted dates will not be displayed on the card. Relative dates will still be displayed if they are enabled.':
-    'Когдак включено, форматированные даты не будут показываться в карточке. Относительные даты будут показаны, если включены.',
-  'Hide dates in card titles': 'Скрыть даты в заголовках карточки',
-  'When toggled, dates will be hidden card titles. This will prevent dates from being included in the title when creating new notes.':
-    'Когда включено, даты в заголовках карточки будут скрыты. Это предотвратит включение дат в заголовок при создании новых заметок..',
   'Link dates to daily notes': 'Связывать даты с ежедневными заметками',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     'Когда включено, даты будут указывать на ежедневные заметки. Например, [[2021-04-26]]',
@@ -113,12 +106,6 @@ export default {
     'Будет использоваться для отделения даты/времени архивирования от заголовка',
   'Archive date/time format': 'Формат даты/времени архивирования',
   'Kanban Plugin': 'Плагин Kanban',
-  'Hide tags in card titles': 'Спрятать метки в заголовках карточки',
-  'When toggled, tags will be hidden card titles. This will prevent tags from being included in the title when creating new notes.':
-    'Когда включено, метки в заголовках карточек не будут показаны. Это предотвратит включение меток в заголовок при создании новых заметок.',
-  'Hide card display tags': 'Отключить показ меток карточек',
-  'When toggled, tags will not be displayed below the card title.':
-    'Когда включено, метки под заголовками карточек не будут показаны.',
   'Tag colors': 'Показывать цвета меток',
   'Set colors for tags displayed in cards.': 'Установить цвета для меток под заголовками карточек.',
   'Linked Page Metadata': 'Метаданные связанных страниц',
@@ -232,3 +219,5 @@ export default {
   // components/Editor/MarkdownEditor.tsx
   Submit: 'Сохранить',
 };
+
+export default lang;

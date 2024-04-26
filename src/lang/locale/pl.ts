@@ -1,3 +1,6 @@
 // język polski
+import { Lang } from './en';
 
-export default {};
+const lang: Partial<Lang> = {};
+
+export default lang;
