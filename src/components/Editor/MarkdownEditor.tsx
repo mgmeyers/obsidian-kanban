@@ -2,7 +2,7 @@ import { insertBlankLine } from '@codemirror/commands';
 import { EditorSelection, Extension, Prec } from '@codemirror/state';
 import { EditorView, ViewUpdate, keymap, placeholder as placeholderExt } from '@codemirror/view';
 import classcat from 'classcat';
-import { Editor, Platform } from 'obsidian';
+import { Editor, EditorPosition, Platform } from 'obsidian';
 import { MutableRefObject, useContext, useEffect, useRef } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
@@ -27,7 +27,7 @@ interface MarkdownEditorProps {
 }
 
 export function allowNewLine(stateManager: StateManager, mod: boolean, shift: boolean) {
-  if (Platform.isMobile) return true;
+  if (Platform.isMobile) return !(mod || shift);
   return stateManager.getSetting('new-line-trigger') === 'enter' ? !(mod || shift) : mod || shift;
 }
 
@@ -96,6 +96,14 @@ export function MarkdownEditor({
   useEffect(() => {
     class Editor extends view.plugin.MarkdownEditor {
       isKanbanEditor = true;
+
+      showTasksPluginAutoSuggest(
+        cursor: EditorPosition,
+        editor: Editor,
+        lineHasGlobalFilter: boolean
+      ) {
+        return lineHasGlobalFilter && cursor.line === 0;
+      }
 
       updateBottomPadding() {}
       onUpdate(update: ViewUpdate, changed: boolean) {
