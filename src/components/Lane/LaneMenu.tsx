@@ -1,5 +1,5 @@
 import update from 'immutability-helper';
-import { Menu } from 'obsidian';
+import { Menu, Platform } from 'obsidian';
 import { Dispatch, StateUpdater, useContext, useEffect, useMemo, useState } from 'preact/hooks';
 import { Path } from 'src/dnd/types';
 import { defaultSort } from 'src/helpers/util';
@@ -71,7 +71,7 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
   const [confirmAction, setConfirmAction] = useState<LaneAction>(null);
 
   const settingsMenu = useMemo(() => {
-    const taskSortOptions = new Set<string>();
+    const metadataSortOptions = new Set<string>();
     let canSortDate = false;
     let canSortTags = false;
 
@@ -80,7 +80,7 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
       if (taskData) {
         taskData.forEach((m) => {
           if (m.key === 'repeat') return;
-          if (!taskSortOptions.has(m.key)) taskSortOptions.add(m.key);
+          if (!metadataSortOptions.has(m.key)) metadataSortOptions.add(m.key);
         });
       }
 
@@ -103,7 +103,7 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
       })
       .addSeparator()
       .addItem((i) => {
-        i.setIcon('corner-left-down')
+        i.setIcon('arrow-left-to-line')
           .setTitle(t('Insert list before'))
           .onClick(() =>
             boardModifiers.insertLane(path, {
@@ -119,7 +119,7 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
           );
       })
       .addItem((i) => {
-        i.setIcon('lucide-corner-right-down')
+        i.setIcon('arrow-right-to-line')
           .setTitle(t('Insert list after'))
           .onClick(() => {
             const newPath = [...path];
@@ -151,10 +151,12 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
           .setTitle(t('Delete list'))
           .onClick(() => setConfirmAction('delete'));
       })
-      .addSeparator()
-      .addItem((item) => {
+      .addSeparator();
+
+    const addSortOptions = (menu: Menu) => {
+      menu.addItem((item) => {
         item
-          .setIcon('lucide-move-vertical')
+          .setIcon('arrow-down-up')
           .setTitle(t('Sort by card text'))
           .onClick(() => {
             const children = lane.children.slice();
@@ -187,120 +189,26 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
           });
       });
 
-    if (canSortDate) {
-      menu.addItem((item) => {
-        item
-          .setIcon('lucide-move-vertical')
-          .setTitle(t('Sort by date'))
-          .onClick(() => {
-            const children = lane.children.slice();
-            const mod = lane.data.sorted === LaneSort.DateAsc ? -1 : 1;
-
-            children.sort((a, b) => {
-              const aDate: moment.Moment | undefined = a.data.metadata.time || a.data.metadata.date;
-              const bDate: moment.Moment | undefined = b.data.metadata.time || b.data.metadata.date;
-
-              if (aDate && !bDate) return -1 * mod;
-              if (bDate && !aDate) return 1 * mod;
-              if (!aDate && !bDate) return 0;
-
-              return (aDate.isBefore(bDate) ? -1 : 1) * mod;
-            });
-
-            boardModifiers.updateLane(
-              path,
-              update(lane, {
-                children: {
-                  $set: children,
-                },
-                data: {
-                  sorted: {
-                    $set:
-                      lane.data.sorted === LaneSort.DateAsc ? LaneSort.DateDsc : LaneSort.DateAsc,
-                  },
-                },
-              })
-            );
-          });
-      });
-    }
-
-    if (canSortTags) {
-      menu.addItem((item) => {
-        item
-          .setIcon('lucide-move-vertical')
-          .setTitle(t('Sort by tags'))
-          .onClick(() => {
-            const tagSortOrder = stateManager.getSetting('tag-sort');
-            const children = lane.children.slice();
-            const desc = lane.data.sorted === LaneSort.TagsAsc ? true : false;
-
-            children.sort((a, b) => {
-              const tagsA = a.data.metadata.tags;
-              const tagsB = b.data.metadata.tags;
-
-              if (!tagsA?.length && !tagsB?.length) return 0;
-              if (!tagsA?.length) return 1;
-              if (!tagsB?.length) return -1;
-
-              const aSortOrder = tagSortOrder?.findIndex((sort) => tagsA.includes(sort.tag)) ?? -1;
-              const bSortOrder = tagSortOrder?.findIndex((sort) => tagsB.includes(sort.tag)) ?? -1;
-
-              if (aSortOrder > -1 && bSortOrder < 0) return desc ? 1 : -1;
-              if (bSortOrder > -1 && aSortOrder < 0) return desc ? -1 : 1;
-              if (aSortOrder > -1 && bSortOrder > -1) {
-                return desc ? bSortOrder - aSortOrder : aSortOrder - bSortOrder;
-              }
-
-              if (desc) return defaultSort(tagsB.join(''), tagsA.join(''));
-              return defaultSort(tagsA.join(''), tagsB.join(''));
-            });
-
-            boardModifiers.updateLane(
-              path,
-              update(lane, {
-                children: {
-                  $set: children,
-                },
-                data: {
-                  sorted: {
-                    $set:
-                      lane.data.sorted === LaneSort.TagsAsc ? LaneSort.TagsDsc : LaneSort.TagsAsc,
-                  },
-                },
-              })
-            );
-          });
-      });
-    }
-
-    if (taskSortOptions.size) {
-      taskSortOptions.forEach((k) => {
-        menu.addItem((i) => {
-          i.setIcon('lucide-move-vertical')
-            .setTitle(t('Sort by') + ' ' + lableToName(k).toLocaleLowerCase())
+      if (canSortDate) {
+        menu.addItem((item) => {
+          item
+            .setIcon('arrow-down-up')
+            .setTitle(t('Sort by date'))
             .onClick(() => {
               const children = lane.children.slice();
-              const desc = lane.data.sorted === k + '-asc' ? true : false;
+              const mod = lane.data.sorted === LaneSort.DateAsc ? -1 : 1;
 
               children.sort((a, b) => {
-                const valA = a.data.metadata.inlineMetadata?.find((m) => m.key === k);
-                const valB = b.data.metadata.inlineMetadata?.find((m) => m.key === k);
+                const aDate: moment.Moment | undefined =
+                  a.data.metadata.time || a.data.metadata.date;
+                const bDate: moment.Moment | undefined =
+                  b.data.metadata.time || b.data.metadata.date;
 
-                if (valA === undefined && valB === undefined) return 0;
-                if (valA === undefined) return 1;
-                if (valB === undefined) return -1;
+                if (aDate && !bDate) return -1 * mod;
+                if (bDate && !aDate) return 1 * mod;
+                if (!aDate && !bDate) return 0;
 
-                if (desc) {
-                  return defaultSort(
-                    anyToString(valB.value, stateManager),
-                    anyToString(valA.value, stateManager)
-                  );
-                }
-                return defaultSort(
-                  anyToString(valA.value, stateManager),
-                  anyToString(valB.value, stateManager)
-                );
+                return (aDate.isBefore(bDate) ? -1 : 1) * mod;
               });
 
               boardModifiers.updateLane(
@@ -311,13 +219,122 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
                   },
                   data: {
                     sorted: {
-                      $set: lane.data.sorted === k + '-asc' ? k + '-desc' : k + '-asc',
+                      $set:
+                        lane.data.sorted === LaneSort.DateAsc ? LaneSort.DateDsc : LaneSort.DateAsc,
                     },
                   },
                 })
               );
             });
         });
+      }
+
+      if (canSortTags) {
+        menu.addItem((item) => {
+          item
+            .setIcon('arrow-down-up')
+            .setTitle(t('Sort by tags'))
+            .onClick(() => {
+              const tagSortOrder = stateManager.getSetting('tag-sort');
+              const children = lane.children.slice();
+              const desc = lane.data.sorted === LaneSort.TagsAsc ? true : false;
+
+              children.sort((a, b) => {
+                const tagsA = a.data.metadata.tags;
+                const tagsB = b.data.metadata.tags;
+
+                if (!tagsA?.length && !tagsB?.length) return 0;
+                if (!tagsA?.length) return 1;
+                if (!tagsB?.length) return -1;
+
+                const aSortOrder =
+                  tagSortOrder?.findIndex((sort) => tagsA.includes(sort.tag)) ?? -1;
+                const bSortOrder =
+                  tagSortOrder?.findIndex((sort) => tagsB.includes(sort.tag)) ?? -1;
+
+                if (aSortOrder > -1 && bSortOrder < 0) return desc ? 1 : -1;
+                if (bSortOrder > -1 && aSortOrder < 0) return desc ? -1 : 1;
+                if (aSortOrder > -1 && bSortOrder > -1) {
+                  return desc ? bSortOrder - aSortOrder : aSortOrder - bSortOrder;
+                }
+
+                if (desc) return defaultSort(tagsB.join(''), tagsA.join(''));
+                return defaultSort(tagsA.join(''), tagsB.join(''));
+              });
+
+              boardModifiers.updateLane(
+                path,
+                update(lane, {
+                  children: {
+                    $set: children,
+                  },
+                  data: {
+                    sorted: {
+                      $set:
+                        lane.data.sorted === LaneSort.TagsAsc ? LaneSort.TagsDsc : LaneSort.TagsAsc,
+                    },
+                  },
+                })
+              );
+            });
+        });
+      }
+
+      if (metadataSortOptions.size) {
+        metadataSortOptions.forEach((k) => {
+          menu.addItem((i) => {
+            i.setIcon('arrow-down-up')
+              .setTitle(t('Sort by') + ' ' + lableToName(k).toLocaleLowerCase())
+              .onClick(() => {
+                const children = lane.children.slice();
+                const desc = lane.data.sorted === k + '-asc' ? true : false;
+
+                children.sort((a, b) => {
+                  const valA = a.data.metadata.inlineMetadata?.find((m) => m.key === k);
+                  const valB = b.data.metadata.inlineMetadata?.find((m) => m.key === k);
+
+                  if (valA === undefined && valB === undefined) return 0;
+                  if (valA === undefined) return 1;
+                  if (valB === undefined) return -1;
+
+                  if (desc) {
+                    return defaultSort(
+                      anyToString(valB.value, stateManager),
+                      anyToString(valA.value, stateManager)
+                    );
+                  }
+                  return defaultSort(
+                    anyToString(valA.value, stateManager),
+                    anyToString(valB.value, stateManager)
+                  );
+                });
+
+                boardModifiers.updateLane(
+                  path,
+                  update(lane, {
+                    children: {
+                      $set: children,
+                    },
+                    data: {
+                      sorted: {
+                        $set: lane.data.sorted === k + '-asc' ? k + '-desc' : k + '-asc',
+                      },
+                    },
+                  })
+                );
+              });
+          });
+        });
+      }
+    };
+
+    if (Platform.isPhone) {
+      addSortOptions(menu);
+    } else {
+      menu.addItem((item) => {
+        const submenu = (item as any).setTitle(t('Sort by')).setIcon('arrow-down-up').setSubmenu();
+
+        addSortOptions(submenu);
       });
     }
 

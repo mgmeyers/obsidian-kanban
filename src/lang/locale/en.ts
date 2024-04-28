@@ -232,6 +232,7 @@ const en = {
   'Add label': 'Add label',
   'Move to top': 'Move to top',
   'Move to bottom': 'Move to bottom',
+  'Move to list': 'Move to list',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Enter list title...',
