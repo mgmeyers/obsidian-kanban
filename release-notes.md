@@ -1,1 +1,1 @@
-c478689 Attempt to fix issues clicking on editor submit button on mobile
+b234b34 Use submenus for move and sort menu options
