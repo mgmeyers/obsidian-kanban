@@ -97,14 +97,6 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
           dropPath.push(0);
         }
 
-        plugin.app.workspace.trigger(
-          'kanban:card-moved',
-          stateManager.file,
-          dragPath,
-          dropPath,
-          dragEntityData
-        );
-
         return stateManager.setState((board) => {
           let didMoveItem = false;
 

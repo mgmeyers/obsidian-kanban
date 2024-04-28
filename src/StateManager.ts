@@ -388,8 +388,6 @@ export class StateManager {
       });
     });
 
-    this.app.workspace.trigger('kanban:board-cards-archived', this.file, archived);
-
     try {
       this.setState(
         update(board, {
