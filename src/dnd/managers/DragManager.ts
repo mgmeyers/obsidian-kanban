@@ -1,5 +1,5 @@
 import boxIntersect from 'box-intersect';
-import { RefObject, useCallback, useContext, useEffect } from 'preact/compat';
+import { RefObject, useCallback, useContext, useRef } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
 import { handleDragOrPaste } from 'src/components/Item/helpers';
 
@@ -360,17 +360,19 @@ export function useDragHandle(
   handleElement: RefObject<HTMLElement | null>
 ) {
   const dndManager = useContext(DndManagerContext);
+  const unbind = useRef(() => {});
 
-  useEffect(() => {
-    const droppable = droppableElement.current;
-    const handle = handleElement.current;
-
-    if (!dndManager || !droppable || !handle) {
-      return;
+  return useCallback((el: HTMLElement) => {
+    if (handleElement.current !== el) {
+      unbind.current();
+      unbind.current = () => {};
     }
+    if (!el) return;
 
+    const handle = el;
     const onPointerDown = (e: PointerEvent) => {
-      if (e.defaultPrevented) return;
+      if (e.defaultPrevented || !dndManager || !droppableElement.current) return;
+      const droppable = droppableElement.current;
 
       let node = e.targetNode;
       while (node) {
@@ -486,7 +488,7 @@ export function useDragHandle(
       handle.removeEventListener('pointerdown', onPointerDown);
       handle.removeEventListener('touchstart', swallowTouchEvent);
     };
-  }, [droppableElement, handleElement, dndManager]);
+  }, []);
 }
 
 export function createHTMLDndHandlers(stateManager: StateManager) {

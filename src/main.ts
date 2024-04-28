@@ -67,6 +67,46 @@ export default class KanbanPlugin extends Plugin {
     await this.saveData(this.settings);
   }
 
+  storage: Record<string, any>;
+  getLocalStorage() {
+    const str = localStorage.getItem('kanban-plugin');
+    if (!str) this.storage = {};
+    this.storage = JSON.parse(str);
+  }
+
+  saveLocalStorage() {
+    localStorage.setItem('kanban-plugin', JSON.stringify(this.storage));
+  }
+
+  setViewValue(view: KanbanView, key: string, value: any) {
+    const { storage } = this;
+    if (!storage[view.id]) storage[view.id] = {};
+    storage[view.id][key] = value;
+    this.saveLocalStorage();
+  }
+
+  getViewValue(view: KanbanView, key: string) {
+    const { storage } = this;
+    if (!storage[view.id]) storage[view.id] = {};
+    return storage[view.id][key];
+  }
+
+  cleanupViewStorage() {
+    const { storage } = this;
+    const viewIds = new Set();
+    this.app.workspace.getLeavesOfType(kanbanViewType).map((leaf) => {
+      viewIds.add((leaf.view as KanbanView).id);
+    });
+
+    Object.keys(storage).forEach((k) => {
+      if (!viewIds.has(k)) {
+        delete storage[k];
+      }
+    });
+
+    this.saveLocalStorage();
+  }
+
   unload(): void {
     super.unload();
     Promise.all(
@@ -98,6 +138,7 @@ export default class KanbanPlugin extends Plugin {
   MarkdownEditor: any;
 
   async onload() {
+    this.getLocalStorage();
     this.MarkdownEditor = getEditorClass(this.app);
 
     await this.loadSettings();
@@ -454,8 +495,11 @@ export default class KanbanPlugin extends Plugin {
 
           if (Platform.isMobile) {
             const stateManager = this.stateManagers.get(file);
-            const view = stateManager.getSetting(frontmatterKey);
             const kanbanView = leaf.view as KanbanView;
+
+            const initialValue = this.getViewValue(kanbanView, 'view');
+            const settingValue = stateManager.getSetting(frontmatterKey);
+            const view = initialValue || settingValue;
 
             menu
               .addItem((item) => {
@@ -492,7 +536,7 @@ export default class KanbanPlugin extends Plugin {
                   .setSection('pane')
                   .setIcon('lucide-trello')
                   .setChecked(view === 'basic' || view === 'board')
-                  .onClick(() => kanbanView.setView('board'))
+                  .onClick(() => kanbanView.emitter.emit('setView', 'board'))
               )
               .addItem((item) =>
                 item
@@ -500,7 +544,7 @@ export default class KanbanPlugin extends Plugin {
                   .setSection('pane')
                   .setIcon('lucide-table')
                   .setChecked(view === 'table')
-                  .onClick(() => kanbanView.setView('table'))
+                  .onClick(() => kanbanView.emitter.emit('setView', 'table'))
               )
               .addItem((item) =>
                 item
@@ -508,7 +552,7 @@ export default class KanbanPlugin extends Plugin {
                   .setSection('pane')
                   .setIcon('lucide-server')
                   .setChecked(view === 'list')
-                  .onClick(() => kanbanView.setView('list'))
+                  .onClick(() => kanbanView.emitter.emit('setView', 'list'))
               )
               .addItem((item) =>
                 item
@@ -678,7 +722,7 @@ export default class KanbanPlugin extends Plugin {
         }
 
         if (view && view instanceof KanbanView) {
-          view.setView('board');
+          view.emitter.emit('setView', 'board');
         }
       },
     });
@@ -694,7 +738,7 @@ export default class KanbanPlugin extends Plugin {
         }
 
         if (view && view instanceof KanbanView) {
-          view.setView('table');
+          view.emitter.emit('setView', 'table');
         }
       },
     });
@@ -710,7 +754,7 @@ export default class KanbanPlugin extends Plugin {
         }
 
         if (view && view instanceof KanbanView) {
-          view.setView('list');
+          view.emitter.emit('setView', 'list');
         }
       },
     });

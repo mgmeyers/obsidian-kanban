@@ -9,6 +9,7 @@ import {
   WorkspaceLeaf,
 } from 'obsidian';
 import PQueue from 'p-queue';
+import { Dispatch, StateUpdater, useCallback, useState } from 'preact/hooks';
 
 import { KanbanFormat, SettingsModal } from './Settings';
 import { Kanban } from './components/Kanban';
@@ -28,6 +29,7 @@ export const kanbanIcon = 'lucide-trello';
 interface ViewEvents {
   showLaneForm: () => void;
   hotkey: (commandId: string) => void;
+  setView: (view: string) => void;
 }
 
 export class KanbanView extends TextFileView implements HoverParent {
@@ -169,6 +171,7 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   onunload(): void {
     super.onunload();
+    this.plugin.cleanupViewStorage();
     this.destroy();
   }
 
@@ -314,28 +317,31 @@ export class KanbanView extends TextFileView implements HoverParent {
         'lucide-view',
         t('Board view'),
         (evt) => {
-          const view = stateManager.getSetting(frontmatterKey);
+          const initialValue = this.plugin.getViewValue(this, 'view');
+          const settingValue = stateManager.getSetting(frontmatterKey);
+          const view = initialValue || settingValue;
+
           new Menu()
             .addItem((item) =>
               item
                 .setTitle(t('View as board'))
                 .setIcon('lucide-trello')
                 .setChecked(view === 'basic' || view === 'board')
-                .onClick(() => this.setView('board'))
+                .onClick(() => this.emitter.emit('setView', 'board'))
             )
             .addItem((item) =>
               item
                 .setTitle(t('View as table'))
                 .setIcon('lucide-table')
                 .setChecked(view === 'table')
-                .onClick(() => this.setView('table'))
+                .onClick(() => this.emitter.emit('setView', 'table'))
             )
             .addItem((item) =>
               item
                 .setTitle(t('View as list'))
                 .setIcon('lucide-server')
                 .setChecked(view === 'list')
-                .onClick(() => this.setView('list'))
+                .onClick(() => this.emitter.emit('setView', 'list'))
             )
             .showAtMouseEvent(evt);
         }
@@ -424,5 +430,35 @@ export class KanbanView extends TextFileView implements HoverParent {
       there's nothing to do in this method.  (We can't omit it, since it's
       abstract.)
     */
+  }
+
+  useStorage(key: string, defaultValue?: any): [any, Dispatch<StateUpdater<any>>] {
+    const initialValue = this.plugin.getViewValue(this, key);
+    const [state, setState] = useState<any>(initialValue ?? defaultValue);
+
+    if (initialValue === undefined && defaultValue !== undefined) {
+      this.plugin.setViewValue(this, key, defaultValue);
+    }
+
+    const override: typeof setState = useCallback(
+      (s) => {
+        setState((oldState: any) => {
+          let newState: any;
+
+          if (typeof s === 'function') {
+            newState = (s as any)(oldState);
+          } else {
+            newState = s;
+          }
+
+          this.plugin.setViewValue(this, key, newState);
+
+          return newState;
+        });
+      },
+      [key, setState]
+    );
+
+    return [state, override];
   }
 }

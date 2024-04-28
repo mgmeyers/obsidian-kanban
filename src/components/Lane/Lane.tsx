@@ -1,7 +1,16 @@
 import animateScrollTo from 'animated-scroll-to';
 import classcat from 'classcat';
 import update from 'immutability-helper';
-import { Fragment, memo, useCallback, useContext, useMemo, useRef, useState } from 'preact/compat';
+import {
+  Fragment,
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'preact/compat';
 import {
   DraggableProps,
   Droppable,
@@ -58,14 +67,39 @@ function DraggableLaneRaw({
   const measureRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
 
-  useDragHandle(measureRef, dragHandleRef);
+  const bindHandle = useDragHandle(measureRef, dragHandleRef);
 
   const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
-  const isCollapsed = !!lane.data.isCollapsed || !!forceCollapse;
   const isCompactPrepend = insertionMethod === 'prepend-compact';
   const shouldPrepend = isCompactPrepend || insertionMethod === 'prepend';
 
+  const titleRef = useRef(lane.data.title);
+  const indexRef = useRef(laneIndex);
+
+  const [isLaneCollapsed, setIsLaneCollapsed] = view.useStorage(
+    laneIndex.toString() + lane.data.title + '###' + 'isCollapsed',
+    view.plugin.getViewValue(
+      view,
+      indexRef.current.toString() + titleRef.current + '###' + 'isCollapsed'
+    ) ?? !!lane.data.isCollapsed
+  );
+  const isCollapsed = isLaneCollapsed || !!forceCollapse;
+
+  useEffect(() => {
+    if (titleRef.current !== lane.data.title || indexRef.current !== laneIndex) {
+      delete view.plugin.storage[
+        indexRef.current.toString() + titleRef.current + '###' + 'isCollapsed'
+      ];
+      view.plugin.saveLocalStorage();
+      titleRef.current = lane.data.title;
+      indexRef.current = laneIndex;
+    }
+  }, [lane.data.title, laneIndex]);
+
   const toggleIsCollapsed = useCallback(() => {
+    setIsLaneCollapsed((collapsed: boolean) => {
+      return !collapsed;
+    });
     boardModifiers.updateLane(
       path,
       update(lane, {
@@ -74,7 +108,7 @@ function DraggableLaneRaw({
         },
       })
     );
-  }, [path, lane, boardModifiers]);
+  }, [path, lane, boardModifiers, setIsLaneCollapsed]);
 
   const addItems = useCallback(
     (items: Item[]) => {
@@ -152,7 +186,7 @@ function DraggableLaneRaw({
         >
           <CollapsedDropArea {...dropAreaProps}>
             <LaneHeader
-              dragHandleRef={dragHandleRef}
+              bindHandle={bindHandle}
               laneIndex={laneIndex}
               lane={lane}
               setIsItemInputVisible={isCompactPrepend ? setEditState : undefined}

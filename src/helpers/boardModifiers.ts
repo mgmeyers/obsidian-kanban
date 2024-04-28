@@ -14,7 +14,7 @@ import {
 } from 'src/dnd/util/data';
 
 import { generateInstanceId } from '../components/helpers';
-import { Item, Lane } from '../components/types';
+import { Board, Item, Lane } from '../components/types';
 
 export interface BoardModifiers {
   appendItems: (path: Path, items: Item[]) => void;
@@ -27,6 +27,7 @@ export interface BoardModifiers {
   addLane: (lane: Lane) => void;
   insertLane: (path: Path, lane: Lane) => void;
   updateLane: (path: Path, lane: Lane) => void;
+  toggleLaneCollapse: (path: Path) => void;
   archiveLane: (path: Path) => void;
   archiveLaneItems: (path: Path) => void;
   deleteEntity: (path: Path) => void;
@@ -55,44 +56,24 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
 
   return {
     appendItems: (path: Path, items: Item[]) => {
-      items.forEach((item) =>
-        stateManager.app.workspace.trigger('kanban:card-added', stateManager.file, item)
-      );
-
       stateManager.setState((boardData) => appendEntities(boardData, path, items));
     },
 
     prependItems: (path: Path, items: Item[]) => {
-      items.forEach((item) =>
-        stateManager.app.workspace.trigger('kanban:card-added', stateManager.file, item)
-      );
-
       stateManager.setState((boardData) => prependEntities(boardData, path, items));
     },
 
     insertItems: (path: Path, items: Item[]) => {
-      items.forEach((item) =>
-        stateManager.app.workspace.trigger('kanban:card-added', stateManager.file, item)
-      );
-
       stateManager.setState((boardData) => insertEntity(boardData, path, items));
     },
 
     replaceItem: (path: Path, items: Item[]) => {
-      items.forEach((item) =>
-        stateManager.app.workspace.trigger('kanban:card-added', stateManager.file, item)
-      );
-
       stateManager.setState((boardData) =>
         insertEntity(removeEntity(boardData, path), path, items)
       );
     },
 
     splitItem: (path: Path, items: Item[]) => {
-      items.forEach((item) =>
-        stateManager.app.workspace.trigger('kanban:card-added', stateManager.file, item)
-      );
-
       stateManager.setState((boardData) => {
         return insertEntity(removeEntity(boardData, path), path, items);
       });
@@ -111,20 +92,14 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     },
 
     addLane: (lane: Lane) => {
-      stateManager.app.workspace.trigger('kanban:lane-added', stateManager.file, lane);
-
       stateManager.setState((boardData) => appendEntities(boardData, [], [lane]));
     },
 
     insertLane: (path: Path, lane: Lane) => {
-      stateManager.app.workspace.trigger('kanban:lane-added', stateManager.file, lane);
-
       stateManager.setState((boardData) => insertEntity(boardData, path, [lane]));
     },
 
     updateLane: (path: Path, lane: Lane) => {
-      stateManager.app.workspace.trigger('kanban:lane-updated', stateManager.file, lane);
-
       stateManager.setState((boardData) =>
         updateParentEntity(boardData, path, {
           children: {
@@ -136,12 +111,39 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
       );
     },
 
+    toggleLaneCollapse: (path: Path) => {
+      stateManager.setState((boardData) => {
+        const lane = update(getEntityFromPath(boardData, path) as Lane, {
+          data: {
+            $toggle: ['isCollapsed'],
+          },
+        });
+
+        const updated: Board = updateParentEntity(boardData, path, {
+          children: {
+            [path[path.length - 1]]: {
+              $set: lane,
+            },
+          },
+        });
+
+        const collapsedState = updated.children.map((lane: Lane) => lane.data.isCollapsed);
+        return update(updated, {
+          data: {
+            settings: {
+              'list-collapse': {
+                $set: collapsedState,
+              },
+            },
+          },
+        });
+      });
+    },
+
     archiveLane: (path: Path) => {
       stateManager.setState((boardData) => {
         const lane = getEntityFromPath(boardData, path);
         const items = lane.children;
-
-        stateManager.app.workspace.trigger('kanban:lane-archived', stateManager.file, lane);
 
         try {
           return update(removeEntity(boardData, path), {
@@ -164,8 +166,6 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
       stateManager.setState((boardData) => {
         const lane = getEntityFromPath(boardData, path);
         const items = lane.children;
-
-        stateManager.app.workspace.trigger('kanban:lane-cards-archived', stateManager.file, items);
 
         try {
           return update(
@@ -193,24 +193,12 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
 
     deleteEntity: (path: Path) => {
       stateManager.setState((boardData) => {
-        const entity = getEntityFromPath(boardData, path);
-
-        stateManager.app.workspace.trigger(
-          `kanban:${entity.type}-deleted`,
-          stateManager.file,
-          entity
-        );
-
         return removeEntity(boardData, path);
       });
     },
 
     updateItem: (path: Path, item: Item) => {
       stateManager.setState((boardData) => {
-        const oldItem = getEntityFromPath(boardData, path);
-
-        stateManager.app.workspace.trigger('kanban:card-updated', stateManager.file, oldItem, item);
-
         return updateParentEntity(boardData, path, {
           children: {
             [path[path.length - 1]]: {
@@ -224,8 +212,6 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     archiveItem: (path: Path) => {
       stateManager.setState((boardData) => {
         const item = getEntityFromPath(boardData, path);
-
-        stateManager.app.workspace.trigger('kanban:card-archived', stateManager.file, path, item);
 
         try {
           return update(removeEntity(boardData, path), {

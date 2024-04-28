@@ -46,7 +46,7 @@ function Item({ isStatic, tagIndex, tag, deleteTag, updateTag }: ItemProps) {
   const measureRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
 
-  useDragHandle(measureRef, dragHandleRef);
+  const bindHandle = useDragHandle(measureRef, dragHandleRef);
 
   const body = (
     <div className={c('setting-controls-wrapper')}>
@@ -85,7 +85,7 @@ function Item({ isStatic, tagIndex, tag, deleteTag, updateTag }: ItemProps) {
           <div
             className="mobile-option-setting-drag-icon clickable-icon"
             aria-label={t('Drag to rearrange')}
-            ref={dragHandleRef}
+            ref={bindHandle}
           >
             <Icon name="lucide-grip-horizontal" />
           </div>

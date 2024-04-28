@@ -3,6 +3,7 @@ import classcat from 'classcat';
 import update from 'immutability-helper';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
+import { KanbanFormat } from 'src/Settings';
 import { StateManager } from 'src/StateManager';
 import { useIsAnythingDragging } from 'src/dnd/components/DragOverlay';
 import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
@@ -48,7 +49,20 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const maxArchiveLength = stateManager.useSetting('max-archive-size');
   const dateColors = stateManager.useSetting('date-colors');
   const tagColors = stateManager.useSetting('tag-colors');
-  const boardView = stateManager.useSetting(frontmatterKey);
+
+  const [boardView, setBoardView] = view.useStorage(
+    'view',
+    stateManager.getSetting(frontmatterKey)
+  );
+
+  useEffect(() => {
+    const onViewChange = (type: KanbanFormat) => {
+      setBoardView(type);
+      view.setView(type);
+    };
+    view.emitter.on('setView', onViewChange);
+    return () => view.emitter.off('setView', onViewChange);
+  }, [view]);
 
   const closeLaneForm = useCallback(() => {
     if (boardData?.children.length > 0) {
