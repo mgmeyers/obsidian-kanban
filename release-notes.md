@@ -1,1 +1,2 @@
-b234b34 Use submenus for move and sort menu options
+e34ebef Remove unnecessary triggers
+79fdb96 Fix issues with dragging collapsed lanes
