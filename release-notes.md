@@ -1,1 +1,1 @@
-b234b34 Use submenus for move and sort menu options
+8cb9447 Save board type and lane collapse state per view
