@@ -58,7 +58,7 @@ function DraggableLaneRaw({
   const measureRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
 
-  useDragHandle(measureRef, dragHandleRef);
+  const bindHandle = useDragHandle(measureRef, dragHandleRef);
 
   const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
   const isCollapsed = !!lane.data.isCollapsed || !!forceCollapse;
@@ -152,7 +152,7 @@ function DraggableLaneRaw({
         >
           <CollapsedDropArea {...dropAreaProps}>
             <LaneHeader
-              dragHandleRef={dragHandleRef}
+              bindHandle={bindHandle}
               laneIndex={laneIndex}
               lane={lane}
               setIsItemInputVisible={isCompactPrepend ? setEditState : undefined}

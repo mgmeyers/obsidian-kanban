@@ -144,13 +144,19 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
 
   const { itemIndex, ...innerProps } = props;
 
-  useDragHandle(measureRef, measureRef);
+  const bindHandle = useDragHandle(measureRef, measureRef);
 
   const isMatch = search?.query ? innerProps.item.data.titleSearch.includes(search.query) : false;
   const classModifiers: string[] = getItemClassModifiers(innerProps.item);
 
   return (
-    <div ref={measureRef} className={c('item-wrapper')}>
+    <div
+      ref={(el) => {
+        measureRef.current = el;
+        bindHandle(el);
+      }}
+      className={c('item-wrapper')}
+    >
       <div ref={elementRef} className={classcat([c('item'), ...classModifiers])}>
         {props.isStatic ? (
           <ItemInner

@@ -1,6 +1,6 @@
 import update from 'immutability-helper';
 import { Menu } from 'obsidian';
-import { RefObject, memo } from 'preact/compat';
+import { memo } from 'preact/compat';
 import { Dispatch, StateUpdater, useCallback, useContext, useEffect, useState } from 'preact/hooks';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { t } from 'src/lang/helpers';
@@ -19,7 +19,7 @@ import { LaneLimitCounter, LaneTitle } from './LaneTitle';
 interface LaneHeaderProps {
   lane: Lane;
   laneIndex: number;
-  dragHandleRef: RefObject<HTMLDivElement>;
+  bindHandle: (el: HTMLElement) => void;
   setIsItemInputVisible?: Dispatch<StateUpdater<EditState>>;
   isCollapsed: boolean;
   toggleIsCollapsed: () => void;
@@ -83,7 +83,7 @@ function LaneButtons({
 export const LaneHeader = memo(function LaneHeader({
   lane,
   laneIndex,
-  dragHandleRef,
+  bindHandle,
   setIsItemInputVisible,
   isCollapsed,
   toggleIsCollapsed,
@@ -134,7 +134,7 @@ export const LaneHeader = memo(function LaneHeader({
         onDblClick={onDoubleClick}
         className={c('lane-header-wrapper')}
       >
-        <div className={c('lane-grip')} ref={dragHandleRef}>
+        <div className={c('lane-grip')} ref={bindHandle}>
           <GripIcon />
         </div>
 
