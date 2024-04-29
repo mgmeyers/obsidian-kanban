@@ -189,15 +189,15 @@ interface ItemsProps {
 
 export const Items = memo(function Items({ isStatic, items, shouldMarkItemsComplete }: ItemsProps) {
   const search = useContext(SearchContext);
-  const { stateManager } = useContext(KanbanContext);
-  const view = stateManager.useSetting(frontmatterKey);
+  const { view } = useContext(KanbanContext);
+  const boardView = view.useViewState(frontmatterKey);
 
   return (
     <>
       {items.map((item, i) => {
         return search?.query && !search.items.has(item) ? null : (
           <DraggableItem
-            key={view + item.id}
+            key={boardView + item.id}
             item={item}
             itemIndex={i}
             shouldMarkItemsComplete={shouldMarkItemsComplete}

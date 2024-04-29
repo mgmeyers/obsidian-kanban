@@ -85,6 +85,11 @@ export interface KanbanSettings {
   'move-inline-metadata'?: boolean;
 }
 
+export interface KanbanViewSettings {
+  [frontmatterKey]?: KanbanFormat;
+  'list-collapse'?: boolean[];
+}
+
 export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   frontmatterKey,
   'append-archive-date',

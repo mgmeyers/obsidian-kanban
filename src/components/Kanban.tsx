@@ -48,7 +48,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const maxArchiveLength = stateManager.useSetting('max-archive-size');
   const dateColors = stateManager.useSetting('date-colors');
   const tagColors = stateManager.useSetting('tag-colors');
-  const boardView = stateManager.useSetting(frontmatterKey);
+  const boardView = view.useViewState(frontmatterKey);
 
   const closeLaneForm = useCallback(() => {
     if (boardData?.children.length > 0) {
@@ -142,8 +142,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   }, [boardData?.data.archive.length, maxArchiveLength]);
 
   const boardModifiers = useMemo(() => {
-    return getBoardModifiers(stateManager);
-  }, [stateManager]);
+    return getBoardModifiers(view, stateManager);
+  }, [stateManager, view]);
 
   const kanbanContext = useMemo(() => {
     return {

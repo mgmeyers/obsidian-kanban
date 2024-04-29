@@ -26,29 +26,13 @@ export const basicFrontmatter = ['---', '', `${frontmatterKey}: board`, '', '---
   '\n'
 );
 
-function deriveSettings(board: Board): KanbanSettings {
-  const collapse = board.children.map((lane) => !!lane.data.isCollapsed);
-  while (collapse.last() === false) collapse.pop();
-
-  const settings: KanbanSettings = {
-    ...board.data.settings,
-  };
-
-  if (collapse.length) settings['list-collapse'] = collapse;
-  else {
-    delete settings['list-collapse'];
-  }
-
-  return settings;
-}
-
 export function settingsToCodeblock(board: Board): string {
   return [
     '',
     '',
     '%% kanban:settings',
     '```',
-    JSON.stringify(deriveSettings(board)),
+    JSON.stringify(board.data.settings),
     '```',
     '%%',
   ].join('\n');

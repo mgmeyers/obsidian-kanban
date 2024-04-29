@@ -454,8 +454,9 @@ export default class KanbanPlugin extends Plugin {
 
           if (Platform.isMobile) {
             const stateManager = this.stateManagers.get(file);
-            const view = stateManager.getSetting(frontmatterKey);
             const kanbanView = leaf.view as KanbanView;
+            const boardView =
+              kanbanView.viewSettings[frontmatterKey] || stateManager.getSetting(frontmatterKey);
 
             menu
               .addItem((item) => {
@@ -491,7 +492,7 @@ export default class KanbanPlugin extends Plugin {
                   .setTitle(t('View as board'))
                   .setSection('pane')
                   .setIcon('lucide-trello')
-                  .setChecked(view === 'basic' || view === 'board')
+                  .setChecked(boardView === 'basic' || boardView === 'board')
                   .onClick(() => kanbanView.setView('board'))
               )
               .addItem((item) =>
@@ -499,7 +500,7 @@ export default class KanbanPlugin extends Plugin {
                   .setTitle(t('View as table'))
                   .setSection('pane')
                   .setIcon('lucide-table')
-                  .setChecked(view === 'table')
+                  .setChecked(boardView === 'table')
                   .onClick(() => kanbanView.setView('table'))
               )
               .addItem((item) =>
@@ -507,7 +508,7 @@ export default class KanbanPlugin extends Plugin {
                   .setTitle(t('View as list'))
                   .setSection('pane')
                   .setIcon('lucide-server')
-                  .setChecked(view === 'list')
+                  .setChecked(boardView === 'list')
                   .onClick(() => kanbanView.setView('list'))
               )
               .addItem((item) =>

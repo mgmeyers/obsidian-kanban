@@ -6,11 +6,13 @@ import {
   Platform,
   TFile,
   TextFileView,
+  ViewStateResult,
   WorkspaceLeaf,
 } from 'obsidian';
 import PQueue from 'p-queue';
+import { useEffect, useState } from 'preact/hooks';
 
-import { KanbanFormat, SettingsModal } from './Settings';
+import { KanbanFormat, KanbanViewSettings, SettingsModal } from './Settings';
 import { Kanban } from './components/Kanban';
 import { MarkdownRenderer } from './components/MarkdownRenderer/MarkdownRenderer';
 import { c } from './components/helpers';
@@ -104,6 +106,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   setView(view: KanbanFormat) {
+    this.setViewState(frontmatterKey, view);
     this.app.fileManager.processFrontMatter(this.file, (frontmatter) => {
       frontmatter[frontmatterKey] = view;
     });
@@ -212,6 +215,35 @@ export class KanbanView extends TextFileView implements HoverParent {
     this.plugin.addView(this, data, !clear && this.isPrimary);
   }
 
+  viewSettings: KanbanViewSettings = {};
+
+  async setState(state: any, result: ViewStateResult): Promise<void> {
+    this.viewSettings = state.kanbanViewState || {};
+    await super.setState(state, result);
+  }
+
+  getState() {
+    const state = super.getState();
+    state.kanbanViewState = this.viewSettings;
+    return state;
+  }
+
+  setViewState<K extends keyof KanbanViewSettings>(key: K, val: KanbanViewSettings[K]) {
+    this.viewSettings[key] = val;
+    this.app.workspace.requestSaveLayout();
+  }
+
+  useViewState<K extends keyof KanbanViewSettings>(key: K) {
+    const stateManager = this.plugin.stateManagers.get(this.file);
+    const settingVal = stateManager.useSetting(key);
+    const thisVal = this.viewSettings[key] ?? settingVal;
+    const [value, setValue] = useState(thisVal);
+
+    useEffect(() => setValue(thisVal), [thisVal]);
+
+    return value;
+  }
+
   getPortal() {
     const stateManager = this.plugin.stateManagers.get(this.file);
     return <Kanban stateManager={stateManager} view={this} />;
@@ -314,7 +346,7 @@ export class KanbanView extends TextFileView implements HoverParent {
         'lucide-view',
         t('Board view'),
         (evt) => {
-          const view = stateManager.getSetting(frontmatterKey);
+          const view = this.viewSettings[frontmatterKey] || stateManager.getSetting(frontmatterKey);
           new Menu()
             .addItem((item) =>
               item

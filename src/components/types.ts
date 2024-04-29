@@ -20,7 +20,6 @@ export interface LaneData {
   dom?: HTMLDivElement;
   forceEditMode?: boolean;
   sorted?: LaneSort | string;
-  isCollapsed?: boolean;
 }
 
 export interface DataKey {

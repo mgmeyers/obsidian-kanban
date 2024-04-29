@@ -59,6 +59,9 @@ export class StateManager {
     if (shouldParseData) {
       this.newBoard(data);
     }
+
+    view.viewSettings['kanban-plugin'] ??= this.state.data.settings['kanban-plugin'];
+    view.viewSettings['list-collapse'] ??= this.state.data.settings['list-collapse'];
   }
 
   unregisterView(view: KanbanView) {

@@ -1,5 +1,6 @@
 import update from 'immutability-helper';
 import { moment } from 'obsidian';
+import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import {
@@ -14,7 +15,7 @@ import {
 } from 'src/dnd/util/data';
 
 import { generateInstanceId } from '../components/helpers';
-import { Item, Lane } from '../components/types';
+import { Board, DataTypes, Item, Lane } from '../components/types';
 
 export interface BoardModifiers {
   appendItems: (path: Path, items: Item[]) => void;
@@ -35,7 +36,7 @@ export interface BoardModifiers {
   duplicateEntity: (path: Path) => void;
 }
 
-export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
+export function getBoardModifiers(view: KanbanView, stateManager: StateManager): BoardModifiers {
   const appendArchiveDate = (item: Item) => {
     const archiveDateFormat = stateManager.getSetting('archive-date-format');
     const archiveDateSeparator = stateManager.getSetting('archive-date-separator');
@@ -91,11 +92,23 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
     },
 
     addLane: (lane: Lane) => {
-      stateManager.setState((boardData) => appendEntities(boardData, [], [lane]));
+      stateManager.setState((boardData) => {
+        const updated = update<Board>(appendEntities(boardData, [], [lane]), {
+          data: { settings: { 'list-collapse': { $push: [false] } } },
+        });
+        view.setViewState('list-collapse', updated.data.settings['list-collapse']);
+        return updated;
+      });
     },
 
     insertLane: (path: Path, lane: Lane) => {
-      stateManager.setState((boardData) => insertEntity(boardData, path, [lane]));
+      stateManager.setState((boardData) => {
+        const updated = update<Board>(insertEntity(boardData, path, [lane]), {
+          data: { settings: { 'list-collapse': { $splice: [[path.last(), 0, false]] } } },
+        });
+        view.setViewState('list-collapse', updated.data.settings['list-collapse']);
+        return updated;
+      });
     },
 
     updateLane: (path: Path, lane: Lane) => {
@@ -116,8 +129,9 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
         const items = lane.children;
 
         try {
-          return update(removeEntity(boardData, path), {
+          const updated = update<Board>(removeEntity(boardData, path), {
             data: {
+              settings: { 'list-collapse': { $splice: [[path.last(), 1]] } },
               archive: {
                 $unshift: stateManager.getSetting('archive-with-date')
                   ? items.map(appendArchiveDate)
@@ -125,6 +139,8 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
               },
             },
           });
+          view.setViewState('list-collapse', updated.data.settings['list-collapse']);
+          return updated;
         } catch (e) {
           stateManager.setError(e);
           return boardData;
@@ -163,6 +179,16 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
 
     deleteEntity: (path: Path) => {
       stateManager.setState((boardData) => {
+        const entity = getEntityFromPath(boardData, path);
+
+        if (entity.type === DataTypes.Lane) {
+          const updated = update<Board>(removeEntity(boardData, path), {
+            data: { settings: { 'list-collapse': { $splice: [[path.last(), 1]] } } },
+          });
+          view.setViewState('list-collapse', updated.data.settings['list-collapse']);
+          return updated;
+        }
+
         return removeEntity(boardData, path);
       });
     },
@@ -207,6 +233,14 @@ export function getBoardModifiers(stateManager: StateManager): BoardModifiers {
             $set: generateInstanceId(),
           },
         });
+
+        if (entity.type === DataTypes.Lane) {
+          const updated = update<Board>(insertEntity(boardData, path, [entityWithNewID]), {
+            data: { settings: { 'list-collapse': { $splice: [[path.last(), 0, false]] } } },
+          });
+          view.setViewState('list-collapse', updated.data.settings['list-collapse']);
+          return updated;
+        }
 
         return insertEntity(boardData, path, [entityWithNewID]);
       });

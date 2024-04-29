@@ -46,7 +46,7 @@ export function buildUpdateParentMutation(path: Path, mutation: Spec<Nestable>) 
 export function buildRemoveMutation(path: Path) {
   return buildUpdateParentMutation(path, {
     children: {
-      $splice: [[path[path.length - 1], 1]],
+      $splice: [[path.last(), 1]],
     },
   });
 }
@@ -58,7 +58,7 @@ export function buildInsertMutation(
 ) {
   return buildUpdateParentMutation(destination, {
     children: {
-      $splice: [[destination[destination.length - 1] + destinationModifier, 0, ...entities]],
+      $splice: [[destination.last() + destinationModifier, 0, ...entities]],
     },
   });
 }

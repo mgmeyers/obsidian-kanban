@@ -253,7 +253,6 @@ export function astToUnhydratedBoard(
           data: {
             ...parseLaneTitle(title),
             shouldMarkItemsComplete,
-            isCollapsed: settings['list-collapse']?.[lanes.length],
           },
         });
       } else {
@@ -271,7 +270,6 @@ export function astToUnhydratedBoard(
           data: {
             ...parseLaneTitle(title),
             shouldMarkItemsComplete,
-            isCollapsed: settings['list-collapse']?.[lanes.length],
           },
         });
       }

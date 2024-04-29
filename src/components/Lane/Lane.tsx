@@ -28,7 +28,7 @@ export interface DraggableLaneProps {
   laneIndex: number;
   isStatic?: boolean;
   collapseDir: 'horizontal' | 'vertical';
-  forceCollapse?: boolean;
+  isCollapsed?: boolean;
 }
 
 function DraggableLaneRaw({
@@ -36,7 +36,7 @@ function DraggableLaneRaw({
   lane,
   laneIndex,
   collapseDir,
-  forceCollapse,
+  isCollapsed = false,
 }: DraggableLaneProps) {
   const [editState, setEditState] = useState<EditState>(EditingState.cancel);
   const [isSorting, setIsSorting] = useState(false);
@@ -44,7 +44,7 @@ function DraggableLaneRaw({
   const { stateManager, boardModifiers, view } = useContext(KanbanContext);
   const search = useContext(SearchContext);
 
-  const boardView = stateManager.useSetting(frontmatterKey);
+  const boardView = view.useViewState(frontmatterKey);
   const path = useNestedEntityPath(laneIndex);
   const laneWidth = stateManager.useSetting('lane-width');
   const fullWidth = boardView === 'list' && stateManager.useSetting('full-list-lane-width');
@@ -61,20 +61,19 @@ function DraggableLaneRaw({
   const bindHandle = useDragHandle(measureRef, dragHandleRef);
 
   const shouldMarkItemsComplete = !!lane.data.shouldMarkItemsComplete;
-  const isCollapsed = !!lane.data.isCollapsed || !!forceCollapse;
   const isCompactPrepend = insertionMethod === 'prepend-compact';
   const shouldPrepend = isCompactPrepend || insertionMethod === 'prepend';
 
   const toggleIsCollapsed = useCallback(() => {
-    boardModifiers.updateLane(
-      path,
-      update(lane, {
-        data: {
-          $toggle: ['isCollapsed'],
-        },
-      })
-    );
-  }, [path, lane, boardModifiers]);
+    stateManager.setState((board) => {
+      const collapseState = [...(board.data.settings['list-collapse'] || [])];
+      collapseState[laneIndex] = !collapseState[laneIndex];
+      view.setViewState('list-collapse', collapseState);
+      return update(board, {
+        data: { settings: { 'list-collapse': { $set: collapseState } } },
+      });
+    });
+  }, [stateManager, laneIndex]);
 
   const addItems = useCallback(
     (items: Item[]) => {
@@ -219,8 +218,9 @@ export interface LanesProps {
 
 function LanesRaw({ lanes, collapseDir }: LanesProps) {
   const search = useContext(SearchContext);
-  const { stateManager } = useContext(KanbanContext);
-  const view = stateManager.useSetting(frontmatterKey);
+  const { view } = useContext(KanbanContext);
+  const boardView = view.useViewState(frontmatterKey) || 'board';
+  const collapseState = view.useViewState('list-collapse') || [];
 
   return (
     <>
@@ -228,8 +228,8 @@ function LanesRaw({ lanes, collapseDir }: LanesProps) {
         return (
           <DraggableLane
             collapseDir={collapseDir}
-            forceCollapse={search?.query && !search.lanes.has(lane)}
-            key={view + lane.id}
+            isCollapsed={(search?.query && !search.lanes.has(lane)) || !!collapseState[i]}
+            key={boardView + lane.id}
             lane={lane}
             laneIndex={i}
           />
