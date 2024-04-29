@@ -218,24 +218,19 @@ export class DragManager {
 
     const isScrolling = this.handleScrollIntersect(
       dragHitbox,
-      this.dragEntity.entityId,
+      this.dragEntity,
       scrollHitboxes,
       scrollEntities
     );
 
     if (!isScrolling) {
-      this.handleHitboxIntersect(
-        dragHitbox,
-        this.dragEntity.entityId,
-        hitboxHitboxes,
-        hitboxEntities
-      );
+      this.handleHitboxIntersect(dragHitbox, this.dragEntity, hitboxHitboxes, hitboxEntities);
     }
   }
 
   handleScrollIntersect(
     dragHitbox: Hitbox,
-    dragId: string,
+    dragEntity: Entity,
     hitboxes: Hitbox[],
     hitboxEntities: Entity[]
   ) {
@@ -243,7 +238,7 @@ export class DragManager {
       (match) => hitboxEntities[match[1]]
     );
 
-    const scrollIntersection = getScrollIntersection(scrollHits, dragHitbox, dragId);
+    const scrollIntersection = getScrollIntersection(scrollHits, dragHitbox, dragEntity);
 
     if (
       this.scrollIntersection &&
@@ -321,7 +316,7 @@ export class DragManager {
 
   handleHitboxIntersect(
     dragHitbox: Hitbox,
-    dragId: string,
+    dragEntity: Entity,
     hitboxes: Hitbox[],
     hitboxEntities: Entity[]
   ) {
@@ -329,7 +324,7 @@ export class DragManager {
       (match) => hitboxEntities[match[1]]
     );
 
-    const primaryIntersection = getBestIntersect(hits, dragHitbox, dragId);
+    const primaryIntersection = getBestIntersect(hits, dragHitbox, dragEntity);
 
     if (this.primaryIntersection && this.primaryIntersection !== primaryIntersection) {
       this.emitter.emit('dragLeave', this.getDragEventData(), this.primaryIntersection.entityId);

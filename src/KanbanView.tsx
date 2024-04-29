@@ -10,9 +10,8 @@ import {
   WorkspaceLeaf,
 } from 'obsidian';
 import PQueue from 'p-queue';
-import { useEffect, useState } from 'preact/hooks';
 
-import { KanbanFormat, KanbanViewSettings, SettingsModal } from './Settings';
+import { KanbanFormat, KanbanSettings, KanbanViewSettings, SettingsModal } from './Settings';
 import { Kanban } from './components/Kanban';
 import { MarkdownRenderer } from './components/MarkdownRenderer/MarkdownRenderer';
 import { c } from './components/helpers';
@@ -233,15 +232,21 @@ export class KanbanView extends TextFileView implements HoverParent {
     this.app.workspace.requestSaveLayout();
   }
 
+  populateViewState(settings: KanbanSettings) {
+    this.viewSettings['kanban-plugin'] ??= settings['kanban-plugin'];
+    this.viewSettings['list-collapse'] ??= settings['list-collapse'];
+  }
+
+  getViewState<K extends keyof KanbanViewSettings>(key: K) {
+    const stateManager = this.plugin.stateManagers.get(this.file);
+    const settingVal = stateManager.getSetting(key);
+    return this.viewSettings[key] ?? settingVal;
+  }
+
   useViewState<K extends keyof KanbanViewSettings>(key: K) {
     const stateManager = this.plugin.stateManagers.get(this.file);
     const settingVal = stateManager.useSetting(key);
-    const thisVal = this.viewSettings[key] ?? settingVal;
-    const [value, setValue] = useState(thisVal);
-
-    useEffect(() => setValue(thisVal), [thisVal]);
-
-    return value;
+    return this.viewSettings[key] ?? settingVal;
   }
 
   getPortal() {

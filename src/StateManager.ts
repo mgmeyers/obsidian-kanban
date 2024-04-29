@@ -60,8 +60,7 @@ export class StateManager {
       this.newBoard(data);
     }
 
-    view.viewSettings['kanban-plugin'] ??= this.state.data.settings['kanban-plugin'];
-    view.viewSettings['list-collapse'] ??= this.state.data.settings['list-collapse'];
+    view.populateViewState(this.state.data.settings);
   }
 
   unregisterView(view: KanbanView) {

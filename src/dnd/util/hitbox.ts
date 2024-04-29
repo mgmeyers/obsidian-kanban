@@ -163,9 +163,9 @@ export function rectIntersection(entities: Entity[], target: Hitbox) {
 export function getScrollIntersection(
   entities: Entity[],
   target: Hitbox,
-  dragId: string
+  dragEntity: Entity
 ): [Entity, number] {
-  const primary = getBestIntersect(entities, target, dragId);
+  const primary = getBestIntersect(entities, target, dragEntity);
 
   if (!primary) return null;
 
@@ -269,10 +269,11 @@ export function closestCenter(entities: Entity[], target: Hitbox) {
 export function getBestIntersect(
   hits: Entity[],
   dragHitbox: Hitbox,
-  dragId: string
+  dragEntity: Entity
 ): Entity | null {
   const dragTopLeft = cornersOfRectangle(dragHitbox)[0];
   const dragCenter = centerOfRectangle(dragHitbox);
+  const dragId = dragEntity.entityId;
   const distances = hits.map((entity) => {
     if (entity.entityId === dragId) {
       return Infinity;
@@ -283,7 +284,7 @@ export function getBestIntersect(
     const entityHitbox = entity.getHitbox();
     const entityCenter = centerOfRectangle(entityHitbox);
 
-    if (isDropArea) {
+    if (isDropArea && !isDropArea.contains(dragEntity.getData().type)) {
       return distanceBetween(dragCenter, entityCenter);
     }
 
