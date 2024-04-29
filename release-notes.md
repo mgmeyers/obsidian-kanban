@@ -1,2 +1,1 @@
-e34ebef Remove unnecessary triggers
-79fdb96 Fix issues with dragging collapsed lanes
+bb499b2 Allow changing kanban view and collapsed state on a per-pane basis
