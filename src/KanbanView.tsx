@@ -40,6 +40,8 @@ export class KanbanView extends TextFileView implements HoverParent {
   previewCache: Map<string, MarkdownRenderer>;
   previewQueue: PQueue;
 
+  activeEditor: any;
+
   constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
     super(leaf);
     this.plugin = plugin;

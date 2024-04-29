@@ -116,15 +116,16 @@ export function MarkdownEditor({
         extensions.push(stateManagerField.init(() => stateManager));
         extensions.push(datePlugins);
         extensions.push(
-          Prec.high(
+          Prec.highest(
             EditorView.domEventHandlers({
               focus: (evt) => {
+                view.activeEditor = this.owner;
+                this.app.workspace.activeEditor = this.owner;
                 if (Platform.isMobile) {
                   view.contentEl.addClass('is-mobile-editing');
                 }
 
                 evt.win.setTimeout(() => {
-                  this.app.workspace.activeEditor = this.owner;
                   if (Platform.isMobile) {
                     this.app.mobileToolbar.update();
                   }
@@ -132,7 +133,6 @@ export function MarkdownEditor({
                 return true;
               },
               blur: () => {
-                this.app.workspace.activeEditor = null;
                 if (Platform.isMobile) {
                   view.contentEl.removeClass('is-mobile-editing');
                   this.app.mobileToolbar.update();
@@ -224,6 +224,10 @@ export function MarkdownEditor({
     return () => {
       if (Platform.isMobile) {
         cm.dom.win.removeEventListener('keyboardDidShow', onShow);
+
+        if (view.activeEditor === controller) {
+          view.activeEditor = null;
+        }
 
         if (app.workspace.activeEditor === controller) {
           app.workspace.activeEditor = null;

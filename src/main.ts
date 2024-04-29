@@ -6,6 +6,7 @@ import {
   TFile,
   TFolder,
   ViewState,
+  Workspace,
   WorkspaceLeaf,
   debounce,
 } from 'obsidian';
@@ -733,7 +734,7 @@ export default class KanbanPlugin extends Plugin {
   registerMonkeyPatches() {
     const self = this;
 
-    app.workspace.onLayoutReady(() => {
+    this.app.workspace.onLayoutReady(() => {
       this.register(
         around((app as any).commands, {
           executeCommand(next) {
@@ -750,6 +751,23 @@ export default class KanbanPlugin extends Plugin {
         })
       );
     });
+
+    this.register(
+      around(Workspace.prototype, {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        setActiveLeaf(next) {
+          return function (...args) {
+            next.apply(this, args);
+            const leaf = args[0];
+            if (!this.isAttached(leaf)) return;
+            if (leaf?.view instanceof KanbanView && leaf.view.activeEditor) {
+              this.activeEditor = leaf.view.activeEditor;
+            }
+          };
+        },
+      })
+    );
 
     // Monkey patch WorkspaceLeaf to open Kanbans with KanbanView by default
     this.register(
