@@ -1,1 +1,1 @@
-bb499b2 Allow changing kanban view and collapsed state on a per-pane basis
+22ba4e0 Ensure command palette commans work in kanban editor
