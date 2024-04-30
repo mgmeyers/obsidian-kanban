@@ -219,13 +219,13 @@ export class KanbanView extends TextFileView implements HoverParent {
   viewSettings: KanbanViewSettings = {};
 
   async setState(state: any, result: ViewStateResult): Promise<void> {
-    this.viewSettings = state.kanbanViewState || {};
+    this.viewSettings = { ...state.kanbanViewState };
     await super.setState(state, result);
   }
 
   getState() {
     const state = super.getState();
-    state.kanbanViewState = this.viewSettings;
+    state.kanbanViewState = { ...this.viewSettings };
     return state;
   }
 
