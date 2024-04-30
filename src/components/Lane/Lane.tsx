@@ -66,7 +66,7 @@ function DraggableLaneRaw({
 
   const toggleIsCollapsed = useCallback(() => {
     stateManager.setState((board) => {
-      const collapseState = [...(view.getViewState('list-collapse') || [])];
+      const collapseState = [...view.getViewState('list-collapse')];
       collapseState[laneIndex] = !collapseState[laneIndex];
       view.setViewState('list-collapse', collapseState);
       return update(board, {
