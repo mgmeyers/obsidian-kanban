@@ -120,12 +120,12 @@ export function MarkdownEditor({
             EditorView.domEventHandlers({
               focus: (evt) => {
                 view.activeEditor = this.owner;
-                this.app.workspace.activeEditor = this.owner;
                 if (Platform.isMobile) {
                   view.contentEl.addClass('is-mobile-editing');
                 }
 
                 evt.win.setTimeout(() => {
+                  this.app.workspace.activeEditor = this.owner;
                   if (Platform.isMobile) {
                     this.app.mobileToolbar.update();
                   }

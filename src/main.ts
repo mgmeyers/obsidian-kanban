@@ -6,7 +6,6 @@ import {
   TFile,
   TFolder,
   ViewState,
-  Workspace,
   WorkspaceLeaf,
   debounce,
 } from 'obsidian';
@@ -753,15 +752,16 @@ export default class KanbanPlugin extends Plugin {
     });
 
     this.register(
-      around(Workspace.prototype, {
+      around(this.app.workspace, {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         setActiveLeaf(next) {
           return function (...args) {
             next.apply(this, args);
             const leaf = args[0];
+            if (!leaf) return;
             if (!this.isAttached(leaf)) return;
-            if (leaf?.view instanceof KanbanView && leaf.view.activeEditor) {
+            if (leaf.view instanceof KanbanView && leaf.view.activeEditor) {
               this.activeEditor = leaf.view.activeEditor;
             }
           };
