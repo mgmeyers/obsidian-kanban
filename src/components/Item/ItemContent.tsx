@@ -107,6 +107,8 @@ function checkCheckbox(stateManager: StateManager, title: string, checkboxIndex:
           const check = match[2] === ' ' ? 'x' : ' ';
           results.push(match[1] + check + match[3] + line.slice(match[0].length));
         }
+      } else {
+        results.push(line);
       }
       count++;
       return;
