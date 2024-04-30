@@ -73,7 +73,7 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
     ['text', 'wikilink', 'embedWikilink', 'image', 'inlineCode', 'code', 'hashtag'],
     (node: any) => {
       if (node.type === 'hashtag') {
-        titleSearch += '#' + node.value;
+        titleSearch += ' #' + node.value;
       } else {
         titleSearch += node.value || node.alt || '';
       }
