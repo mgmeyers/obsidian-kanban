@@ -1,2 +1,2 @@
-d485c98 Don't patch workspace prototype
-2d116ef Clone viewstate when saving/retrieving
+4a77bf3 Prevent subtasks from disappearing; fixes #932
+c051d20 Improve tag matching and parsing; fixes #933
