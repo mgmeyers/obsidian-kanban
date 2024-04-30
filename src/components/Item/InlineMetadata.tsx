@@ -46,7 +46,7 @@ export function InlineMetadata({ item, stateManager }: InlineMetadataProps) {
           <span
             className={classcat([
               c('item-task-inline-metadata-item'),
-              m.key.replace(/[^a-z0-9]/g, '-'),
+              m.key.toLowerCase().replace(/[^a-z0-9]/g, '-'),
               {
                 'is-task-metadata': isTaskMetadata,
                 'is-emoji': isEmoji,
