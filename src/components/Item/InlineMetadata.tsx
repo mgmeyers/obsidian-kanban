@@ -49,7 +49,8 @@ export function InlineMetadata({ item, stateManager }: InlineMetadataProps) {
   return (
     <span className={c('item-task-metadata')}>
       {inlineMetadata.map((m, i) => {
-        const { metadataKey: key, label: metaLabel, value } = parseMetadataWithOptions(m, metaKeys);
+        const data = parseMetadataWithOptions(m, metaKeys);
+        const { metadataKey: key, label: metaLabel, value } = data;
         const isTaskMetadata = taskFields.has(key);
         if (!moveTaskMetadata && isTaskMetadata) return null;
         if (!moveMetadata && !isTaskMetadata) return null;
@@ -81,13 +82,7 @@ export function InlineMetadata({ item, stateManager }: InlineMetadataProps) {
                 <MetadataValue
                   searchQuery={search?.query}
                   dateLabel={isDate ? label : undefined}
-                  data={{
-                    value: val,
-                    label: label,
-                    metadataKey: key,
-                    shouldHideLabel: false,
-                    containsMarkdown: false,
-                  }}
+                  data={data}
                 />
               </span>
             )}
