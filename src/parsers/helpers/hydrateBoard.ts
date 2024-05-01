@@ -49,11 +49,15 @@ export function hydrateItem(stateManager: StateManager, item: Item) {
   const firstLineEnd = item.data.title.indexOf('\n');
   const inlineFields = extractInlineFields(item.data.title, true);
 
+  inlineFields?.length && console.log({ inlineFields });
+
   if (inlineFields?.length) {
-    const inlineMetadata = (item.data.metadata.inlineMetadata =
-      firstLineEnd > 0
-        ? inlineFields.filter((f) => taskFields.has(f.key) && f.end < firstLineEnd)
-        : inlineFields);
+    const inlineMetadata = (item.data.metadata.inlineMetadata = inlineFields.reduce((acc, curr) => {
+      if (!taskFields.has(curr.key)) acc.push(curr);
+      else if (firstLineEnd <= 0 || curr.end < firstLineEnd) acc.push(curr);
+
+      return acc;
+    }, []));
 
     const moveTaskData = stateManager.getSetting('move-task-metadata');
     const moveMetadata = stateManager.getSetting('move-inline-metadata');
