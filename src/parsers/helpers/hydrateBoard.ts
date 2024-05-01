@@ -49,7 +49,6 @@ export function hydrateItem(stateManager: StateManager, item: Item) {
   const firstLineEnd = item.data.title.indexOf('\n');
   const inlineFields = extractInlineFields(item.data.title, true);
 
-
   if (inlineFields?.length) {
     const inlineMetadata = (item.data.metadata.inlineMetadata = inlineFields.reduce((acc, curr) => {
       if (!taskFields.has(curr.key)) acc.push(curr);
