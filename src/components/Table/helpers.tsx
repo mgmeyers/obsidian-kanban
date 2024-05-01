@@ -55,9 +55,11 @@ export function useTableData(board: Board, stateManager: StateManager): TableDat
     const items: TableItem[] = [];
     const metadata: Set<string> = new Set();
     const fileMetadata: Set<string> = new Set();
-    const fileMetadataLabels: Map<string, string> = new Map();
-    const taskMetadata: Set<string> = new Set();
+    const inlineMetadata: Set<string> = new Set();
+    const metadataLabels: Map<string, string> = new Map();
     const lanes: Lane[] = board?.children || [];
+    const metadataKeys = stateManager.getSetting('metadata-keys');
+    const moveInlineMetadata = stateManager.getSetting('inline-metadata-position') !== 'body';
 
     for (let i = 0, len = lanes.length; i < len; i++) {
       const lane = lanes[i];
@@ -66,7 +68,7 @@ export function useTableData(board: Board, stateManager: StateManager): TableDat
         const itemMetadata = item.data.metadata;
         const itemfileMetadata = itemMetadata.fileMetadata || {};
         const fileMetaOrder = itemMetadata.fileMetadataOrder || [];
-        const itemTaskMetadata = itemMetadata.inlineMetadata;
+        const itemInlineMetadata = itemMetadata.inlineMetadata;
 
         if (!metadata.has('date') && itemMetadata.date) {
           metadata.add('date');
@@ -78,13 +80,22 @@ export function useTableData(board: Board, stateManager: StateManager): TableDat
         for (const key of fileMetaOrder) {
           if (!fileMetadata.has(key) && itemfileMetadata[key]) {
             fileMetadata.add(key);
-            fileMetadataLabels.set(key, itemfileMetadata[key].label);
+            metadataLabels.set(key, itemfileMetadata[key].label || key);
           }
         }
 
-        if (itemTaskMetadata) {
-          itemTaskMetadata.forEach((m) => {
-            if (!taskMetadata.has(m.key)) taskMetadata.add(m.key);
+        if (itemInlineMetadata && moveInlineMetadata) {
+          itemInlineMetadata.forEach((m) => {
+            if (!inlineMetadata.has(m.key)) {
+              inlineMetadata.add(m.key);
+              if (!metadataLabels.has(m.key)) {
+                if (taskFields.has(m.key)) metadataLabels.set(m.key, lableToName(m.key));
+                else {
+                  const key = metadataKeys.find((k) => k.metadataKey === m.key);
+                  metadataLabels.set(m.key, key?.label || m.key);
+                }
+              }
+            }
           });
         }
 
@@ -94,10 +105,10 @@ export function useTableData(board: Board, stateManager: StateManager): TableDat
 
     return {
       items,
+      metadataLabels,
       metadata: Array.from(metadata),
       fileMetadata: Array.from(fileMetadata),
-      taskMetadata: Array.from(taskMetadata),
-      fileMetadataLabels,
+      inlineMetadata: Array.from(inlineMetadata),
     };
   }, [board]);
 }
@@ -144,7 +155,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
   const shouldShowRelativeDate = stateManager.useSetting('show-relative-date');
   const moveDates = stateManager.useSetting('move-dates');
   const moveTags = stateManager.useSetting('move-tags');
-  const displayMetadataInBody = stateManager.useSetting('inline-metadata-position') === 'body';
+  const moveInlineMetadata = stateManager.useSetting('inline-metadata-position') !== 'body';
   const moveTaskMetadata = stateManager.useSetting('move-task-metadata');
   const tableSizing = stateManager.useSetting('table-sizing') || {};
 
@@ -161,10 +172,11 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
   );
   const state = useMemo(() => ({ sorting, globalFilter: search?.query }), [sorting, search?.query]);
 
-  const { items, metadata, fileMetadata, taskMetadata, fileMetadataLabels } = useTableData(
+  const { items, metadata, fileMetadata, inlineMetadata, metadataLabels } = useTableData(
     boardData,
     stateManager
   );
+
   const withMetadata: ColumnDef<TableItem, any>[] = useMemo(() => {
     const columns = [...baseColumns(tableSizing)];
     for (const key of metadata) {
@@ -258,9 +270,9 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
     return columns;
   }, [shouldShowRelativeDate, moveDates, moveTags, ...metadata]);
 
-  const withTaskMetadata = useMemo(() => {
+  const withInlineMetadata = useMemo(() => {
     const columns = [...withMetadata];
-    for (const key of taskMetadata) {
+    for (const key of inlineMetadata) {
       columns.push(
         columnHelper.accessor(
           (row) => {
@@ -270,14 +282,14 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
           },
           {
             id: key,
-            header: lableToName(key) ?? key,
+            header: metadataLabels.get(key) ?? key,
             cell: (info) => {
               const m = info.getValue();
               if (!m) return null;
 
               const isTaskMetadata = taskFields.has(m.key);
               if (!moveTaskMetadata && isTaskMetadata) return null;
-              if (displayMetadataInBody && !isTaskMetadata) return null;
+              if (!moveInlineMetadata && !isTaskMetadata) return null;
 
               const isEmoji = m.wrapping === 'emoji-shorthand';
               const val = getDataviewPlugin()?.api?.parse(m.value) ?? m.value;
@@ -336,10 +348,10 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
       );
     }
     return columns;
-  }, [withMetadata, ...taskMetadata]);
+  }, [withMetadata, ...inlineMetadata, ...metadataLabels.values()]);
 
   const withFileMetadata = useMemo(() => {
-    const columns = [...withTaskMetadata];
+    const columns = [...withInlineMetadata];
     for (const key of fileMetadata) {
       columns.push(
         columnHelper.accessor(
@@ -352,15 +364,13 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
           },
           {
             id: key,
-            header: fileMetadataLabels.get(key) ?? key,
+            header: metadataLabels.get(key) ?? key,
             cell: (info) => {
               const val = info.getValue();
               if (!val) return null;
               const searchQuery = info.table.getState().globalFilter;
               if (key === 'tags') {
-                return (
-                  <Tags searchQuery={searchQuery} tags={val.value as string[]} isDisplay={false} />
-                );
+                return <Tags searchQuery={searchQuery} tags={val.value as string[]} />;
               }
               return <MetadataValue data={val} searchQuery={searchQuery} />;
             },
@@ -401,7 +411,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
       );
     }
     return columns;
-  }, [withTaskMetadata, ...fileMetadata]);
+  }, [withInlineMetadata, ...fileMetadata, ...metadataLabels.values()]);
 
   return { data: items, columns: withFileMetadata, state, setSorting };
 }

@@ -13,6 +13,6 @@ export interface TableData {
   items: TableItem[];
   metadata: string[];
   fileMetadata: string[];
-  taskMetadata: string[];
-  fileMetadataLabels: Map<string, string>;
+  inlineMetadata: string[];
+  metadataLabels: Map<string, string>;
 }

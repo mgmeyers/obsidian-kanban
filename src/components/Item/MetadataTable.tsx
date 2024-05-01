@@ -1,7 +1,7 @@
 import classcat from 'classcat';
 import { TFile, moment } from 'obsidian';
 import { ComponentChild } from 'preact';
-import { memo, useContext } from 'preact/compat';
+import { memo, useContext, useMemo } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
 import { InlineField, taskFields } from 'src/parsers/helpers/inlineMetadata';
@@ -14,8 +14,6 @@ import { Tags } from './ItemContent';
 
 export interface ItemMetadataProps {
   item: Item;
-  mergeInlineMetadata?: boolean;
-  metadataKeys?: DataKey[];
   searchQuery?: string;
 }
 
@@ -34,33 +32,38 @@ function mergeMetadata(
   }, fileMetadata || {});
 }
 
-export function ItemMetadata({
-  item,
-  mergeInlineMetadata,
-  metadataKeys,
-  searchQuery,
-}: ItemMetadataProps) {
-  if (
-    !item.data.metadata.fileMetadata &&
-    (!item.data.metadata.inlineMetadata?.length || !mergeInlineMetadata)
-  )
-    return null;
+export function ItemMetadata({ item, searchQuery }: ItemMetadataProps) {
+  const { stateManager } = useContext(KanbanContext);
+  const mergeInlineMetadata =
+    stateManager.useSetting('inline-metadata-position') === 'metadata-table';
+  const metadataKeys = stateManager.useSetting('metadata-keys');
 
-  const metadata = mergeInlineMetadata
-    ? mergeMetadata(
-        item.data.metadata.fileMetadata,
-        item.data.metadata.inlineMetadata,
-        metadataKeys || []
-      )
-    : item.data.metadata.fileMetadata;
+  const { fileMetadata, fileMetadataOrder, inlineMetadata } = item.data.metadata;
+
+  if (!fileMetadata && (!mergeInlineMetadata || !inlineMetadata?.length)) {
+    return null;
+  }
+
+  const metadata = useMemo(() => {
+    return mergeInlineMetadata
+      ? mergeMetadata(fileMetadata, inlineMetadata, metadataKeys || [])
+      : fileMetadata;
+  }, [fileMetadata, inlineMetadata, metadataKeys]);
+
+  const order = useMemo(() => {
+    const metadataOrder = new Set(fileMetadataOrder || []);
+    if (mergeInlineMetadata && inlineMetadata?.length) {
+      inlineMetadata.forEach((m) => {
+        if (!metadataOrder.has(m.key)) metadataOrder.add(m.key);
+      });
+    }
+
+    return Array.from(metadataOrder);
+  }, [fileMetadataOrder, mergeInlineMetadata, inlineMetadata]);
 
   return (
     <div className={c('item-metadata-wrapper')}>
-      <MetadataTable
-        metadata={metadata}
-        order={item.data.metadata.fileMetadataOrder}
-        searchQuery={searchQuery}
-      />
+      <MetadataTable metadata={metadata} order={order} searchQuery={searchQuery} />
     </div>
   );
 }
@@ -208,11 +211,8 @@ export const MetadataTable = memo(function MetadataTable({
 }: MetadataTableProps) {
   const { stateManager } = useContext(KanbanContext);
 
-  if (!order || order.length) {
-    if (!metadata) return null;
-
-    order = Object.keys(metadata);
-  }
+  if (!metadata) return null;
+  if (!order?.length) order = Object.keys(metadata);
 
   return (
     <table className={c('meta-table')}>
@@ -241,7 +241,7 @@ export const MetadataTable = memo(function MetadataTable({
                 data-value={pageDataToString(data, stateManager)}
               >
                 {k === 'tags' ? (
-                  <Tags searchQuery={searchQuery} tags={data.value as string[]} isDisplay={false} />
+                  <Tags searchQuery={searchQuery} tags={data.value as string[]} />
                 ) : (
                   <MetadataValue data={data} searchQuery={searchQuery} />
                 )}

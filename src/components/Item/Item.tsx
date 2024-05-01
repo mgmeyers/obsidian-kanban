@@ -107,9 +107,6 @@ const ItemInner = memo(function ItemInner({
     return {};
   }, [editState]);
 
-  const inlineMetadataPosition = stateManager.getSetting('inline-metadata-position');
-  const metadataKeys = stateManager.getSetting('metadata-keys');
-
   return (
     <div
       // eslint-disable-next-line react/no-unknown-property
@@ -135,12 +132,7 @@ const ItemInner = memo(function ItemInner({
         />
         <ItemMenuButton editState={editState} setEditState={setEditState} showMenu={showItemMenu} />
       </div>
-      <ItemMetadata
-        searchQuery={isMatch ? searchQuery : undefined}
-        item={item}
-        mergeInlineMetadata={inlineMetadataPosition === 'metadata-table'}
-        metadataKeys={metadataKeys}
-      />
+      <ItemMetadata searchQuery={isMatch ? searchQuery : undefined} item={item} />
     </div>
   );
 });

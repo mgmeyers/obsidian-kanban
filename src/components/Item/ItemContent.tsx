@@ -120,20 +120,10 @@ function checkCheckbox(stateManager: StateManager, title: string, checkboxIndex:
   return results.join('\n');
 }
 
-export function Tags({
-  tags,
-  searchQuery,
-  isDisplay = true,
-}: {
-  tags?: string[];
-  searchQuery?: string;
-  isDisplay?: boolean;
-}) {
+export function Tags({ tags, searchQuery }: { tags?: string[]; searchQuery?: string }) {
   const { stateManager, getTagColor } = useContext(KanbanContext);
   const search = useContext(SearchContext);
 
-  const moveTags = isDisplay && stateManager.useSetting('move-tags');
-  if (!moveTags || !tags?.length) return null;
   return (
     <div className={c('item-tags')}>
       {tags.map((tag, i) => {

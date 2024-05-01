@@ -36,6 +36,7 @@ import { frontmatterKey } from './parsers/common';
 import {
   createSearchSelect,
   defaultDateTrigger,
+  defaultMetadataPosition,
   defaultTimeTrigger,
   getListOptions,
 } from './settingHelpers';
@@ -60,15 +61,17 @@ export interface KanbanSettings {
   'date-picker-week-start'?: number;
   'date-time-display-format'?: string;
   'date-trigger'?: string;
+  'full-list-lane-width'?: boolean;
   'hide-card-count'?: boolean;
   'inline-metadata-position'?: 'body' | 'footer' | 'metadata-table';
-  'tag-action'?: 'kanban' | 'obsidian';
   'lane-width'?: number;
-  'full-list-lane-width'?: boolean;
   'link-date-to-daily-note'?: boolean;
   'list-collapse'?: boolean[];
   'max-archive-size'?: number;
   'metadata-keys'?: DataKey[];
+  'move-dates'?: boolean;
+  'move-tags'?: boolean;
+  'move-task-metadata'?: boolean;
   'new-card-insertion-method'?: 'prepend' | 'prepend-compact' | 'append';
   'new-line-trigger'?: 'enter' | 'shift-enter';
   'new-note-folder'?: string;
@@ -79,17 +82,14 @@ export interface KanbanSettings {
   'show-checkboxes'?: boolean;
   'show-relative-date'?: boolean;
   'show-search'?: boolean;
-  'show-view-as-markdown'?: boolean;
   'show-set-view'?: boolean;
+  'show-view-as-markdown'?: boolean;
   'table-sizing'?: Record<string, number>;
-  'tag-sort'?: TagSort[];
+  'tag-action'?: 'kanban' | 'obsidian';
   'tag-colors'?: TagColor[];
+  'tag-sort'?: TagSort[];
   'time-format'?: string;
   'time-trigger'?: string;
-
-  'move-dates'?: boolean;
-  'move-tags'?: boolean;
-  'move-task-metadata'?: boolean;
 }
 
 export interface KanbanViewSettings {
@@ -177,7 +177,7 @@ export class SettingsManager {
     this.applyDebounceTimer = this.win.setTimeout(() => {
       this.settings = update(this.settings, spec);
       this.config.onSettingsChange(this.settings);
-    }, 200);
+    }, 1000);
   }
 
   getSetting(key: keyof KanbanSettings, local: boolean) {
@@ -1177,7 +1177,9 @@ export class SettingsManager {
 
           const [value, globalValue] = this.getSetting('inline-metadata-position', local);
 
-          dropdown.setValue(value?.toString() || globalValue?.toString() || 'body');
+          dropdown.setValue(
+            value?.toString() || globalValue?.toString() || defaultMetadataPosition
+          );
           dropdown.onChange((value: 'body' | 'footer' | 'metadata-table') => {
             if (value) {
               this.applySettingsUpdate({
@@ -1196,7 +1198,7 @@ export class SettingsManager {
             .setTooltip(t('Reset to default'))
             .onClick(() => {
               const [, globalValue] = this.getSetting('inline-metadata-position', local);
-              input.setValue((globalValue as string) || 'body');
+              input.setValue((globalValue as string) || defaultMetadataPosition);
 
               this.applySettingsUpdate({
                 $unset: ['inline-metadata-position'],
