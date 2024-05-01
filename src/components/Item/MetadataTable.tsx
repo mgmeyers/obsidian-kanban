@@ -4,7 +4,7 @@ import { ComponentChild } from 'preact';
 import { memo, useContext } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
-import { InlineField } from 'src/parsers/helpers/inlineMetadata';
+import { InlineField, taskFields } from 'src/parsers/helpers/inlineMetadata';
 
 import { StaticMarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext } from '../context';
@@ -25,6 +25,7 @@ function mergeMetadata(
   metadataKeys: DataKey[]
 ) {
   return inlineMetadata.reduce((acc, curr) => {
+    if (taskFields.has(curr.key)) return acc;
     const data = parseMetadataWithOptions(curr, metadataKeys);
 
     acc[curr.key] = data;
