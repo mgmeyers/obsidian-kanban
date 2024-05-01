@@ -64,8 +64,7 @@ export function hydrateItem(stateManager: StateManager, item: Item) {
 
     if (moveTaskData || moveMetadata) {
       let title = item.data.title;
-      for (let i = inlineMetadata.length - 1; i >= 0; i--) {
-        const item = inlineMetadata[i];
+      for (const item of [...inlineMetadata].reverse()) {
         const isTask = taskFields.has(item.key);
 
         if (isTask && !moveTaskData) continue;
