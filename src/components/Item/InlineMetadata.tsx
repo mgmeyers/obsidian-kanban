@@ -10,7 +10,7 @@ import {
 } from 'src/parsers/helpers/inlineMetadata';
 
 import { SearchContext } from '../context';
-import { c } from '../helpers';
+import { c, parseMetadataWithOptions } from '../helpers';
 import { DataKey, Item, PageData } from '../types';
 import { MetadataValue } from './MetadataTable';
 
@@ -19,31 +19,15 @@ interface InlineMetadataProps {
   stateManager: StateManager;
 }
 
-function parseMetadataWithOptions(data: InlineField, metadataKeys: DataKey[]): PageData {
-  const options = metadataKeys.find((opts) => opts.metadataKey === data.key);
-
-  return options
-    ? {
-        ...options,
-        value: data.value,
-      }
-    : {
-        containsMarkdown: false,
-        label: data.key,
-        metadataKey: data.key,
-        shouldHideLabel: false,
-        value: data.value,
-      };
-}
-
 export function InlineMetadata({ item, stateManager }: InlineMetadataProps) {
   const search = useContext(SearchContext);
-  const metaKeys = stateManager.useSetting('metadata-keys');
-  const moveMetadata = stateManager.useSetting('move-inline-metadata');
+  const metaKeys = stateManager.getSetting('metadata-keys');
+  const displayMetadataInFooter = stateManager.useSetting('inline-metadata-position') === 'footer';
   const moveTaskMetadata = stateManager.useSetting('move-task-metadata');
   const { inlineMetadata } = item.data.metadata;
 
-  if (!inlineMetadata || (!moveMetadata && !moveTaskMetadata)) return null;
+  if (!inlineMetadata || (!displayMetadataInFooter && !moveTaskMetadata)) return null;
+
   const dataview = getDataviewPlugin();
 
   return (
@@ -53,7 +37,7 @@ export function InlineMetadata({ item, stateManager }: InlineMetadataProps) {
         const { metadataKey: key, label: metaLabel, value } = data;
         const isTaskMetadata = taskFields.has(key);
         if (!moveTaskMetadata && isTaskMetadata) return null;
-        if (!moveMetadata && !isTaskMetadata) return null;
+        if (!displayMetadataInFooter && !isTaskMetadata) return null;
 
         const isEmoji = m.wrapping === 'emoji-shorthand';
         const val = dataview?.api?.parse(value) ?? value;

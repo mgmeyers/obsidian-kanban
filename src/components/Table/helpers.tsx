@@ -144,7 +144,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
   const shouldShowRelativeDate = stateManager.useSetting('show-relative-date');
   const moveDates = stateManager.useSetting('move-dates');
   const moveTags = stateManager.useSetting('move-tags');
-  const moveMetadata = stateManager.useSetting('move-inline-metadata');
+  const displayMetadataInBody = stateManager.useSetting('inline-metadata-position') === 'body';
   const moveTaskMetadata = stateManager.useSetting('move-task-metadata');
   const tableSizing = stateManager.useSetting('table-sizing') || {};
 
@@ -277,7 +277,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
 
               const isTaskMetadata = taskFields.has(m.key);
               if (!moveTaskMetadata && isTaskMetadata) return null;
-              if (!moveMetadata && !isTaskMetadata) return null;
+              if (displayMetadataInBody && !isTaskMetadata) return null;
 
               const isEmoji = m.wrapping === 'emoji-shorthand';
               const val = getDataviewPlugin()?.api?.parse(m.value) ?? m.value;

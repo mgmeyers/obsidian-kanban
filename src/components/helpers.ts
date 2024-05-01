@@ -5,9 +5,10 @@ import { StateUpdater, useMemo } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
+import { InlineField } from 'src/parsers/helpers/inlineMetadata';
 
 import { SearchContextProps } from './context';
-import { Board, DateColor, Item, Lane, TagColor } from './types';
+import { Board, DataKey, DateColor, Item, Lane, PageData, TagColor } from './types';
 
 export const baseClassName = 'kanban-plugin';
 
@@ -275,6 +276,23 @@ export function getDateColorFn(
 
     return null;
   };
+}
+
+export function parseMetadataWithOptions(data: InlineField, metadataKeys: DataKey[]): PageData {
+  const options = metadataKeys.find((opts) => opts.metadataKey === data.key);
+
+  return options
+    ? {
+        ...options,
+        value: data.value,
+      }
+    : {
+        containsMarkdown: false,
+        label: data.key,
+        metadataKey: data.key,
+        shouldHideLabel: false,
+        value: data.value,
+      };
 }
 
 export function useOnMount(refs: RefObject<HTMLElement>[], cb: () => void, onUnmount?: () => void) {

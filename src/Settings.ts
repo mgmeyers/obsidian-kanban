@@ -1,5 +1,12 @@
 import update, { Spec } from 'immutability-helper';
-import { App, Modal, PluginSettingTab, Setting, ToggleComponent } from 'obsidian';
+import {
+  App,
+  DropdownComponent,
+  Modal,
+  PluginSettingTab,
+  Setting,
+  ToggleComponent,
+} from 'obsidian';
 
 import { KanbanView } from './KanbanView';
 import {
@@ -54,6 +61,7 @@ export interface KanbanSettings {
   'date-time-display-format'?: string;
   'date-trigger'?: string;
   'hide-card-count'?: boolean;
+  'inline-metadata-position'?: 'body' | 'footer' | 'metadata-table';
   'tag-action'?: 'kanban' | 'obsidian';
   'lane-width'?: number;
   'full-list-lane-width'?: boolean;
@@ -82,7 +90,6 @@ export interface KanbanSettings {
   'move-dates'?: boolean;
   'move-tags'?: boolean;
   'move-task-metadata'?: boolean;
-  'move-inline-metadata'?: boolean;
 }
 
 export interface KanbanViewSettings {
@@ -104,13 +111,13 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'date-trigger',
   'full-list-lane-width',
   'hide-card-count',
+  'inline-metadata-position',
   'lane-width',
   'link-date-to-daily-note',
   'list-collapse',
   'max-archive-size',
   'metadata-keys',
   'move-dates',
-  'move-inline-metadata',
   'move-tags',
   'move-task-metadata',
   'new-card-insertion-method',
@@ -1154,47 +1161,48 @@ export class SettingsManager {
     contentEl.createEl('h4', { text: t('Inline Metadata') });
 
     new Setting(contentEl)
-      .setName(t('Move inline metadata to card footer'))
+      .setName(t('Inline metadata position'))
       .setDesc(
-        t(
-          "When toggled, inline metadata (from the Dataview plugin) will be displayed in the card's footer instead of the card's body."
-        )
+        t('Controls where the inline metadata (from the Dataview plugin) will be displayed.')
       )
-      .then((setting) => {
-        let toggleComponent: ToggleComponent;
+      .then((s) => {
+        let input: DropdownComponent;
 
-        setting
-          .addToggle((toggle) => {
-            toggleComponent = toggle;
+        s.addDropdown((dropdown) => {
+          input = dropdown;
 
-            const [value, globalValue] = this.getSetting('move-inline-metadata', local);
+          dropdown.addOption('body', t('Card body'));
+          dropdown.addOption('footer', t('Card footer'));
+          dropdown.addOption('metadata-table', t('Merge with linked page metadata'));
 
-            if (value !== undefined) {
-              toggle.setValue(value as boolean);
-            } else if (globalValue !== undefined) {
-              toggle.setValue(globalValue as boolean);
-            }
+          const [value, globalValue] = this.getSetting('inline-metadata-position', local);
 
-            toggle.onChange((newValue) => {
+          dropdown.setValue(value?.toString() || globalValue?.toString() || 'body');
+          dropdown.onChange((value: 'body' | 'footer' | 'metadata-table') => {
+            if (value) {
               this.applySettingsUpdate({
-                'move-inline-metadata': {
-                  $set: newValue,
+                'inline-metadata-position': {
+                  $set: value,
                 },
               });
-            });
-          })
-          .addExtraButton((b) => {
-            b.setIcon('lucide-rotate-ccw')
-              .setTooltip(t('Reset to default'))
-              .onClick(() => {
-                const [, globalValue] = this.getSetting('move-inline-metadata', local);
-                toggleComponent.setValue((globalValue as boolean) ?? true);
-
-                this.applySettingsUpdate({
-                  $unset: ['move-inline-metadata'],
-                });
+            } else {
+              this.applySettingsUpdate({
+                $unset: ['inline-metadata-position'],
               });
+            }
           });
+        }).addExtraButton((b) => {
+          b.setIcon('lucide-rotate-ccw')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('inline-metadata-position', local);
+              input.setValue((globalValue as string) || 'body');
+
+              this.applySettingsUpdate({
+                $unset: ['inline-metadata-position'],
+              });
+            });
+        });
       });
 
     new Setting(contentEl)

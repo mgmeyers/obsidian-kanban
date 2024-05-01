@@ -250,7 +250,7 @@ export function shouldRefreshBoard(oldSettings: KanbanSettings, newSettings: Kan
     'time-format',
     'move-dates',
     'move-tags',
-    'move-inline-metadata',
+    'inline-metadata-position',
     'move-task-metadata',
     'hide-card-count',
     'tag-colors',
