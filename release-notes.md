@@ -1,1 +1,1 @@
-61f5b1c Fix inline metadata not recognized if not in first line (#936)
+09b500c Add support for merging metadata in metadata table (#937)
