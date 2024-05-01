@@ -58,15 +58,15 @@ export function hydrateItem(stateManager: StateManager, item: Item) {
     }, []));
 
     const moveTaskData = stateManager.getSetting('move-task-metadata');
-    const moveMetadata = stateManager.getSetting('move-inline-metadata');
+    const displayMetadataInBody = stateManager.getSetting('inline-metadata-position') === 'body';
 
-    if (moveTaskData || moveMetadata) {
+    if (moveTaskData || !displayMetadataInBody) {
       let title = item.data.title;
       for (const item of [...inlineMetadata].reverse()) {
         const isTask = taskFields.has(item.key);
 
         if (isTask && !moveTaskData) continue;
-        if (!isTask && !moveMetadata) continue;
+        if (!isTask && displayMetadataInBody) continue;
 
         title = title.slice(0, item.start) + title.slice(item.end);
       }

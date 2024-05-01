@@ -8,6 +8,7 @@ import { t } from './lang/helpers';
 
 export const defaultDateTrigger = '@';
 export const defaultTimeTrigger = '@@';
+export const defaultMetadataPosition = 'body';
 
 export function getFolderChoices(app: App) {
   const folderList: IChoices.Choice[] = [];

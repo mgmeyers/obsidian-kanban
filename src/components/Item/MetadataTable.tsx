@@ -4,25 +4,60 @@ import { ComponentChild } from 'preact';
 import { memo, useContext } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
+import { InlineField, taskFields } from 'src/parsers/helpers/inlineMetadata';
 
 import { StaticMarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext } from '../context';
-import { c } from '../helpers';
-import { Item, PageData } from '../types';
+import { c, parseMetadataWithOptions } from '../helpers';
+import { DataKey, FileMetadata, Item, PageData } from '../types';
 import { Tags } from './ItemContent';
 
 export interface ItemMetadataProps {
   item: Item;
+  mergeInlineMetadata?: boolean;
+  metadataKeys?: DataKey[];
   searchQuery?: string;
 }
 
-export function ItemMetadata({ item, searchQuery }: ItemMetadataProps) {
-  if (!item.data.metadata.fileMetadata) return null;
+function mergeMetadata(
+  fileMetadata: FileMetadata,
+  inlineMetadata: InlineField[] = [],
+  metadataKeys: DataKey[]
+) {
+  return inlineMetadata.reduce((acc, curr) => {
+    if (taskFields.has(curr.key)) return acc;
+    const data = parseMetadataWithOptions(curr, metadataKeys);
+
+    acc[curr.key] = data;
+
+    return acc;
+  }, fileMetadata || {});
+}
+
+export function ItemMetadata({
+  item,
+  mergeInlineMetadata,
+  metadataKeys,
+  searchQuery,
+}: ItemMetadataProps) {
+  if (
+    !item.data.metadata.fileMetadata &&
+    (!item.data.metadata.inlineMetadata?.length || !mergeInlineMetadata)
+  )
+    return null;
+
+  const metadata = mergeInlineMetadata
+    ? mergeMetadata(
+        item.data.metadata.fileMetadata,
+        item.data.metadata.inlineMetadata,
+        metadataKeys || []
+      )
+    : item.data.metadata.fileMetadata;
 
   return (
     <div className={c('item-metadata-wrapper')}>
       <MetadataTable
-        metadata={item.data.metadata.fileMetadata}
+        metadata={metadata}
         order={item.data.metadata.fileMetadataOrder}
         searchQuery={searchQuery}
       />
@@ -173,7 +208,11 @@ export const MetadataTable = memo(function MetadataTable({
 }: MetadataTableProps) {
   const { stateManager } = useContext(KanbanContext);
 
-  if (!metadata || !order || order.length === 0) return null;
+  if (!order || order.length) {
+    if (!metadata) return null;
+
+    order = Object.keys(metadata);
+  }
 
   return (
     <table className={c('meta-table')}>

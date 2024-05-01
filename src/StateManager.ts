@@ -8,7 +8,7 @@ import { getDefaultDateFormat, getDefaultTimeFormat } from './components/helpers
 import { Board, BoardTemplate, Item } from './components/types';
 import { ListFormat } from './parsers/List';
 import { BaseFormat, frontmatterKey, shouldRefreshBoard } from './parsers/common';
-import { defaultDateTrigger, defaultTimeTrigger } from './settingHelpers';
+import { defaultDateTrigger, defaultMetadataPosition, defaultTimeTrigger } from './settingHelpers';
 
 export class StateManager {
   onEmpty: () => void;
@@ -228,12 +228,13 @@ export class StateManager {
       'date-display-format': dateDisplayFormat,
       'date-time-display-format': dateDisplayFormat + ' ' + timeFormat,
       'date-trigger': this.getSettingRaw('date-trigger', suppliedSettings) || defaultDateTrigger,
+      'inline-metadata-position':
+        this.getSettingRaw('inline-metadata-position', suppliedSettings) || defaultMetadataPosition,
       'time-format': timeFormat,
       'time-trigger': this.getSettingRaw('time-trigger', suppliedSettings) || defaultTimeTrigger,
       'link-date-to-daily-note': this.getSettingRaw('link-date-to-daily-note', suppliedSettings),
       'move-dates': this.getSettingRaw('move-dates', suppliedSettings),
       'move-tags': this.getSettingRaw('move-tags', suppliedSettings),
-      'move-inline-metadata': this.getSettingRaw('move-inline-metadata', suppliedSettings),
       'move-task-metadata': this.getSettingRaw('move-task-metadata', suppliedSettings),
       'metadata-keys': [...globalKeys, ...localKeys],
       'archive-date-separator': this.getSettingRaw('archive-date-separator') || '',

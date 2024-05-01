@@ -2,7 +2,6 @@ import classcat from 'classcat';
 import { useContext } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
 import {
-  InlineField,
   getDataviewPlugin,
   lableToIcon,
   lableToName,
@@ -10,8 +9,8 @@ import {
 } from 'src/parsers/helpers/inlineMetadata';
 
 import { SearchContext } from '../context';
-import { c } from '../helpers';
-import { DataKey, Item, PageData } from '../types';
+import { c, parseMetadataWithOptions } from '../helpers';
+import { Item } from '../types';
 import { MetadataValue } from './MetadataTable';
 
 interface InlineMetadataProps {
@@ -19,49 +18,33 @@ interface InlineMetadataProps {
   stateManager: StateManager;
 }
 
-function parseMetadataWithOptions(data: InlineField, metadataKeys: DataKey[]): PageData {
-  const options = metadataKeys.find((opts) => opts.metadataKey === data.key);
-
-  return options
-    ? {
-        ...options,
-        value: data.value,
-      }
-    : {
-        containsMarkdown: false,
-        label: data.key,
-        metadataKey: data.key,
-        shouldHideLabel: false,
-        value: data.value,
-      };
-}
-
 export function InlineMetadata({ item, stateManager }: InlineMetadataProps) {
   const search = useContext(SearchContext);
-  const metaKeys = stateManager.useSetting('metadata-keys');
-  const moveMetadata = stateManager.useSetting('move-inline-metadata');
+  const metaKeys = stateManager.getSetting('metadata-keys');
+  const displayMetadataInFooter = stateManager.useSetting('inline-metadata-position') === 'footer';
   const moveTaskMetadata = stateManager.useSetting('move-task-metadata');
   const { inlineMetadata } = item.data.metadata;
 
-  if (!inlineMetadata || (!moveMetadata && !moveTaskMetadata)) return null;
+  if (!inlineMetadata || (displayMetadataInFooter && !moveTaskMetadata)) return null;
+
   const dataview = getDataviewPlugin();
 
   return (
     <span className={c('item-task-metadata')}>
       {inlineMetadata.map((m, i) => {
         const data = parseMetadataWithOptions(m, metaKeys);
-        const { metadataKey: key, label: metaLabel, value } = data;
+        const { metadataKey: key, value } = data;
         const isTaskMetadata = taskFields.has(key);
         if (!moveTaskMetadata && isTaskMetadata) return null;
-        if (!moveMetadata && !isTaskMetadata) return null;
+        if (!displayMetadataInFooter && !isTaskMetadata) return null;
 
         const isEmoji = m.wrapping === 'emoji-shorthand';
         const val = dataview?.api?.parse(value) ?? value;
         const isEmojiPriority = isEmoji && key === 'priority';
         const isDate = !!val?.ts;
 
-        let label = isEmoji ? lableToIcon(m.key, m.value) : lableToName(m.key);
-        const slug = m.key.replace(/[^a-zA-Z0-9_]/g, '-');
+        let label = isEmoji ? lableToIcon(key, value) : lableToName(key);
+        const slug = key.replace(/[^a-zA-Z0-9_]/g, '-');
 
         if (!isEmoji) label += ': ';
 

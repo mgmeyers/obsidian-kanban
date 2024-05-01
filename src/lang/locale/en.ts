@@ -107,9 +107,12 @@ const en = {
   'Move task data to card footer': 'Move task data to card footer',
   "When toggled, task data (from the Tasks plugin) will be displayed in the card's footer instead of the card's body.":
     "When toggled, task data (from the Tasks plugin) will be displayed in the card's footer instead of the card's body.",
-  'Move inline metadata to card footer': 'Move inline metadata to card footer',
-  "When toggled, inline metadata (from the Dataview plugin) will be displayed in the card's footer instead of the card's body.":
-    "When toggled, inline metadata (from the Dataview plugin) will be displayed in the card's footer instead of the card's body.",
+  'Inline metadata position': 'Inline metadata position',
+  'Controls where the inline metadata (from the Dataview plugin) will be displayed.':
+    'Controls where the inline metadata (from the Dataview plugin) will be displayed.',
+  'Card body': 'Card body',
+  'Card footer': 'Card footer',
+  'Merge with linked page metadata': 'Merge with linked page metadata',
 
   'Hide card counts in list titles': 'Hide card counts in list titles',
   'When toggled, card counts are hidden from the list title':
