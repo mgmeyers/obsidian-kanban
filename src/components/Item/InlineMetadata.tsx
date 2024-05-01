@@ -59,7 +59,9 @@ export function InlineMetadata({ item, stateManager }: InlineMetadataProps) {
         const val = dataview?.api?.parse(value) ?? value;
         const isEmojiPriority = isEmoji && key === 'priority';
         const isDate = !!val?.ts;
-        let label = isEmoji ? lableToIcon(metaLabel, value) : lableToName(metaLabel);
+
+        let label = isEmoji ? lableToIcon(m.key, m.value) : lableToName(m.key);
+        const slug = m.key.replace(/[^a-zA-Z0-9_]/g, '-');
 
         if (!isEmoji) label += ': ';
 
@@ -67,7 +69,7 @@ export function InlineMetadata({ item, stateManager }: InlineMetadataProps) {
           <span
             className={classcat([
               c('item-task-inline-metadata-item'),
-              key.replace(/[^a-z0-9]/g, '-'),
+              c(`inline-metadata__${slug}`),
               {
                 'is-task-metadata': isTaskMetadata,
                 'is-emoji': isEmoji,

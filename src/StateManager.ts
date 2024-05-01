@@ -11,20 +11,20 @@ import { BaseFormat, frontmatterKey, shouldRefreshBoard } from './parsers/common
 import { defaultDateTrigger, defaultTimeTrigger } from './settingHelpers';
 
 export class StateManager {
-  private onEmpty: () => void;
-  private getGlobalSettings: () => KanbanSettings;
+  onEmpty: () => void;
+  getGlobalSettings: () => KanbanSettings;
 
-  private stateReceivers: Array<(state: Board) => void> = [];
-  private settingsNotifiers: Map<keyof KanbanSettings, Array<() => void>> = new Map();
+  stateReceivers: Array<(state: Board) => void> = [];
+  settingsNotifiers: Map<keyof KanbanSettings, Array<() => void>> = new Map();
 
-  private viewSet: Set<KanbanView> = new Set();
-  private compiledSettings: KanbanSettings = {};
+  viewSet: Set<KanbanView> = new Set();
+  compiledSettings: KanbanSettings = {};
 
-  public app: App;
-  public state: Board;
-  public file: TFile;
+  app: App;
+  state: Board;
+  file: TFile;
 
-  private parser: BaseFormat;
+  parser: BaseFormat;
 
   constructor(
     app: App,

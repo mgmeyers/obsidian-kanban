@@ -110,12 +110,17 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
 
             if (from < to) to -= 1;
 
-            const collapsedState = [...(view.getViewState('list-collapse') || [])];
-            collapsedState.splice(to, 0, collapsedState.splice(from, 1)[0]);
-            view.setViewState('list-collapse', collapsedState);
+            const collapsedState = view.getViewState('list-collapse');
+            const op = (collapsedState: boolean[]) => {
+              const newState = [...collapsedState];
+              newState.splice(to, 0, newState.splice(from, 1)[0]);
+              return newState;
+            };
+
+            view.setViewState('list-collapse', undefined, op);
 
             return update<Board>(newBoard, {
-              data: { settings: { 'list-collapse': { $set: collapsedState } } },
+              data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
             });
           }
 
@@ -160,15 +165,18 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
               : [entity];
 
           if (entity.type === DataTypes.Lane) {
-            const collapsedState = [...(destinationView.getViewState('list-collapse') || [])];
-            collapsedState.splice(
-              dropPath.last(),
-              0,
-              (sourceView.getViewState('list-collapse') || [])[dragPath.last()]
-            );
-            destinationView.setViewState('list-collapse', collapsedState);
+            const collapsedState = destinationView.getViewState('list-collapse');
+            const val = sourceView.getViewState('list-collapse')[dragPath.last()];
+            const op = (collapsedState: boolean[]) => {
+              const newState = [...collapsedState];
+              newState.splice(dropPath.last(), 0, val);
+              return newState;
+            };
+
+            destinationView.setViewState('list-collapse', undefined, op);
+
             return update<Board>(insertEntity(destinationBoard, dropPath, toInsert), {
-              data: { settings: { 'list-collapse': { $set: collapsedState } } },
+              data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
             });
           } else {
             return insertEntity(destinationBoard, dropPath, toInsert);
@@ -176,12 +184,16 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
         });
 
         if (entity.type === DataTypes.Lane) {
-          const collapsedState = [...(sourceView.getViewState('list-collapse') || [])];
-          collapsedState.splice(dragPath.last(), 1);
-          sourceView.setViewState('list-collapse', collapsedState);
+          const collapsedState = sourceView.getViewState('list-collapse');
+          const op = (collapsedState: boolean[]) => {
+            const newState = [...collapsedState];
+            newState.splice(dragPath.last(), 1);
+            return newState;
+          };
+          sourceView.setViewState('list-collapse', undefined, op);
 
           return update<Board>(removeEntity(sourceBoard, dragPath), {
-            data: { settings: { 'list-collapse': { $set: collapsedState } } },
+            data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
           });
         } else {
           return removeEntity(sourceBoard, dragPath);
