@@ -38,7 +38,7 @@ function parseMetadataWithOptions(data: InlineField, metadataKeys: DataKey[]): P
 
 export function InlineMetadata({ item, stateManager }: InlineMetadataProps) {
   const search = useContext(SearchContext);
-  const metaKeys = stateManager.getSetting('metadata-keys');
+  const metaKeys = stateManager.useSetting('metadata-keys');
   const moveMetadata = stateManager.useSetting('move-inline-metadata');
   const moveTaskMetadata = stateManager.useSetting('move-task-metadata');
   const { inlineMetadata } = item.data.metadata;
