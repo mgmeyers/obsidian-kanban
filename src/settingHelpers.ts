@@ -92,29 +92,36 @@ export function createSearchSelect({
       el.win.setTimeout(() => {
         let list = choices;
 
-        const [value, defaultVal] = manager.getSetting(key, local);
+        const [value, globalValue] = manager.getSetting(key, local);
 
-        if (defaultVal) {
-          const index = choices.findIndex((f) => f.value === defaultVal);
-          const choice = choices[index];
+        let didSetPlaceholder = false;
+        if (globalValue) {
+          const index = list.findIndex((f) => f.value === globalValue);
 
-          list = update(list, {
-            $splice: [[index, 1]],
-            $unshift: [
-              update(choice, {
-                placeholder: {
-                  $set: true,
-                },
-                value: {
-                  $set: '',
-                },
-                label: {
-                  $apply: (v) => `${v} (${t('default')})`,
-                },
-              }),
-            ],
-          });
-        } else {
+          if (index > -1) {
+            didSetPlaceholder = true;
+            const choice = choices[index];
+
+            list = update(list, {
+              $splice: [[index, 1]],
+              $unshift: [
+                update(choice, {
+                  placeholder: {
+                    $set: true,
+                  },
+                  value: {
+                    $set: '',
+                  },
+                  label: {
+                    $apply: (v) => `${v} (${t('default')})`,
+                  },
+                }),
+              ],
+            });
+          }
+        }
+
+        if (!didSetPlaceholder) {
           list = update(list, {
             $unshift: [
               {
@@ -136,7 +143,7 @@ export function createSearchSelect({
           choices: list,
         }).setChoiceByValue('');
 
-        if (value && typeof value === 'string') {
+        if (value && typeof value === 'string' && list.findIndex((f) => f.value === value) > -1) {
           c.setChoiceByValue(value);
         }
 
