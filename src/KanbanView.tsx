@@ -66,19 +66,6 @@ export class KanbanView extends TextFileView implements HoverParent {
       concurrency: 10,
     });
 
-    let firstAdd = -1;
-
-    this.previewQueue.on('add', () => {
-      if (firstAdd < 0) firstAdd = performance.now();
-    });
-
-    this.previewQueue.on('idle', () => {
-      if (firstAdd > 0) {
-        console.log('t', performance.now() - firstAdd);
-        firstAdd = -1;
-      }
-    });
-
     this.previewQueue.on('error', (...args) => {
       console.error('Error processing Kanban render queue', ...args);
     });
