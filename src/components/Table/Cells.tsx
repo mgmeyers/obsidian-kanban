@@ -10,7 +10,7 @@ import { DateAndTime, RelativeDate } from '../Item/DateAndTime';
 import { ItemCheckbox } from '../Item/ItemCheckbox';
 import { ItemContent, useDatePickers } from '../Item/ItemContent';
 import { useItemMenu } from '../Item/ItemMenu';
-import { StaticMarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
+import { MarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
 import { EditState, Item, Lane, isEditing } from '../types';
@@ -124,7 +124,7 @@ export const LaneCell = memo(function LaneCell({ lane, path }: { lane: Lane; pat
   const search = useContext(SearchContext);
   return (
     <div className={c('cell-flex-wrapper')}>
-      <StaticMarkdownRenderer searchQuery={search?.query} markdownString={lane.data.title} />
+      <MarkdownRenderer searchQuery={search?.query} markdownString={lane.data.title} />
       <div
         onClick={(e) => {
           const menu = new Menu();

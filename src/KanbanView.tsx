@@ -13,12 +13,13 @@ import PQueue from 'p-queue';
 
 import { KanbanFormat, KanbanSettings, KanbanViewSettings, SettingsModal } from './Settings';
 import { Kanban } from './components/Kanban';
-import { MarkdownRenderer } from './components/MarkdownRenderer/MarkdownRenderer';
+import { BasicMarkdownRenderer } from './components/MarkdownRenderer/MarkdownRenderer';
 import { c } from './components/helpers';
 import { Board } from './components/types';
 import { Emitter, createEmitter } from './dnd/util/emitter';
 import { getParentWindow } from './dnd/util/getWindow';
 import { gotoNextDailyNote, gotoPrevDailyNote, hasFrontmatterKeyRaw } from './helpers';
+import { bindMarkdownEvents } from './helpers/renderMarkdown';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
 import { frontmatterKey } from './parsers/common';
@@ -28,7 +29,7 @@ export const kanbanIcon = 'lucide-trello';
 
 interface ViewEvents {
   showLaneForm: () => void;
-  hotkey: (commandId: string) => void;
+  hotkey: (data: { commandId: string; data?: any }) => void;
 }
 
 export class KanbanView extends TextFileView implements HoverParent {
@@ -37,10 +38,23 @@ export class KanbanView extends TextFileView implements HoverParent {
   emitter: Emitter<ViewEvents>;
   actionButtons: Record<string, HTMLElement> = {};
 
-  previewCache: Map<string, MarkdownRenderer>;
+  previewCache: Map<string, BasicMarkdownRenderer>;
   previewQueue: PQueue;
 
   activeEditor: any;
+  viewSettings: KanbanViewSettings = {};
+
+  get isPrimary(): boolean {
+    return this.plugin.getStateManager(this.file)?.getAView() === this;
+  }
+
+  get id(): string {
+    return `${(this.leaf as any).id}:::${this.file?.path}`;
+  }
+
+  get isShiftPressed(): boolean {
+    return this.plugin.isShiftPressed;
+  }
 
   constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
     super(leaf);
@@ -49,15 +63,28 @@ export class KanbanView extends TextFileView implements HoverParent {
     this.previewCache = new Map();
     this.previewQueue = new PQueue({
       autoStart: true,
-      concurrency: 100,
+      concurrency: 10,
+    });
+
+    let firstAdd = -1;
+
+    this.previewQueue.on('add', () => {
+      if (firstAdd < 0) firstAdd = performance.now();
+    });
+
+    this.previewQueue.on('idle', () => {
+      if (firstAdd > 0) {
+        console.log('t', performance.now() - firstAdd);
+        firstAdd = -1;
+      }
     });
 
     this.previewQueue.on('error', (...args) => {
       console.error('Error processing Kanban render queue', ...args);
     });
 
-    this.emitter.on('hotkey', (commmandId) => {
-      switch (commmandId) {
+    this.emitter.on('hotkey', ({ commandId }) => {
+      switch (commandId) {
         case 'daily-notes:goto-prev': {
           gotoPrevDailyNote(this.app, this.file);
           break;
@@ -69,12 +96,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       }
     });
 
-    this.register(
-      this.containerEl.onWindowMigrated(() => {
-        this.plugin.removeView(this);
-        this.plugin.addView(this, this.data, this.isPrimary);
-      })
-    );
+    bindMarkdownEvents(this);
   }
 
   validatePreviewCache(board: Board) {
@@ -92,18 +114,6 @@ export class KanbanView extends TextFileView implements HoverParent {
         this.previewCache.delete(k);
       }
     }
-  }
-
-  get isPrimary(): boolean {
-    return this.plugin.getStateManager(this.file)?.getAView() === this;
-  }
-
-  get id(): string {
-    return `${(this.leaf as any).id}:::${this.file?.path}`;
-  }
-
-  get isShiftPressed(): boolean {
-    return this.plugin.isShiftPressed;
   }
 
   setView(view: KanbanFormat) {
@@ -151,34 +161,33 @@ export class KanbanView extends TextFileView implements HoverParent {
     }
   }
 
-  destroy() {
-    // Remove draggables from render, as the DOM has already detached
-    this.plugin.removeView(this);
-    this.previewQueue.clear();
-    this.previewCache.clear();
-
-    Object.values(this.actionButtons).forEach((b) => b.remove());
-    this.actionButtons = {};
-  }
-
   onload() {
     super.onload();
-    this.destroy();
     if (Platform.isMobile) {
       this.containerEl.setCssProps({
         '--mobile-navbar-height': (this.app as any).mobileNavbar.containerEl.clientHeight + 'px',
       });
     }
+
+    this.register(
+      this.containerEl.onWindowMigrated(() => {
+        this.plugin.removeView(this);
+        this.plugin.addView(this, this.data, this.isPrimary);
+      })
+    );
   }
 
   onunload(): void {
     super.onunload();
-    this.destroy();
-  }
 
-  onUnloadFile(file: TFile) {
-    this.destroy();
-    return super.onUnloadFile(file);
+    // Remove draggables from render, as the DOM has already detached
+    this.plugin.removeView(this);
+    this.emitter.clear();
+    this.activeEditor = null;
+
+    this.previewQueue.clear();
+    this.previewCache.clear();
+    this.actionButtons = {};
   }
 
   handleRename(newPath: string, oldPath: string) {
@@ -213,10 +222,15 @@ export class KanbanView extends TextFileView implements HoverParent {
       return;
     }
 
+    this.activeEditor = null;
+    this.previewQueue.clear();
+    this.previewCache.clear();
+
+    Object.values(this.actionButtons).forEach((b) => b.remove());
+    this.actionButtons = {};
+
     this.plugin.addView(this, data, !clear && this.isPrimary);
   }
-
-  viewSettings: KanbanViewSettings = {};
 
   async setState(state: any, result: ViewStateResult): Promise<void> {
     this.viewSettings = { ...state.kanbanViewState };
@@ -398,7 +412,7 @@ export class KanbanView extends TextFileView implements HoverParent {
 
     if (stateManager.getSetting('show-search') && !this.actionButtons['show-search']) {
       this.actionButtons['show-search'] = this.addAction('lucide-search', t('Search...'), () => {
-        this.emitter.emit('hotkey', 'editor:open-search');
+        this.emitter.emit('hotkey', { commandId: 'editor:open-search' });
       });
     } else if (!stateManager.getSetting('show-search') && this.actionButtons['show-search']) {
       this.actionButtons['show-search'].remove();

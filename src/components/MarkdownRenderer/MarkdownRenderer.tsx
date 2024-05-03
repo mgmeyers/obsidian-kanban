@@ -2,398 +2,31 @@
 import classcat from 'classcat';
 import Mark from 'mark.js';
 import moment from 'moment';
-import { MarkdownRenderer as ObsidianRenderer, TFile, getLinkpath } from 'obsidian';
-import { appHasDailyNotesPluginLoaded, createDailyNote } from 'obsidian-daily-notes-interface';
+import { Component, MarkdownRenderer as ObsidianRenderer, getLinkpath } from 'obsidian';
 import { CSSProperties, memo, useEffect, useRef } from 'preact/compat';
-import { useCallback, useContext } from 'preact/hooks';
+import { useContext } from 'preact/hooks';
 import { KanbanView } from 'src/KanbanView';
 import { DndManagerContext, EntityManagerContext } from 'src/dnd/components/context';
 import { PromiseCapability } from 'src/helpers/util';
-import { frontmatterKey } from 'src/parsers/common';
 
-import {
-  applyCheckboxIndexes,
-  getNormalizedPath,
-  renderMarkdown,
-} from '../../helpers/renderMarkdown';
+import { applyCheckboxIndexes } from '../../helpers/renderMarkdown';
 import { usePreprocessedStr } from '../Editor/dateWidget';
-import { IntersectionObserverContext, KanbanContext, SearchContext, SortContext } from '../context';
-import { c, noop } from '../helpers';
+import {
+  IntersectionObserverContext,
+  KanbanContext,
+  SearchContext,
+  SearchContextProps,
+  SortContext,
+} from '../context';
+import { c } from '../helpers';
 import { DateColor, TagColor } from '../types';
 
 interface MarkdownRendererProps extends HTMLAttributes<HTMLDivElement> {
   className?: string;
   markdownString: string;
   searchQuery?: string;
-}
-
-interface MarkdownPreviewRendererProps extends MarkdownRendererProps {
-  entityId: string;
-}
-
-function appendOrReplaceFirstChild(wrapper?: HTMLDivElement, child?: HTMLDivElement) {
-  if (!child || !wrapper) return;
-
-  if (wrapper && !wrapper.firstChild) {
-    wrapper.appendChild(child);
-  } else if (wrapper.firstChild && wrapper.firstChild !== child) {
-    wrapper.replaceChild(child, wrapper.firstChild);
-  }
-}
-
-function preventDragOnLink(e: DragEvent) {
-  const targetEl = e.target as HTMLElement;
-  if (targetEl.tagName === 'A') {
-    e.preventDefault();
-  }
-}
-
-export const StaticMarkdownRenderer = memo(function StaticMarkdownRenderer({
-  className,
-  markdownString,
-  searchQuery,
-  ...divProps
-}: MarkdownRendererProps) {
-  const search = useContext(SearchContext);
-  const { stateManager, view, filePath, getDateColor, getTagColor } = useContext(KanbanContext);
-  const wrapperRef = useRef<HTMLDivElement>();
-  const contentRef = useRef<HTMLDivElement>();
-  const markRef = useRef<Mark>();
-
-  useEffect(() => {
-    renderMarkdown(stateManager.getAView(), markdownString)
-      .then((el) => {
-        contentRef.current = el;
-        markRef.current = new Mark(el);
-        colorizeDates(el, getDateColor);
-        colorizeTags(el, getTagColor);
-        if (wrapperRef.current) appendOrReplaceFirstChild(wrapperRef.current, el);
-      })
-      .catch((e) => {
-        stateManager.setError(e);
-        console.error(e);
-      });
-  }, [stateManager, markdownString]);
-
-  useEffect(() => {
-    colorizeTags(contentRef.current, getTagColor);
-    colorizeDates(contentRef.current, getDateColor);
-  }, [getTagColor, getDateColor]);
-
-  useEffect(() => {
-    markRef.current?.unmark();
-
-    if (searchQuery && searchQuery.trim()) {
-      markRef.current?.mark(searchQuery);
-    }
-  }, [searchQuery]);
-
-  const onMouseOver = useCallback(
-    (e: MouseEvent) => {
-      const targetEl = e.target as HTMLElement;
-
-      if (targetEl.tagName !== 'A') return;
-
-      if (targetEl.hasClass('internal-link')) {
-        view.app.workspace.trigger('hover-link', {
-          event: e,
-          source: frontmatterKey,
-          hoverParent: view,
-          targetEl,
-          linktext: targetEl.getAttr('href'),
-          sourcePath: view.file.path,
-        });
-      }
-    },
-    [view]
-  );
-
-  const onClick = useCallback(
-    async (e: MouseEvent) => {
-      if (e.type === 'auxclick' || e.button === 2) {
-        return;
-      }
-
-      const targetEl = e.target as HTMLElement;
-      const closestAnchor = targetEl.tagName === 'A' ? targetEl : targetEl.closest('a');
-
-      if (!closestAnchor) return;
-
-      if (closestAnchor.hasClass('file-link')) {
-        e.preventDefault();
-        const href = closestAnchor.getAttribute('href');
-        const normalizedPath = getNormalizedPath(href);
-        const target =
-          typeof href === 'string' &&
-          view.app.metadataCache.getFirstLinkpathDest(normalizedPath.root, view.file.path);
-
-        if (!target) return;
-
-        (stateManager.app as any).openWithDefaultApp(target.path);
-
-        return;
-      }
-
-      // Open an internal link in a new pane
-      if (closestAnchor.hasClass('internal-link')) {
-        e.preventDefault();
-        const destination = closestAnchor.getAttr('href');
-        const inNewLeaf = e.button === 1 || e.ctrlKey || e.metaKey;
-        const isUnresolved = closestAnchor.hasClass('is-unresolved');
-
-        if (isUnresolved && appHasDailyNotesPluginLoaded()) {
-          const dateFormat = stateManager.getSetting('date-format');
-          const parsed = moment(destination, dateFormat, true);
-
-          if (parsed.isValid()) {
-            try {
-              const dailyNote = await createDailyNote(parsed);
-              const leaf = inNewLeaf ? app.workspace.getLeaf(true) : app.workspace.getLeaf(false);
-
-              await leaf.openFile(dailyNote as unknown as TFile, {
-                active: true,
-              });
-            } catch (e) {
-              console.error(e);
-              stateManager.setError(e);
-            }
-            return;
-          }
-        }
-
-        stateManager.app.workspace.openLinkText(destination, filePath, inNewLeaf);
-        return;
-      }
-
-      // Open a tag search
-      if (closestAnchor.hasClass('tag')) {
-        e.preventDefault();
-        const tag = closestAnchor.getAttr('href');
-        const tagAction = stateManager.getSetting('tag-action');
-
-        if (search && tagAction === 'kanban') {
-          search.search(tag, true);
-          return;
-        }
-
-        (stateManager.app as any).internalPlugins
-          .getPluginById('global-search')
-          .instance.openGlobalSearch(`tag:${tag}`);
-        return;
-      }
-
-      // Open external link
-      if (closestAnchor.hasClass('external-link')) {
-        e.preventDefault();
-        window.open(closestAnchor.getAttr('href'), '_blank');
-      }
-    },
-    [stateManager, filePath, search]
-  );
-
-  const onContextMenu = useCallback(
-    (e: MouseEvent) => {
-      const internalLinkPath =
-        e.targetNode.instanceOf(HTMLAnchorElement) && e.targetNode.hasClass('internal-link')
-          ? e.targetNode.dataset.href
-          : undefined;
-
-      if (!internalLinkPath) return;
-
-      (stateManager.app.workspace as any).onLinkContextMenu(
-        e,
-        getLinkpath(internalLinkPath),
-        stateManager.file.path
-      );
-    },
-    [stateManager]
-  );
-
-  return (
-    <div
-      className={classcat([c('markdown-preview-wrapper'), className])}
-      {...divProps}
-      onMouseOver={onMouseOver}
-      onClick={onClick}
-      onDragStart={preventDragOnLink}
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      onAuxClick={onClick}
-      onContextMenu={onContextMenu}
-    >
-      <div>
-        <div
-          className={classcat(['markdown-preview-view', c('markdown-preview-view')])}
-          ref={(node) => {
-            wrapperRef.current = node;
-            appendOrReplaceFirstChild(node, contentRef.current);
-          }}
-        ></div>
-      </div>
-    </div>
-  );
-});
-
-export class MarkdownRenderer extends ObsidianRenderer {
-  search: null = null;
-  owner: KanbanView;
-
-  onFoldChange() {}
-  showSearch() {}
-  onScroll() {}
-
-  constructor(owner: KanbanView, el: HTMLElement) {
-    // @ts-ignore
-    super(owner.app, el, false);
-    this.owner = owner;
-    const { renderer } = this;
-
-    renderer.sizerEl.addClass('kanban-renderer');
-    renderer.measureSection = noop;
-    renderer.updateVirtualDisplay = noop;
-    renderer.updateShownSections = noop;
-    renderer.onResize = noop;
-
-    // @ts-ignore
-    renderer.previewEl.toggleClass('rtl', owner.app.vault.getConfig('rightToLeft'));
-    renderer.previewEl.toggleClass('show-indentation-guide', false);
-    renderer.previewEl.toggleClass('allow-fold-headings', false);
-    renderer.previewEl.toggleClass('allow-fold-lists', false);
-    renderer.unfoldAllHeadings();
-    renderer.unfoldAllLists();
-  }
-
-  lastWidth = -1;
-  lastHeight = -1;
-  lastRefWidth = -1;
-  lastRefHeight = -1;
-
-  observer: ResizeObserver;
-  onload() {
-    super.onload();
-
-    const { containerEl } = this;
-
-    this.observer = new ResizeObserver((entries) => {
-      if (!entries.length) return;
-
-      const entry = entries.first().contentBoxSize[0];
-      if (entry.blockSize === 0) return;
-
-      if (this.wrapperEl) {
-        const rect = this.wrapperEl.getBoundingClientRect();
-        if (this.lastRefHeight === -1 || rect.height > 0) {
-          this.lastRefHeight = rect.height;
-          this.lastRefWidth = rect.width;
-        }
-      }
-
-      this.lastWidth = entry.inlineSize;
-      this.lastHeight = entry.blockSize;
-    });
-
-    containerEl.win.setTimeout(() => {
-      this.observer.observe(containerEl, { box: 'border-box' });
-    });
-
-    containerEl.addEventListener(
-      'pointerdown',
-      (evt) => {
-        const { targetNode } = evt;
-        if (
-          targetNode.instanceOf(HTMLElement) &&
-          targetNode.hasClass('task-list-item-checkbox') &&
-          !targetNode.closest('.markdown-embed')
-        ) {
-          if (targetNode.dataset.checkboxIndex === undefined) {
-            applyCheckboxIndexes(containerEl);
-          }
-        }
-      },
-      { capture: true }
-    );
-
-    containerEl.addEventListener(
-      'click',
-      (evt) => {
-        const { targetNode } = evt;
-        if (
-          targetNode.instanceOf(HTMLElement) &&
-          targetNode.hasClass('task-list-item-checkbox') &&
-          !targetNode.closest('.markdown-embed')
-        ) {
-          evt.preventDefault();
-          evt.stopPropagation();
-        }
-      },
-      { capture: true }
-    );
-
-    containerEl.addEventListener(
-      'contextmenu',
-      (evt) => {
-        const { targetNode } = evt;
-        if (targetNode.instanceOf(HTMLElement) && targetNode.hasClass('task-list-item-checkbox')) {
-          evt.preventDefault();
-          evt.stopPropagation();
-        }
-      },
-      { capture: true }
-    );
-  }
-
-  unload(): void {
-    super.unload();
-    this.observer.disconnect();
-  }
-
-  get file() {
-    return this.owner.file;
-  }
-
-  renderer: any;
-  set(content: string) {
-    this.renderer.set(content);
-    this.renderer.onRendered(() => this.showChildren());
-  }
-
-  wrapperEl: HTMLElement;
-  migrate(el: HTMLElement) {
-    const { lastRefHeight, lastRefWidth, containerEl } = this;
-    this.wrapperEl = el;
-    if (lastRefHeight > 0) {
-      el.style.width = `${lastRefWidth}px`;
-      el.style.height = `${lastRefHeight}px`;
-      el.win.setTimeout(() => {
-        el.style.width = '';
-        el.style.height = '';
-      }, 10);
-    }
-    if (containerEl.parentElement !== el) {
-      el.append(containerEl);
-    }
-  }
-
-  isVisible: boolean = false;
-  showChildren() {
-    const { renderer, wrapperEl } = this;
-    const { sizerEl, pusherEl, sections } = renderer;
-
-    sizerEl.setChildrenInPlace([pusherEl, ...sections.map((s: any) => s.el)]);
-
-    if (sizerEl.style.minHeight) sizerEl.style.minHeight = '';
-    if (wrapperEl.style.minHeight) wrapperEl.style.minHeight = '';
-    this.isVisible = true;
-  }
-
-  hideChildren() {
-    const { renderer, wrapperEl } = this;
-    const { sizerEl } = renderer;
-
-    wrapperEl.style.minHeight = this.lastRefHeight + 'px';
-    sizerEl.empty();
-    this.isVisible = false;
-  }
+  entityId?: string;
+  entityIndex?: number;
 }
 
 function colorizeTags(wrapperEl: HTMLElement, getTagColor: (tag: string) => TagColor) {
@@ -430,13 +63,176 @@ function colorizeDates(wrapperEl: HTMLElement, getDateColor: (date: moment.Momen
   });
 }
 
-export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
+export class BasicMarkdownRenderer extends Component {
+  containerEl: HTMLElement;
+  renderCapability: PromiseCapability;
+  observer: ResizeObserver;
+  isVisible: boolean = false;
+  mark: Mark;
+
+  lastWidth = -1;
+  lastHeight = -1;
+  lastRefWidth = -1;
+  lastRefHeight = -1;
+
+  constructor(
+    public view: KanbanView,
+    public markdown: string,
+    public wrapperEl: HTMLElement,
+    public search: SearchContextProps
+  ) {
+    super();
+    this.containerEl = createDiv(
+      'markdown-preview-view markdown-rendered ' + c('markdown-preview-view')
+    );
+    this.mark = new Mark(this.containerEl);
+    this.renderCapability = new PromiseCapability<void>();
+  }
+
+  onload() {
+    this.render();
+  }
+
+  // eslint-disable-next-line react/require-render-return
+  async render() {
+    this.containerEl.empty();
+
+    await ObsidianRenderer.render(
+      this.view.app,
+      this.markdown,
+      this.containerEl,
+      this.view.file.path,
+      this
+    );
+
+    this.renderCapability.resolve();
+    if (!(this.view as any)?._loaded || !(this as any)._loaded) return;
+
+    const { containerEl, wrapperEl } = this;
+
+    this.resolveLinks();
+    applyCheckboxIndexes(containerEl);
+
+    this.observer = new ResizeObserver((entries) => {
+      if (!entries.length) return;
+
+      const entry = entries.first().contentBoxSize[0];
+      if (entry.blockSize === 0) return;
+
+      if (wrapperEl) {
+        const rect = wrapperEl.getBoundingClientRect();
+        if (this.lastRefHeight === -1 || rect.height > 0) {
+          this.lastRefHeight = rect.height;
+          this.lastRefWidth = rect.width;
+        }
+      }
+
+      this.lastWidth = entry.inlineSize;
+      this.lastHeight = entry.blockSize;
+    });
+
+    containerEl.win.setTimeout(() => {
+      this.observer.observe(containerEl, { box: 'border-box' });
+    });
+
+    containerEl.addEventListener(
+      'click',
+      (evt) => {
+        const { targetNode } = evt;
+        if (
+          targetNode.instanceOf(HTMLElement) &&
+          targetNode.hasClass('task-list-item-checkbox') &&
+          !targetNode.closest('.markdown-embed')
+        ) {
+          evt.preventDefault();
+          evt.stopPropagation();
+        }
+      },
+      { capture: true }
+    );
+
+    containerEl.addEventListener(
+      'contextmenu',
+      (evt) => {
+        const { targetNode } = evt;
+        if (targetNode.instanceOf(HTMLElement) && targetNode.hasClass('task-list-item-checkbox')) {
+          evt.preventDefault();
+          evt.stopPropagation();
+        }
+      },
+      { capture: true }
+    );
+  }
+
+  migrate(el: HTMLElement) {
+    const { lastRefHeight, lastRefWidth, containerEl } = this;
+    this.wrapperEl = el;
+    if (lastRefHeight > 0) {
+      el.style.width = `${lastRefWidth}px`;
+      el.style.height = `${lastRefHeight}px`;
+      el.win.setTimeout(() => {
+        el.style.width = '';
+        el.style.height = '';
+      }, 50);
+    }
+    if (containerEl.parentElement !== el) {
+      el.append(containerEl);
+    }
+
+    this.mark.unmark();
+  }
+
+  show() {
+    const { wrapperEl, containerEl } = this;
+    wrapperEl.append(containerEl);
+    if (wrapperEl.style.minHeight) wrapperEl.style.minHeight = '';
+    this.isVisible = true;
+  }
+
+  hide() {
+    const { containerEl, wrapperEl } = this;
+    wrapperEl.style.minHeight = this.lastRefHeight + 'px';
+    containerEl.detach();
+    this.isVisible = false;
+  }
+
+  set(markdown: string) {
+    if ((this as any)._loaded) {
+      this.markdown = markdown;
+      this.renderCapability = new PromiseCapability<void>();
+      this.unload();
+      this.load();
+    }
+  }
+
+  resolveLinks() {
+    const { containerEl, view } = this;
+    const internalLinkEls = containerEl.findAll('a.internal-link');
+    for (const internalLinkEl of internalLinkEls) {
+      const href = this.getInternalLinkHref(internalLinkEl);
+      if (!href) continue;
+
+      const path = getLinkpath(href);
+      const file = view.app.metadataCache.getFirstLinkpathDest(path, view.file.path);
+      internalLinkEl.toggleClass('is-unresolved', !file);
+    }
+  }
+
+  getInternalLinkHref(el: HTMLElement) {
+    const href = el.getAttr('data-href') || el.getAttr('href');
+    if (!href) return null;
+    return href;
+  }
+}
+
+export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
   entityId,
+  entityIndex,
   className,
   markdownString,
   searchQuery,
   ...divProps
-}: MarkdownPreviewRendererProps) {
+}: MarkdownRendererProps) {
   const { view, stateManager, getDateColor, getTagColor } = useContext(KanbanContext);
   const search = useContext(SearchContext);
   const entityManager = useContext(EntityManagerContext);
@@ -444,105 +240,125 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
   const sortContext = useContext(SortContext);
   const intersectionContext = useContext(IntersectionObserverContext);
 
-  const markRef = useRef<Mark>();
-  const renderer = useRef<MarkdownRenderer>();
+  const renderer = useRef<BasicMarkdownRenderer>();
   const elRef = useRef<HTMLDivElement>();
 
   const processed = usePreprocessedStr(stateManager, markdownString, getDateColor);
 
+  // Reset virtualization if this entity is a managed entity and has changed sort order
   useEffect(() => {
-    if (!renderer.current) return;
-    entityManager?.scrollParent?.observer?.unobserve(entityManager.measureNode);
-    entityManager?.scrollParent?.observer?.observe(entityManager.measureNode);
+    if (!entityManager || entityId || !renderer.current) return;
+
+    const observer = entityManager?.scrollParent?.observer;
+    if (!observer) return;
+
+    observer.unobserve(entityManager.measureNode);
+    observer.observe(entityManager.measureNode);
   }, [sortContext]);
 
+  // If we have an intersection context (eg, in table view) then use that for virtualization
   useEffect(() => {
-    const renderCapability = new PromiseCapability();
+    if (!intersectionContext || !elRef.current) return;
 
+    intersectionContext.registerHandler(elRef.current, (entry) => {
+      if (entry.isIntersecting) renderer.current?.show();
+      else renderer.current?.hide();
+    });
+
+    return () => {
+      if (elRef.current) {
+        intersectionContext?.unregisterHandler(elRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     const onVisibilityChange = (isVisible: boolean) => {
       const preview = renderer.current;
-      if (!preview) return;
+      if (!preview || !entityManager?.parent) return;
 
       const { dragManager } = dndManager;
       if (dragManager.dragEntityId === entityManager.entityId) return;
       if (dragManager.dragEntityId === entityManager.parent.entityId) return;
 
       if (preview.isVisible && !isVisible) {
-        preview.hideChildren();
+        preview.hide();
       } else if (!preview.isVisible && isVisible) {
-        preview.showChildren();
+        preview.show();
       }
     };
 
-    if (view.previewCache.has(entityId)) {
+    if (entityId && view.previewCache.has(entityId)) {
       const preview = view.previewCache.get(entityId);
 
       renderer.current = preview;
       preview.migrate(elRef.current);
-      markRef.current?.unmark();
-      markRef.current = new Mark(elRef.current);
 
       entityManager?.emitter.on('visibility-change', onVisibilityChange);
       return () => entityManager?.emitter.off('visibility-change', onVisibilityChange);
     }
 
-    view.previewQueue.add(
-      async () => {
-        if (!(view as any)._loaded || !elRef.current) return;
+    const isLoaded = () => (view as any)._loaded && elRef.current;
 
-        const containerEl = elRef.current.createDiv();
-        const preview = (renderer.current = view.addChild(new MarkdownRenderer(view, containerEl)));
+    const doRender = async () => {
+      if (!isLoaded()) return;
+      const preview = (renderer.current = view.addChild(
+        new BasicMarkdownRenderer(view, processed, elRef.current, search)
+      ));
 
-        containerEl.onNodeInserted(() => {
-          preview.renderer.queueRender();
-          renderCapability.resolve();
-        }, true);
+      if (entityId) {
+        await preview.renderCapability.promise;
+        if (!isLoaded()) return;
+
         view.previewCache.set(entityId, preview);
+      }
 
-        preview.wrapperEl = elRef.current;
-        preview.renderer.onRendered(() => {
-          colorizeTags(elRef.current, getTagColor);
-          colorizeDates(elRef.current, getDateColor);
-          if (entityManager && !entityManager.isVisible) preview.hideChildren();
-        });
+      elRef.current.append(preview.containerEl);
 
-        markRef.current = new Mark(elRef.current);
-        preview.set(processed);
+      colorizeTags(elRef.current, getTagColor);
+      colorizeDates(elRef.current, getDateColor);
+    };
 
-        await renderCapability.promise;
-      },
-      { priority: entityManager ? 100000 - entityManager.index : 0 }
-    );
+    if (entityId && typeof entityIndex === 'number') {
+      view.previewQueue.add(doRender, {
+        priority: 0 - entityIndex,
+      });
+    } else {
+      doRender();
+    }
 
     entityManager?.emitter.on('visibility-change', onVisibilityChange);
 
     return () => {
-      renderCapability.resolve();
+      renderer.current?.renderCapability.resolve();
       entityManager?.emitter.off('visibility-change', onVisibilityChange);
     };
   }, [view, entityId, entityManager]);
 
+  // Respond to changes to the markdown string
   useEffect(() => {
     const preview = renderer.current;
-    if (!preview || processed === preview.renderer.text) return;
+    if (!preview || processed === preview.markdown) return;
+
     preview.set(processed);
-    preview.renderer.onRendered(() => {
-      preview.showChildren();
+    preview.renderCapability.promise.then(() => {
       colorizeTags(elRef.current, getTagColor);
       colorizeDates(elRef.current, getDateColor);
-      if (entityManager && !entityManager.isVisible) preview.hideChildren();
     });
   }, [processed]);
 
   useEffect(() => {
+    if (!renderer.current) return;
     colorizeTags(elRef.current, getTagColor);
     colorizeDates(elRef.current, getDateColor);
   }, [getTagColor, getDateColor]);
 
   useEffect(() => {
-    markRef.current?.unmark();
+    const preview = renderer.current;
+    if (!preview) return;
+    preview.mark.unmark();
     if (searchQuery && searchQuery.trim()) {
-      markRef.current?.mark(searchQuery);
+      preview.mark.mark(searchQuery);
     }
   }, [searchQuery]);
 
@@ -552,28 +368,6 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
       preview.migrate(elRef.current);
     }
   }, []);
-
-  const onClick = useCallback(
-    async (e: MouseEvent) => {
-      if (e.type === 'auxclick' || e.button === 2) return;
-
-      const targetEl = e.targetNode as HTMLElement;
-      const closestAnchor = targetEl.tagName === 'A' ? targetEl : targetEl.closest('a');
-
-      if (!closestAnchor) return;
-      if (closestAnchor.hasClass('tag')) {
-        const tagAction = stateManager.getSetting('tag-action');
-        if (search && tagAction === 'kanban') {
-          e.preventDefault();
-          e.stopPropagation();
-          const tag = closestAnchor.getAttr('href');
-          search.search(tag, true);
-          return;
-        }
-      }
-    },
-    [stateManager, search]
-  );
 
   let styles: CSSProperties | undefined = undefined;
   if (!renderer.current && view.previewCache.has(entityId)) {
@@ -586,30 +380,14 @@ export const MarkdownPreviewRenderer = memo(function MarkdownPreviewRenderer({
     }
   }
 
-  useEffect(() => {
-    if (!intersectionContext || !elRef.current) return;
-
-    intersectionContext.registerHandler(elRef.current, (entry) => {
-      if (entry.isIntersecting) renderer.current?.showChildren();
-      else renderer.current?.hideChildren();
-    });
-    return () => {
-      if (elRef.current) {
-        intersectionContext?.unregisterHandler(elRef.current);
-      }
-    };
-  }, []);
-
   return (
     <div
       style={styles}
-      onClickCapture={onClick}
-      onDragStart={preventDragOnLink}
       ref={(el) => {
         elRef.current = el;
         const preview = renderer.current;
         if (el && preview && preview.containerEl.parentElement !== el) {
-          renderer.current.migrate(el);
+          preview.migrate(el);
         }
       }}
       className={classcat([c('markdown-preview-wrapper'), className])}
@@ -622,20 +400,17 @@ export const MarkdownClonedPreviewRenderer = memo(function MarkdownClonedPreview
   entityId,
   className,
   ...divProps
-}: MarkdownPreviewRendererProps) {
+}: MarkdownRendererProps) {
   const { view } = useContext(KanbanContext);
-  const renderer = useRef<MarkdownRenderer>();
   const elRef = useRef<HTMLDivElement>();
   const preview = view.previewCache.get(entityId);
 
   let styles: CSSProperties | undefined = undefined;
-  if (!renderer.current && preview) {
-    if (preview.lastRefHeight > 0) {
-      styles = {
-        width: `${preview.lastRefWidth}px`,
-        height: `${preview.lastRefHeight}px`,
-      };
-    }
+  if (preview && preview.lastRefHeight > 0) {
+    styles = {
+      width: `${preview.lastRefWidth}px`,
+      height: `${preview.lastRefHeight}px`,
+    };
   }
 
   return (

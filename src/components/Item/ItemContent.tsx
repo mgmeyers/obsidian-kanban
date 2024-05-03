@@ -17,7 +17,7 @@ import { toggleItemString } from 'src/parsers/helpers/inlineMetadata';
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import {
   MarkdownClonedPreviewRenderer,
-  MarkdownPreviewRenderer,
+  MarkdownRenderer,
 } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
@@ -123,6 +123,8 @@ function checkCheckbox(stateManager: StateManager, title: string, checkboxIndex:
 export function Tags({ tags, searchQuery }: { tags?: string[]; searchQuery?: string }) {
   const { stateManager, getTagColor } = useContext(KanbanContext);
   const search = useContext(SearchContext);
+
+  if (!tags.length) return null;
 
   return (
     <div className={c('item-tags')}>
@@ -269,8 +271,9 @@ export const ItemContent = memo(function ItemContent({
           onPointerUp={onCheckboxContainerClick}
         />
       ) : (
-        <MarkdownPreviewRenderer
+        <MarkdownRenderer
           entityId={item.id}
+          entityIndex={path.reduce((a, b) => a + b, 0)}
           className={c('item-markdown')}
           markdownString={item.data.title}
           searchQuery={searchQuery}

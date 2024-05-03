@@ -739,16 +739,16 @@ button.kanban-plugin__new-item-button {
   }
 
   .kanban-plugin__markdown-preview-view {
-    > div > *:first-child {
+    > *:first-child {
       margin-block-start: 0;
     }
 
-    > div > *:last-child {
+    > *:last-child {
       margin-block-end: 0;
     }
   }
 
-  > div > .markdown-preview-view {
+  .markdown-preview-view {
     width: unset;
     height: unset;
     position: unset;
@@ -768,15 +768,6 @@ button.kanban-plugin__new-item-button {
       padding-block: var(--size-4-1);
       margin-block-start: var(--p-spacing);
       margin-block-end: var(--p-spacing);
-    }
-
-    .markdown-preview-pusher + div > *:first-child,
-    .frontmatter-container + * {
-      margin-block-start: 0;
-    }
-
-    .markdown-preview-section > div > *:last-child {
-      margin-block-end: 0;
     }
   }
 }

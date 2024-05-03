@@ -90,8 +90,6 @@ export default class KanbanPlugin extends Plugin {
     this.windowRegistry.clear();
     this.kanbanFileModes = {};
 
-    window.removeEventListener('keydown', this.handleShift);
-    window.removeEventListener('keyup', this.handleShift);
     (this.app.workspace as any).unregisterHoverLinkSource(frontmatterKey);
   }
 
@@ -143,8 +141,8 @@ export default class KanbanPlugin extends Plugin {
       this.mount(c.win);
     });
 
-    window.addEventListener('keydown', this.handleShift);
-    window.addEventListener('keyup', this.handleShift);
+    this.registerDomEvent(window, 'keydown', this.handleShift);
+    this.registerDomEvent(window, 'keyup', this.handleShift);
 
     this.addRibbonIcon(kanbanIcon, t('Create new board'), () => {
       this.newKanban();
@@ -311,7 +309,7 @@ export default class KanbanPlugin extends Plugin {
     const reg = this.windowRegistry.get(win);
 
     for (const view of reg.viewMap.values()) {
-      view.destroy();
+      this.removeView(view);
     }
 
     Preact.unmountComponentAtNode(reg.appRoot);
@@ -741,7 +739,7 @@ export default class KanbanPlugin extends Plugin {
               const view = app.workspace.getActiveViewOfType(KanbanView);
 
               if (view && command?.id) {
-                view.emitter.emit('hotkey', command.id);
+                view.emitter.emit('hotkey', { commandId: command.id });
               }
 
               return next.call(this, command);
@@ -758,11 +756,9 @@ export default class KanbanPlugin extends Plugin {
         setActiveLeaf(next) {
           return function (...args) {
             next.apply(this, args);
-            const leaf = args[0];
-            if (!leaf) return;
-            if (!this.isAttached(leaf)) return;
-            if (leaf.view instanceof KanbanView && leaf.view.activeEditor) {
-              this.activeEditor = leaf.view.activeEditor;
+            const view = this.getActiveViewOfType(KanbanView);
+            if (view?.activeEditor) {
+              this.activeEditor = view.activeEditor;
             }
           };
         },

@@ -20,6 +20,7 @@ export interface Emitter<Events extends EventsMap = DefaultEvents> {
     data: Parameters<Events[K]>[0],
     id?: string
   ): void;
+  clear(): void;
 }
 
 export function createEmitter<Events extends EventsMap = DefaultEvents>(
@@ -27,6 +28,10 @@ export function createEmitter<Events extends EventsMap = DefaultEvents>(
 ): Emitter<Events> {
   return {
     events: {},
+
+    clear() {
+      this.events = {};
+    },
 
     emit(event, data, id) {
       const scopedKey: keyof Events = `${String(event)}${id || ''}`;

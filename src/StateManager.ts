@@ -210,6 +210,7 @@ export class StateManager {
   compileSettings(suppliedSettings?: KanbanSettings) {
     const globalKeys = this.getGlobalSetting('metadata-keys') || [];
     const localKeys = this.getSettingRaw('metadata-keys', suppliedSettings) || [];
+    const metadataKeys = Array.from(new Set([...globalKeys, ...localKeys]));
 
     const dateFormat =
       this.getSettingRaw('date-format', suppliedSettings) || getDefaultDateFormat(this.app);
@@ -236,7 +237,7 @@ export class StateManager {
       'move-dates': this.getSettingRaw('move-dates', suppliedSettings),
       'move-tags': this.getSettingRaw('move-tags', suppliedSettings),
       'move-task-metadata': this.getSettingRaw('move-task-metadata', suppliedSettings),
-      'metadata-keys': [...globalKeys, ...localKeys],
+      'metadata-keys': metadataKeys,
       'archive-date-separator': this.getSettingRaw('archive-date-separator') || '',
       'archive-date-format': archiveDateFormat,
       'show-add-list': this.getSettingRaw('show-add-list', suppliedSettings) ?? true,

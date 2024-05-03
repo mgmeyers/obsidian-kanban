@@ -4,7 +4,7 @@ import { Dispatch, StateUpdater, useCallback, useContext, useEffect, useRef } fr
 import { laneTitleWithMaxItems } from 'src/helpers';
 
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
-import { StaticMarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
+import { MarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
 import { EditState, EditingState, isEditing } from '../types';
@@ -96,7 +96,7 @@ export function LaneTitle({ maxItems, editState, setEditState, title, onChange }
         />
       ) : (
         <div className={c('lane-title-text')}>
-          <StaticMarkdownRenderer markdownString={title} />
+          <MarkdownRenderer markdownString={title} />
         </div>
       )}
     </div>

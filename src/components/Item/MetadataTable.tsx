@@ -6,7 +6,7 @@ import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
 import { InlineField, taskFields } from 'src/parsers/helpers/inlineMetadata';
 
-import { StaticMarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
+import { MarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext } from '../context';
 import { c, parseMetadataWithOptions } from '../helpers';
 import { DataKey, FileMetadata, Item, PageData } from '../types';
@@ -37,17 +37,17 @@ export function ItemMetadata({ item, searchQuery }: ItemMetadataProps) {
   const mergeInlineMetadata =
     stateManager.useSetting('inline-metadata-position') === 'metadata-table';
   const metadataKeys = stateManager.useSetting('metadata-keys');
-
   const { fileMetadata, fileMetadataOrder, inlineMetadata } = item.data.metadata;
 
-  if (!fileMetadata && (!mergeInlineMetadata || !inlineMetadata?.length)) {
-    return null;
-  }
-
   const metadata = useMemo(() => {
-    return mergeInlineMetadata
+    const metadata = mergeInlineMetadata
       ? mergeMetadata(fileMetadata, inlineMetadata, metadataKeys || [])
       : fileMetadata;
+
+    if (!metadata) return null;
+    if (!Object.keys(metadata).length) return null;
+
+    return metadata;
   }, [fileMetadata, inlineMetadata, metadataKeys]);
 
   const order = useMemo(() => {
@@ -60,6 +60,10 @@ export function ItemMetadata({ item, searchQuery }: ItemMetadataProps) {
 
     return Array.from(metadataOrder);
   }, [fileMetadataOrder, mergeInlineMetadata, inlineMetadata]);
+
+  if (!metadata) {
+    return null;
+  }
 
   return (
     <div className={c('item-metadata-wrapper')}>
@@ -145,7 +149,7 @@ export function MetadataValue({ data, dateLabel, searchQuery }: MetadataValuePro
     let content: ComponentChild;
     if (link || data.containsMarkdown) {
       content = (
-        <StaticMarkdownRenderer
+        <MarkdownRenderer
           className="inline"
           markdownString={link ? link : str}
           searchQuery={searchQuery}
@@ -219,6 +223,8 @@ export const MetadataTable = memo(function MetadataTable({
       <tbody>
         {order.map((k) => {
           const data = metadata[k];
+          if (!data) return null;
+
           const isSearchMatch = (data.label || k).toLocaleLowerCase().contains(searchQuery);
           return (
             <tr key={k} className={c('meta-row')}>
