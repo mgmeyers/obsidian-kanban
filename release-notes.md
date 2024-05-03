@@ -1,1 +1,2 @@
-09b500c Add support for merging metadata in metadata table (#937)
+ef55b0a Use more performant markdown renderer
+9240de9 Fix #581; Note folder dropdown is empty after folder has been moved
