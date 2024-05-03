@@ -50,8 +50,11 @@ function DraggableLaneRaw({
   const fullWidth = boardView === 'list' && stateManager.useSetting('full-list-lane-width');
   const insertionMethod = stateManager.useSetting('new-card-insertion-method');
   const laneStyles = useMemo(
-    () => (fullWidth || laneWidth ? { width: fullWidth ? '100%' : `${laneWidth}px` } : undefined),
-    [fullWidth, laneWidth]
+    () =>
+      !(isCollapsed && collapseDir === 'horizontal') && (fullWidth || laneWidth)
+        ? { width: fullWidth ? '100%' : `${laneWidth}px` }
+        : undefined,
+    [fullWidth, laneWidth, isCollapsed]
   );
 
   const elementRef = useRef<HTMLDivElement>(null);
