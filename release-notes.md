@@ -1,2 +1,2 @@
-ef55b0a Use more performant markdown renderer
-9240de9 Fix #581; Note folder dropdown is empty after folder has been moved
+c29f82e Fixes #939 Collapsed lists aren't collapsed if board has custom width
+e6e378a Remove debug logging
