@@ -10,11 +10,8 @@ import {
   WidgetType,
 } from '@codemirror/view';
 import { moment } from 'obsidian';
-import { useMemo } from 'preact/hooks';
 
 import { StateManager } from '../../StateManager';
-import { c } from '../helpers';
-import { DateColor } from '../types';
 
 export const stateManagerField = StateField.define<StateManager | null>({
   create() {
@@ -133,93 +130,3 @@ export const datePlugins: Extension[] = [
   create('date', '\\[\\[([^\\]]+)\\]\\]'),
   create('date', '\\[([^\\]]+)\\]\\([^)]+\\)'),
 ];
-
-export function usePreprocessedStr(
-  stateManager: StateManager,
-  str: string,
-  getDateColor: (date: moment.Moment) => DateColor
-) {
-  const dateTrigger = stateManager.useSetting('date-trigger');
-  const dateFormat = stateManager.useSetting('date-format');
-  const dateDisplayFormat = stateManager.useSetting('date-display-format');
-  const timeTrigger = stateManager.useSetting('time-trigger');
-  const timeFormat = stateManager.useSetting('time-format');
-  const useLinks = stateManager.useSetting('link-date-to-daily-note');
-  const tagColors = stateManager.getSetting('tag-colors');
-
-  return useMemo(() => {
-    let date: moment.Moment;
-    let dateColor: DateColor;
-    const getWrapperStyles = (baseClass: string) => {
-      let wrapperStyle = '';
-      if (dateColor) {
-        if (dateColor.backgroundColor) {
-          baseClass += ' has-background';
-          wrapperStyle = ` style="--date-color: ${dateColor.color}; --date-background-color: ${dateColor.backgroundColor};"`;
-        } else {
-          wrapperStyle = ` style="--date-color: ${dateColor.color};"`;
-        }
-      }
-      return { wrapperClass: baseClass, wrapperStyle };
-    };
-
-    str = str.replace(new RegExp(`${dateTrigger}\\[\\[([^\\]]+)\\]\\]`, 'g'), (match, content) => {
-      const parsed = moment(content, dateFormat);
-      if (!parsed.isValid()) return match;
-      date = parsed;
-      const linkPath = app.metadataCache.getFirstLinkpathDest(content, stateManager.file.path);
-      if (!dateColor) dateColor = getDateColor(parsed);
-      const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-date-wrapper'));
-      return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')} ${c('preview-date-link')}"${wrapperStyle}><a class="${c('preview-date')} internal-link" data-href="${linkPath?.path ?? content}" href="${linkPath?.path ?? content}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
-    });
-    str = str.replace(
-      new RegExp(`${dateTrigger}\\[([^\\]]+)\\]\\([^)]+\\)`, 'g'),
-      (match, content) => {
-        const parsed = moment(content, dateFormat);
-        if (!parsed.isValid()) return match;
-        date = parsed;
-        const linkPath = app.metadataCache.getFirstLinkpathDest(content, stateManager.file.path);
-        if (!dateColor) dateColor = getDateColor(parsed);
-        const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-date-wrapper'));
-        return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')} ${c('preview-date-link')}"${wrapperStyle}><a class="${c('preview-date')} internal-link" data-href="${linkPath.path}" href="${linkPath.path}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
-      }
-    );
-    str = str.replace(new RegExp(`${dateTrigger}{([^}]+)}`, 'g'), (match, content) => {
-      const parsed = moment(content, dateFormat);
-      if (!parsed.isValid()) return match;
-      date = parsed;
-      if (!dateColor) dateColor = getDateColor(parsed);
-      const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-date-wrapper'));
-      return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')}"${wrapperStyle}><span class="${c('preview-date')} ${c('item-metadata-date')}">${parsed.format(dateDisplayFormat)}</span></span>`;
-    });
-
-    str = str.replace(new RegExp(`${timeTrigger}{([^}]+)}`, 'g'), (match, content) => {
-      const parsed = moment(content, timeFormat);
-      if (!parsed.isValid()) return match;
-
-      if (!date) {
-        date = parsed;
-        date.year(1970);
-      } else {
-        date.hour(parsed.hour());
-        date.minute(parsed.minute());
-        date.second(parsed.second());
-      }
-
-      const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-time-wrapper'));
-      return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')}"${wrapperStyle}><span class="${c('preview-time')} ${c('item-metadata-time')}">${parsed.format(timeFormat)}</span></span>`;
-    });
-
-    return str;
-  }, [
-    getDateColor,
-    dateTrigger,
-    dateFormat,
-    dateDisplayFormat,
-    timeTrigger,
-    timeFormat,
-    useLinks,
-    str,
-    tagColors,
-  ]);
-}

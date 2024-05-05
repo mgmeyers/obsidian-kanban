@@ -31,7 +31,7 @@ const View = memo(function View({ view }: { view: KanbanView }) {
 });
 
 export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin }) {
-  const views = plugin.useViewState(win);
+  const views = plugin.useKanbanViews(win);
   const portals: JSX.Element[] = views.map((view) => <View key={view.id} view={view} />);
 
   const handleDrop = useCallback(

@@ -9,7 +9,7 @@ import {
   WorkspaceLeaf,
   debounce,
 } from 'obsidian';
-import Preact from 'preact/compat';
+import { render, unmountComponentAtNode, useEffect, useState } from 'preact/compat';
 
 import { createApp } from './DragDropApp';
 import { KanbanView, kanbanIcon, kanbanViewType } from './KanbanView';
@@ -193,10 +193,10 @@ export default class KanbanPlugin extends Plugin {
     return this.stateManagers.get(view.file);
   }
 
-  useViewState(win: Window): KanbanView[] {
-    const [state, setState] = Preact.useState(this.getKanbanViews(win));
+  useKanbanViews(win: Window): KanbanView[] {
+    const [state, setState] = useState(this.getKanbanViews(win));
 
-    Preact.useEffect(() => {
+    useEffect(() => {
       const reg = this.windowRegistry.get(win);
 
       reg?.viewStateReceivers.push(setState);
@@ -213,10 +213,7 @@ export default class KanbanPlugin extends Plugin {
     const win = view.getWindow();
     const reg = this.windowRegistry.get(win);
 
-    if (!reg) {
-      return;
-    }
-
+    if (!reg) return;
     if (!reg.viewMap.has(view.id)) {
       reg.viewMap.set(view.id, view);
     }
@@ -246,9 +243,7 @@ export default class KanbanPlugin extends Plugin {
       return reg.viewMap.has(view.id);
     }, []);
 
-    if (!entry) {
-      return;
-    }
+    if (!entry) return;
 
     const [win, reg] = entry;
     const file = view.file;
@@ -298,7 +293,7 @@ export default class KanbanPlugin extends Plugin {
       appRoot: el,
     });
 
-    Preact.render(createApp(win, this), el);
+    render(createApp(win, this), el);
   }
 
   unmount(win: Window) {
@@ -312,7 +307,7 @@ export default class KanbanPlugin extends Plugin {
       this.removeView(view);
     }
 
-    Preact.unmountComponentAtNode(reg.appRoot);
+    unmountComponentAtNode(reg.appRoot);
 
     reg.appRoot.remove();
     reg.viewMap.clear();

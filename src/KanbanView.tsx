@@ -1,3 +1,4 @@
+import EventEmitter from 'eventemitter3';
 import update from 'immutability-helper';
 import {
   HoverParent,
@@ -8,18 +9,18 @@ import {
   TextFileView,
   ViewStateResult,
   WorkspaceLeaf,
+  debounce,
 } from 'obsidian';
-import PQueue from 'p-queue';
 
 import { KanbanFormat, KanbanSettings, KanbanViewSettings, SettingsModal } from './Settings';
 import { Kanban } from './components/Kanban';
 import { BasicMarkdownRenderer } from './components/MarkdownRenderer/MarkdownRenderer';
 import { c } from './components/helpers';
 import { Board } from './components/types';
-import { Emitter, createEmitter } from './dnd/util/emitter';
 import { getParentWindow } from './dnd/util/getWindow';
 import { gotoNextDailyNote, gotoPrevDailyNote, hasFrontmatterKeyRaw } from './helpers';
 import { bindMarkdownEvents } from './helpers/renderMarkdown';
+import { PromiseQueue } from './helpers/util';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
 import { frontmatterKey } from './parsers/common';
@@ -27,19 +28,14 @@ import { frontmatterKey } from './parsers/common';
 export const kanbanViewType = 'kanban';
 export const kanbanIcon = 'lucide-trello';
 
-interface ViewEvents {
-  showLaneForm: () => void;
-  hotkey: (data: { commandId: string; data?: any }) => void;
-}
-
 export class KanbanView extends TextFileView implements HoverParent {
   plugin: KanbanPlugin;
   hoverPopover: HoverPopover | null;
-  emitter: Emitter<ViewEvents>;
+  emitter: EventEmitter;
   actionButtons: Record<string, HTMLElement> = {};
 
   previewCache: Map<string, BasicMarkdownRenderer>;
-  previewQueue: PQueue;
+  previewQueue: PromiseQueue;
 
   activeEditor: any;
   viewSettings: KanbanViewSettings = {};
@@ -59,16 +55,10 @@ export class KanbanView extends TextFileView implements HoverParent {
   constructor(leaf: WorkspaceLeaf, plugin: KanbanPlugin) {
     super(leaf);
     this.plugin = plugin;
-    this.emitter = createEmitter();
+    this.emitter = new EventEmitter();
     this.previewCache = new Map();
-    this.previewQueue = new PQueue({
-      autoStart: true,
-      concurrency: 10,
-    });
 
-    this.previewQueue.on('error', (...args) => {
-      console.error('Error processing Kanban render queue', ...args);
-    });
+    this.previewQueue = new PromiseQueue(() => this.emitter.emit('queueEmpty'));
 
     this.emitter.on('hotkey', ({ commandId }) => {
       switch (commandId) {
@@ -84,6 +74,26 @@ export class KanbanView extends TextFileView implements HoverParent {
     });
 
     bindMarkdownEvents(this);
+  }
+
+  async prerender(board: Board) {
+    board.children.forEach((lane) => {
+      lane.children.forEach((item) => {
+        if (this.previewCache.has(item.id)) return;
+
+        this.previewQueue.add(async () => {
+          const preview = this.addChild(new BasicMarkdownRenderer(this, item.data.title));
+          this.previewCache.set(item.id, preview);
+          await preview.renderCapability.promise;
+        });
+      });
+    });
+
+    await new Promise((res) => {
+      this.emitter.once('queueEmpty', res);
+    });
+
+    this.initHeaderButtons();
   }
 
   validatePreviewCache(board: Board) {
@@ -136,14 +146,19 @@ export class KanbanView extends TextFileView implements HoverParent {
     return getParentWindow(this.containerEl) as Window & typeof globalThis;
   }
 
+  async loadFile(file: TFile) {
+    this.plugin.removeView(this);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return super.loadFile(file);
+  }
+
   async onLoadFile(file: TFile) {
     try {
       return await super.onLoadFile(file);
     } catch (e) {
       const stateManager = this.plugin.stateManagers.get(this.file);
-
-      stateManager.setError(e);
-
+      stateManager?.setError(e);
       throw e;
     }
   }
@@ -167,13 +182,14 @@ export class KanbanView extends TextFileView implements HoverParent {
   onunload(): void {
     super.onunload();
 
-    // Remove draggables from render, as the DOM has already detached
-    this.plugin.removeView(this);
-    this.emitter.clear();
-    this.activeEditor = null;
-
     this.previewQueue.clear();
     this.previewCache.clear();
+    this.emitter.emit('queueEmpty');
+
+    // Remove draggables from render, as the DOM has already detached
+    this.plugin.removeView(this);
+    this.emitter.removeAllListeners();
+    this.activeEditor = null;
     this.actionButtons = {};
   }
 
@@ -212,6 +228,7 @@ export class KanbanView extends TextFileView implements HoverParent {
     this.activeEditor = null;
     this.previewQueue.clear();
     this.previewCache.clear();
+    this.emitter.emit('queueEmpty');
 
     Object.values(this.actionButtons).forEach((b) => b.remove());
     this.actionButtons = {};
@@ -335,8 +352,9 @@ export class KanbanView extends TextFileView implements HoverParent {
     }
   }
 
-  async initHeaderButtons() {
-    await new Promise((res) => activeWindow.setTimeout(res));
+  initHeaderButtons = debounce(() => this._initHeaderButtons(), 10, true);
+
+  _initHeaderButtons = async () => {
     if (Platform.isPhone) return;
     const stateManager = this.plugin.getStateManager(this.file);
 
@@ -455,7 +473,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       this.actionButtons['show-add-list'].remove();
       delete this.actionButtons['show-add-list'];
     }
-  }
+  };
 
   clear() {
     /*

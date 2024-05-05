@@ -50,14 +50,15 @@ export class StateManager {
     return !!this.state?.data?.errors?.length;
   }
 
-  registerView(view: KanbanView, data: string, shouldParseData: boolean) {
+  async registerView(view: KanbanView, data: string, shouldParseData: boolean) {
     if (!this.viewSet.has(view)) {
       this.viewSet.add(view);
-      view.initHeaderButtons();
     }
 
     if (shouldParseData) {
-      this.newBoard(data);
+      await this.newBoard(view, data);
+    } else {
+      await view.prerender(this.state);
     }
 
     view.populateViewState(this.state.data.settings);
@@ -81,9 +82,11 @@ export class StateManager {
     };
   }
 
-  newBoard(md: string) {
+  async newBoard(view: KanbanView, md: string) {
     try {
-      this.setState(this.getParsedBoard(md), false);
+      const board = this.getParsedBoard(md);
+      await view.prerender(board);
+      this.setState(board, false);
     } catch (e) {
       this.setError(e);
     }

@@ -1,4 +1,5 @@
 import boxIntersect from 'box-intersect';
+import EventEmitter from 'eventemitter3';
 import { RefObject, useCallback, useContext, useRef } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
 import { handleDragOrPaste } from 'src/components/Item/helpers';
@@ -7,7 +8,6 @@ import { DndManagerContext } from '../components/context';
 import { Coordinates, Entity, Hitbox, Side } from '../types';
 import { rafThrottle } from '../util/animation';
 import { createHTMLDndEntity } from '../util/createHTMLDndEntity';
-import { Emitter } from '../util/emitter';
 import {
   adjustHitboxForMovement,
   distanceBetween,
@@ -33,20 +33,9 @@ export interface ScrollEventData extends DragEventData {
   scrollStrength: number;
 }
 
-interface Events {
-  dragStart(data: DragEventData): void;
-  dragMove(data: DragEventData): void;
-  dragEnd(data: DragEventData): void;
-  beginDragScroll(data: ScrollEventData): void;
-  updateDragScroll(data: ScrollEventData): void;
-  endDragScroll(data: ScrollEventData): void;
-  dragEnter(data: DragEventData): void;
-  dragLeave(data: DragEventData): void;
-}
-
 export class DragManager {
   win: Window;
-  emitter: Emitter<Events>;
+  emitter: EventEmitter;
   hitboxEntities: Map<string, Entity>;
   scrollEntities: Map<string, Entity>;
 
@@ -65,7 +54,7 @@ export class DragManager {
 
   constructor(
     win: Window,
-    emitter: Emitter,
+    emitter: EventEmitter,
     hitboxEntities: Map<string, Entity>,
     scrollEntities: Map<string, Entity>
   ) {

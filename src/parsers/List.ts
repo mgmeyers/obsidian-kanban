@@ -54,6 +54,14 @@ export class ListFormat implements BaseFormat {
           if (!p || !obj[p]) continue;
           obj = obj[p];
 
+          if (typeof obj === 'function') return false;
+          if (
+            typeof obj === 'object' &&
+            !Array.isArray(obj) &&
+            !Object.prototype.isPrototypeOf.call(Object.getPrototypeOf(obj), Object)
+          ) {
+            return false;
+          }
           if (obj instanceof TFile) return false;
           if (obj instanceof Date) return false;
           if (moment.isMoment(obj)) return false;

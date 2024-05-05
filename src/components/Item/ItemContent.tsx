@@ -273,7 +273,6 @@ export const ItemContent = memo(function ItemContent({
       ) : (
         <MarkdownRenderer
           entityId={item.id}
-          entityIndex={path.reduce((a, b) => a + b, 0)}
           className={c('item-markdown')}
           markdownString={item.data.title}
           searchQuery={searchQuery}

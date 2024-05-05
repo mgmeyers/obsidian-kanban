@@ -10,14 +10,7 @@ import { DndManagerContext, EntityManagerContext } from 'src/dnd/components/cont
 import { PromiseCapability } from 'src/helpers/util';
 
 import { applyCheckboxIndexes } from '../../helpers/renderMarkdown';
-import { usePreprocessedStr } from '../Editor/dateWidget';
-import {
-  IntersectionObserverContext,
-  KanbanContext,
-  SearchContext,
-  SearchContextProps,
-  SortContext,
-} from '../context';
+import { IntersectionObserverContext, KanbanContext, SortContext } from '../context';
 import { c } from '../helpers';
 import { DateColor, TagColor } from '../types';
 
@@ -26,7 +19,6 @@ interface MarkdownRendererProps extends HTMLAttributes<HTMLDivElement> {
   markdownString: string;
   searchQuery?: string;
   entityId?: string;
-  entityIndex?: number;
 }
 
 function colorizeTags(wrapperEl: HTMLElement, getTagColor: (tag: string) => TagColor) {
@@ -65,6 +57,7 @@ function colorizeDates(wrapperEl: HTMLElement, getDateColor: (date: moment.Momen
 
 export class BasicMarkdownRenderer extends Component {
   containerEl: HTMLElement;
+  wrapperEl: HTMLElement;
   renderCapability: PromiseCapability;
   observer: ResizeObserver;
   isVisible: boolean = false;
@@ -77,9 +70,7 @@ export class BasicMarkdownRenderer extends Component {
 
   constructor(
     public view: KanbanView,
-    public markdown: string,
-    public wrapperEl: HTMLElement,
-    public search: SearchContextProps
+    public markdown: string
   ) {
     super();
     this.containerEl = createDiv(
@@ -184,6 +175,7 @@ export class BasicMarkdownRenderer extends Component {
 
   show() {
     const { wrapperEl, containerEl } = this;
+    if (!wrapperEl) return;
     wrapperEl.append(containerEl);
     if (wrapperEl.style.minHeight) wrapperEl.style.minHeight = '';
     this.isVisible = true;
@@ -191,6 +183,7 @@ export class BasicMarkdownRenderer extends Component {
 
   hide() {
     const { containerEl, wrapperEl } = this;
+    if (!wrapperEl) return;
     wrapperEl.style.minHeight = this.lastRefHeight + 'px';
     containerEl.detach();
     this.isVisible = false;
@@ -227,14 +220,12 @@ export class BasicMarkdownRenderer extends Component {
 
 export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
   entityId,
-  entityIndex,
   className,
   markdownString,
   searchQuery,
   ...divProps
 }: MarkdownRendererProps) {
-  const { view, stateManager, getDateColor, getTagColor } = useContext(KanbanContext);
-  const search = useContext(SearchContext);
+  const { view, getDateColor, getTagColor } = useContext(KanbanContext);
   const entityManager = useContext(EntityManagerContext);
   const dndManager = useContext(DndManagerContext);
   const sortContext = useContext(SortContext);
@@ -242,8 +233,6 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
 
   const renderer = useRef<BasicMarkdownRenderer>();
   const elRef = useRef<HTMLDivElement>();
-
-  const processed = usePreprocessedStr(stateManager, markdownString, getDateColor);
 
   // Reset virtualization if this entity is a managed entity and has changed sort order
   useEffect(() => {
@@ -298,34 +287,15 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
       return () => entityManager?.emitter.off('visibility-change', onVisibilityChange);
     }
 
-    const isLoaded = () => (view as any)._loaded && elRef.current;
+    const preview = (renderer.current = view.addChild(
+      new BasicMarkdownRenderer(view, markdownString)
+    ));
 
-    const doRender = async () => {
-      if (!isLoaded()) return;
-      const preview = (renderer.current = view.addChild(
-        new BasicMarkdownRenderer(view, processed, elRef.current, search)
-      ));
+    if (entityId) view.previewCache.set(entityId, preview);
 
-      if (entityId) {
-        await preview.renderCapability.promise;
-        if (!isLoaded()) return;
-
-        view.previewCache.set(entityId, preview);
-      }
-
-      elRef.current.append(preview.containerEl);
-
-      colorizeTags(elRef.current, getTagColor);
-      colorizeDates(elRef.current, getDateColor);
-    };
-
-    if (entityId && typeof entityIndex === 'number') {
-      view.previewQueue.add(doRender, {
-        priority: 0 - entityIndex,
-      });
-    } else {
-      doRender();
-    }
+    elRef.current.append(preview.containerEl);
+    colorizeTags(elRef.current, getTagColor);
+    colorizeDates(elRef.current, getDateColor);
 
     entityManager?.emitter.on('visibility-change', onVisibilityChange);
 
@@ -338,14 +308,16 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
   // Respond to changes to the markdown string
   useEffect(() => {
     const preview = renderer.current;
-    if (!preview || processed === preview.markdown) return;
+    if (!preview || markdownString === preview.markdown) return;
 
-    preview.set(processed);
+    preview.renderCapability.resolve();
+
+    preview.set(markdownString);
     preview.renderCapability.promise.then(() => {
       colorizeTags(elRef.current, getTagColor);
       colorizeDates(elRef.current, getDateColor);
     });
-  }, [processed]);
+  }, [markdownString]);
 
   useEffect(() => {
     if (!renderer.current) return;

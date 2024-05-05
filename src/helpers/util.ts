@@ -28,3 +28,53 @@ export class PromiseCapability<T = void> {
     });
   }
 }
+
+type QAble = () => Promise<any>;
+
+export class PromiseQueue {
+  queue: Array<QAble> = [];
+  isRunning: boolean = false;
+
+  constructor(public onComplete: () => void) {}
+
+  clear() {
+    this.queue.length = 0;
+    this.isRunning = false;
+  }
+
+  add(item: QAble) {
+    this.queue.push(item);
+
+    if (!this.isRunning) {
+      this.run();
+    }
+  }
+
+  async run() {
+    this.isRunning = true;
+
+    const { queue } = this;
+    let intervalStart = performance.now();
+
+    while (queue.length) {
+      const item = queue.splice(0, 5);
+
+      try {
+        await Promise.all(item.map((item) => item()));
+      } catch (e) {
+        console.error(e);
+      }
+
+      if (!this.isRunning) return;
+
+      const now = performance.now();
+      if (now - intervalStart > 50) {
+        await new Promise((res) => activeWindow.setTimeout(res));
+        intervalStart = now;
+      }
+    }
+
+    this.isRunning = false;
+    this.onComplete();
+  }
+}
