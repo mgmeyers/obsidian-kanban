@@ -1,2 +1,2 @@
-c29f82e Fixes #939 Collapsed lists aren't collapsed if board has custom width
-e6e378a Remove debug logging
+3dfc95f Fix duplicate metadata values
+f9c63f6 Break apart parsing and rendering phases to improve performance
