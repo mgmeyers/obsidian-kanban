@@ -99,7 +99,7 @@ export class BasicMarkdownRenderer extends Component {
     this.renderCapability.resolve();
     if (!(this.view as any)?._loaded || !(this as any)._loaded) return;
 
-    const { containerEl, wrapperEl } = this;
+    const { containerEl } = this;
 
     this.resolveLinks();
     applyCheckboxIndexes(containerEl);
@@ -110,8 +110,8 @@ export class BasicMarkdownRenderer extends Component {
       const entry = entries.first().contentBoxSize[0];
       if (entry.blockSize === 0) return;
 
-      if (wrapperEl) {
-        const rect = wrapperEl.getBoundingClientRect();
+      if (this.wrapperEl) {
+        const rect = this.wrapperEl.getBoundingClientRect();
         if (this.lastRefHeight === -1 || rect.height > 0) {
           this.lastRefHeight = rect.height;
           this.lastRefWidth = rect.width;
@@ -236,7 +236,7 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
 
   // Reset virtualization if this entity is a managed entity and has changed sort order
   useEffect(() => {
-    if (!entityManager || entityId || !renderer.current) return;
+    if (!entityManager || !entityId || !renderer.current) return;
 
     const observer = entityManager?.scrollParent?.observer;
     if (!observer) return;
@@ -287,12 +287,13 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
       return () => entityManager?.emitter.off('visibility-change', onVisibilityChange);
     }
 
-    const preview = (renderer.current = view.addChild(
-      new BasicMarkdownRenderer(view, markdownString)
-    ));
+    const markdownRenderer = new BasicMarkdownRenderer(view, markdownString);
+    markdownRenderer.wrapperEl = elRef.current;
 
+    const preview = (renderer.current = view.addChild(markdownRenderer));
     if (entityId) view.previewCache.set(entityId, preview);
 
+    elRef.current.empty();
     elRef.current.append(preview.containerEl);
     colorizeTags(elRef.current, getTagColor);
     colorizeDates(elRef.current, getDateColor);
@@ -336,7 +337,7 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
 
   useEffect(() => {
     const preview = renderer.current;
-    if (elRef.current && preview && preview.containerEl.parentElement !== elRef.current) {
+    if (elRef.current && preview && preview.wrapperEl !== elRef.current) {
       preview.migrate(elRef.current);
     }
   }, []);
@@ -355,13 +356,7 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
   return (
     <div
       style={styles}
-      ref={(el) => {
-        elRef.current = el;
-        const preview = renderer.current;
-        if (el && preview && preview.containerEl.parentElement !== el) {
-          preview.migrate(el);
-        }
-      }}
+      ref={elRef}
       className={classcat([c('markdown-preview-wrapper'), className])}
       {...divProps}
     />
