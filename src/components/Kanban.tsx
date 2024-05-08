@@ -30,6 +30,22 @@ interface KanbanProps {
   view: KanbanView;
 }
 
+function getCSSClass(frontmatter: Record<string, any>): string[] {
+  const classes = [];
+  if (Array.isArray(frontmatter.cssclass)) {
+    classes.push(...frontmatter.cssclass);
+  } else if (typeof frontmatter.cssclass === 'string') {
+    classes.push(frontmatter.cssclass);
+  }
+  if (Array.isArray(frontmatter.cssclasses)) {
+    classes.push(...frontmatter.cssclasses);
+  } else if (typeof frontmatter.cssclasses === 'string') {
+    classes.push(frontmatter.cssclasses);
+  }
+
+  return classes;
+}
+
 export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const boardData = stateManager.useState();
   const isAnythingDragging = useIsAnythingDragging();
@@ -207,8 +223,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
               {
                 'something-is-dragging': isAnythingDragging,
               },
-              ...((boardData.data.frontmatter.cssclass || []) as string[]),
-              ...((boardData.data.frontmatter.cssclasses || []) as string[]),
+              ...getCSSClass(boardData.data.frontmatter),
             ])}
             {...html5DragHandlers}
           >
