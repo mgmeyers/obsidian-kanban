@@ -96,7 +96,7 @@ function checkCheckbox(stateManager: StateManager, title: string, checkboxIndex:
       return;
     }
 
-    const match = line.match(/^(?:\s*>)*(\s*[-+*]\s+?\[)([^\]])(\]\s+)/);
+    const match = line.match(/^(\s*>)*(\s*[-+*]\s+?\[)([^\]])(\]\s+)/);
 
     if (match) {
       if (count === checkboxIndex) {
@@ -104,8 +104,8 @@ function checkCheckbox(stateManager: StateManager, title: string, checkboxIndex:
         if (updates) {
           results.push(updates);
         } else {
-          const check = match[2] === ' ' ? 'x' : ' ';
-          results.push(match[1] + check + match[3] + line.slice(match[0].length));
+          const check = match[3] === ' ' ? 'x' : ' ';
+          results.push(match[1] + match[2] + check + match[4] + line.slice(match[0].length));
         }
       } else {
         results.push(line);

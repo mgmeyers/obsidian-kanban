@@ -179,7 +179,7 @@ export function getTasksPlugin() {
 export function toggleItemString(item: string, file: TFile): string | null {
   const plugin = getTasksPlugin();
   if (!plugin) return null;
-  return plugin.apiV1?.toggleLine?.(item, file.path)?.text ?? null;
+  return plugin.apiV1?.executeToggleTaskDoneCommand?.(item, file.path) ?? null;
 }
 
 export function toggleItem(item: Item, file: TFile): [string[], number] | null {
@@ -192,10 +192,10 @@ export function toggleItem(item: Item, file: TFile): [string[], number] | null {
   const originalLines = item.data.titleRaw.split(/\n\r?/g);
 
   let which = -1;
-  const result = plugin.apiV1?.toggleLine?.(prefix + originalLines[0], file.path);
+  const result = plugin.apiV1?.executeToggleTaskDoneCommand?.(prefix + originalLines[0], file.path);
   if (!result) return null;
 
-  const resultLines = result.text.split(/\n/g).map((line: string, index: number) => {
+  const resultLines = result.split(/\n/g).map((line: string, index: number) => {
     if (item.data.isComplete && line.startsWith('- [ ]')) {
       which = index;
     } else if (!item.data.isComplete && line.startsWith('- [x]')) {
