@@ -96,7 +96,7 @@ function checkCheckbox(stateManager: StateManager, title: string, checkboxIndex:
       return;
     }
 
-    const match = line.match(/^(\s*[-+*]\s+?\[)([^\]])(\]\s+)/);
+    const match = line.match(/^(?:\s*>)*(\s*[-+*]\s+?\[)([^\]])(\]\s+)/);
 
     if (match) {
       if (count === checkboxIndex) {
