@@ -1,4 +1,4 @@
-eed7772 Update tasks api call
-539248a Delay blocking the UI until the the loading indicator is displayed
-c98fad1 Check for malformed cssclasses
-c785bee Allow clicking checkboxes in callouts; fix #946
+db938f7 Fix prepend compact button style
+7028de2 Fix misc bugs
+dd7b200 Update readme img paths
+4c59157 Move doc vault to the root
