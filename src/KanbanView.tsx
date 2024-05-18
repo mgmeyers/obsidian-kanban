@@ -89,9 +89,11 @@ export class KanbanView extends TextFileView implements HoverParent {
       });
     });
 
-    await new Promise((res) => {
-      this.emitter.once('queueEmpty', res);
-    });
+    if (this.previewQueue.isRunning) {
+      await new Promise((res) => {
+        this.emitter.once('queueEmpty', res);
+      });
+    }
 
     this.initHeaderButtons();
   }

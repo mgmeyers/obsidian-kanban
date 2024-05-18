@@ -93,7 +93,7 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
 
     addLane: (lane: Lane) => {
       stateManager.setState((boardData) => {
-        const collapseState = view.getViewState('list-collapse');
+        const collapseState = view.getViewState('list-collapse') || [];
         const op = (collapseState: boolean[]) => {
           const newState = [...collapseState];
           newState.push(false);
