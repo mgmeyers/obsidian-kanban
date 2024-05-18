@@ -1,1 +1,1 @@
-4b4fcc5 Fix issues with metadata display
+2742d24 Fix #951; Bad checkbox replacement when checking subtasks
