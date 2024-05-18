@@ -105,7 +105,10 @@ function checkCheckbox(stateManager: StateManager, title: string, checkboxIndex:
           results.push(updates);
         } else {
           const check = match[3] === ' ' ? 'x' : ' ';
-          results.push(match[1] + match[2] + check + match[4] + line.slice(match[0].length));
+          const m1 = match[1] ?? '';
+          const m2 = match[2] ?? '';
+          const m4 = match[4] ?? '';
+          results.push(m1 + m2 + check + m4 + line.slice(match[0].length));
         }
       } else {
         results.push(line);
