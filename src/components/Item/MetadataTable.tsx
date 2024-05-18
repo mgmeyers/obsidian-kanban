@@ -113,6 +113,7 @@ export function getLinkFromObj(v: any, view: KanbanView) {
 }
 
 function getDate(v: any) {
+  if (typeof v === 'string' && /\d{4}-\d{2}-\d{2}/.test(v)) return moment(v);
   if (moment.isMoment(v)) return v;
   if (v.ts) return moment(v.ts);
   if (v instanceof Date) return moment(v);

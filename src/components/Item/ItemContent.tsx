@@ -123,8 +123,9 @@ function checkCheckbox(stateManager: StateManager, title: string, checkboxIndex:
 export function Tags({ tags, searchQuery }: { tags?: string[]; searchQuery?: string }) {
   const { stateManager, getTagColor } = useContext(KanbanContext);
   const search = useContext(SearchContext);
+  const shouldShow = stateManager.useSetting('move-tags');
 
-  if (!tags.length) return null;
+  if (!tags.length || !shouldShow) return null;
 
   return (
     <div className={c('item-tags')}>
