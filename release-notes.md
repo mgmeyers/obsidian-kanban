@@ -1,1 +1,1 @@
-2742d24 Fix #951; Bad checkbox replacement when checking subtasks
+29698a9 Fix #952; Support recurring tasks with custom status workflows
