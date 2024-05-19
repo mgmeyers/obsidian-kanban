@@ -26,7 +26,7 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
   });
 
   const createItem = (title: string) => {
-    addItems([stateManager.getNewItem(title)]);
+    addItems([stateManager.getNewItem(title, ' ')]);
     const cm = editorRef.current;
     if (cm) {
       cm.dispatch({

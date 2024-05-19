@@ -176,35 +176,75 @@ export function getTasksPlugin() {
   return (app as any).plugins.plugins['obsidian-tasks-plugin'];
 }
 
-export function toggleItemString(item: string, file: TFile): string | null {
+function getTasksPluginSettings() {
+  return (app as any).workspace.editorSuggest.suggests.find(
+    (s: any) => s.settings && s.settings.taskFormat
+  )?.settings;
+}
+
+export function getTaskStatusDone(): string {
+  const settings = getTasksPluginSettings();
+  const statuses = settings?.statusSettings;
+  if (!statuses) return 'x';
+
+  let done = statuses.coreStatuses?.find((s: any) => s.type === 'DONE');
+  if (!done) done = statuses.customStatuses?.find((s: any) => s.type === 'DONE');
+  if (!done) return 'x';
+
+  return done.symbol;
+}
+
+export function getTaskStatusPreDone(): string {
+  const settings = getTasksPluginSettings();
+  const statuses = settings?.statusSettings;
+  if (!statuses) return ' ';
+
+  const done = getTaskStatusDone();
+
+  let preDone = statuses.coreStatuses?.find((s: any) => s.nextStatusSymbol === done);
+  if (!preDone) preDone = statuses.customStatuses?.find((s: any) => s.nextStatusSymbol === done);
+  if (!preDone) return ' ';
+
+  return preDone.symbol;
+}
+
+export function toggleTaskString(item: string, file: TFile): string | null {
   const plugin = getTasksPlugin();
   if (!plugin) return null;
   return plugin.apiV1?.executeToggleTaskDoneCommand?.(item, file.path) ?? null;
 }
 
-export function toggleItem(item: Item, file: TFile): [string[], number] | null {
+export function toggleTask(item: Item, file: TFile): [string[], string[], number] | null {
   const plugin = getTasksPlugin();
   if (!plugin) {
     return null;
   }
 
-  const prefix = item.data.isComplete ? '- [x] ' : '- [ ] ';
+  const prefix = `- [${item.data.checkChar}] `;
   const originalLines = item.data.titleRaw.split(/\n\r?/g);
 
-  let which = -1;
+  const taskSettings = getTasksPluginSettings();
+  const recurrenceOnNextLine = !!taskSettings?.recurrenceOnNextLine;
+
+  let which = 0;
   const result = plugin.apiV1?.executeToggleTaskDoneCommand?.(prefix + originalLines[0], file.path);
   if (!result) return null;
 
+  const checkChars: string[] = [];
   const resultLines = result.split(/\n/g).map((line: string, index: number) => {
-    if (item.data.isComplete && line.startsWith('- [ ]')) {
+    if (recurrenceOnNextLine && index === 0) {
       which = index;
-    } else if (!item.data.isComplete && line.startsWith('- [x]')) {
+    } else if (!recurrenceOnNextLine && index > 0) {
       which = index;
     }
-    return [line.replace(/^- \[.\] */, ''), ...originalLines.slice(1)].join('\n');
+
+    const match = line.match(/^- \[([^\]]+)\]/);
+    if (match?.[1]) checkChars.push(match[1]);
+
+    return [line.replace(/^- \[[^\]]+\] */, ''), ...originalLines.slice(1)].join('\n');
   });
 
-  return [resultLines, which];
+  return [resultLines, checkChars, which];
 }
 
 /** A parsed inline field. */

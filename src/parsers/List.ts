@@ -23,8 +23,8 @@ export class ListFormat implements BaseFormat {
     this.stateManager = stateManager;
   }
 
-  newItem(content: string, isComplete?: boolean, forceEdit?: boolean) {
-    return newItem(this.stateManager, content, isComplete, forceEdit);
+  newItem(content: string, checkChar: string, forceEdit?: boolean) {
+    return newItem(this.stateManager, content, checkChar, forceEdit);
   }
 
   updateItemContent(item: Item, content: string) {

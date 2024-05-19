@@ -13,6 +13,7 @@ import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
 import { Sortable, StaticSortable } from 'src/dnd/components/Sortable';
 import { useDragHandle } from 'src/dnd/managers/DragManager';
 import { frontmatterKey } from 'src/parsers/common';
+import { getTaskStatusDone } from 'src/parsers/helpers/inlineMetadata';
 
 import { Items } from '../Item/Item';
 import { ItemForm } from '../Item/ItemForm';
@@ -85,9 +86,12 @@ function DraggableLaneRaw({
         items.map((item) =>
           update(item, {
             data: {
-              isComplete: {
+              checked: {
                 // Mark the item complete if we're moving into a completed lane
                 $set: shouldMarkItemsComplete,
+              },
+              checkChar: {
+                $set: shouldMarkItemsComplete ? getTaskStatusDone() : ' ',
               },
             },
           })

@@ -13,7 +13,7 @@ export enum ParserFormats {
 }
 
 export interface BaseFormat {
-  newItem(content: string, isComplete?: boolean, forceEdit?: boolean): Item;
+  newItem(content: string, checkChar: string, forceEdit?: boolean): Item;
   updateItemContent(item: Item, content: string): Item;
   boardToMd(board: Board): string;
   mdToBoard(md: string): Board;

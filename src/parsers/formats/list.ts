@@ -41,7 +41,11 @@ import {
 } from '../helpers/parser';
 import { parseFragment } from '../parseMarkdown';
 
-export function listItemToItemData(stateManager: StateManager, md: string, item: ListItem) {
+interface TaskItem extends ListItem {
+  checkChar?: string;
+}
+
+export function listItemToItemData(stateManager: StateManager, md: string, item: TaskItem) {
   const moveTags = stateManager.getSetting('move-tags');
   const moveDates = stateManager.getSetting('move-dates');
 
@@ -61,7 +65,7 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
   let itemContent = getStringFromBoundary(md, itemBoundary);
 
   // Handle empty task
-  if (itemContent === '[ ]' || itemContent === '[x]') {
+  if (itemContent === '[' + (item.checked ? item.checkChar : ' ') + ']') {
     itemContent = '';
   }
 
@@ -98,7 +102,8 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
       fileMetadataOrder: undefined,
     },
     dom: undefined,
-    isComplete: !!item.checked,
+    checked: item.checked,
+    checkChar: item.checked ? item.checkChar || ' ' : ' ',
   };
 
   visit(
@@ -291,7 +296,7 @@ export function astToUnhydratedBoard(
 }
 
 export function updateItemContent(stateManager: StateManager, oldItem: Item, newContent: string) {
-  const md = `- [${oldItem.data.isComplete ? 'x' : ' '}] ${indentNewLines(newContent)}${
+  const md = `- [${oldItem.data.checkChar}] ${indentNewLines(newContent)}${
     oldItem.data.blockId ? ` ^${oldItem.data.blockId}` : ''
   }`;
 
@@ -315,10 +320,10 @@ export function updateItemContent(stateManager: StateManager, oldItem: Item, new
 export function newItem(
   stateManager: StateManager,
   newContent: string,
-  isComplete?: boolean,
+  checkChar: string,
   forceEdit?: boolean
 ) {
-  const md = `- [${isComplete ? 'x' : ' '}] ${indentNewLines(newContent)}`;
+  const md = `- [${checkChar}] ${indentNewLines(newContent)}`;
   const ast = parseFragment(stateManager, md);
   const itemData = listItemToItemData(stateManager, md, (ast.children[0] as List).children[0]);
 
@@ -361,7 +366,7 @@ export function reparseBoard(stateManager: StateManager, board: Board) {
 }
 
 function itemToMd(item: Item) {
-  return `- [${item.data.isComplete ? 'x' : ' '}] ${indentNewLines(item.data.titleRaw)}${
+  return `- [${item.data.checkChar}] ${indentNewLines(item.data.titleRaw)}${
     item.data.blockId ? ` ^${item.data.blockId}` : ''
   }`;
 }

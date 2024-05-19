@@ -10,7 +10,7 @@ import { c, getDateColorFn, getTagColorFn, maybeCompleteForMove } from './compon
 import { Board, DataTypes, Item, Lane } from './components/types';
 import { DndContext } from './dnd/components/DndContext';
 import { DragOverlay } from './dnd/components/DragOverlay';
-import { Entity } from './dnd/types';
+import { Entity, Nestable } from './dnd/types';
 import {
   getEntityFromPath,
   insertEntity,
@@ -21,6 +21,11 @@ import {
 import { getBoardModifiers } from './helpers/boardModifiers';
 import KanbanPlugin from './main';
 import { frontmatterKey } from './parsers/common';
+import {
+  getTaskStatusDone,
+  getTaskStatusPreDone,
+  toggleTask,
+} from './parsers/helpers/inlineMetadata';
 
 export function createApp(win: Window, plugin: KanbanPlugin) {
   return <DragDropApp win={win} plugin={plugin} />;
@@ -46,32 +51,41 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
         const dropPath = dropEntity.getPath();
         const destinationParent = getEntityFromPath(stateManager.state, dropPath.slice(0, -1));
 
-        const parseItems = (titles: string[]) => {
-          return Promise.all(
-            titles.map((title) => {
-              return stateManager.getNewItem(title);
-            })
-          );
-        };
+        try {
+          const items: Item[] = data.content.map((title: string) => {
+            let item = stateManager.getNewItem(title, ' ');
+            const isComplete = !!destinationParent?.data?.shouldMarkItemsComplete;
 
-        parseItems(data.content)
-          .then((items) => {
-            const processed = items.map((item) =>
-              update(item, {
-                data: {
-                  isComplete: {
-                    $set: !!destinationParent?.data?.shouldMarkItemsComplete,
-                  },
+            if (isComplete) {
+              item = update(item, { data: { checkChar: { $set: getTaskStatusPreDone() } } });
+              const updates = toggleTask(item, stateManager.file);
+              if (updates) {
+                const [itemStrings, checkChars, thisIndex] = updates;
+                const nextItem = itemStrings[thisIndex];
+                const checkChar = checkChars[thisIndex];
+                return stateManager.getNewItem(nextItem, checkChar);
+              }
+            }
+
+            return update(item, {
+              data: {
+                checked: {
+                  $set: !!destinationParent?.data?.shouldMarkItemsComplete,
                 },
-              })
-            );
-
-            return stateManager.setState((board) => insertEntity(board, dropPath, processed));
-          })
-          .catch((e) => {
-            stateManager.setError(e);
-            console.error(e);
+                checkChar: {
+                  $set: destinationParent?.data?.shouldMarkItemsComplete
+                    ? getTaskStatusDone()
+                    : ' ',
+                },
+              },
+            });
           });
+
+          return stateManager.setState((board) => insertEntity(board, dropPath, items));
+        } catch (e) {
+          stateManager.setError(e);
+          console.error(e);
+        }
 
         return;
       }
@@ -97,12 +111,40 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
 
         return stateManager.setState((board) => {
           const entity = getEntityFromPath(board, dragPath);
-          const newBoard: Board = moveEntity(board, dragPath, dropPath, (entity) => {
-            if (entity.type === DataTypes.Item) {
-              return maybeCompleteForMove(board, dragPath, board, dropPath, entity);
+          const newBoard: Board = moveEntity(
+            board,
+            dragPath,
+            dropPath,
+            (entity) => {
+              if (entity.type === DataTypes.Item) {
+                const { next } = maybeCompleteForMove(
+                  stateManager,
+                  board,
+                  dragPath,
+                  stateManager,
+                  board,
+                  dropPath,
+                  entity
+                );
+                return next;
+              }
+              return entity;
+            },
+            (entity) => {
+              if (entity.type === DataTypes.Item) {
+                const { replacement } = maybeCompleteForMove(
+                  stateManager,
+                  board,
+                  dragPath,
+                  stateManager,
+                  board,
+                  dropPath,
+                  entity
+                );
+                return replacement;
+              }
             }
-            return entity;
-          });
+          );
 
           if (entity.type === DataTypes.Lane) {
             const from = dragPath.last();
@@ -147,6 +189,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
 
       sourceStateManager.setState((sourceBoard) => {
         const entity = getEntityFromPath(sourceBoard, dragPath);
+        let replacementEntity: Nestable;
 
         destinationStateManager.setState((destinationBoard) => {
           if (inDropArea) {
@@ -159,10 +202,23 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
             else dropPath.push(0);
           }
 
-          const toInsert =
-            entity.type === DataTypes.Item
-              ? maybeCompleteForMove(sourceBoard, dragPath, destinationBoard, dropPath, entity)
-              : [entity];
+          const toInsert: Nestable[] = [];
+
+          if (entity.type === DataTypes.Item) {
+            const { next, replacement } = maybeCompleteForMove(
+              sourceStateManager,
+              sourceBoard,
+              dragPath,
+              destinationStateManager,
+              destinationBoard,
+              dropPath,
+              entity
+            );
+            replacementEntity = replacement;
+            toInsert.push(next);
+          } else {
+            toInsert.push(entity);
+          }
 
           if (entity.type === DataTypes.Lane) {
             const collapsedState = destinationView.getViewState('list-collapse');
@@ -196,7 +252,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
             data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
           });
         } else {
-          return removeEntity(sourceBoard, dragPath);
+          return removeEntity(sourceBoard, dragPath, replacementEntity);
         }
       });
     },

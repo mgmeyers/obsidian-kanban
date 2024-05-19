@@ -5,7 +5,12 @@ import { StateUpdater, useMemo } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
-import { InlineField } from 'src/parsers/helpers/inlineMetadata';
+import {
+  InlineField,
+  getTaskStatusDone,
+  getTaskStatusPreDone,
+  toggleTask,
+} from 'src/parsers/helpers/inlineMetadata';
 
 import { SearchContextProps } from './context';
 import { Board, DataKey, DateColor, Item, Lane, PageData, TagColor } from './types';
@@ -29,12 +34,14 @@ export function generateInstanceId(len: number = 9): string {
 }
 
 export function maybeCompleteForMove(
+  sourceStateManager: StateManager,
   sourceBoard: Board,
   sourcePath: Path,
+  destinationStateManager: StateManager,
   destinationBoard: Board,
   destinationPath: Path,
   item: Item
-): Item[] {
+): { next: Item; replacement?: Item } {
   const sourceParent = getEntityFromPath(sourceBoard, sourcePath.slice(0, -1));
   const destinationParent = getEntityFromPath(destinationBoard, destinationPath.slice(0, -1));
 
@@ -42,21 +49,48 @@ export function maybeCompleteForMove(
   const newShouldComplete = destinationParent?.data?.shouldMarkItemsComplete;
 
   // If neither the old or new lane set it complete, leave it alone
-  if (!oldShouldComplete && !newShouldComplete) return [item];
+  if (!oldShouldComplete && !newShouldComplete) return { next: item };
+
+  const isComplete = item.data.checked && item.data.checkChar === getTaskStatusDone();
 
   // If it already matches the new lane, leave it alone
-  if (newShouldComplete === !!item.data.isComplete) return [item];
+  if (newShouldComplete === isComplete) return { next: item };
+
+  if (newShouldComplete) {
+    item = update(item, { data: { checkChar: { $set: getTaskStatusPreDone() } } });
+  }
+
+  const updates = toggleTask(item, destinationStateManager.file);
+
+  if (updates) {
+    const [itemStrings, checkChars, thisIndex] = updates;
+    let next: Item;
+    let replacement: Item;
+
+    itemStrings.forEach((str, i) => {
+      if (i === thisIndex) {
+        next = destinationStateManager.getNewItem(str, checkChars[i]);
+      } else {
+        replacement = destinationStateManager.getNewItem(str, checkChars[i]);
+      }
+    });
+
+    return { next, replacement };
+  }
 
   // It's different, update it
-  return [
-    update(item, {
+  return {
+    next: update(item, {
       data: {
-        isComplete: {
+        checked: {
           $set: newShouldComplete,
+        },
+        checkChar: {
+          $set: newShouldComplete ? getTaskStatusDone() : ' ',
         },
       },
     }),
-  ];
+  };
 }
 
 export function useIMEInputProps() {

@@ -3,6 +3,7 @@ import { Platform, TFile, TFolder, htmlToMarkdown, moment, parseLinktext, setIco
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { buildLinkToDailyNote } from 'src/helpers';
+import { getTaskStatusDone } from 'src/parsers/helpers/inlineMetadata';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { getDefaultLocale } from '../Editor/datePickerLocale';
@@ -290,7 +291,7 @@ export function getItemClassModifiers(item: Item) {
     }
   }
 
-  if (item.data.isComplete) {
+  if (item.data.checked && item.data.checkChar === getTaskStatusDone()) {
     classModifiers.push('is-complete');
   }
 

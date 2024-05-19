@@ -2,7 +2,7 @@ import update from 'immutability-helper';
 import { memo, useCallback, useEffect, useState } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
-import { toggleItem } from 'src/parsers/helpers/inlineMetadata';
+import { getTaskStatusDone, toggleTask } from 'src/parsers/helpers/inlineMetadata';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { Icon } from '../Icon/Icon';
@@ -30,18 +30,13 @@ export const ItemCheckbox = memo(function ItemCheckbox({
   const [isHoveringCheckbox, setIsHoveringCheckbox] = useState(false);
 
   const onCheckboxChange = useCallback(() => {
-    const updates = toggleItem(item, stateManager.file);
+    const updates = toggleTask(item, stateManager.file);
     if (updates) {
-      const [itemStrings, thisIndex] = updates;
+      const [itemStrings, checkChars, thisIndex] = updates;
       const replacements: Item[] = itemStrings.map((str, i) => {
-        const newItem = stateManager.getNewItem(
-          str,
-          i === thisIndex ? !item.data.isComplete : false
-        );
-        if (i === thisIndex) {
-          newItem.id = item.id;
-        }
-        return newItem;
+        const next = stateManager.getNewItem(str, checkChars[i]);
+        if (i === thisIndex) next.id = item.id;
+        return next;
       });
 
       boardModifiers.replaceItem(path, replacements);
@@ -50,12 +45,17 @@ export const ItemCheckbox = memo(function ItemCheckbox({
         path,
         update(item, {
           data: {
-            $toggle: ['isComplete'],
+            checkChar: {
+              $apply: (v) => {
+                return v === ' ' ? getTaskStatusDone() : ' ';
+              },
+            },
+            $toggle: ['checked'],
           },
         })
       );
     }
-  }, [item, stateManager, boardModifiers]);
+  }, [item, stateManager, boardModifiers, ...path]);
 
   useEffect(() => {
     if (isHoveringCheckbox) {
@@ -104,7 +104,8 @@ export const ItemCheckbox = memo(function ItemCheckbox({
           onChange={onCheckboxChange}
           type="checkbox"
           className="task-list-item-checkbox"
-          checked={!!item.data.isComplete}
+          checked={item.data.checked}
+          data-task={item.data.checkChar}
         />
       )}
       {(isCtrlHoveringCheckbox || (!shouldShowCheckbox && shouldMarkItemsComplete)) && (

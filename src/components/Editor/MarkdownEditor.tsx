@@ -102,7 +102,8 @@ export function MarkdownEditor({
         editor: Editor,
         lineHasGlobalFilter: boolean
       ) {
-        return lineHasGlobalFilter && cursor.line === 0;
+        if (lineHasGlobalFilter && cursor.line === 0) return true;
+        return undefined;
       }
 
       updateBottomPadding() {}

@@ -124,7 +124,7 @@ export function useItemMenu({
               const titles = item.data.titleRaw.split(/[\r\n]+/g).map((t) => t.trim());
               const newItems = await Promise.all(
                 titles.map((title) => {
-                  return stateManager.getNewItem(title);
+                  return stateManager.getNewItem(title, ' ');
                 })
               );
 
@@ -143,7 +143,7 @@ export function useItemMenu({
           i.setIcon('lucide-list-start')
             .setTitle(t('Insert card before'))
             .onClick(() =>
-              boardModifiers.insertItems(path, [stateManager.getNewItem('', false, true)])
+              boardModifiers.insertItems(path, [stateManager.getNewItem('', ' ', true)])
             );
         })
         .addItem((i) => {
@@ -154,7 +154,7 @@ export function useItemMenu({
 
               newPath[newPath.length - 1] = newPath[newPath.length - 1] + 1;
 
-              boardModifiers.insertItems(newPath, [stateManager.getNewItem('', false, true)]);
+              boardModifiers.insertItems(newPath, [stateManager.getNewItem('', ' ', true)]);
             });
         })
         .addItem((i) => {

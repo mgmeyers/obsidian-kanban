@@ -79,7 +79,8 @@ export interface ItemMetadata {
 
 export interface ItemData {
   blockId?: string;
-  isComplete?: boolean;
+  checked: boolean;
+  checkChar: string;
   title: string;
   titleRaw: string;
   titleSearch: string;

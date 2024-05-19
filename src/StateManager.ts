@@ -8,6 +8,7 @@ import { getDefaultDateFormat, getDefaultTimeFormat } from './components/helpers
 import { Board, BoardTemplate, Item } from './components/types';
 import { ListFormat } from './parsers/List';
 import { BaseFormat, frontmatterKey, shouldRefreshBoard } from './parsers/common';
+import { getTaskStatusDone } from './parsers/helpers/inlineMetadata';
 import { defaultDateTrigger, defaultMetadataPosition, defaultTimeTrigger } from './settingHelpers';
 
 export class StateManager {
@@ -388,11 +389,12 @@ export class StateManager {
       return update(lane, {
         children: {
           $set: lane.children.filter((item) => {
-            if (lane.data.shouldMarkItemsComplete || item.data.isComplete) {
+            const isComplete = item.data.checked && item.data.checkChar === getTaskStatusDone();
+            if (lane.data.shouldMarkItemsComplete || isComplete) {
               archived.push(item);
             }
 
-            return !item.data.isComplete && !lane.data.shouldMarkItemsComplete;
+            return !isComplete && !lane.data.shouldMarkItemsComplete;
           }),
         },
       });
@@ -418,8 +420,8 @@ export class StateManager {
     }
   }
 
-  getNewItem(content: string, isComplete?: boolean, forceEdit?: boolean) {
-    return this.parser.newItem(content, isComplete, forceEdit);
+  getNewItem(content: string, checkChar: string, forceEdit?: boolean) {
+    return this.parser.newItem(content, checkChar, forceEdit);
   }
 
   updateItemContent(item: Item, content: string) {

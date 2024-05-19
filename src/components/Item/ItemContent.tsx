@@ -12,7 +12,7 @@ import {
 import { StateManager } from 'src/StateManager';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { Path } from 'src/dnd/types';
-import { toggleItemString } from 'src/parsers/helpers/inlineMetadata';
+import { getTaskStatusDone, toggleTaskString } from 'src/parsers/helpers/inlineMetadata';
 
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import {
@@ -100,11 +100,11 @@ function checkCheckbox(stateManager: StateManager, title: string, checkboxIndex:
 
     if (match) {
       if (count === checkboxIndex) {
-        const updates = toggleItemString(line, stateManager.file);
+        const updates = toggleTaskString(line, stateManager.file);
         if (updates) {
           results.push(updates);
         } else {
-          const check = match[3] === ' ' ? 'x' : ' ';
+          const check = match[3] === ' ' ? getTaskStatusDone() : ' ';
           const m1 = match[1] ?? '';
           const m2 = match[2] ?? '';
           const m4 = match[4] ?? '';
