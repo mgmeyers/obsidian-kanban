@@ -113,7 +113,12 @@ export function getLinkFromObj(v: any, view: KanbanView) {
 }
 
 function getDate(v: any) {
-  if (typeof v === 'string' && /\d{4}-\d{2}-\d{2}/.test(v)) return moment(v);
+  if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v)) {
+    const d = moment(v);
+    if (d.isValid()) {
+      return d;
+    }
+  }
   if (moment.isMoment(v)) return v;
   if (v.ts) return moment(v.ts);
   if (v instanceof Date) return moment(v);
@@ -122,10 +127,10 @@ function getDate(v: any) {
 
 export function anyToString(v: any, stateManager: StateManager): string {
   if (v.value) v = v.value;
-  if (typeof v === 'string') return v;
-  if (v instanceof TFile) return v.path;
   const date = getDate(v);
   if (date) return getDateFromObj(date, stateManager);
+  if (typeof v === 'string') return v;
+  if (v instanceof TFile) return v.path;
   if (typeof v === 'object' && v.path) return v.display || v.path;
   if (Array.isArray(v)) {
     return v.map((v2) => anyToString(v2, stateManager)).join(' ');
