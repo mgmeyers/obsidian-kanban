@@ -75,9 +75,11 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
   visit(
     item,
     ['text', 'wikilink', 'embedWikilink', 'image', 'inlineCode', 'code', 'hashtag'],
-    (node: any) => {
+    (node: any, i, parent) => {
       if (node.type === 'hashtag') {
-        titleSearch += ' #' + node.value;
+        if (!parent.children.first()?.value?.startsWith('```')) {
+          titleSearch += ' #' + node.value;
+        }
       } else {
         titleSearch += node.value || node.alt || '';
       }
@@ -111,7 +113,7 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
     (node) => {
       return node.type !== 'paragraph';
     },
-    (node) => {
+    (node, i, parent) => {
       const genericNode = node as ValueNode;
 
       if (genericNode.type === 'blockid') {
@@ -119,7 +121,10 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
         return true;
       }
 
-      if (genericNode.type === 'hashtag') {
+      if (
+        genericNode.type === 'hashtag' &&
+        !(parent.children.first() as any)?.value?.startsWith('```')
+      ) {
         if (!itemData.metadata.tags) {
           itemData.metadata.tags = [];
         }
