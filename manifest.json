@@ -1,11 +1,11 @@
 {
-  "id": "obsidian-kanban",
-  "name": "Kanban",
-  "version": "2.0.0",
-  "minAppVersion": "1.0.0",
-  "description": "Create markdown-backed Kanban boards in Obsidian.",
-  "author": "mgmeyers",
-  "authorUrl": "https://github.com/mgmeyers/obsidian-kanban",
-  "helpUrl": "https://publish.obsidian.md/kanban/Obsidian+Kanban+Plugin",
-  "isDesktopOnly": false
+	"id": "obsidian-kanban",
+	"name": "Kanban",
+	"version": "2.0.43",
+	"minAppVersion": "1.0.0",
+	"description": "Create markdown-backed Kanban boards in Obsidian.",
+	"author": "mgmeyers",
+	"authorUrl": "https://github.com/mgmeyers/obsidian-kanban",
+	"helpUrl": "https://publish.obsidian.md/kanban/Obsidian+Kanban+Plugin",
+	"isDesktopOnly": false
 }
