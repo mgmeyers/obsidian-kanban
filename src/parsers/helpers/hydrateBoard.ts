@@ -1,20 +1,19 @@
-import { Operation } from 'fast-json-patch';
 import { moment } from 'obsidian';
 import { StateManager } from 'src/StateManager';
 import { c, getDateColorFn } from 'src/components/helpers';
 import { Board, DataTypes, DateColor, Item, Lane } from 'src/components/types';
 import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
+import { Op } from 'src/helpers/patch';
 
 import { getSearchValue } from '../common';
-import { extractInlineFields, taskFields } from './inlineMetadata';
 
 export function hydrateLane(stateManager: StateManager, lane: Lane) {
   return lane;
 }
 
 export function preprocessTitle(stateManager: StateManager, title: string) {
-  const getDateColor = getDateColorFn(stateManager);
+  const getDateColor = getDateColorFn(stateManager.getSetting('date-colors'));
   const dateTrigger = stateManager.getSetting('date-trigger');
   const dateFormat = stateManager.getSetting('date-format');
   const dateDisplayFormat = stateManager.getSetting('date-display-format');
@@ -125,37 +124,7 @@ export function hydrateItem(stateManager: StateManager, item: Item) {
     }
   }
 
-  const firstLineEnd = item.data.title.indexOf('\n');
-  const inlineFields = extractInlineFields(item.data.title, true);
-
-  if (inlineFields?.length) {
-    const inlineMetadata = (item.data.metadata.inlineMetadata = inlineFields.reduce((acc, curr) => {
-      if (!taskFields.has(curr.key)) acc.push(curr);
-      else if (firstLineEnd <= 0 || curr.end < firstLineEnd) acc.push(curr);
-
-      return acc;
-    }, []));
-
-    const moveTaskData = stateManager.getSetting('move-task-metadata');
-    const moveMetadata = stateManager.getSetting('inline-metadata-position') !== 'body';
-
-    if (moveTaskData || moveMetadata) {
-      let title = item.data.title;
-      for (const item of [...inlineMetadata].reverse()) {
-        const isTask = taskFields.has(item.key);
-
-        if (isTask && !moveTaskData) continue;
-        if (!isTask && !moveMetadata) continue;
-
-        title = title.slice(0, item.start) + title.slice(item.end);
-      }
-
-      item.data.title = title;
-    }
-  }
-
   item.data.titleSearch = getSearchValue(item, stateManager);
-  item.data.title = preprocessTitle(stateManager, item.data.title);
 
   return item;
 }
@@ -176,31 +145,29 @@ export function hydrateBoard(stateManager: StateManager, board: Board): Board {
   return board;
 }
 
-function opAffectsHydration(op: Operation) {
+function opAffectsHydration(op: Op) {
   return (
     (op.op === 'add' || op.op === 'replace') &&
-    ['/title', '/titleRaw', '/dateStr', '/timeStr', /\d$/, /\/fileAccessor\/.+$/].some(
-      (postFix) => {
-        if (typeof postFix === 'string') {
-          return op.path.endsWith(postFix);
-        } else {
-          return postFix.test(op.path);
-        }
+    ['title', 'titleRaw', 'dateStr', 'timeStr', /\d$/, /\/fileAccessor\/.+$/].some((postFix) => {
+      if (typeof postFix === 'string') {
+        return op.path.last().toString().endsWith(postFix);
+      } else {
+        return postFix.test(op.path.last().toString());
       }
-    )
+    })
   );
 }
 
-export function hydratePostOp(stateManager: StateManager, board: Board, ops: Operation[]): Board {
+export function hydratePostOp(stateManager: StateManager, board: Board, ops: Op[]): Board {
   const seen: Record<string, boolean> = {};
   const toHydrate = ops.reduce((paths, op) => {
     if (!opAffectsHydration(op)) {
       return paths;
     }
 
-    const path = op.path.split('/').reduce((path, segment) => {
-      if (/\d+/.test(segment)) {
-        path.push(Number(segment));
+    const path = op.path.reduce((path, segment) => {
+      if (typeof segment === 'number') {
+        path.push(segment);
       }
 
       return path;

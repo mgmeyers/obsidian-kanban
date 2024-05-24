@@ -227,13 +227,14 @@ export class KanbanView extends TextFileView implements HoverParent {
       return;
     }
 
-    this.activeEditor = null;
-    this.previewQueue.clear();
-    this.previewCache.clear();
-    this.emitter.emit('queueEmpty');
-
-    Object.values(this.actionButtons).forEach((b) => b.remove());
-    this.actionButtons = {};
+    if (clear) {
+      this.activeEditor = null;
+      this.previewQueue.clear();
+      this.previewCache.clear();
+      this.emitter.emit('queueEmpty');
+      Object.values(this.actionButtons).forEach((b) => b.remove());
+      this.actionButtons = {};
+    }
 
     this.plugin.addView(this, data, !clear && this.isPrimary);
   }

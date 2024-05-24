@@ -224,9 +224,7 @@ export function getTemplatePlugins(app: App) {
   };
 }
 
-export function getTagColorFn(stateManager: StateManager): (tag: string) => TagColor {
-  const tagColors = stateManager.getSetting('tag-colors');
-
+export function getTagColorFn(tagColors: TagColor[]) {
   const tagMap = (tagColors || []).reduce<Record<string, TagColor>>((total, current) => {
     if (!current.tagKey) return total;
     total[current.tagKey] = current;
@@ -239,10 +237,12 @@ export function getTagColorFn(stateManager: StateManager): (tag: string) => TagC
   };
 }
 
-export function getDateColorFn(
-  stateManager: StateManager
-): (date: moment.Moment) => DateColor | null {
-  const dateColors = stateManager.getSetting('date-colors');
+export function useGetTagColorFn(stateManager: StateManager): (tag: string) => TagColor {
+  const tagColors = stateManager.useSetting('tag-colors');
+  return useMemo(() => getTagColorFn(tagColors), [tagColors]);
+}
+
+export function getDateColorFn(dateColors: DateColor[]) {
   const orders = (dateColors || []).map<[moment.Moment | 'today' | 'before' | 'after', DateColor]>(
     (c) => {
       if (c.isToday) {
@@ -310,6 +310,13 @@ export function getDateColorFn(
 
     return null;
   };
+}
+
+export function useGetDateColorFn(
+  stateManager: StateManager
+): (date: moment.Moment) => DateColor | null {
+  const dateColors = stateManager.useSetting('date-colors');
+  return useMemo(() => getDateColorFn(dateColors), [dateColors]);
 }
 
 export function parseMetadataWithOptions(data: InlineField, metadataKeys: DataKey[]): PageData {

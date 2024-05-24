@@ -11,7 +11,7 @@ import { PromiseCapability } from 'src/helpers/util';
 
 import { applyCheckboxIndexes } from '../../helpers/renderMarkdown';
 import { IntersectionObserverContext, KanbanContext, SortContext } from '../context';
-import { c } from '../helpers';
+import { c, useGetDateColorFn, useGetTagColorFn } from '../helpers';
 import { DateColor, TagColor } from '../types';
 
 interface MarkdownRendererProps extends HTMLAttributes<HTMLDivElement> {
@@ -225,11 +225,13 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
   searchQuery,
   ...divProps
 }: MarkdownRendererProps) {
-  const { view, getDateColor, getTagColor } = useContext(KanbanContext);
+  const { view, stateManager } = useContext(KanbanContext);
   const entityManager = useContext(EntityManagerContext);
   const dndManager = useContext(DndManagerContext);
   const sortContext = useContext(SortContext);
   const intersectionContext = useContext(IntersectionObserverContext);
+  const getTagColor = useGetTagColorFn(stateManager);
+  const getDateColor = useGetDateColorFn(stateManager);
 
   const renderer = useRef<BasicMarkdownRenderer>();
   const elRef = useRef<HTMLDivElement>();

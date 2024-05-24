@@ -370,7 +370,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
               if (!val) return null;
               const searchQuery = info.table.getState().globalFilter;
               if (key === 'tags') {
-                return <Tags searchQuery={searchQuery} tags={val.value as string[]} />;
+                return <Tags searchQuery={searchQuery} tags={val.value as string[]} alwaysShow />;
               }
               return <MetadataValue data={val} searchQuery={searchQuery} />;
             },

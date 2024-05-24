@@ -19,7 +19,7 @@ import { Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
 import { TableView } from './Table/Table';
 import { KanbanContext, SearchContext } from './context';
-import { baseClassName, c, getDateColorFn, getTagColorFn, useSearchValue } from './helpers';
+import { baseClassName, c, useSearchValue } from './helpers';
 import { DataTypes } from './types';
 
 const boardScrollTiggers = [DataTypes.Item, DataTypes.Lane];
@@ -173,8 +173,6 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       stateManager,
       boardModifiers,
       filePath,
-      getTagColor: getTagColorFn(stateManager),
-      getDateColor: getDateColorFn(stateManager),
     };
   }, [view, stateManager, boardModifiers, filePath, dateColors, tagColors]);
 

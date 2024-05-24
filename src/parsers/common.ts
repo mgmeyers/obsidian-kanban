@@ -166,7 +166,11 @@ export function getLinkedPageMetadata(
 
     const dataviewVal = getPageData(dataviewCache, k.metadataKey);
     let cacheVal = getPageData(cache?.frontmatter, k.metadataKey);
-    if (cacheVal !== null && cacheVal !== undefined) {
+    if (
+      cacheVal !== null &&
+      cacheVal !== undefined &&
+      !(Array.isArray(cacheVal) && cacheVal.length === 0)
+    ) {
       if (typeof cacheVal === 'string') {
         if (/^\d{4}-\d{2}-\d{2}/.test(cacheVal)) {
           cacheVal = moment(cacheVal);
@@ -208,23 +212,17 @@ export function getLinkedPageMetadata(
         value: cacheVal,
       };
       haveData = true;
-    } else if (dataviewVal) {
+    } else if (
+      dataviewVal !== undefined &&
+      dataviewVal !== null &&
+      !(Array.isArray(dataviewVal) && dataviewVal.length === 0)
+    ) {
       const cachedValue = dataviewCache[k.metadataKey];
-      let val = Array.isArray(cachedValue)
-        ? cachedValue
-        : cachedValue.values || cachedValue.val || cachedValue;
-
-      // Protect against proxy values
-      if (val === cachedValue && !Array.isArray(cachedValue) && typeof val === 'object') {
-        val = { ...cachedValue };
-      } else if (!Array.isArray(val) && typeof val !== 'string' && typeof val !== 'number') {
-        return;
-      }
 
       order.push(k.metadataKey);
       metadata[k.metadataKey] = {
         ...k,
-        value: val,
+        value: cachedValue,
       };
       haveData = true;
     }

@@ -4,15 +4,13 @@ import { StateManager } from 'src/StateManager';
 import { IntersectionObserverHandler } from 'src/dnd/managers/ScrollManager';
 
 import { BoardModifiers } from '../helpers/boardModifiers';
-import { DateColor, Item, Lane, LaneSort, TagColor } from './types';
+import { Item, Lane, LaneSort } from './types';
 
 export interface KanbanContextProps {
   filePath?: string;
   stateManager: StateManager;
   boardModifiers: BoardModifiers;
   view: KanbanView;
-  getTagColor: (tag: string) => TagColor;
-  getDateColor: (date: moment.Moment) => DateColor;
 }
 
 export const KanbanContext = createContext<KanbanContextProps>(null);

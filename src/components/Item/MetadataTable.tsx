@@ -1,5 +1,7 @@
 import classcat from 'classcat';
+import { isPlainObject } from 'is-plain-object';
 import { TFile, moment } from 'obsidian';
+import { getAPI } from 'obsidian-dataview';
 import { ComponentChild } from 'preact';
 import { memo, useContext, useMemo } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
@@ -8,7 +10,7 @@ import { InlineField, taskFields } from 'src/parsers/helpers/inlineMetadata';
 
 import { MarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext } from '../context';
-import { c, parseMetadataWithOptions } from '../helpers';
+import { c, parseMetadataWithOptions, useGetDateColorFn } from '../helpers';
 import { DataKey, FileMetadata, Item, PageData } from '../types';
 import { Tags } from './ItemContent';
 
@@ -120,22 +122,24 @@ function getDate(v: any) {
     }
   }
   if (moment.isMoment(v)) return v;
-  if (v.ts) return moment(v.ts);
   if (v instanceof Date) return moment(v);
+  const dv = getAPI();
+  if (dv?.value.isDate(v)) return moment(v.ts);
   return null;
 }
 
 export function anyToString(v: any, stateManager: StateManager): string {
-  if (v.value) v = v.value;
+  if (isPlainObject(v) && v.value) v = v.value;
   const date = getDate(v);
   if (date) return getDateFromObj(date, stateManager);
   if (typeof v === 'string') return v;
   if (v instanceof TFile) return v.path;
-  if (typeof v === 'object' && v.path) return v.display || v.path;
   if (Array.isArray(v)) {
     return v.map((v2) => anyToString(v2, stateManager)).join(' ');
   }
   if (v.rrule) return v.toText();
+  const dv = getAPI();
+  if (dv) return dv.value.toString(v);
   return `${v}`;
 }
 
@@ -144,7 +148,8 @@ export function pageDataToString(data: PageData, stateManager: StateManager): st
 }
 
 export function MetadataValue({ data, dateLabel, searchQuery }: MetadataValueProps) {
-  const { view, stateManager, getDateColor } = useContext(KanbanContext);
+  const { view, stateManager } = useContext(KanbanContext);
+  const getDateColor = useGetDateColorFn(stateManager);
 
   const renderChild = (v: any, sep?: string) => {
     const link = getLinkFromObj(v, view);
@@ -253,7 +258,7 @@ export const MetadataTable = memo(function MetadataTable({
                 data-value={pageDataToString(data, stateManager)}
               >
                 {k === 'tags' ? (
-                  <Tags searchQuery={searchQuery} tags={data.value as string[]} />
+                  <Tags searchQuery={searchQuery} tags={data.value as string[]} alwaysShow />
                 ) : (
                   <MetadataValue data={data} searchQuery={searchQuery} />
                 )}

@@ -29,7 +29,8 @@ import {
   getPrevSibling,
   getStringFromBoundary,
 } from '../helpers/ast';
-import { hydrateItem } from '../helpers/hydrateBoard';
+import { hydrateItem, preprocessTitle } from '../helpers/hydrateBoard';
+import { extractInlineFields, taskFields } from '../helpers/inlineMetadata';
 import {
   dedentNewLines,
   executeDeletion,
@@ -103,7 +104,6 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
       fileMetadata: undefined,
       fileMetadataOrder: undefined,
     },
-    dom: undefined,
     checked: item.checked,
     checkChar: item.checked ? item.checkChar || ' ' : ' ',
   };
@@ -189,7 +189,36 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
     }
   );
 
-  itemData.title = dedentNewLines(executeDeletion(title));
+  const firstLineEnd = itemData.title.indexOf('\n');
+  const inlineFields = extractInlineFields(itemData.title, true);
+
+  if (inlineFields?.length) {
+    const inlineMetadata = (itemData.metadata.inlineMetadata = inlineFields.reduce((acc, curr) => {
+      if (!taskFields.has(curr.key)) acc.push(curr);
+      else if (firstLineEnd <= 0 || curr.end < firstLineEnd) acc.push(curr);
+
+      return acc;
+    }, []));
+
+    const moveTaskData = stateManager.getSetting('move-task-metadata');
+    const moveMetadata = stateManager.getSetting('inline-metadata-position') !== 'body';
+
+    if (moveTaskData || moveMetadata) {
+      let title = itemData.title;
+      for (const item of [...inlineMetadata].reverse()) {
+        const isTask = taskFields.has(item.key);
+
+        if (isTask && !moveTaskData) continue;
+        if (!isTask && !moveMetadata) continue;
+
+        title = title.slice(0, item.start) + title.slice(item.end);
+      }
+
+      itemData.title = title;
+    }
+  }
+
+  itemData.title = preprocessTitle(stateManager, dedentNewLines(executeDeletion(title)));
   itemData.metadata.tags?.sort(defaultSort);
 
   return itemData;

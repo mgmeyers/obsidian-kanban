@@ -52,7 +52,7 @@ export function useItemMenu({
           i.setIcon('lucide-file-plus-2')
             .setTitle(t('New note from card'))
             .onClick(async () => {
-              const prevTitle = item.data.title.split('\n')[0].trim();
+              const prevTitle = item.data.titleRaw.split('\n')[0].trim();
               const sanitizedTitle = prevTitle
                 .replace(embedRegEx, '$1')
                 .replace(wikilinkRegEx, '$1')

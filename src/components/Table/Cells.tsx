@@ -12,7 +12,7 @@ import { ItemContent, useDatePickers } from '../Item/ItemContent';
 import { useItemMenu } from '../Item/ItemMenu';
 import { MarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext, SearchContext } from '../context';
-import { c } from '../helpers';
+import { c, useGetDateColorFn } from '../helpers';
 import { EditState, Item, Lane, isEditing } from '../types';
 import { TableItem } from './types';
 
@@ -25,8 +25,9 @@ export const DateCell = memo(function DateCell({
   hideDateDisplay: boolean;
   shouldShowRelativeDate: boolean;
 }) {
-  const { stateManager, filePath, getDateColor } = useContext(KanbanContext);
+  const { stateManager, filePath } = useContext(KanbanContext);
   const { onEditDate, onEditTime } = useDatePickers(item.item, item.path);
+  const getDateColor = useGetDateColorFn(stateManager);
 
   return (
     <>

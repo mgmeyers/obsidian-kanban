@@ -20,7 +20,7 @@ import {
   MarkdownRenderer,
 } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext, SearchContext } from '../context';
-import { c } from '../helpers';
+import { c, useGetDateColorFn, useGetTagColorFn } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
 import { InlineMetadata } from './InlineMetadata';
@@ -123,10 +123,19 @@ function checkCheckbox(stateManager: StateManager, title: string, checkboxIndex:
   return results.join('\n');
 }
 
-export function Tags({ tags, searchQuery }: { tags?: string[]; searchQuery?: string }) {
-  const { stateManager, getTagColor } = useContext(KanbanContext);
+export function Tags({
+  tags,
+  searchQuery,
+  alwaysShow,
+}: {
+  tags?: string[];
+  searchQuery?: string;
+  alwaysShow?: boolean;
+}) {
+  const { stateManager } = useContext(KanbanContext);
+  const getTagColor = useGetTagColorFn(stateManager);
   const search = useContext(SearchContext);
-  const shouldShow = stateManager.useSetting('move-tags');
+  const shouldShow = stateManager.useSetting('move-tags') || alwaysShow;
 
   if (!tags.length || !shouldShow) return null;
 
@@ -179,7 +188,8 @@ export const ItemContent = memo(function ItemContent({
   showMetadata = true,
   isStatic,
 }: ItemContentProps) {
-  const { stateManager, filePath, boardModifiers, getDateColor } = useContext(KanbanContext);
+  const { stateManager, filePath, boardModifiers } = useContext(KanbanContext);
+  const getDateColor = useGetDateColorFn(stateManager);
   const titleRef = useRef<string | null>(null);
 
   useEffect(() => {

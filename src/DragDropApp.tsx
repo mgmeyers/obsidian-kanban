@@ -6,7 +6,7 @@ import { KanbanView } from './KanbanView';
 import { DraggableItem } from './components/Item/Item';
 import { DraggableLane } from './components/Lane/Lane';
 import { KanbanContext } from './components/context';
-import { c, getDateColorFn, getTagColorFn, maybeCompleteForMove } from './components/helpers';
+import { c, maybeCompleteForMove } from './components/helpers';
 import { Board, DataTypes, Item, Lane } from './components/types';
 import { DndContext } from './dnd/components/DndContext';
 import { DragOverlay } from './dnd/components/DragOverlay';
@@ -285,8 +285,6 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
                   stateManager,
                   boardModifiers,
                   filePath,
-                  getTagColor: getTagColorFn(stateManager),
-                  getDateColor: getDateColorFn(stateManager),
                 },
               ];
             }, [entity]);

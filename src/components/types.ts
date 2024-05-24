@@ -86,7 +86,6 @@ export interface ItemData {
   titleSearch: string;
   titleSearchRaw: string;
   metadata: ItemMetadata;
-  dom?: HTMLDivElement;
   forceEditMode?: boolean;
 }
 
