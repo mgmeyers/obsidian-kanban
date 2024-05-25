@@ -72,6 +72,7 @@ export function bindMarkdownEvents(view: KanbanView) {
     const menu = new Menu();
     (menu as any).addSections(['title', 'open', 'action', 'view', 'info', '', 'danger']);
     (app.workspace as any).handleLinkContextMenu(menu, link.href, view.file.path);
+    menu.showAtMouseEvent(evt);
   });
   contentEl.on('mouseover', 'a.internal-link', (evt: MouseEvent, targetEl: HTMLElement) => {
     const link = parseLink(targetEl);
@@ -119,6 +120,7 @@ export function bindMarkdownEvents(view: KanbanView) {
       'danger',
     ]);
     (app.workspace as any).handleExternalLinkContextMenu(menu, link.href);
+    menu.showAtMouseEvent(evt);
   });
   contentEl.on('click', 'a.tag', (evt: MouseEvent, targetEl: HTMLElement) => {
     if (evt.button !== 0) return;
