@@ -77,6 +77,20 @@ function getMarkdownController(view: KanbanView, getEditor: () => Editor): Recor
   };
 }
 
+function setInsertMode(cm: EditorView) {
+  const vim = getVimPlugin(cm);
+  if (vim) {
+    (window as any).CodeMirrorAdapter?.Vim?.enterInsertMode(vim);
+  }
+}
+
+function getVimPlugin(cm: EditorView): string {
+  return (cm as any)?.plugins?.find((p: any) => {
+    if (!p?.value) return false;
+    return 'useNextTextInput' in p.value && 'waitForCopy' in p.value;
+  })?.value?.cm;
+}
+
 export function MarkdownEditor({
   editorRef,
   onEnter,
@@ -211,6 +225,10 @@ export function MarkdownEditor({
       cm.dispatch({
         userEvent: 'select.pointer',
         selection: EditorSelection.single(cm.posAtCoords(editState, false)),
+      });
+
+      cm.dom.win.setTimeout(() => {
+        setInsertMode(cm);
       });
     }
 
