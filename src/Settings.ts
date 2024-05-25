@@ -879,45 +879,6 @@ export class SettingsManager {
           });
       });
 
-    new Setting(contentEl).then((setting) => {
-      const [value] = this.getSetting('date-colors', local);
-
-      const keys: DateColorSetting[] = ((value || []) as DateColor[]).map((k) => {
-        return {
-          ...DateColorSettingTemplate,
-          id: generateInstanceId(),
-          data: k,
-        };
-      });
-
-      renderDateSettings(
-        setting.settingEl,
-        keys,
-        (keys: DateColorSetting[]) =>
-          this.applySettingsUpdate({
-            'date-colors': {
-              $set: keys.map((k) => k.data),
-            },
-          }),
-        () => {
-          const [value, globalValue] = this.getSetting('date-display-format', local);
-          const defaultFormat = getDefaultDateFormat(this.app);
-          return value || globalValue || defaultFormat;
-        },
-        () => {
-          const [value, globalValue] = this.getSetting('time-format', local);
-          const defaultFormat = getDefaultTimeFormat(this.app);
-          return value || globalValue || defaultFormat;
-        }
-      );
-
-      this.cleanupFns.push(() => {
-        if (setting.settingEl) {
-          cleanUpDateSettings(setting.settingEl);
-        }
-      });
-    });
-
     new Setting(contentEl)
       .setName(t('Link dates to daily notes'))
       .setDesc(t('When toggled, dates will link to daily notes. Eg. [[2021-04-26]]'))
@@ -957,6 +918,45 @@ export class SettingsManager {
               });
           });
       });
+
+    new Setting(contentEl).then((setting) => {
+      const [value] = this.getSetting('date-colors', local);
+
+      const keys: DateColorSetting[] = ((value || []) as DateColor[]).map((k) => {
+        return {
+          ...DateColorSettingTemplate,
+          id: generateInstanceId(),
+          data: k,
+        };
+      });
+
+      renderDateSettings(
+        setting.settingEl,
+        keys,
+        (keys: DateColorSetting[]) =>
+          this.applySettingsUpdate({
+            'date-colors': {
+              $set: keys.map((k) => k.data),
+            },
+          }),
+        () => {
+          const [value, globalValue] = this.getSetting('date-display-format', local);
+          const defaultFormat = getDefaultDateFormat(this.app);
+          return value || globalValue || defaultFormat;
+        },
+        () => {
+          const [value, globalValue] = this.getSetting('time-format', local);
+          const defaultFormat = getDefaultTimeFormat(this.app);
+          return value || globalValue || defaultFormat;
+        }
+      );
+
+      this.cleanupFns.push(() => {
+        if (setting.settingEl) {
+          cleanUpDateSettings(setting.settingEl);
+        }
+      });
+    });
 
     new Setting(contentEl)
       .setName(t('Add date and time to archived cards'))

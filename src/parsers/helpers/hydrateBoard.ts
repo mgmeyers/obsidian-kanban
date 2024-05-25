@@ -58,7 +58,7 @@ export function preprocessTitle(stateManager: StateManager, title: string) {
       const linkPath = app.metadataCache.getFirstLinkpathDest(content, stateManager.file.path);
       if (!dateColor) dateColor = getDateColor(parsed);
       const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-date-wrapper'));
-      return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')} ${c('preview-date-link')}"${wrapperStyle}><a class="${c('preview-date')} internal-link" data-href="${linkPath.path}" href="${linkPath.path}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
+      return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')} ${c('preview-date-link')}"${wrapperStyle}><a class="${c('preview-date')} internal-link" data-href="${linkPath?.path ?? content}" href="${linkPath?.path ?? content}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
     }
   );
   title = title.replace(new RegExp(`${dateTrigger}{([^}]+)}`, 'g'), (match, content) => {
