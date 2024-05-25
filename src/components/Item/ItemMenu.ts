@@ -19,6 +19,8 @@ const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
 const embedRegEx = /!?\[\[([^\]]*)\.[^\]]+\]\]/g;
 const wikilinkRegEx = /!?\[\[([^\]]*)\]\]/g;
 const mdLinkRegEx = /!?\[([^\]]*)\]\([^)]*\)/g;
+const tagRegEx = /#([^\u2000-\u206F\u2E00-\u2E7F'!"#$%&()*+,.:;<=>?@^`{|}~[\]\\\s\n\r]+)/g;
+const condenceWhiteSpaceRE = /\s+/g;
 
 interface UseItemMenuParams {
   setEditState: Dispatch<StateUpdater<EditState>>;
@@ -57,8 +59,10 @@ export function useItemMenu({
                 .replace(embedRegEx, '$1')
                 .replace(wikilinkRegEx, '$1')
                 .replace(mdLinkRegEx, '$1')
+                .replace(tagRegEx, '$1')
                 .replace(illegalCharsRegEx, ' ')
-                .trim();
+                .trim()
+                .replace(condenceWhiteSpaceRE, ' ');
 
               const newNoteFolder = stateManager.getSetting('new-note-folder');
               const newNoteTemplatePath = stateManager.getSetting('new-note-template');
