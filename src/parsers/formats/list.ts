@@ -189,6 +189,8 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
     }
   );
 
+  itemData.title = preprocessTitle(stateManager, dedentNewLines(executeDeletion(title)));
+
   const firstLineEnd = itemData.title.indexOf('\n');
   const inlineFields = extractInlineFields(itemData.title, true);
 
@@ -218,7 +220,6 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
     }
   }
 
-  itemData.title = preprocessTitle(stateManager, dedentNewLines(executeDeletion(title)));
   itemData.metadata.tags?.sort(defaultSort);
 
   return itemData;
