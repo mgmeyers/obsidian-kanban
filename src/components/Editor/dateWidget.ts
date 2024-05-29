@@ -12,6 +12,7 @@ import {
 import { moment } from 'obsidian';
 
 import { StateManager } from '../../StateManager';
+import { escapeRegExpStr } from '../helpers';
 
 export const stateManagerField = StateField.define<StateManager | null>({
   create() {
@@ -120,7 +121,11 @@ function create(type: 'date' | 'time', reStr: string) {
   return ViewPlugin.define((view) => {
     const stateManager = view.state.field(stateManagerField);
     const dateTrigger = stateManager.getSetting(type === 'date' ? 'date-trigger' : 'time-trigger');
-    return new DateDecorator(view, new RegExp(`${dateTrigger}${reStr}`, 'g'), type);
+    return new DateDecorator(
+      view,
+      new RegExp(`${escapeRegExpStr(dateTrigger)}${reStr}`, 'g'),
+      type
+    );
   }, config);
 }
 
