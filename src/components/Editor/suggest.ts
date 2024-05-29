@@ -158,7 +158,9 @@ export class TimeSuggest extends EditorSuggest<string> {
     if (!stateManager) return null;
 
     const timeTrigger = stateManager.getSetting('time-trigger');
-    const timeTriggerRegex = new RegExp(`\\B${escapeRegExpStr(timeTrigger as string)}{?([^}]*)$`);
+    const timeTriggerRegex = new RegExp(
+      `(?:^|\\s)${escapeRegExpStr(timeTrigger as string)}{?([^}]*)$`
+    );
     const textCtx = (editor.getLine(cursor.line) || '').slice(0, cursor.ch);
     const match = textCtx.match(timeTriggerRegex);
 

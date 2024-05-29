@@ -38,44 +38,44 @@ export function preprocessTitle(stateManager: StateManager, title: string) {
   };
 
   title = title.replace(
-    new RegExp(`${escapeRegExpStr(dateTrigger)}\\[\\[([^\\]]+)\\]\\]`, 'g'),
-    (match, content) => {
+    new RegExp(`(^|\\s)${escapeRegExpStr(dateTrigger)}\\[\\[([^\\]]+)\\]\\]`, 'g'),
+    (match, space, content) => {
       const parsed = moment(content, dateFormat);
       if (!parsed.isValid()) return match;
       date = parsed;
       const linkPath = app.metadataCache.getFirstLinkpathDest(content, stateManager.file.path);
       if (!dateColor) dateColor = getDateColor(parsed);
       const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-date-wrapper'));
-      return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')} ${c('preview-date-link')}"${wrapperStyle}><a class="${c('preview-date')} internal-link" data-href="${linkPath?.path ?? content}" href="${linkPath?.path ?? content}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
+      return `${space}<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')} ${c('preview-date-link')}"${wrapperStyle}><a class="${c('preview-date')} internal-link" data-href="${linkPath?.path ?? content}" href="${linkPath?.path ?? content}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
     }
   );
   title = title.replace(
-    new RegExp(`${escapeRegExpStr(dateTrigger)}\\[([^\\]]+)\\]\\([^)]+\\)`, 'g'),
-    (match, content) => {
+    new RegExp(`(^|\\s)${escapeRegExpStr(dateTrigger)}\\[([^\\]]+)\\]\\([^)]+\\)`, 'g'),
+    (match, space, content) => {
       const parsed = moment(content, dateFormat);
       if (!parsed.isValid()) return match;
       date = parsed;
       const linkPath = app.metadataCache.getFirstLinkpathDest(content, stateManager.file.path);
       if (!dateColor) dateColor = getDateColor(parsed);
       const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-date-wrapper'));
-      return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')} ${c('preview-date-link')}"${wrapperStyle}><a class="${c('preview-date')} internal-link" data-href="${linkPath?.path ?? content}" href="${linkPath?.path ?? content}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
+      return `${space}<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')} ${c('preview-date-link')}"${wrapperStyle}><a class="${c('preview-date')} internal-link" data-href="${linkPath?.path ?? content}" href="${linkPath?.path ?? content}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
     }
   );
   title = title.replace(
-    new RegExp(`${escapeRegExpStr(dateTrigger)}{([^}]+)}`, 'g'),
-    (match, content) => {
+    new RegExp(`(^|\\s)${escapeRegExpStr(dateTrigger)}{([^}]+)}`, 'g'),
+    (match, space, content) => {
       const parsed = moment(content, dateFormat);
       if (!parsed.isValid()) return match;
       date = parsed;
       if (!dateColor) dateColor = getDateColor(parsed);
       const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-date-wrapper'));
-      return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')}"${wrapperStyle}><span class="${c('preview-date')} ${c('item-metadata-date')}">${parsed.format(dateDisplayFormat)}</span></span>`;
+      return `${space}<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')}"${wrapperStyle}><span class="${c('preview-date')} ${c('item-metadata-date')}">${parsed.format(dateDisplayFormat)}</span></span>`;
     }
   );
 
   title = title.replace(
-    new RegExp(`${escapeRegExpStr(timeTrigger)}{([^}]+)}`, 'g'),
-    (match, content) => {
+    new RegExp(`(^|\\s)${escapeRegExpStr(timeTrigger)}{([^}]+)}`, 'g'),
+    (match, space, content) => {
       const parsed = moment(content, timeFormat);
       if (!parsed.isValid()) return match;
 
@@ -89,7 +89,7 @@ export function preprocessTitle(stateManager: StateManager, title: string) {
       }
 
       const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-time-wrapper'));
-      return `<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')}"${wrapperStyle}><span class="${c('preview-time')} ${c('item-metadata-time')}">${parsed.format(timeFormat)}</span></span>`;
+      return `${space}<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')}"${wrapperStyle}><span class="${c('preview-time')} ${c('item-metadata-time')}">${parsed.format(timeFormat)}</span></span>`;
     }
   );
 
