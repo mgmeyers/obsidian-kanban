@@ -96,12 +96,12 @@ export default class KanbanPlugin extends Plugin {
   MarkdownEditor: any;
 
   async onload() {
-    this.MarkdownEditor = getEditorClass(this.app);
-
     await this.loadSettings();
 
-    this.registerEditorSuggest(new DateSuggest(this.app, this));
+    this.MarkdownEditor = getEditorClass(this.app);
+
     this.registerEditorSuggest(new TimeSuggest(this.app, this));
+    this.registerEditorSuggest(new DateSuggest(this.app, this));
 
     this.registerEvent(
       this.app.workspace.on('window-open', (_: any, win: Window) => {

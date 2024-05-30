@@ -15,6 +15,18 @@ import { c, escapeRegExpStr } from '../helpers';
 import { applyDate, constructDatePicker, toNextMonth, toPreviousMonth } from './datepicker';
 import { Instance } from './flatpickr/types/instance';
 
+export function matchTimeTrigger(timeTrigger: string, editor: Editor, cursor: EditorPosition) {
+  const textCtx = (editor.getLine(cursor.line) || '').slice(0, cursor.ch);
+  const timeTriggerRegex = new RegExp(`(?:^|\\s)${escapeRegExpStr(timeTrigger)}{?([^}]*)$`);
+  return textCtx.match(timeTriggerRegex);
+}
+
+export function matchDateTrigger(dateTrigger: string, editor: Editor, cursor: EditorPosition) {
+  const textCtx = (editor.getLine(cursor.line) || '').slice(0, cursor.ch);
+  const dateTriggerRegex = new RegExp(`(?:^|\\s)${escapeRegExpStr(dateTrigger)}{?([^}]*)$`);
+  return textCtx.match(dateTriggerRegex);
+}
+
 export class DateSuggest extends EditorSuggest<[]> {
   plugin: KanbanPlugin;
   app: App;
@@ -116,14 +128,9 @@ export class DateSuggest extends EditorSuggest<[]> {
     const stateManager = this.plugin.getStateManager(file);
     if (!stateManager) return null;
 
-    const line = editor.getLine(cursor.line);
-    if (!line) return null;
-
     const dateTrigger = stateManager.getSetting('date-trigger');
-    const textCtx = line.slice(0, cursor.ch);
-
-    const isMatch = new RegExp(`(?:^|\\s)${escapeRegExpStr(dateTrigger)}$`).test(textCtx);
-    if (!isMatch) return null;
+    const match = matchDateTrigger(dateTrigger, editor, cursor);
+    if (!match) return null;
 
     return {
       start: { line: cursor.line, ch: cursor.ch - dateTrigger.length },
@@ -158,12 +165,7 @@ export class TimeSuggest extends EditorSuggest<string> {
     if (!stateManager) return null;
 
     const timeTrigger = stateManager.getSetting('time-trigger');
-    const timeTriggerRegex = new RegExp(
-      `(?:^|\\s)${escapeRegExpStr(timeTrigger as string)}{?([^}]*)$`
-    );
-    const textCtx = (editor.getLine(cursor.line) || '').slice(0, cursor.ch);
-    const match = textCtx.match(timeTriggerRegex);
-
+    const match = matchTimeTrigger(timeTrigger, editor, cursor);
     if (!match) return null;
 
     this.times = buildTimeArray(stateManager);

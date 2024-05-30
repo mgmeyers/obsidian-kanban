@@ -2,7 +2,7 @@ import { insertBlankLine } from '@codemirror/commands';
 import { EditorSelection, Extension, Prec } from '@codemirror/state';
 import { EditorView, ViewUpdate, keymap, placeholder as placeholderExt } from '@codemirror/view';
 import classcat from 'classcat';
-import { Editor, EditorPosition, Platform } from 'obsidian';
+import { EditorPosition, Editor as ObsidianEditor, Platform } from 'obsidian';
 import { MutableRefObject, useContext, useEffect, useRef } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
@@ -12,6 +12,7 @@ import { KanbanContext } from '../context';
 import { c, noop } from '../helpers';
 import { EditState, isEditing } from '../types';
 import { datePlugins, stateManagerField } from './dateWidget';
+import { matchDateTrigger, matchTimeTrigger } from './suggest';
 
 interface MarkdownEditorProps {
   editorRef?: MutableRefObject<EditorView>;
@@ -56,7 +57,10 @@ function getEditorAppProxy(view: KanbanView) {
   });
 }
 
-function getMarkdownController(view: KanbanView, getEditor: () => Editor): Record<any, any> {
+function getMarkdownController(
+  view: KanbanView,
+  getEditor: () => ObsidianEditor
+): Record<any, any> {
   return {
     app: view.app,
     showSearch: noop,
@@ -113,9 +117,11 @@ export function MarkdownEditor({
 
       showTasksPluginAutoSuggest(
         cursor: EditorPosition,
-        editor: Editor,
+        editor: ObsidianEditor,
         lineHasGlobalFilter: boolean
       ) {
+        if (matchTimeTrigger(stateManager.getSetting('time-trigger'), editor, cursor)) return false;
+        if (matchDateTrigger(stateManager.getSetting('date-trigger'), editor, cursor)) return false;
         if (lineHasGlobalFilter && cursor.line === 0) return true;
         return undefined;
       }
