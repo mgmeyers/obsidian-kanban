@@ -1,4 +1,5 @@
 import { isPlainObject } from 'is-plain-object';
+import moment from 'moment';
 import { getAPI } from 'obsidian-dataview';
 
 type Key = string | number;
@@ -29,7 +30,7 @@ function isDiffable(obj: any): obj is Diffable {
   if (isPlainObject(obj) || Array.isArray(obj)) return true;
 
   const dv = getAPI();
-  if (dv?.value.isObject(obj)) return true;
+  if (!moment.isMoment(obj) && dv?.value.isObject(obj)) return true;
 
   return false;
 }

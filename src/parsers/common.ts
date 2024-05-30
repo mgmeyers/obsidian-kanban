@@ -169,6 +169,7 @@ export function getLinkedPageMetadata(
     if (
       cacheVal !== null &&
       cacheVal !== undefined &&
+      cacheVal !== '' &&
       !(Array.isArray(cacheVal) && cacheVal.length === 0)
     ) {
       if (typeof cacheVal === 'string') {
@@ -215,6 +216,7 @@ export function getLinkedPageMetadata(
     } else if (
       dataviewVal !== undefined &&
       dataviewVal !== null &&
+      dataviewVal !== '' &&
       !(Array.isArray(dataviewVal) && dataviewVal.length === 0)
     ) {
       const cachedValue = dataviewCache[k.metadataKey];
