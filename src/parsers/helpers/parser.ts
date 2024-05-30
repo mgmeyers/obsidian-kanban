@@ -1,4 +1,5 @@
 import { Stat } from 'obsidian';
+import { Item } from 'src/components/types';
 
 export interface FileAccessor {
   isEmbed: boolean;
@@ -33,6 +34,23 @@ export function replaceBrs(str: string) {
 export function indentNewLines(str: string) {
   const useTab = (app.vault as any).getConfig('useTab');
   return str.trim().replace(/(?:\r\n|\n)/g, useTab ? '\n\t' : '\n    ');
+}
+
+export function addBlockId(str: string, item: Item) {
+  if (!item.data.blockId) return str;
+
+  const lines = str.split(/(?:\r\n|\n)/g);
+  lines[0] += ' ^' + item.data.blockId;
+
+  return lines.join('\n');
+}
+
+export function removeBlockId(str: string) {
+  const lines = str.split(/(?:\r\n|\n)/g);
+
+  lines[0] = lines[0].replace(/\s+\^([a-zA-Z0-9-]+)$/, '');
+
+  return lines.join('\n');
 }
 
 export function dedentNewLines(str: string) {

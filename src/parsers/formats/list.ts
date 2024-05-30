@@ -32,11 +32,13 @@ import {
 import { hydrateItem, preprocessTitle } from '../helpers/hydrateBoard';
 import { extractInlineFields, taskFields } from '../helpers/inlineMetadata';
 import {
+  addBlockId,
   dedentNewLines,
   executeDeletion,
   indentNewLines,
   markRangeForDeletion,
   parseLaneTitle,
+  removeBlockId,
   replaceBrs,
   replaceNewLines,
 } from '../helpers/parser';
@@ -88,7 +90,7 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
   );
 
   const itemData: ItemData = {
-    titleRaw: dedentNewLines(replaceBrs(itemContent)),
+    titleRaw: removeBlockId(dedentNewLines(replaceBrs(itemContent))),
     blockId: undefined,
     title: '',
     titleSearch,
@@ -331,9 +333,7 @@ export function astToUnhydratedBoard(
 }
 
 export function updateItemContent(stateManager: StateManager, oldItem: Item, newContent: string) {
-  const md = `- [${oldItem.data.checkChar}] ${indentNewLines(newContent)}${
-    oldItem.data.blockId ? ` ^${oldItem.data.blockId}` : ''
-  }`;
+  const md = `- [${oldItem.data.checkChar}] ${addBlockId(indentNewLines(newContent), oldItem)}`;
 
   const ast = parseFragment(stateManager, md);
   const itemData = listItemToItemData(stateManager, md, (ast.children[0] as List).children[0]);
@@ -401,9 +401,7 @@ export function reparseBoard(stateManager: StateManager, board: Board) {
 }
 
 function itemToMd(item: Item) {
-  return `- [${item.data.checkChar}] ${indentNewLines(item.data.titleRaw)}${
-    item.data.blockId ? ` ^${item.data.blockId}` : ''
-  }`;
+  return `- [${item.data.checkChar}] ${addBlockId(indentNewLines(item.data.titleRaw), item)}`;
 }
 
 function laneToMd(lane: Lane) {

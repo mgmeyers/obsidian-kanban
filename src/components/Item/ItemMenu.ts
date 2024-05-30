@@ -1,3 +1,4 @@
+import update from 'immutability-helper';
 import { Menu, Platform, TFile, TFolder } from 'obsidian';
 import { Dispatch, StateUpdater, useCallback } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
@@ -113,7 +114,10 @@ export function useItemMenu({
 
                 boardModifiers.updateItem(
                   path,
-                  stateManager.updateItemContent(item, `${item.data.titleRaw} ^${id}`)
+                  stateManager.updateItemContent(
+                    update(item, { data: { blockId: { $set: id } } }),
+                    item.data.titleRaw
+                  )
                 );
               }
             });
