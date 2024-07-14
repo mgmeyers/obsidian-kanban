@@ -258,6 +258,8 @@ export class StateManager {
       'tag-sort': this.getSettingRaw('tag-sort', suppliedSettings) ?? [],
       'date-colors': this.getSettingRaw('date-colors', suppliedSettings) ?? [],
       'tag-action': this.getSettingRaw('tag-action', suppliedSettings) ?? 'obsidian',
+      'tag-in-title': this.getSettingRaw('tag-in-title', suppliedSettings) ?? false,
+      'tag-in-properties': this.getSettingRaw('tag-in-properties', suppliedSettings) ?? false,
     };
   }
 

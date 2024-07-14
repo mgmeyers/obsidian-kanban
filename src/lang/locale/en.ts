@@ -132,10 +132,16 @@ const en = {
   'Archive date/time format': 'Archive date/time format',
   'Kanban Plugin': 'Kanban Plugin',
   'Tag click action': 'Tag click action',
+  'Add tags to note title': 'Add tags to note title',
+  'Add tags to note properties': 'Add tags to note properties',
   'Search Kanban Board': 'Search Kanban Board',
   'Search Obsidian Vault': 'Search Obsidian Vault',
   'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.':
     'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.',
+  'When toggled, the tags used in the card title will also be added to the note title without the "#" before them':
+    'When toggled, the tags used in the card title will also be added to the note title without the "#" before them',
+  'When toggled, the tags used in the card title will also be added to the note properties':
+    'When toggled, the tags used in the card title will also be added to the note properties',
   'Tag colors': 'Tag colors',
   'Set colors for tags displayed in cards.': 'Set colors for tags displayed in cards.',
   'Linked Page Metadata': 'Linked Page Metadata',
