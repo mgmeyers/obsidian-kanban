@@ -80,6 +80,7 @@ export interface KanbanSettings {
   'show-add-list'?: boolean;
   'show-archive-all'?: boolean;
   'show-board-settings'?: boolean;
+  'toggle-metadata'?: boolean;
   'show-checkboxes'?: boolean;
   'show-relative-date'?: boolean;
   'show-search'?: boolean;
@@ -130,6 +131,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'show-add-list',
   'show-archive-all',
   'show-board-settings',
+  'toggle-metadata',
   'show-checkboxes',
   'show-relative-date',
   'show-search',
@@ -1529,6 +1531,46 @@ export class SettingsManager {
 
               this.applySettingsUpdate({
                 $unset: ['show-set-view'],
+              });
+            });
+        });
+    });
+
+    new Setting(contentEl).setName(t('Show/Hide metadata')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting('toggle-metadata', local);
+
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'toggle-metadata': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('lucide-rotate-ccw')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('toggle-metadata', local);
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['toggle-metadata'],
               });
             });
         });

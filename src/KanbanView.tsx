@@ -383,6 +383,46 @@ export class KanbanView extends TextFileView implements HoverParent {
       delete this.actionButtons['show-board-settings'];
     }
 
+    if (stateManager.getSetting('toggle-metadata') && !this.actionButtons['toggle-metadata']) {
+      this.actionButtons['toggle-metadata'] = this.addAction(
+        'lucide-chevrons-up-down',
+        t('Show/Hide metadata'),
+        () => {
+          const stateManager = this.plugin.stateManagers.get(this.file);
+          stateManager.setState((boardData) => {
+            const collapseStateItems = this.getViewState('item-collapse');
+            const op = (collapseState: boolean[][]) => {
+              let newState = collapseState.map((inner) => [...inner]);
+
+              const allTrue = newState.every((list) => list.every((card) => card === true));
+              const allFalse = newState.every((list) => list.every((card) => card === false));
+
+              if (allTrue || allFalse) {
+                // if all cards have the same state (collapsed vs expanded) - toggle it
+                newState = newState.map((list) => list.map((card) => !card));
+              } else {
+                // if at least one card is collapsed - collapse them all
+                newState = newState.map((list) => list.map((card) => true));
+              }
+
+              return newState;
+            };
+            this.setViewState('item-collapse', undefined, op);
+
+            return update<Board>(boardData, {
+              data: { settings: { 'item-collapse': { $set: op(collapseStateItems) } } },
+            });
+          });
+        }
+      );
+    } else if (
+      !stateManager.getSetting('toggle-metadata') &&
+      this.actionButtons['toggle-metadata']
+    ) {
+      this.actionButtons['toggle-metadata'].remove();
+      delete this.actionButtons['toggle-metadata'];
+    }
+
     if (stateManager.getSetting('show-set-view') && !this.actionButtons['show-set-view']) {
       this.actionButtons['show-set-view'] = this.addAction(
         'lucide-view',
