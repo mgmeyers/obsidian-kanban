@@ -56,15 +56,54 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
 
   return {
     appendItems: (path: Path, items: Item[]) => {
-      stateManager.setState((boardData) => appendEntities(boardData, path, items));
+      stateManager.setState((boardData) => {
+        const collapseState = view.getViewState('item-collapse');
+        const op = (collapseState: boolean[][]) => {
+          const [laneIdx, itemIdx] = path;
+          const newState = collapseState.map((inner) => [...inner]);
+          newState[laneIdx].splice(itemIdx + 1, 0, false);
+          return newState;
+        };
+
+        view.setViewState('item-collapse', undefined, op);
+        return update<Board>(appendEntities(boardData, path, items), {
+          data: { settings: { 'item-collapse': { $set: op(collapseState) } } },
+        });
+      });
     },
 
     prependItems: (path: Path, items: Item[]) => {
-      stateManager.setState((boardData) => prependEntities(boardData, path, items));
+      stateManager.setState((boardData) => {
+        const collapseState = view.getViewState('item-collapse');
+        const op = (collapseState: boolean[][]) => {
+          const [laneIdx, _] = path;
+          const newState = collapseState.map((inner) => [...inner]);
+          newState[laneIdx].splice(0, 0, false);
+          return newState;
+        };
+
+        view.setViewState('item-collapse', undefined, op);
+        return update<Board>(prependEntities(boardData, path, items), {
+          data: { settings: { 'item-collapse': { $set: op(collapseState) } } },
+        });
+      });
     },
 
     insertItems: (path: Path, items: Item[]) => {
-      stateManager.setState((boardData) => insertEntity(boardData, path, items));
+      stateManager.setState((boardData) => {
+        const collapseState = view.getViewState('item-collapse');
+        const op = (collapseState: boolean[][]) => {
+          const [laneIdx, itemIdx] = path;
+          const newState = collapseState.map((inner) => [...inner]);
+          newState[laneIdx].splice(itemIdx, 0, false);
+          return newState;
+        };
+
+        view.setViewState('item-collapse', undefined, op);
+        return update<Board>(insertEntity(boardData, path, items), {
+          data: { settings: { 'item-collapse': { $set: op(collapseState) } } },
+        });
+      });
     },
 
     replaceItem: (path: Path, items: Item[]) => {
@@ -75,51 +114,116 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
 
     splitItem: (path: Path, items: Item[]) => {
       stateManager.setState((boardData) => {
-        return insertEntity(removeEntity(boardData, path), path, items);
+        const collapseState = view.getViewState('item-collapse');
+        const op = (collapseState: boolean[][]) => {
+          const [laneIdx, itemIdx] = path;
+          const newItems = Array(items.length).fill(false);
+          const newState = collapseState.map((inner) => [...inner]);
+          newState[laneIdx].splice(itemIdx, 1, ...newItems);
+          return newState;
+        };
+
+        view.setViewState('item-collapse', undefined, op);
+
+        return update<Board>(insertEntity(removeEntity(boardData, path), path, items), {
+          data: { settings: { 'item-collapse': { $set: op(collapseState) } } },
+        });
       });
     },
 
     moveItemToTop: (path: Path) => {
-      stateManager.setState((boardData) => moveEntity(boardData, path, [path[0], 0]));
+      stateManager.setState((boardData) => {
+        const [laneIdx, itemIdx] = path;
+        const collapseStateItems = view.getViewState('item-collapse');
+        const op = (collapseState: boolean[][]) => {
+          const newState = collapseState.map((inner) => [...inner]);
+          const [tmp] = newState[laneIdx].splice(itemIdx, 1);
+          newState[laneIdx].unshift(tmp);
+          return newState;
+        };
+
+        view.setViewState('item-collapse', undefined, op);
+        return update<Board>(moveEntity(boardData, path, [laneIdx, 0]), {
+          data: { settings: { 'item-collapse': { $set: op(collapseStateItems) } } },
+        });
+      });
     },
 
     moveItemToBottom: (path: Path) => {
       stateManager.setState((boardData) => {
-        const laneIndex = path[0];
-        const lane = boardData.children[laneIndex];
-        return moveEntity(boardData, path, [laneIndex, lane.children.length]);
+        const [laneIdx, itemIdx] = path;
+        const lane = boardData.children[laneIdx];
+
+        const collapseState = view.getViewState('item-collapse');
+        const op = (collapseState: boolean[][]) => {
+          const newState = collapseState.map((inner) => [...inner]);
+          const [tmp] = newState[laneIdx].splice(itemIdx, 1);
+          newState[laneIdx].push(tmp);
+          return newState;
+        };
+
+        view.setViewState('item-collapse', undefined, op);
+        return update<Board>(moveEntity(boardData, path, [laneIdx, lane.children.length]), {
+          data: { settings: { 'item-collapse': { $set: op(collapseState) } } },
+        });
       });
     },
 
     addLane: (lane: Lane) => {
       stateManager.setState((boardData) => {
-        const collapseState = view.getViewState('list-collapse') || [];
-        const op = (collapseState: boolean[]) => {
+        const collapseStateLanes = view.getViewState('list-collapse') || [];
+        const opLanes = (collapseState: boolean[]) => {
           const newState = [...collapseState];
           newState.push(false);
           return newState;
         };
 
-        view.setViewState('list-collapse', undefined, op);
+        const collapseStateItems = view.getViewState('item-collapse') || [];
+        const opItems = (collapseState: boolean[][]) => {
+          const newState = collapseState.map((inner) => [...inner]);
+          newState.push([]);
+          return newState;
+        };
+
+        view.setViewState('list-collapse', undefined, opLanes);
+        view.setViewState('item-collapse', undefined, opItems);
         return update<Board>(appendEntities(boardData, [], [lane]), {
-          data: { settings: { 'list-collapse': { $set: op(collapseState) } } },
+          data: {
+            settings: {
+              'list-collapse': { $set: opLanes(collapseStateLanes) },
+              'item-collapse': { $set: opItems(collapseStateItems) },
+            },
+          },
         });
       });
     },
 
     insertLane: (path: Path, lane: Lane) => {
       stateManager.setState((boardData) => {
-        const collapseState = view.getViewState('list-collapse');
-        const op = (collapseState: boolean[]) => {
+        const collapseStateLanes = view.getViewState('list-collapse');
+        const opLanes = (collapseState: boolean[]) => {
           const newState = [...collapseState];
           newState.splice(path.last(), 0, false);
           return newState;
         };
 
-        view.setViewState('list-collapse', undefined, op);
+        const collapseStateItems = view.getViewState('item-collapse') || [];
+        const opItems = (collapseState: boolean[][]) => {
+          const newState = collapseState.map((inner) => [...inner]);
+          newState.splice(path.last(), 0, []);
+          return newState;
+        };
+
+        view.setViewState('list-collapse', undefined, opLanes);
+        view.setViewState('item-collapse', undefined, opItems);
 
         return update<Board>(insertEntity(boardData, path, [lane]), {
-          data: { settings: { 'list-collapse': { $set: op(collapseState) } } },
+          data: {
+            settings: {
+              'list-collapse': { $set: opLanes(collapseStateLanes) },
+              'item-collapse': { $set: opItems(collapseStateItems) },
+            },
+          },
         });
       });
     },
@@ -142,17 +246,28 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
         const items = lane.children;
 
         try {
-          const collapseState = view.getViewState('list-collapse');
-          const op = (collapseState: boolean[]) => {
+          const collapseStateLanes = view.getViewState('list-collapse');
+          const opLanes = (collapseState: boolean[]) => {
             const newState = [...collapseState];
             newState.splice(path.last(), 1);
             return newState;
           };
-          view.setViewState('list-collapse', undefined, op);
+          view.setViewState('list-collapse', undefined, opLanes);
+
+          const collapseStateItems = view.getViewState('item-collapse');
+          const opItems = (collapseState: boolean[][]) => {
+            const nextState = collapseState.map((inner) => [...inner]);
+            nextState.splice(path.last(), 1);
+            return nextState;
+          };
+          view.setViewState('item-collapse', undefined, opItems);
 
           return update<Board>(removeEntity(boardData, path), {
             data: {
-              settings: { 'list-collapse': { $set: op(collapseState) } },
+              settings: {
+                'list-collapse': { $set: opLanes(collapseStateLanes) },
+                'item-collapse': { $set: opItems(collapseStateItems) },
+              },
               archive: {
                 $unshift: stateManager.getSetting('archive-with-date')
                   ? items.map(appendArchiveDate)
@@ -172,6 +287,14 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
         const lane = getEntityFromPath(boardData, path);
         const items = lane.children;
 
+        const collapseStateItems = view.getViewState('item-collapse');
+        const opItems = (collapseState: boolean[][]) => {
+          const newState = collapseState.map((inner) => [...inner]);
+          newState[path.last()].length = 0;
+          return newState;
+        };
+        view.setViewState('item-collapse', undefined, opItems);
+
         try {
           return update(
             updateEntity(boardData, path, {
@@ -181,6 +304,11 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
             }),
             {
               data: {
+                settings: {
+                  'item-collapse': {
+                    $set: opItems(collapseStateItems),
+                  },
+                },
                 archive: {
                   $unshift: stateManager.getSetting('archive-with-date')
                     ? items.map(appendArchiveDate)
@@ -200,21 +328,48 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
       stateManager.setState((boardData) => {
         const entity = getEntityFromPath(boardData, path);
 
+        const collapseStateLanes = view.getViewState('list-collapse');
+        const collapseStateItems = view.getViewState('item-collapse');
         if (entity.type === DataTypes.Lane) {
-          const collapseState = view.getViewState('list-collapse');
-          const op = (collapseState: boolean[]) => {
+          const opLanes = (collapseState: boolean[]) => {
             const newState = [...collapseState];
             newState.splice(path.last(), 1);
             return newState;
           };
-          view.setViewState('list-collapse', undefined, op);
+          const opItems = (collapseState: boolean[][]) => {
+            const newState = collapseState.map((inner) => [...inner]);
+            newState.splice(path.last(), 1);
+            return newState;
+          };
+          view.setViewState('list-collapse', undefined, opLanes);
+          view.setViewState('item-collapse', undefined, opItems);
 
           return update<Board>(removeEntity(boardData, path), {
-            data: { settings: { 'list-collapse': { $set: op(collapseState) } } },
+            data: {
+              settings: {
+                'list-collapse': { $set: opLanes(collapseStateLanes) },
+                'item-collapse': { $set: opItems(collapseStateItems) },
+              },
+            },
+          });
+        } else {
+          // entity.type === DataTypes.Item
+          const opItems = (collapseState: boolean[][]) => {
+            const [laneIdx, itemIdx] = path;
+            const newState = collapseState.map((inner) => [...inner]);
+            newState[laneIdx].splice(itemIdx, 1);
+            return newState;
+          };
+          view.setViewState('item-collapse', undefined, opItems);
+
+          return update<Board>(removeEntity(boardData, path), {
+            data: {
+              settings: {
+                'item-collapse': { $set: opItems(collapseStateItems) },
+              },
+            },
           });
         }
-
-        return removeEntity(boardData, path);
       });
     },
 
@@ -234,8 +389,22 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
       stateManager.setState((boardData) => {
         const item = getEntityFromPath(boardData, path);
         try {
+          const collapseStateItems = view.getViewState('item-collapse');
+          const opItems = (collapseState: boolean[][]) => {
+            const [laneIdx, itemIdx] = path;
+            const newState = collapseState.map((inner) => [...inner]);
+            newState[laneIdx].splice(itemIdx, 1);
+            return newState;
+          };
+          view.setViewState('item-collapse', undefined, opItems);
+
           return update(removeEntity(boardData, path), {
             data: {
+              settings: {
+                'item-collapse': {
+                  $set: opItems(collapseStateItems),
+                },
+              },
               archive: {
                 $push: [
                   stateManager.getSetting('archive-with-date') ? appendArchiveDate(item) : item,
@@ -271,9 +440,21 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
           return update<Board>(insertEntity(boardData, path, [entityWithNewID]), {
             data: { settings: { 'list-collapse': { $set: op(collapseState) } } },
           });
-        }
+        } else {
+          // entity.type === DataTypes.Item
+          const collapseState = view.getViewState('item-collapse');
+          const op = (collapseState: boolean[][]) => {
+            const [laneIdx, itemIdx] = path;
+            const newState = collapseState.map((inner) => [...inner]);
+            newState[laneIdx].splice(itemIdx, 0, collapseState[laneIdx][itemIdx]);
+            return newState;
+          };
+          view.setViewState('item-collapse', undefined, op);
 
-        return insertEntity(boardData, path, [entityWithNewID]);
+          return update<Board>(insertEntity(boardData, path, [entityWithNewID]), {
+            data: { settings: { 'item-collapse': { $set: op(collapseState) } } },
+          });
+        }
       });
     },
   };

@@ -194,6 +194,7 @@ function DraggableLaneRaw({
                     <Items
                       items={lane.children}
                       isStatic={isStatic}
+                      laneIndex={laneIndex}
                       shouldMarkItemsComplete={shouldMarkItemsComplete}
                     />
                     <SortPlaceholder

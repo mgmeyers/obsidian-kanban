@@ -19,6 +19,7 @@ const en = {
   'Board view': 'Board view',
 
   // KanbanView.tsx
+  'Show/Hide metadata': 'Show/Hide metadata',
   'Open as markdown': 'Open as markdown',
   'Open board settings': 'Open board settings',
   'Archive completed cards': 'Archive completed cards',

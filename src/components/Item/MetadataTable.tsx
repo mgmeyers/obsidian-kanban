@@ -17,6 +17,7 @@ import { Tags } from './ItemContent';
 export interface ItemMetadataProps {
   item: Item;
   searchQuery?: string;
+  isCollapsed: boolean;
 }
 
 function mergeMetadata(
@@ -34,7 +35,7 @@ function mergeMetadata(
   }, fileMetadata || {});
 }
 
-export function ItemMetadata({ item, searchQuery }: ItemMetadataProps) {
+export function ItemMetadata({ item, searchQuery, isCollapsed }: ItemMetadataProps) {
   const { stateManager } = useContext(KanbanContext);
   const mergeInlineMetadata =
     stateManager.useSetting('inline-metadata-position') === 'metadata-table';
@@ -68,7 +69,10 @@ export function ItemMetadata({ item, searchQuery }: ItemMetadataProps) {
   }
 
   return (
-    <div className={c('item-metadata-wrapper')}>
+    <div
+      className={c('item-metadata-wrapper')}
+      style={isCollapsed ? 'display:none' : 'display:block'}
+    >
       <MetadataTable metadata={metadata} order={order} searchQuery={searchQuery} />
     </div>
   );

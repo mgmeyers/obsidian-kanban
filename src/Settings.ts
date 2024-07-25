@@ -67,6 +67,7 @@ export interface KanbanSettings {
   'lane-width'?: number;
   'link-date-to-daily-note'?: boolean;
   'list-collapse'?: boolean[];
+  'item-collapse'?: boolean[][];
   'max-archive-size'?: number;
   'metadata-keys'?: DataKey[];
   'move-dates'?: boolean;
@@ -95,6 +96,7 @@ export interface KanbanSettings {
 export interface KanbanViewSettings {
   [frontmatterKey]?: KanbanFormat;
   'list-collapse'?: boolean[];
+  'item-collapse'?: boolean[][];
 }
 
 export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
@@ -115,6 +117,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'lane-width',
   'link-date-to-daily-note',
   'list-collapse',
+  'item-collapse',
   'max-archive-size',
   'metadata-keys',
   'move-dates',

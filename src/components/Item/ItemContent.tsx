@@ -12,9 +12,11 @@ import {
 import { StateManager } from 'src/StateManager';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { Path } from 'src/dnd/types';
+import { t } from 'src/lang/helpers';
 import { getTaskStatusDone, toggleTaskString } from 'src/parsers/helpers/inlineMetadata';
 
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
+import { Icon } from '../Icon/Icon';
 import {
   MarkdownClonedPreviewRenderer,
   MarkdownRenderer,
@@ -77,11 +79,13 @@ export function useDatePickers(item: Item, explicitPath?: Path) {
 
 export interface ItemContentProps {
   item: Item;
+  editState: EditState;
   setEditState: Dispatch<StateUpdater<EditState>>;
   searchQuery?: string;
   showMetadata?: boolean;
-  editState: EditState;
   isStatic: boolean;
+  isCollapsed: boolean;
+  toggleIsCollapsed: () => void;
 }
 
 function checkCheckbox(stateManager: StateManager, title: string, checkboxIndex: number) {
@@ -187,6 +191,8 @@ export const ItemContent = memo(function ItemContent({
   searchQuery,
   showMetadata = true,
   isStatic,
+  isCollapsed,
+  toggleIsCollapsed,
 }: ItemContentProps) {
   const { stateManager, filePath, boardModifiers } = useContext(KanbanContext);
   const getDateColor = useGetDateColorFn(stateManager);
@@ -295,6 +301,23 @@ export const ItemContent = memo(function ItemContent({
       )}
       {showMetadata && (
         <div className={c('item-metadata')}>
+          {(item.data.metadata.inlineMetadata || item.data.metadata.fileMetadata) && (
+            <div onClick={toggleIsCollapsed}>
+              <a
+                href="#"
+                onPointerDown={(e) => e.preventDefault()}
+                data-ignore-drag={true}
+                aria-label={t('Show/Hide metadata')}
+                style={'color:#505e6c'}
+              >
+                {isCollapsed ? (
+                  <Icon name="lucide-chevron-right" />
+                ) : (
+                  <Icon name="lucide-chevron-down" />
+                )}
+              </a>
+            </div>
+          )}
           <RelativeDate item={item} stateManager={stateManager} />
           <DateAndTime
             item={item}
@@ -302,7 +325,7 @@ export const ItemContent = memo(function ItemContent({
             filePath={filePath}
             getDateColor={getDateColor}
           />
-          <InlineMetadata item={item} stateManager={stateManager} />
+          <InlineMetadata item={item} stateManager={stateManager} isCollapsed={isCollapsed} />
           <Tags tags={item.data.metadata.tags} searchQuery={searchQuery} />
         </div>
       )}
