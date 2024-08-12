@@ -3,6 +3,7 @@ import update from 'immutability-helper';
 import { JSX, createPortal, memo, useCallback, useMemo } from 'preact/compat';
 
 import { KanbanView } from './KanbanView';
+import { ItemCollapseState } from './Settings';
 import { DraggableItem } from './components/Item/Item';
 import { DraggableLane } from './components/Lane/Lane';
 import { KanbanContext } from './components/context';
@@ -155,7 +156,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
             view.setViewState('list-collapse', undefined, opLanes);
 
             const collapseStateItems = view.getViewState('item-collapse');
-            const opItems = (collapseState: boolean[][]) => {
+            const opItems = (collapseState: ItemCollapseState) => {
               const newState = collapseState.map((inner) => [...inner]);
               newState.splice(to, 0, newState.splice(from, 1)[0]);
               return newState;
@@ -177,7 +178,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
             const [toLane, toItem] = dropPath;
 
             const collapseState = view.getViewState('item-collapse');
-            const op = (collapseState: boolean[][]) => {
+            const op = (collapseState: ItemCollapseState) => {
               const newState = collapseState.map((inner) => [...inner]);
               newState[toLane].splice(toItem, 0, newState[fromLane].splice(fromItem, 1)[0]);
               return newState;
@@ -257,7 +258,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
 
             const collapseStateItems = destinationView.getViewState('item-collapse');
             const valItems = sourceView.getViewState('item-collapse')[dragPath.last()];
-            const opItems = (collapseState: boolean[][]) => {
+            const opItems = (collapseState: ItemCollapseState) => {
               const newState = collapseState.map((inner) => [...inner]);
               newState.splice(dropPath.last(), 0, valItems);
               return newState;
@@ -276,7 +277,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
             // entity.type === DataTypes.Item
             const collapseStateItems = destinationView.getViewState('item-collapse');
             const valItems = sourceView.getViewState('item-collapse')[dragPath[0]][dragPath[1]];
-            const opItems = (collapseState: boolean[][]) => {
+            const opItems = (collapseState: ItemCollapseState) => {
               const newState = collapseState.map((inner) => [...inner]);
               newState[dropPath[0]].splice(dropPath.last(), 0, valItems);
               return newState;
@@ -305,7 +306,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
           sourceView.setViewState('list-collapse', undefined, opLanes);
 
           const collapseStateItems = sourceView.getViewState('item-collapse');
-          const opItems = (collapseState: boolean[][]) => {
+          const opItems = (collapseState: ItemCollapseState) => {
             const newState = collapseState.map((inner) => [...inner]);
             newState.splice(dragPath.last(), 1);
             return newState;
@@ -322,7 +323,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
         } else {
           // entity.type === DataTypes.Item
           const collapseStateItems = sourceView.getViewState('item-collapse');
-          const opItems = (collapseState: boolean[][]) => {
+          const opItems = (collapseState: ItemCollapseState) => {
             const newState = collapseState.map((inner) => [...inner]);
             newState[dragPath[0]].splice(dragPath.last(), 1);
             return newState;

@@ -197,6 +197,13 @@ export const ItemContent = memo(function ItemContent({
   const { stateManager, filePath, boardModifiers } = useContext(KanbanContext);
   const getDateColor = useGetDateColorFn(stateManager);
   const titleRef = useRef<string | null>(null);
+  // inline metadata
+  const inlineMetadata =
+    ['footer', 'metadata-table'].includes(stateManager.getSetting('inline-metadata-position')) &&
+    item.data.metadata.inlineMetadata;
+  // linked page metadata
+  const fileMetadata =
+    stateManager.getSetting('metadata-keys').length > 0 && item.data.metadata.fileMetadata;
 
   useEffect(() => {
     if (editState === EditingState.complete) {
@@ -301,8 +308,8 @@ export const ItemContent = memo(function ItemContent({
       )}
       {showMetadata && (
         <div className={c('item-metadata')}>
-          {(item.data.metadata.inlineMetadata || item.data.metadata.fileMetadata) && (
-            <div onClick={toggleIsCollapsed}>
+          {(inlineMetadata || fileMetadata) && (
+            <div className={c('item-collapse')} onClick={toggleIsCollapsed}>
               <a
                 href="#"
                 onPointerDown={(e) => e.preventDefault()}

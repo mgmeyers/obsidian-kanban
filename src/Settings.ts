@@ -48,6 +48,8 @@ import { cleanUpTagSortSettings, renderTagSortSettings } from './settings/TagSor
 const numberRegEx = /^\d+(?:\.\d+)?$/;
 
 export type KanbanFormat = 'basic' | 'board' | 'table' | 'list';
+// an item may be: collapsed, expanded (i.e., not collapsed) or its state may remain undefined when it has no inline (item.data.metadata.inlineMetadata) or file metadata (item.data.metadata.fileMetadata)
+export type ItemCollapseState = (true | false | undefined)[][];
 
 export interface KanbanSettings {
   [frontmatterKey]?: KanbanFormat;
@@ -67,7 +69,7 @@ export interface KanbanSettings {
   'lane-width'?: number;
   'link-date-to-daily-note'?: boolean;
   'list-collapse'?: boolean[];
-  'item-collapse'?: boolean[][];
+  'item-collapse'?: ItemCollapseState;
   'max-archive-size'?: number;
   'metadata-keys'?: DataKey[];
   'move-dates'?: boolean;
@@ -97,7 +99,7 @@ export interface KanbanSettings {
 export interface KanbanViewSettings {
   [frontmatterKey]?: KanbanFormat;
   'list-collapse'?: boolean[];
-  'item-collapse'?: boolean[][];
+  'item-collapse'?: ItemCollapseState;
 }
 
 export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([

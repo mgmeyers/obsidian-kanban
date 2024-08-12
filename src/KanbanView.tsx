@@ -12,7 +12,13 @@ import {
   debounce,
 } from 'obsidian';
 
-import { KanbanFormat, KanbanSettings, KanbanViewSettings, SettingsModal } from './Settings';
+import {
+  ItemCollapseState,
+  KanbanFormat,
+  KanbanSettings,
+  KanbanViewSettings,
+  SettingsModal,
+} from './Settings';
 import { Kanban } from './components/Kanban';
 import { BasicMarkdownRenderer } from './components/MarkdownRenderer/MarkdownRenderer';
 import { c } from './components/helpers';
@@ -360,9 +366,27 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   _initHeaderButtons = async () => {
     if (Platform.isPhone) return;
-    const stateManager = this.plugin.getStateManager(this.file);
 
+    const stateManager = this.plugin.getStateManager(this.file);
     if (!stateManager) return;
+
+    const countItemsState = (collapseState: ItemCollapseState) => {
+      const counts = { true: 0, false: 0, null: 0, total: 0 };
+
+      collapseState.forEach((lane) => {
+        lane.forEach((item) => {
+          const tmp = String(item);
+          if (tmp === 'null' || tmp === 'undefined') {
+            counts['null']++;
+          } else {
+            counts[tmp as 'true' | 'false']++;
+          }
+          counts.total++;
+        });
+      });
+
+      return counts;
+    };
 
     if (
       stateManager.getSetting('show-board-settings') &&
@@ -391,21 +415,34 @@ export class KanbanView extends TextFileView implements HoverParent {
           const stateManager = this.plugin.stateManagers.get(this.file);
           stateManager.setState((boardData) => {
             const collapseStateItems = this.getViewState('item-collapse');
-            const op = (collapseState: boolean[][]) => {
-              let newState = collapseState.map((inner) => [...inner]);
+            const op = (collapseState: ItemCollapseState) => {
+              const newState = collapseState.map((inner) => [...inner]);
 
-              const allTrue = newState.every((list) => list.every((card) => card === true));
-              const allFalse = newState.every((list) => list.every((card) => card === false));
-
-              if (allTrue || allFalse) {
-                // if all cards have the same state (collapsed vs expanded) - toggle it
-                newState = newState.map((list) => list.map((card) => !card));
+              const counts = countItemsState(newState);
+              if (counts['null'] === counts['total']) {
+                // no items with inline or linked page metadata => do nothing
+                return newState;
+              } else if (
+                counts['true'] + counts['null'] === counts['total'] ||
+                counts['false'] + counts['null'] === counts['total']
+              ) {
+                // all items with metadata are collapsed/expanded => toggle state of items with metadata
+                return newState.map((lane) => {
+                  return lane.map((item) => {
+                    if (item === true) return false;
+                    if (item === false) return true;
+                    return item;
+                  });
+                });
               } else {
-                // if at least one card is collapsed - collapse them all
-                newState = newState.map((list) => list.map((card) => true));
+                // some items with metadata are collapsed some expanded => collapse them all
+                return newState.map((lane) => {
+                  return lane.map((item) => {
+                    if (item === false) return true;
+                    return item;
+                  });
+                });
               }
-
-              return newState;
             };
             this.setViewState('item-collapse', undefined, op);
 
