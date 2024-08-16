@@ -300,7 +300,7 @@ export function useTableColumns(boardData: Board, stateManager: StateManager) {
                 <span
                   className={classcat([
                     c('item-task-inline-metadata-item'),
-                    m.key.replace(/[^a-z0-9]/g, '-'),
+                    m.key?.replace(/[^a-z0-9]/g, '-'),
                     {
                       'is-task-metadata': isTaskMetadata,
                       'is-emoji': isEmoji,
