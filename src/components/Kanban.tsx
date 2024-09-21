@@ -97,7 +97,10 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
 
   useEffect(() => {
     const onSearchHotkey = (data: { commandId: string; data: string }) => {
-      if (data.commandId === 'editor:open-search') {
+      if (
+        data.commandId === 'editor:open-search' ||
+        data.commandId === 'editor:open-search-replace'
+      ) {
         if (typeof data.data === 'string') {
           setIsSearching(true);
           setSearchQuery(data.data);
