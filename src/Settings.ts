@@ -69,6 +69,7 @@ export interface KanbanSettings {
   'list-collapse'?: boolean[];
   'max-archive-size'?: number;
   'metadata-keys'?: DataKey[];
+  'menu-move-to-list-first'?: boolean;
   'move-dates'?: boolean;
   'move-tags'?: boolean;
   'move-task-metadata'?: boolean;
@@ -327,6 +328,46 @@ export class SettingsManager {
 
                 this.applySettingsUpdate({
                   $unset: ['hide-card-count'],
+                });
+              });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Make "Move to List" the first option on the menu'))
+      .setDesc(t('When toggled, "Move to List" will be the first option in the card menu.'))
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('menu-move-to-list-first', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'menu-move-to-list-first': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('menu-move-to-list-first', local);
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ['menu-move-to-list-first'],
                 });
               });
           });
