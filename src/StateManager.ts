@@ -104,7 +104,7 @@ export class StateManager {
     const view = this.getAView();
 
     if (view) {
-      const fileStr = this.parser.boardToMd(this.state);
+      const fileStr = this.parser.boardToMd(this.state, view.data);
       view.requestSaveToDisk(fileStr);
 
       this.viewSet.forEach((view) => {

@@ -6,7 +6,7 @@ import { KanbanSettings, settingKeyLookup } from 'src/Settings';
 import { StateManager } from 'src/StateManager';
 import { getNormalizedPath } from 'src/helpers/renderMarkdown';
 
-import { frontmatterKey, getLinkedPageMetadata } from './common';
+import { frontmatterKey, getLinkedPageMetadata, kanbanDataHeadingKey } from './common';
 import { blockidExtension, blockidFromMarkdown } from './extensions/blockid';
 import { genericWrappedExtension, genericWrappedFromMarkdown } from './extensions/genericWrapped';
 import { internalMarkdownLinks } from './extensions/internalMarkdownLink';
@@ -14,7 +14,7 @@ import { tagExtension, tagFromMarkdown } from './extensions/tag';
 import { gfmTaskListItem, gfmTaskListItemFromMarkdown } from './extensions/taskList';
 import { FileAccessor } from './helpers/parser';
 
-function extractFrontmatter(md: string) {
+export function extractFrontmatter(md: string) {
   let frontmatterStart = -1;
   let openDashCount = 0;
 
@@ -34,6 +34,56 @@ function extractFrontmatter(md: string) {
       return parseYaml(md.slice(frontmatterStart, i - 1).trim());
     }
   }
+}
+
+export function extractKanbanDataHeadingData(text: string, kanbanDataHeading?: string) {
+  if(!kanbanDataHeading) {
+    return { kanbanSectionFound: false, offsetStart: -1, offsetEnd: -1, headerPosition: -1 };
+  }
+
+  let kanbanSectionFound = false;
+  let offsetStart = -1;
+  let offsetEnd = -1;
+
+  const lines = text.split('\n');
+  let position = 0;
+
+  const targetHeading = `# ${kanbanDataHeading.toLowerCase()}`;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const lineLength = line.length + 1; // +1 for the newline character
+
+    if (line.trim().toLowerCase() === targetHeading) {
+      kanbanSectionFound = true;
+      offsetStart = position + lineLength;
+
+      let contentEndOffset = offsetStart;
+      let lastNonEmptyOffset = offsetStart;
+
+      for (let j = i + 1; j < lines.length; j++) {
+        const contentLine = lines[j];
+
+        if (contentLine.startsWith('# ') || contentLine === '#') {
+          // Next depth 1 heading found; stop collecting
+          break;
+        } else {
+          contentEndOffset += contentLine.length + 1; // +1 for newline
+
+          if (contentLine.trim().length > 0) {
+            // Update lastNonEmptyOffset to the end of this line
+            lastNonEmptyOffset = contentEndOffset;
+          }
+        }
+      }
+
+      offsetEnd = lastNonEmptyOffset - 1; // -1 to exclude the newline character
+      break;
+    }
+
+    position += lineLength;
+  }
+
+  return { kanbanSectionFound, offsetStart, offsetEnd, headerPosition: position };
 }
 
 function extractSettingsFooter(md: string) {
@@ -166,12 +216,25 @@ function getMdastExtensions(stateManager: StateManager) {
 
 export function parseMarkdown(stateManager: StateManager, md: string) {
   const mdFrontmatter = extractFrontmatter(md);
-  const mdSettings = extractSettingsFooter(md);
+  let operationalMd = md;
+
+  // NOTE: that kanban-data-heading can be set only in frontmatter or globally, but not in mdSettings, 
+  // because the location of mdSettings is dependent on kanban-data-heading itself.
+  if(mdFrontmatter[kanbanDataHeadingKey]) {
+    const { kanbanSectionFound, offsetStart, offsetEnd } = extractKanbanDataHeadingData(md, mdFrontmatter[kanbanDataHeadingKey]);
+    if (kanbanSectionFound) {
+      operationalMd = md.slice(offsetStart, offsetEnd);
+    } else {
+      console.warn('Kanban Data Heading not found in document');
+    }
+  }
+
+  const mdSettings = extractSettingsFooter(operationalMd);
   const settings = { ...mdSettings };
   const fileFrontmatter: Record<string, any> = {};
 
   Object.keys(mdFrontmatter).forEach((key) => {
-    if (key === frontmatterKey) {
+    if (key === frontmatterKey || key === kanbanDataHeadingKey) {
       const val = mdFrontmatter[key] === 'basic' ? 'board' : mdFrontmatter[key];
       settings[key] = val;
       fileFrontmatter[key] = val;
@@ -187,10 +250,11 @@ export function parseMarkdown(stateManager: StateManager, md: string) {
   return {
     settings,
     frontmatter: fileFrontmatter,
-    ast: fromMarkdown(md, {
+    ast: fromMarkdown(operationalMd, {
       extensions: [frontmatter(['yaml']), ...getExtensions(stateManager)],
       mdastExtensions: [frontmatterFromMarkdown(['yaml']), ...getMdastExtensions(stateManager)],
     }),
+    operationalMd,
   };
 }
 
