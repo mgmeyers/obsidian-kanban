@@ -7,6 +7,7 @@ const en = {
   'Archive completed cards in active board': 'Archive completed cards in active board',
   'Error: current file is not a Kanban board': 'Error: current file is not a Kanban board',
   'Convert empty note to Kanban': 'Convert empty note to Kanban',
+  'Convert markdown note to Kanban': 'Convert markdown note to Kanban',
   'Error: cannot create Kanban, the current note is not empty':
     'Error: cannot create Kanban, the current note is not empty',
   'New kanban board': 'New kanban board',
@@ -66,6 +67,9 @@ const en = {
   'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.':
     'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.',
   'Default folder': 'Default folder',
+  'Kanban Data Heading': 'Kanban Data Heading',
+  'When set for specific board, all Kanban data will be organized under this heading in the markdown file, enabling you to include other data alongside it in the same note.': 'When set for a specific board, all Kanban data will be organized under this heading in the markdown file, allowing you to include other data alongside it within the same note. However, if you edit the markdown of your Kanban note before setting this Kanban heading, the note will be completely overwritten, and all existing data, except for the Kanban content, will be lost. Proceed with caution to avoid accidental data loss.',
+  'Specifies the "kanban-data-heading" frontmatter value used when executing the "Kanban: Convert markdown note to Kanban" command, allowing you to include other information in the same note alongside the Kanban data.': 'Specifies the "kanban-data-heading" frontmatter value used when executing the "Kanban: Convert markdown note to Kanban" command, allowing you to include other information in the same note alongside the Kanban data.',
   'List width': 'List width',
   'Expand lists to full width in list view': 'Expand lists to full width in list view',
   'Enter a number to set the list width in pixels.':
