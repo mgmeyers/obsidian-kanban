@@ -60,8 +60,10 @@ export function dedentNewLines(str: string) {
 export function parseLaneTitle(str: string) {
   str = replaceBrs(str);
 
+  const tags = (str.match(/#\w+/g) || []);
+  str = str.replace(/#\w+/g, '').trim();
   const match = str.match(/^(.*?)\s*\((\d+)\)$/);
-  if (match == null) return { title: str, maxItems: 0 };
+  if (match == null) return { title: str, maxItems: 0, tags };
 
-  return { title: match[1], maxItems: Number(match[2]) };
+  return { title: match[1], maxItems: Number(match[2]), tags };
 }

@@ -7,16 +7,17 @@ import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { getDropAction } from '../Editor/helpers';
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
-import { EditState, EditingState, Item, isEditing } from '../types';
+import { EditState, EditingState, Item, Lane, isEditing } from '../types';
 
 interface ItemFormProps {
+  lane: Lane;
   addItems: (items: Item[]) => void;
   editState: EditState;
   setEditState: Dispatch<StateUpdater<EditState>>;
   hideButton?: boolean;
 }
 
-export function ItemForm({ addItems, editState, setEditState, hideButton }: ItemFormProps) {
+export function ItemForm({ lane, addItems, editState, setEditState, hideButton }: ItemFormProps) {
   const { stateManager } = useContext(KanbanContext);
   const editorRef = useRef<EditorView>();
 
@@ -26,7 +27,7 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
   });
 
   const createItem = (title: string) => {
-    addItems([stateManager.getNewItem(title, ' ')]);
+    addItems([stateManager.getNewItem(`${title} ${lane.data.tags}`, ' ')]);
     const cm = editorRef.current;
     if (cm) {
       cm.dispatch({

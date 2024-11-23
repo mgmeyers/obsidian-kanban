@@ -168,6 +168,7 @@ function DraggableLaneRaw({
 
             {!search?.query && !isCollapsed && shouldPrepend && (
               <ItemForm
+                lane={lane}
                 addItems={addItems}
                 hideButton={isCompactPrepend}
                 editState={editState}
@@ -207,7 +208,7 @@ function DraggableLaneRaw({
             )}
 
             {!search?.query && !isCollapsed && !shouldPrepend && (
-              <ItemForm addItems={addItems} editState={editState} setEditState={setEditState} />
+              <ItemForm lane={lane} addItems={addItems} editState={editState} setEditState={setEditState} />
             )}
           </CollapsedDropArea>
         </div>
