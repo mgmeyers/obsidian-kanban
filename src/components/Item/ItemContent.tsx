@@ -305,7 +305,7 @@ export const ItemContent = memo(function ItemContent({
             getDateColor={getDateColor}
           />
           <InlineMetadata item={item} stateManager={stateManager} />
-          <Tags tags={item.data.metadata.tags.filter((tag) => !laneTags.includes(tag))} searchQuery={searchQuery} />
+          <Tags tags={item.data.metadata.tags?.filter((tag) => !(laneTags ?? []).includes(tag))} searchQuery={searchQuery} />
         </div>
       )}
     </div>

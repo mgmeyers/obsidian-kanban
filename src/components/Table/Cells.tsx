@@ -101,7 +101,7 @@ export const ItemCell = memo(
             <ItemContent
               editState={editState}
               item={item}
-              laneTags={lane.data.tags}
+              laneTags={lane.data.tags ?? []}
               setEditState={setEditState}
               showMetadata={false}
               searchQuery={search?.query}
