@@ -193,7 +193,7 @@ function DraggableLaneRaw({
                 >
                   <SortableComponent onSortChange={setIsSorting} axis="vertical">
                     <Items
-                      items={lane.children}
+                      lane={lane}
                       isStatic={isStatic}
                       shouldMarkItemsComplete={shouldMarkItemsComplete}
                     />
