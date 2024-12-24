@@ -201,7 +201,7 @@ export const Items = memo(function Items({ isStatic, lane, shouldMarkItemsComple
       {lane.children.map((item, i) => {
         return search?.query && !search.items.has(item) ? null : (
           <DraggableItem
-          laneTags={lane.data.tags ?? []}
+            laneTags={lane.data.tags ?? []}
             key={boardView + item.id}
             item={item}
             itemIndex={i}
