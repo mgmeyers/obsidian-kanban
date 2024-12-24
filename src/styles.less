@@ -667,6 +667,26 @@ button.kanban-plugin__lane-settings-button + button.kanban-plugin__lane-settings
   display: none;
 }
 
+body.is-mobile .kanban-plugin__lane-wrapper {
+  width: 90vw;
+  margin-inline-end: 0px;
+}
+
+body.is-mobile .kanban-plugin__board>div {
+  grid-template-rows: 50% 50%;
+  grid-auto-flow: column;
+  overflow-x: scroll;
+  gap: 10px;
+  display: grid;
+  width: 100%;
+  height: 100%;
+}
+
+body.is-mobile .kanban-plugin__lane-items {
+  height: 100%;
+  overflow: scroll;
+}
+
 button.kanban-plugin__new-item-button {
   background-color: transparent;
   color: var(--text-muted);
