@@ -153,6 +153,11 @@ export function MarkdownEditor({
                 });
                 return true;
               },
+              keydown: (evt) => {
+                if (evt.key === "Enter") {
+                  onSubmit(this.cm)
+                }
+              },
               blur: () => {
                 if (Platform.isMobile) {
                   view.contentEl.removeClass('is-mobile-editing');
@@ -191,7 +196,7 @@ export function MarkdownEditor({
             keymap.of([
               {
                 key: 'Enter',
-                run: makeEnterHandler(false, false),
+                run: (_: EditorView) => true,
                 shift: makeEnterHandler(false, true),
                 preventDefault: true,
               },
