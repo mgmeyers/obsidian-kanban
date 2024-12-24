@@ -277,7 +277,7 @@ export function useItemMenu({
               .onClick(() => {
                 if (path[0] === i) return;
                 stateManager.setState((boardData) => {
-                  return moveEntity(boardData, path, [i, 0]);
+                  return moveEntity(stateManager, boardData, path, [i, 0]);
                 });
               })
           );

@@ -112,38 +112,10 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
         return stateManager.setState((board) => {
           const entity = getEntityFromPath(board, dragPath);
           const newBoard: Board = moveEntity(
+            stateManager,
             board,
             dragPath,
             dropPath,
-            (entity) => {
-              if (entity.type === DataTypes.Item) {
-                const { next } = maybeCompleteForMove(
-                  stateManager,
-                  board,
-                  dragPath,
-                  stateManager,
-                  board,
-                  dropPath,
-                  entity
-                );
-                return next;
-              }
-              return entity;
-            },
-            (entity) => {
-              if (entity.type === DataTypes.Item) {
-                const { replacement } = maybeCompleteForMove(
-                  stateManager,
-                  board,
-                  dragPath,
-                  stateManager,
-                  board,
-                  dropPath,
-                  entity
-                );
-                return replacement;
-              }
-            }
           );
 
           if (entity.type === DataTypes.Lane) {

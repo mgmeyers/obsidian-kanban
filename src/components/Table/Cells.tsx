@@ -142,7 +142,7 @@ export const LaneCell = memo(function LaneCell({ lane, path }: { lane: Lane; pat
                   if (lane === l) return;
                   stateManager.setState((boardData) => {
                     const target = boardData.children[i];
-                    return moveEntity(boardData, path, [i, target.children.length]);
+                    return moveEntity(stateManager, boardData, path, [i, target.children.length]);
                   });
                 })
             );
