@@ -119,13 +119,17 @@ const ItemInner = memo(function ItemInner({
       {...ignoreAttr}
     >
       <div className={c('item-title-wrapper')} {...ignoreAttr}>
-        <ItemCheckbox
-          boardModifiers={boardModifiers}
-          item={item}
-          path={path}
-          shouldMarkItemsComplete={shouldMarkItemsComplete}
-          stateManager={stateManager}
-        />
+        {
+          item.data.metadata.tags.includes("#no-checkbox") 
+            ? null 
+            : <ItemCheckbox
+              boardModifiers={boardModifiers}
+              item={item}
+              path={path}
+              shouldMarkItemsComplete={shouldMarkItemsComplete}
+              stateManager={stateManager}
+            />
+        }
         <ItemContent
           item={item}
           laneTags={laneTags}
