@@ -7,11 +7,13 @@ import { getTaskStatusDone, toggleTask } from 'src/parsers/helpers/inlineMetadat
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { Icon } from '../Icon/Icon';
 import { c } from '../helpers';
-import { Item } from '../types';
+import { Item, Lane } from '../types';
+import { moveEntity } from 'src/dnd/util/data';
 
 interface ItemCheckboxProps {
   path: Path;
   item: Item;
+  completedLaneIndex: number | null;
   shouldMarkItemsComplete: boolean;
   stateManager: StateManager;
   boardModifiers: BoardModifiers;
@@ -21,6 +23,7 @@ export const ItemCheckbox = memo(function ItemCheckbox({
   shouldMarkItemsComplete,
   path,
   item,
+  completedLaneIndex,
   stateManager,
   boardModifiers,
 }: ItemCheckboxProps) {
@@ -54,6 +57,12 @@ export const ItemCheckbox = memo(function ItemCheckbox({
           },
         })
       );
+    }
+
+    if (completedLaneIndex !== null) {
+      stateManager.setState((boardData) => {
+        return moveEntity(stateManager, boardData, path, [completedLaneIndex, 0]);
+      });
     }
   }, [item, stateManager, boardModifiers, ...path]);
 

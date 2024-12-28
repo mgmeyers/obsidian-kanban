@@ -27,6 +27,7 @@ import { getItemClassModifiers } from './helpers';
 export interface DraggableItemProps {
   item: Item;
   itemIndex: number;
+  completedLaneIndex: number | null;
   laneTags: string[];
   isStatic?: boolean;
   shouldMarkItemsComplete?: boolean;
@@ -36,6 +37,7 @@ export interface ItemInnerProps {
   item: Item;
   isStatic?: boolean;
   laneTags: string[];
+  completedLaneIndex: number | null;
   shouldMarkItemsComplete?: boolean;
   isMatch?: boolean;
   searchQuery?: string;
@@ -44,6 +46,7 @@ export interface ItemInnerProps {
 const ItemInner = memo(function ItemInner({
   item,
   shouldMarkItemsComplete,
+  completedLaneIndex,
   laneTags,
   isMatch,
   searchQuery,
@@ -124,6 +127,7 @@ const ItemInner = memo(function ItemInner({
             ? null 
             : <ItemCheckbox
               boardModifiers={boardModifiers}
+              completedLaneIndex={completedLaneIndex}
               item={item}
               path={path}
               shouldMarkItemsComplete={shouldMarkItemsComplete}
@@ -192,10 +196,11 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
 interface ItemsProps {
   isStatic?: boolean;
   lane: Lane;
+  completedLaneIndex: number | null;
   shouldMarkItemsComplete: boolean;
 }
 
-export const Items = memo(function Items({ isStatic, lane, shouldMarkItemsComplete }: ItemsProps) {
+export const Items = memo(function Items({ isStatic, lane, completedLaneIndex, shouldMarkItemsComplete }: ItemsProps) {
   const search = useContext(SearchContext);
   const { view } = useContext(KanbanContext);
   const boardView = view.useViewState(frontmatterKey);
@@ -207,6 +212,7 @@ export const Items = memo(function Items({ isStatic, lane, shouldMarkItemsComple
           <DraggableItem
             laneTags={lane.data.tags ?? []}
             key={boardView + item.id}
+            completedLaneIndex={completedLaneIndex}
             item={item}
             itemIndex={i}
             shouldMarkItemsComplete={shouldMarkItemsComplete}

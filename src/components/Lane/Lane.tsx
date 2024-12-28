@@ -26,6 +26,7 @@ const laneAccepts = [DataTypes.Item];
 
 export interface DraggableLaneProps {
   lane: Lane;
+  completedLaneIndex: number | null;
   laneIndex: number;
   isStatic?: boolean;
   collapseDir: 'horizontal' | 'vertical';
@@ -36,6 +37,7 @@ function DraggableLaneRaw({
   isStatic,
   lane,
   laneIndex,
+  completedLaneIndex,
   collapseDir,
   isCollapsed = false,
 }: DraggableLaneProps) {
@@ -194,6 +196,7 @@ function DraggableLaneRaw({
                   <SortableComponent onSortChange={setIsSorting} axis="vertical">
                     <Items
                       lane={lane}
+                      completedLaneIndex={completedLaneIndex}
                       isStatic={isStatic}
                       shouldMarkItemsComplete={shouldMarkItemsComplete}
                     />
@@ -229,6 +232,7 @@ function LanesRaw({ lanes, collapseDir }: LanesProps) {
   const { view } = useContext(KanbanContext);
   const boardView = view.useViewState(frontmatterKey) || 'board';
   const collapseState = view.useViewState('list-collapse') || [];
+  const completedLaneIndex: number | null =  lanes.findIndex((lane) => lane.data.shouldMarkItemsComplete === true) || null
 
   return (
     <>
@@ -238,6 +242,7 @@ function LanesRaw({ lanes, collapseDir }: LanesProps) {
             collapseDir={collapseDir}
             isCollapsed={(search?.query && !search.lanes.has(lane)) || !!collapseState[i]}
             key={boardView + lane.id}
+            completedLaneIndex={completedLaneIndex}
             lane={lane}
             laneIndex={i}
           />

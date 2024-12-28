@@ -95,6 +95,7 @@ export const ItemCell = memo(
               boardModifiers={boardModifiers}
               item={item}
               path={path}
+              completedLaneIndex={null}
               shouldMarkItemsComplete={shouldMarkItemsComplete}
               stateManager={stateManager}
             />
