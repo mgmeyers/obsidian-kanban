@@ -27,7 +27,7 @@ export function ItemForm({ lane, addItems, editState, setEditState, hideButton }
   });
 
   const createItem = (title: string) => {
-    addItems([stateManager.getNewItem(`${title} ${lane.data.tags.join(" ")}`, ' ')]);
+    addItems([stateManager.getNewItem(`${lane.data.tags.join(" ")} ${title}`, ' ')]);
     const cm = editorRef.current;
     if (cm) {
       cm.dispatch({
