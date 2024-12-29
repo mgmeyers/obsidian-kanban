@@ -286,6 +286,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
                       lane={data as Lane}
                       laneIndex={laneIndex}
                       isStatic={true}
+                      completedLaneIndex={null}
                       isCollapsed={!!collapseState[laneIndex]}
                       collapseDir={boardView === 'list' ? 'vertical' : 'horizontal'}
                     />
@@ -298,7 +299,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
               return (
                 <KanbanContext.Provider value={context}>
                   <div className={c('drag-container')} style={styles}>
-                    <DraggableItem laneTags={[]} item={data as Item} itemIndex={0} isStatic={true} />
+                    <DraggableItem completedLaneIndex={null} laneTags={[]} item={data as Item} itemIndex={0} isStatic={true} />
                   </div>
                 </KanbanContext.Provider>
               );
