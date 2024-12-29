@@ -79,6 +79,7 @@ export interface ItemContentProps {
   item: Item;
   setEditState: Dispatch<StateUpdater<EditState>>;
   searchQuery?: string;
+  laneTags: string[];
   showMetadata?: boolean;
   editState: EditState;
   isStatic: boolean;
@@ -185,6 +186,7 @@ export const ItemContent = memo(function ItemContent({
   editState,
   setEditState,
   searchQuery,
+  laneTags,
   showMetadata = true,
   isStatic,
 }: ItemContentProps) {
@@ -303,7 +305,7 @@ export const ItemContent = memo(function ItemContent({
             getDateColor={getDateColor}
           />
           <InlineMetadata item={item} stateManager={stateManager} />
-          <Tags tags={item.data.metadata.tags} searchQuery={searchQuery} />
+          <Tags tags={item.data.metadata.tags?.filter((tag) => !((laneTags ?? []).concat(["#no-checkbox"])).includes(tag))} searchQuery={searchQuery} />
         </div>
       )}
     </div>

@@ -106,13 +106,14 @@ export const LaneHeader = memo(function LaneHeader({
 
   const onLaneTitleChange = useCallback(
     (str: string) => {
-      const { title, maxItems } = parseLaneTitle(str);
+      const { title, maxItems, tags } = parseLaneTitle(str);
       boardModifiers.updateLane(
         lanePath,
         update(lane, {
           data: {
             title: { $set: title },
             maxItems: { $set: maxItems },
+            tags: { $set: tags },
           },
         })
       );
@@ -146,6 +147,7 @@ export const LaneHeader = memo(function LaneHeader({
           id={lane.id}
           editState={editState}
           maxItems={lane.data.maxItems}
+          tags={lane.data.tags}
           onChange={onLaneTitleChange}
           setEditState={setEditState}
           title={lane.data.title}

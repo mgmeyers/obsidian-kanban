@@ -95,12 +95,14 @@ export const ItemCell = memo(
               boardModifiers={boardModifiers}
               item={item}
               path={path}
+              completedLaneIndex={null}
               shouldMarkItemsComplete={shouldMarkItemsComplete}
               stateManager={stateManager}
             />
             <ItemContent
               editState={editState}
               item={item}
+              laneTags={lane.data.tags ?? []}
               setEditState={setEditState}
               showMetadata={false}
               searchQuery={search?.query}
@@ -141,7 +143,7 @@ export const LaneCell = memo(function LaneCell({ lane, path }: { lane: Lane; pat
                   if (lane === l) return;
                   stateManager.setState((boardData) => {
                     const target = boardData.children[i];
-                    return moveEntity(boardData, path, [i, target.children.length]);
+                    return moveEntity(stateManager, boardData, path, [i, target.children.length]);
                   });
                 })
             );

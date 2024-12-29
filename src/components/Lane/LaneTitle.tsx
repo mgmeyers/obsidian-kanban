@@ -1,7 +1,7 @@
 import { EditorView, ViewUpdate } from '@codemirror/view';
 import classcat from 'classcat';
 import { Dispatch, StateUpdater, useCallback, useContext, useEffect, useRef } from 'preact/hooks';
-import { laneTitleWithMaxItems } from 'src/helpers';
+import { laneTitleWithMaxItemsAndTags } from 'src/helpers';
 
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { MarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
@@ -12,6 +12,7 @@ import { EditState, EditingState, isEditing } from '../types';
 export interface LaneTitleProps {
   title: string;
   maxItems?: number;
+  tags: string[];
   editState: EditState;
   setEditState: Dispatch<StateUpdater<EditState>>;
   onChange: (str: string) => void;
@@ -52,7 +53,7 @@ export function LaneLimitCounter({
   );
 }
 
-export function LaneTitle({ maxItems, editState, setEditState, title, onChange }: LaneTitleProps) {
+export function LaneTitle({ maxItems, tags, editState, setEditState, title, onChange }: LaneTitleProps) {
   const { stateManager } = useContext(KanbanContext);
   const titleRef = useRef<string | null>(null);
 
@@ -92,7 +93,7 @@ export function LaneTitle({ maxItems, editState, setEditState, title, onChange }
           onEnter={onEnter}
           onEscape={onEscape}
           onSubmit={onSubmit}
-          value={laneTitleWithMaxItems(title, maxItems)}
+          value={laneTitleWithMaxItemsAndTags(title, tags, maxItems)}
         />
       ) : (
         <div className={c('lane-title-text')}>

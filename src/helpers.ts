@@ -62,7 +62,6 @@ export function hasFrontmatterKey(file: TFile) {
   return !!cache?.frontmatter?.[frontmatterKey];
 }
 
-export function laneTitleWithMaxItems(title: string, maxItems?: number) {
-  if (!maxItems) return title;
-  return `${title} (${maxItems})`;
+export function laneTitleWithMaxItemsAndTags(title: string, tags: string[], maxItems?: number ) {
+  return `${title} ${tags.join(" ")} ${maxItems ? `(${maxItems})` : ""}`;
 }

@@ -4,6 +4,9 @@ import { isPlainObject } from 'is-plain-object';
 
 import { Nestable, Path } from '../types';
 import { SiblingDirection, getSiblingDirection } from './path';
+import { DataTypes } from 'src/components/types';
+import { maybeCompleteForMove } from 'src/components/helpers';
+import { StateManager } from 'src/StateManager';
 
 export function getEntityFromPath(root: Nestable, path: Path): Nestable {
   const step = path.length ? path[0] : null;
@@ -81,12 +84,41 @@ export function buildPrependMutation(destination: Path, entities: Nestable[]) {
 }
 
 export function moveEntity(
+  stateManager: StateManager,
   root: Nestable,
   source: Path,
   destination: Path,
-  transform?: (entity: Nestable) => Nestable | Nestable[],
-  replace?: (entity: Nestable) => Nestable
 ) {
+  const transform = (entity: Nestable) => {
+    if (entity.type === DataTypes.Item) {
+      const { next } = maybeCompleteForMove(
+        stateManager,
+        root,
+        source,
+        stateManager,
+        root,
+        destination,
+        entity
+      );
+      return next;
+    }
+    return entity;
+  };
+  const replace = (entity: Nestable) => {
+    if (entity.type === DataTypes.Item) {
+      const { replacement } = maybeCompleteForMove(
+        stateManager,
+        root,
+        source,
+        stateManager,
+        root,
+        destination,
+        entity
+      );
+      return replacement;
+    }
+  }
+
   const entity = transform
     ? transform(getEntityFromPath(root, source))
     : getEntityFromPath(root, source);

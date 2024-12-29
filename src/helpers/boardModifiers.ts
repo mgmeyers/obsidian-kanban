@@ -80,14 +80,14 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
     },
 
     moveItemToTop: (path: Path) => {
-      stateManager.setState((boardData) => moveEntity(boardData, path, [path[0], 0]));
+      stateManager.setState((boardData) => moveEntity(stateManager, boardData, path, [path[0], 0]));
     },
 
     moveItemToBottom: (path: Path) => {
       stateManager.setState((boardData) => {
         const laneIndex = path[0];
         const lane = boardData.children[laneIndex];
-        return moveEntity(boardData, path, [laneIndex, lane.children.length]);
+        return moveEntity(stateManager, boardData, path, [laneIndex, lane.children.length]);
       });
     },
 

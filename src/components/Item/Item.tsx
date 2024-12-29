@@ -16,7 +16,7 @@ import { frontmatterKey } from 'src/parsers/common';
 
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
-import { EditState, EditingState, Item, isEditing } from '../types';
+import { EditState, EditingState, Item, Lane, isEditing } from '../types';
 import { ItemCheckbox } from './ItemCheckbox';
 import { ItemContent } from './ItemContent';
 import { useItemMenu } from './ItemMenu';
@@ -27,6 +27,8 @@ import { getItemClassModifiers } from './helpers';
 export interface DraggableItemProps {
   item: Item;
   itemIndex: number;
+  completedLaneIndex: number | null;
+  laneTags: string[];
   isStatic?: boolean;
   shouldMarkItemsComplete?: boolean;
 }
@@ -34,6 +36,8 @@ export interface DraggableItemProps {
 export interface ItemInnerProps {
   item: Item;
   isStatic?: boolean;
+  laneTags: string[];
+  completedLaneIndex: number | null;
   shouldMarkItemsComplete?: boolean;
   isMatch?: boolean;
   searchQuery?: string;
@@ -42,6 +46,8 @@ export interface ItemInnerProps {
 const ItemInner = memo(function ItemInner({
   item,
   shouldMarkItemsComplete,
+  completedLaneIndex,
+  laneTags,
   isMatch,
   searchQuery,
   isStatic,
@@ -116,15 +122,21 @@ const ItemInner = memo(function ItemInner({
       {...ignoreAttr}
     >
       <div className={c('item-title-wrapper')} {...ignoreAttr}>
-        <ItemCheckbox
-          boardModifiers={boardModifiers}
-          item={item}
-          path={path}
-          shouldMarkItemsComplete={shouldMarkItemsComplete}
-          stateManager={stateManager}
-        />
+        {
+          item.data.metadata.tags.includes("#no-checkbox") 
+            ? null 
+            : <ItemCheckbox
+              boardModifiers={boardModifiers}
+              completedLaneIndex={completedLaneIndex}
+              item={item}
+              path={path}
+              shouldMarkItemsComplete={shouldMarkItemsComplete}
+              stateManager={stateManager}
+            />
+        }
         <ItemContent
           item={item}
+          laneTags={laneTags}
           searchQuery={isMatch ? searchQuery : undefined}
           setEditState={setEditState}
           editState={editState}
@@ -183,21 +195,24 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
 
 interface ItemsProps {
   isStatic?: boolean;
-  items: Item[];
+  lane: Lane;
+  completedLaneIndex: number | null;
   shouldMarkItemsComplete: boolean;
 }
 
-export const Items = memo(function Items({ isStatic, items, shouldMarkItemsComplete }: ItemsProps) {
+export const Items = memo(function Items({ isStatic, lane, completedLaneIndex, shouldMarkItemsComplete }: ItemsProps) {
   const search = useContext(SearchContext);
   const { view } = useContext(KanbanContext);
   const boardView = view.useViewState(frontmatterKey);
 
   return (
     <>
-      {items.map((item, i) => {
+      {lane.children.map((item, i) => {
         return search?.query && !search.items.has(item) ? null : (
           <DraggableItem
+            laneTags={lane.data.tags ?? []}
             key={boardView + item.id}
+            completedLaneIndex={completedLaneIndex}
             item={item}
             itemIndex={i}
             shouldMarkItemsComplete={shouldMarkItemsComplete}

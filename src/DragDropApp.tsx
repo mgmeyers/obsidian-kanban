@@ -112,38 +112,10 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
         return stateManager.setState((board) => {
           const entity = getEntityFromPath(board, dragPath);
           const newBoard: Board = moveEntity(
+            stateManager,
             board,
             dragPath,
             dropPath,
-            (entity) => {
-              if (entity.type === DataTypes.Item) {
-                const { next } = maybeCompleteForMove(
-                  stateManager,
-                  board,
-                  dragPath,
-                  stateManager,
-                  board,
-                  dropPath,
-                  entity
-                );
-                return next;
-              }
-              return entity;
-            },
-            (entity) => {
-              if (entity.type === DataTypes.Item) {
-                const { replacement } = maybeCompleteForMove(
-                  stateManager,
-                  board,
-                  dragPath,
-                  stateManager,
-                  board,
-                  dropPath,
-                  entity
-                );
-                return replacement;
-              }
-            }
           );
 
           if (entity.type === DataTypes.Lane) {
@@ -314,6 +286,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
                       lane={data as Lane}
                       laneIndex={laneIndex}
                       isStatic={true}
+                      completedLaneIndex={null}
                       isCollapsed={!!collapseState[laneIndex]}
                       collapseDir={boardView === 'list' ? 'vertical' : 'horizontal'}
                     />
@@ -326,7 +299,7 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
               return (
                 <KanbanContext.Provider value={context}>
                   <div className={c('drag-container')} style={styles}>
-                    <DraggableItem item={data as Item} itemIndex={0} isStatic={true} />
+                    <DraggableItem completedLaneIndex={null} laneTags={[]} item={data as Item} itemIndex={0} isStatic={true} />
                   </div>
                 </KanbanContext.Provider>
               );

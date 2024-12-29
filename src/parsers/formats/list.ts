@@ -15,7 +15,7 @@ import {
   Lane,
   LaneTemplate,
 } from 'src/components/types';
-import { laneTitleWithMaxItems } from 'src/helpers';
+import { laneTitleWithMaxItemsAndTags } from 'src/helpers';
 import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
 import { visit } from 'unist-util-visit';
@@ -407,7 +407,7 @@ function itemToMd(item: Item) {
 function laneToMd(lane: Lane) {
   const lines: string[] = [];
 
-  lines.push(`## ${replaceNewLines(laneTitleWithMaxItems(lane.data.title, lane.data.maxItems))}`);
+  lines.push(`## ${replaceNewLines(laneTitleWithMaxItemsAndTags(lane.data.title, lane.data.tags, lane.data.maxItems))}`);
 
   lines.push('');
 
