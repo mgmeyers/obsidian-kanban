@@ -7,6 +7,8 @@ Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
 
 ![[Screen Shot 2021-09-16 at 1.10.38 PM.png]]
 
+Once you have installed Kanban (via Settings > Community Plugins), open the Command Pallet and search for Kanban to create your first board.
+
 ## Support
 
 If you find this plugin useful and would like to support its development, you can sponsor [me](https://github.com/mgmeyers) on Github, or buy me a coffee.
