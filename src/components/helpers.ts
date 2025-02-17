@@ -17,7 +17,7 @@ import { Board, DataKey, DateColor, Item, Lane, PageData, TagColor } from './typ
 
 export const baseClassName = 'kanban-plugin';
 
-export function noop() {}
+export function noop() { }
 
 const classCache = new Map<string, string>();
 export function c(className: string) {
@@ -324,16 +324,16 @@ export function parseMetadataWithOptions(data: InlineField, metadataKeys: DataKe
 
   return options
     ? {
-        ...options,
-        value: data.value,
-      }
+      ...options,
+      value: data.value,
+    }
     : {
-        containsMarkdown: false,
-        label: data.key,
-        metadataKey: data.key,
-        shouldHideLabel: false,
-        value: data.value,
-      };
+      containsMarkdown: false,
+      label: data.key,
+      metadataKey: data.key,
+      shouldHideLabel: false,
+      value: data.value,
+    };
 }
 
 export function useOnMount(refs: RefObject<HTMLElement>[], cb: () => void, onUnmount?: () => void) {
@@ -400,4 +400,27 @@ export function useSearchValue(
       },
     };
   }, [board, query, setSearchQuery, setDebouncedSearchQuery]);
+}
+
+export function getSwimlanes(stateManager: StateManager) {
+  const field = stateManager.useSetting('swimlane-field');
+  const boardData = stateManager.useState();
+  const swimlanes = new Map<string, Lane[]>();
+
+  if (!boardData.children) {
+    return ["default"];
+  }
+
+  boardData.children.forEach((lane) => {
+    lane.children.forEach((item) => {
+      const metadata = item.data.metadata?.inlineMetadata?.find((m) => m.key === field);
+      const swimlane = metadata?.value || "Uncategorized";
+      if (!swimlanes.has(swimlane)) {
+        swimlanes.set(swimlane, []);
+      }
+      swimlanes.get(swimlane).push(item);
+    });
+  });
+
+  return Array.from(swimlanes.keys()).sort();
 }

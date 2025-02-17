@@ -90,6 +90,9 @@ export interface KanbanSettings {
   'tag-sort'?: TagSort[];
   'time-format'?: string;
   'time-trigger'?: string;
+  'swimlane-field': string;
+  'enable-swimlanes': boolean;
+  'show-empty-swimlanes': boolean;
 }
 
 export interface KanbanViewSettings {

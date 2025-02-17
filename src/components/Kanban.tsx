@@ -7,7 +7,6 @@ import { StateManager } from 'src/StateManager';
 import { useIsAnythingDragging } from 'src/dnd/components/DragOverlay';
 import { ScrollContainer } from 'src/dnd/components/ScrollContainer';
 import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
-import { Sortable } from 'src/dnd/components/Sortable';
 import { createHTMLDndHandlers } from 'src/dnd/managers/DragManager';
 import { t } from 'src/lang/helpers';
 
@@ -15,11 +14,10 @@ import { DndScope } from '../dnd/components/Scope';
 import { getBoardModifiers } from '../helpers/boardModifiers';
 import { frontmatterKey } from '../parsers/common';
 import { Icon } from './Icon/Icon';
-import { Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
 import { TableView } from './Table/Table';
 import { KanbanContext, SearchContext } from './context';
-import { baseClassName, c, useSearchValue } from './helpers';
+import { baseClassName, c, getSwimlanes, useSearchValue } from './helpers';
 import { DataTypes } from './types';
 import Swimlane from './Swimlane';
 
@@ -211,6 +209,11 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     setIsSearching
   );
 
+  const swimlanes = useMemo(() => {
+    const enableSwimlanes = stateManager.getSetting("enable-swimlanes");
+    return enableSwimlanes ? getSwimlanes(stateManager) : ["default"];
+  }, [stateManager, boardData]);
+
   return (
     <DndScope id={view.id}>
       <KanbanContext.Provider value={kanbanContext}>
@@ -283,12 +286,31 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                     />
                     </Sortable> */}
                     <div className={c("swimlanes")}>
-                    <Swimlane title="Frontend" lanes={boardData.children} axis={axis} />
-                    <Swimlane title="Backend" lanes={boardData.children} axis={axis} />
-                    <SortPlaceholder
-                      accepts={boardAccepts}
-                      className={c('lane-placeholder')}
-                      index={boardData.children.length} />
+                      {/* <Swimlane title="Backend" lanes={boardData.children} axis={axis} /> */}
+                      {/* <Swimlane title="Frontend" lanes={boardData.children} axis={axis} />
+                      <Swimlane title="Backend" lanes={boardData.children} axis={axis} />
+                      <SortPlaceholder
+                        accepts={boardAccepts}
+                        className={c('lane-placeholder')}
+                        index={boardData.children.length} /> */}
+                      {swimlanes.map((swimlane) => (
+                        <Swimlane
+                          key={swimlane}
+                          title={swimlane}
+                          lanes={boardData.children.map((lane) => ({
+                            ...lane,
+                            children: lane.children.filter((item: any) => {
+                              const metadata = item.data.metadata?.inlineMetadata?.find((m) => m.key === stateManager.getSetting("swimlane-field"));
+                              const itemSwimlane = metadata?.value || "Uncategorized";
+                              return swimlane === "Uncategorized" && !itemSwimlane || itemSwimlane === swimlane;
+                            }),
+                          }))}
+                          axis={axis} />
+                      ))}
+                      <SortPlaceholder
+                        accepts={boardAccepts}
+                        className={c('lane-placeholder')}
+                        index={boardData.children.length} />
                     </div>
                 </div>
               </ScrollContainer>
