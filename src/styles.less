@@ -22,6 +22,30 @@
   position: relative;
   display: flex;
   flex-direction: column;
+
+  &__swimlanes {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  &__swimlane {
+    background: var(--background-secondary);
+    border-radius: 3px;
+    padding: 1rem;
+
+    &-header {
+      font-weight: bold;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--background-modifier-border);
+    }
+
+    &-content {
+      display: flex;
+      gap: 1rem;
+    }
+  }
 }
 
 .kanban-plugin,

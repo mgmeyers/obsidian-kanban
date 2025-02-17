@@ -21,6 +21,7 @@ import { TableView } from './Table/Table';
 import { KanbanContext, SearchContext } from './context';
 import { baseClassName, c, useSearchValue } from './helpers';
 import { DataTypes } from './types';
+import Swimlane from './Swimlane';
 
 const boardScrollTiggers = [DataTypes.Item, DataTypes.Lane];
 const boardAccepts = [DataTypes.Lane];
@@ -277,14 +278,18 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                 triggerTypes={boardScrollTiggers}
               >
                 <div>
-                  <Sortable axis={axis}>
+                  {/* <Sortable axis={axis}>
                     <Lanes lanes={boardData.children} collapseDir={axis} />
+                    />
+                    </Sortable> */}
+                    <div className={c("swimlanes")}>
+                    <Swimlane title="Frontend" lanes={boardData.children} axis={axis} />
+                    <Swimlane title="Backend" lanes={boardData.children} axis={axis} />
                     <SortPlaceholder
                       accepts={boardAccepts}
                       className={c('lane-placeholder')}
-                      index={boardData.children.length}
-                    />
-                  </Sortable>
+                      index={boardData.children.length} />
+                    </div>
                 </div>
               </ScrollContainer>
             )}
