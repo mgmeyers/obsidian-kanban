@@ -146,6 +146,9 @@ const en = {
   'Calendar: first day of week': 'Calendar: first day of week',
   'Override which day is used as the start of the week':
     'Override which day is used as the start of the week',
+  'Hide task counter in card titles': 'Hide task counter in card titles',
+  'When toggled, this will hide the number of tasks total and completed in the card.':
+    'When toggled, this will hide the number of tasks total and completed in the card.',
   Sunday: 'Sunday',
   Monday: 'Monday',
   Tuesday: 'Tuesday',

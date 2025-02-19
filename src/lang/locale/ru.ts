@@ -115,6 +115,9 @@ const lang: Partial<Lang> = {
   'Calendar: first day of week': 'Календарь: первый день недели',
   'Override which day is used as the start of the week':
     'Укажите, какой день должен использоваться как начало недели',
+  'Hide task counter in card titles': 'Скрывать счетчик задач в заголовках карточек',
+  'When toggled, this will hide the number of tasks total and completed in the card.':
+        'Когда включено, общее количество и количество выполненных задач в карточке будет скрыто.',
   Sunday: 'Воскресенье',
   Monday: 'Понедельник',
   Tuesday: 'Вторник',
