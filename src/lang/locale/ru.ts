@@ -14,6 +14,11 @@ const lang: Partial<Lang> = {
   'Untitled Kanban': 'Безымянная Kanban-доска',
   'Toggle between Kanban and markdown mode': 'Переключиться между Kanban и markdown режимами',
 
+  'View as board': 'Показать как доску',
+  'View as list': 'Показать как список',
+  'View as table': 'Показать как таблицу',
+  'Board view': 'Вид доски',
+
   // KanbanView.tsx
   'Open as markdown': 'Открыть как markdown',
   'Open board settings': 'Открыть настройки доски',
@@ -88,6 +93,25 @@ const lang: Partial<Lang> = {
   'This format will be used when displaying dates in Kanban cards.':
     'Этот формат будет использован при показе дат в Kanban-карточках.',
   'Show relative date': 'Показывать относительную дату',
+    "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'. Relative dates will not be shown for dates from the Tasks and Dataview plugins.":
+    "Когда включено, карточки будут отображать разницу между сегодняшней датой и датой карточки. Пример: 'Через 3 дня', 'Месяц назад'. Относительные даты не будут показаны для дат в плагинах Tasks и Dataview.",
+
+  'Move dates to card footer': 'Перенести даты в подвал карточки',
+  "When toggled, dates will be displayed in the card's footer instead of the card's body.":
+    "Когда включено, даты будут отображаться в подвале карточки вместо ее тела.",
+  'Move tags to card footer': 'Перенести теги в подвал карточки',
+  "When toggled, tags will be displayed in the card's footer instead of the card's body.":
+    "Когда включено, теги будут отображаться в подвале карточки вместо ее тела.",
+  'Move task data to card footer': 'Перенести данные задачи в подвал карточки',
+  "When toggled, task data (from the Tasks plugin) will be displayed in the card's footer instead of the card's body.":
+    "Когда вкллючено, данные задачи (из плагина Tasks) будут отображаться в подвале карточки вместо ее тела.",
+  'Inline metadata position': 'Позиция inline метаданных',
+  'Controls where the inline metadata (from the Dataview plugin) will be displayed.':
+    'Управление позицией inline метаданных (для плагина Dataview).',
+  'Card body': 'Тело карточки',
+  'Card footer': 'Подвал карточки',
+  'Merge with linked page metadata': 'Объединить с метаданными прилинкованной страницы',
+  
   'Hide card counts in list titles': 'Скрыть счётчики карточек в заголовках списка',
   'When toggled, card counts are hidden from the list title':
     'Когда включено, счётчики карточек скрыты в заголовках списка',
@@ -106,6 +130,11 @@ const lang: Partial<Lang> = {
     'Будет использоваться для отделения даты/времени архивирования от заголовка',
   'Archive date/time format': 'Формат даты/времени архивирования',
   'Kanban Plugin': 'Плагин Kanban',
+  'Tag click action': 'Действие по клику на тег',
+  'Search Kanban Board': 'Искать по доске',
+  'Search Obsidian Vault': 'Искать в хранилище Obsidian',
+  'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.':
+    'Настройка управляет поведением поиска по клику по тегу - искать в пределах доски или хранилища.',
   'Tag colors': 'Показывать цвета меток',
   'Set colors for tags displayed in cards.': 'Установить цвета для меток под заголовками карточек.',
   'Linked Page Metadata': 'Метаданные связанных страниц',
@@ -142,14 +171,36 @@ const lang: Partial<Lang> = {
   'Drag to rearrange': 'Потяните, чтобы переупорядочить',
   Delete: 'Удалить',
   'Add key': 'Добавить ключ',
+  'Add tag': 'Добавить тег',
   'Field contains markdown': 'Поле содержит markdown',
+  'Tag sort order': 'Порядок сортировки тегов',
+  'Set an explicit sort order for the specified tags.':
+  'Установить особый порядок сортировки для указанных тегов.',
 
   // TagColorSettings.tsx
   'Add tag color': 'Добавить цвет метки',
 
+  // components/Table.tsx
+  List: 'Список',
+  Card: 'Карточка',
+  Date: 'Дата',
+  Tags: 'Теги',
+
+  Priority: 'Приоритет',
+  Start: 'Начало',
+  Created: 'Создано',
+  Scheduled: 'Запланировано',
+  Due: 'Срок',
+  Cancelled: 'Отменено',
+  Recurrence: 'Повторение',
+  'Depends on': 'Зависит от',
+  ID: 'ID',
+
   // components/Item/Item.tsx
   'More options': 'Больше настроек',
   Cancel: 'Отмена',
+  Done: 'Готово',
+  Save: 'Сохранить',
 
   // components/Item/ItemContent.tsx
   today: 'сегодня',
@@ -182,6 +233,7 @@ const lang: Partial<Lang> = {
   'Add label': 'Добавить ярлык',
   'Move to top': 'Переместить вверх',
   'Move to bottom': 'Переместить вниз',
+  'Move to list': 'Переместить в список',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Введите заголовок списка...',
@@ -211,6 +263,8 @@ const lang: Partial<Lang> = {
   'Insert list after': 'Вставить список после',
   'Sort by card text': 'Сортировать по тексту карточки',
   'Sort by date': 'Сортировать по дате',
+  'Sort by tags': 'Сортировать по тегам',
+  'Sort by': 'Сортировать по',
 
   // components/helpers/renderMarkdown.ts
   'Unable to find': 'Невозможно найти',
