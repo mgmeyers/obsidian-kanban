@@ -14,7 +14,7 @@ interface LaneFormProps {
   closeLaneForm: () => void;
 }
 
-export function LaneForm({ onNewLane, closeLaneForm }: LaneFormProps) {
+export function LaneForm ({ onNewLane, closeLaneForm }: LaneFormProps) {
   const [shouldMarkAsComplete, setShouldMarkAsComplete] = useState(false);
   const [autoSetTaskSymbol, setAutoSetTaskSymbol] = useState('');
   const editorRef = useRef<EditorView>();
@@ -91,16 +91,16 @@ export function LaneForm({ onNewLane, closeLaneForm }: LaneFormProps) {
           className={`checkbox-container ${shouldMarkAsComplete ? 'is-enabled' : ''}`}
         />
       </div>
-      <div className={c('input-wrapper')} style={{marginTop: 12}}>
-        <div className={c('checkbox-label')}>任务符号（拖拽到本列时自动设置）</div>
+      <div className={c('input-wrapper')}>
+        <div className={c('checkbox-label')}>{t('Task symbol')}</div>
         <input
           type="text"
           value={autoSetTaskSymbol}
           maxLength={2}
-          placeholder="如 /, -, > 等"
+          placeholder={t('Task symbol placeholder')}
           onInput={e => setAutoSetTaskSymbol((e.target as HTMLInputElement).value)}
           className={c('lane-symbol-input')}
-          style={{width: 60, marginTop: 4}}
+          style={{ width: '100%', marginTop: 4 }}
         />
       </div>
       <div className={c('lane-input-actions')}>
