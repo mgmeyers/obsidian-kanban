@@ -53,34 +53,28 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
 
         try {
           const items: Item[] = data.content.map((title: string) => {
-            let item = stateManager.getNewItem(title, ' ');
             const autoSymbol = destinationParent?.data?.autoSetTaskSymbol;
             const isComplete = !!destinationParent?.data?.shouldMarkItemsComplete;
+            
+            // Determine the correct checkChar upfront
+            const checkChar = autoSymbol || (isComplete ? getTaskStatusPreDone() : ' ');
+            let item = stateManager.getNewItem(title, checkChar);
 
-            if (autoSymbol) {
-              item = update(item, { data: { checkChar: { $set: autoSymbol } } });
-            } else if (isComplete) {
-              item = update(item, { data: { checkChar: { $set: getTaskStatusPreDone() } } });
+            // Handle task completion for shouldMarkItemsComplete lanes
+            if (isComplete && !autoSymbol) {
               const updates = toggleTask(item, stateManager.file);
               if (updates) {
                 const [itemStrings, checkChars, thisIndex] = updates;
                 const nextItem = itemStrings[thisIndex];
-                const checkChar = checkChars[thisIndex];
-                return stateManager.getNewItem(nextItem, checkChar);
+                const newCheckChar = checkChars[thisIndex];
+                return stateManager.getNewItem(nextItem, newCheckChar);
               }
             }
 
             return update(item, {
               data: {
                 checked: {
-                  $set: !!destinationParent?.data?.shouldMarkItemsComplete,
-                },
-                checkChar: {
-                  $set: autoSymbol
-                    ? autoSymbol
-                    : destinationParent?.data?.shouldMarkItemsComplete
-                    ? getTaskStatusDone()
-                    : ' ',
+                  $set: isComplete,
                 },
               },
             });

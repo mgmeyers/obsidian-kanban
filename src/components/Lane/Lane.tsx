@@ -81,25 +81,27 @@ function DraggableLaneRaw({
 
   const addItems = useCallback(
     (items: Item[]) => {
-      boardModifiers[shouldPrepend ? 'prependItems' : 'appendItems'](
-        [...path, lane.children.length - 1],
-        items.map((item) =>
-          update(item, {
+      const processedItems = items.map((item) => {
+        // If lane has custom symbol, preserve the original checked state
+        // Only force completion status in shouldMarkItemsComplete lanes
+        if (lane.data.autoSetTaskSymbol) {
+          // For lanes with custom symbols, don't modify checked state
+          return item;
+        } else {
+          // For lanes without custom symbols, set checked state based on lane settings
+          return update(item, {
             data: {
               checked: {
-                // Mark the item complete if we're moving into a completed lane
                 $set: shouldMarkItemsComplete,
               },
-              checkChar: {
-                $set: lane.data.autoSetTaskSymbol
-                  ? lane.data.autoSetTaskSymbol
-                  : shouldMarkItemsComplete
-                  ? getTaskStatusDone()
-                  : ' ',
-              },
             },
-          })
-        )
+          });
+        }
+      });
+
+      boardModifiers[shouldPrepend ? 'prependItems' : 'appendItems'](
+        [...path, lane.children.length - 1],
+        processedItems
       );
 
       // TODO: can we find a less brute force way to do this?
@@ -120,6 +122,9 @@ function DraggableLaneRaw({
     },
     [boardModifiers, path, lane, shouldPrepend]
   );
+
+  // Calculate defaultCheckChar - prioritize autoSetTaskSymbol over lane completion settings
+  const defaultCheckChar = lane.data.autoSetTaskSymbol || (shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
 
   const DroppableComponent = isStatic ? StaticDroppable : Droppable;
   const SortableComponent = isStatic ? StaticSortable : Sortable;
@@ -172,13 +177,11 @@ function DraggableLaneRaw({
 
             {!search?.query && !isCollapsed && shouldPrepend && (
               <ItemForm
-                addItems={(items) => {
-                  const symbol = lane.data.autoSetTaskSymbol || (shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
-                  addItems(items.map(item => update(item, { data: { checkChar: { $set: symbol } } })));
-                }}
+                addItems={addItems}
                 hideButton={isCompactPrepend}
                 editState={editState}
                 setEditState={setEditState}
+                defaultCheckChar={defaultCheckChar}
               />
             )}
 
@@ -216,12 +219,10 @@ function DraggableLaneRaw({
 
             {!search?.query && !isCollapsed && !shouldPrepend && (
               <ItemForm
-                addItems={(items) => {
-                  const symbol = lane.data.autoSetTaskSymbol || (shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
-                  addItems(items.map(item => update(item, { data: { checkChar: { $set: symbol } } })));
-                }}
+                addItems={addItems}
                 editState={editState}
                 setEditState={setEditState}
+                defaultCheckChar={defaultCheckChar}
               />
             )}
           </CollapsedDropArea>
