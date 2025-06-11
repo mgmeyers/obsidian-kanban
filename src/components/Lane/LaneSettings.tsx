@@ -49,7 +49,6 @@ export function LaneSettings ({ lane, lanePath, editState }: LaneSettingsProps) 
             );
           }}
           className={c('lane-symbol-input')}
-          style={{ width: '100%', marginTop: 4 }}
         />
       </div>
     </div>

@@ -91,7 +91,7 @@ export function LaneForm ({ onNewLane, closeLaneForm }: LaneFormProps) {
           className={`checkbox-container ${shouldMarkAsComplete ? 'is-enabled' : ''}`}
         />
       </div>
-      <div className={c('input-wrapper')}>
+      <div className={c('lane-symbol-input-wrapper')}>
         <div className={c('checkbox-label')}>{t('Task symbol')}</div>
         <input
           type="text"
@@ -100,7 +100,6 @@ export function LaneForm ({ onNewLane, closeLaneForm }: LaneFormProps) {
           placeholder={t('Task symbol placeholder')}
           onInput={e => setAutoSetTaskSymbol((e.target as HTMLInputElement).value)}
           className={c('lane-symbol-input')}
-          style={{ width: '100%', marginTop: 4 }}
         />
       </div>
       <div className={c('lane-input-actions')}>
