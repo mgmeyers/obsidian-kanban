@@ -10,7 +10,7 @@ import { getDefaultLocale } from '../Editor/datePickerLocale';
 import flatpickr from '../Editor/flatpickr';
 import { Instance } from '../Editor/flatpickr/types/instance';
 import { c, escapeRegExpStr } from '../helpers';
-import { Item } from '../types';
+import { Item, Lane } from '../types';
 
 export function constructDatePicker(
   win: Window,
@@ -273,7 +273,7 @@ export function constructMenuTimePickerOnChange({
   };
 }
 
-export function getItemClassModifiers(item: Item) {
+export function getItemClassModifiers(item: Item, lane?: Lane) {
   const date = item.data.metadata.date;
   const classModifiers: string[] = [];
 
@@ -291,7 +291,10 @@ export function getItemClassModifiers(item: Item) {
     }
   }
 
-  if (item.data.checked && item.data.checkChar === getTaskStatusDone()) {
+  const isStandardComplete = item.data.checked && item.data.checkChar === getTaskStatusDone();
+  const hasCustomSymbol = lane?.data.autoSetTaskSymbol && item.data.checkChar === lane.data.autoSetTaskSymbol;
+  
+  if (isStandardComplete || hasCustomSymbol) {
     classModifiers.push('is-complete');
   }
 

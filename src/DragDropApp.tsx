@@ -54,9 +54,12 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
         try {
           const items: Item[] = data.content.map((title: string) => {
             let item = stateManager.getNewItem(title, ' ');
+            const autoSymbol = destinationParent?.data?.autoSetTaskSymbol;
             const isComplete = !!destinationParent?.data?.shouldMarkItemsComplete;
 
-            if (isComplete) {
+            if (autoSymbol) {
+              item = update(item, { data: { checkChar: { $set: autoSymbol } } });
+            } else if (isComplete) {
               item = update(item, { data: { checkChar: { $set: getTaskStatusPreDone() } } });
               const updates = toggleTask(item, stateManager.file);
               if (updates) {
@@ -73,7 +76,9 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
                   $set: !!destinationParent?.data?.shouldMarkItemsComplete,
                 },
                 checkChar: {
-                  $set: destinationParent?.data?.shouldMarkItemsComplete
+                  $set: autoSymbol
+                    ? autoSymbol
+                    : destinationParent?.data?.shouldMarkItemsComplete
                     ? getTaskStatusDone()
                     : ' ',
                 },
@@ -84,7 +89,6 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
           return stateManager.setState((board) => insertEntity(board, dropPath, items));
         } catch (e) {
           stateManager.setError(e);
-          console.error(e);
         }
 
         return;

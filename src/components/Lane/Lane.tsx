@@ -91,7 +91,11 @@ function DraggableLaneRaw({
                 $set: shouldMarkItemsComplete,
               },
               checkChar: {
-                $set: shouldMarkItemsComplete ? getTaskStatusDone() : ' ',
+                $set: lane.data.autoSetTaskSymbol
+                  ? lane.data.autoSetTaskSymbol
+                  : shouldMarkItemsComplete
+                  ? getTaskStatusDone()
+                  : ' ',
               },
             },
           })
@@ -168,7 +172,10 @@ function DraggableLaneRaw({
 
             {!search?.query && !isCollapsed && shouldPrepend && (
               <ItemForm
-                addItems={addItems}
+                addItems={(items) => {
+                  const symbol = lane.data.autoSetTaskSymbol || (shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
+                  addItems(items.map(item => update(item, { data: { checkChar: { $set: symbol } } })));
+                }}
                 hideButton={isCompactPrepend}
                 editState={editState}
                 setEditState={setEditState}
@@ -195,6 +202,7 @@ function DraggableLaneRaw({
                       items={lane.children}
                       isStatic={isStatic}
                       shouldMarkItemsComplete={shouldMarkItemsComplete}
+                      lane={lane}
                     />
                     <SortPlaceholder
                       accepts={laneAccepts}
@@ -207,7 +215,14 @@ function DraggableLaneRaw({
             )}
 
             {!search?.query && !isCollapsed && !shouldPrepend && (
-              <ItemForm addItems={addItems} editState={editState} setEditState={setEditState} />
+              <ItemForm
+                addItems={(items) => {
+                  const symbol = lane.data.autoSetTaskSymbol || (shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
+                  addItems(items.map(item => update(item, { data: { checkChar: { $set: symbol } } })));
+                }}
+                editState={editState}
+                setEditState={setEditState}
+              />
             )}
           </CollapsedDropArea>
         </div>
