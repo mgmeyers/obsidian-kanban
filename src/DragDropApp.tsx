@@ -55,29 +55,24 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
           const items: Item[] = data.content.map((title: string) => {
             const autoSymbol = destinationParent?.data?.autoSetTaskSymbol;
             const isComplete = !!destinationParent?.data?.shouldMarkItemsComplete;
-            
-            // Determine the correct checkChar upfront
-            const checkChar = autoSymbol || (isComplete ? getTaskStatusPreDone() : ' ');
-            let item = stateManager.getNewItem(title, checkChar);
 
-            // Handle task completion for shouldMarkItemsComplete lanes
+            // Determine the final target state
+            const targetCheckChar = autoSymbol || (isComplete ? getTaskStatusDone() : ' ');
+
+            // If we need completion state and no autoSymbol, use toggleTask for timestamp
             if (isComplete && !autoSymbol) {
-              const updates = toggleTask(item, stateManager.file);
+              // Start with incomplete state, then toggle to get completion timestamp
+              const incompleteItem = stateManager.getNewItem(title, getTaskStatusPreDone());
+              const updates = toggleTask(incompleteItem, stateManager.file);
+
               if (updates) {
                 const [itemStrings, checkChars, thisIndex] = updates;
-                const nextItem = itemStrings[thisIndex];
-                const newCheckChar = checkChars[thisIndex];
-                return stateManager.getNewItem(nextItem, newCheckChar);
+                return stateManager.getNewItem(itemStrings[thisIndex], checkChars[thisIndex]);
               }
             }
 
-            return update(item, {
-              data: {
-                checked: {
-                  $set: isComplete,
-                },
-              },
-            });
+            // For other cases, create item with target state directly
+            return stateManager.getNewItem(title, targetCheckChar);
           });
 
           return stateManager.setState((board) => insertEntity(board, dropPath, items));

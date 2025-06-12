@@ -53,24 +53,19 @@ export function maybeCompleteForMove(
   let replacement: Item | undefined;
 
   if (oldShouldComplete !== newShouldComplete) {
-    if (newShouldComplete) {
-      currentItem = update(currentItem, {
-        data: {
-          checkChar: { $set: ' ' },
-          checked: { $set: false },
-        },
-      });
-    } else {
-      currentItem = update(currentItem, {
-        data: {
-          checkChar: { $set: getTaskStatusDone() },
-          checked: { $set: true },
-        },
-      });
-    }
+    const statusDone = getTaskStatusDone();
+    const statusPreDone = getTaskStatusPreDone();
+    // Try to use Tasks plugin for state transition first
+    currentItem = update(currentItem, {
+      data: {
+        checkChar: { $set: oldShouldComplete ? statusDone : statusPreDone },
+        checked: { $set: oldShouldComplete },
+      },
+    });
 
     const updates = toggleTask(currentItem, destinationStateManager.file);
     if (updates) {
+      // Tasks plugin successfully handled state transition
       const [itemStrings, checkChars, thisIndex] = updates;
       itemStrings.forEach((str, i) => {
         if (i === thisIndex) {
@@ -80,28 +75,18 @@ export function maybeCompleteForMove(
         }
       });
     } else {
-      if (newShouldComplete) {
-        currentItem = update(currentItem, {
-          data: {
-            checked: { $set: true },
-            checkChar: { $set: getTaskStatusDone() },
-          },
-        });
-      } else {
-        currentItem = update(currentItem, {
-          data: {
-            checked: { $set: false },
-            checkChar: { $set: ' ' },
-          },
-        });
-      }
+      // Tasks plugin not available, manually set correct state
+      currentItem = update(currentItem, {
+        data: {
+          checkChar: { $set: newShouldComplete ? statusDone : statusPreDone },
+          checked: { $set: newShouldComplete },
+        },
+      });
     }
   }
 
   if (autoSymbol) {
-    const newContent = currentItem.data.titleRaw;
-    currentItem = destinationStateManager.getNewItem(newContent, autoSymbol);
-    currentItem.id = item.id;
+    currentItem = destinationStateManager.getNewItem(currentItem.data.titleRaw, autoSymbol);
   }
 
   return { next: currentItem, replacement };
