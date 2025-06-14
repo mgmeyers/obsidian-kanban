@@ -292,8 +292,9 @@ export function getItemClassModifiers(item: Item, lane?: Lane) {
   }
 
   const isStandardComplete = item.data.checked && item.data.checkChar === getTaskStatusDone();
-  const hasCustomSymbol = lane?.data.autoSetTaskSymbol && item.data.checkChar === lane.data.autoSetTaskSymbol;
-  
+  const hasCustomSymbol =
+    lane?.data.autoSetTaskSymbol && item.data.checkChar === lane.data.autoSetTaskSymbol;
+
   if (isStandardComplete || hasCustomSymbol) {
     classModifiers.push('is-complete');
   }

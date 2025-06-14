@@ -14,7 +14,7 @@ interface LaneFormProps {
   closeLaneForm: () => void;
 }
 
-export function LaneForm ({ onNewLane, closeLaneForm }: LaneFormProps) {
+export function LaneForm({ onNewLane, closeLaneForm }: LaneFormProps) {
   const [shouldMarkAsComplete, setShouldMarkAsComplete] = useState(false);
   const [autoSetTaskSymbol, setAutoSetTaskSymbol] = useState('');
   const editorRef = useRef<EditorView>();
@@ -98,7 +98,7 @@ export function LaneForm ({ onNewLane, closeLaneForm }: LaneFormProps) {
           value={autoSetTaskSymbol}
           maxLength={2}
           placeholder={t('Task symbol placeholder')}
-          onInput={e => setAutoSetTaskSymbol((e.target as HTMLInputElement).value)}
+          onInput={(e) => setAutoSetTaskSymbol((e.target as HTMLInputElement).value)}
           className={c('lane-symbol-input')}
         />
       </div>

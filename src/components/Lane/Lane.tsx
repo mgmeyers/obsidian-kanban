@@ -124,7 +124,8 @@ function DraggableLaneRaw({
   );
 
   // Calculate defaultCheckChar - prioritize autoSetTaskSymbol over lane completion settings
-  const defaultCheckChar = lane.data.autoSetTaskSymbol || (shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
+  const defaultCheckChar =
+    lane.data.autoSetTaskSymbol || (shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
 
   const DroppableComponent = isStatic ? StaticDroppable : Droppable;
   const SortableComponent = isStatic ? StaticSortable : Sortable;

@@ -13,7 +13,7 @@ export interface LaneSettingsProps {
   editState: EditState;
 }
 
-export function LaneSettings ({ lane, lanePath, editState }: LaneSettingsProps) {
+export function LaneSettings({ lane, lanePath, editState }: LaneSettingsProps) {
   const { boardModifiers } = useContext(KanbanContext);
 
   if (!isEditing(editState)) return null;
@@ -41,7 +41,7 @@ export function LaneSettings ({ lane, lanePath, editState }: LaneSettingsProps) 
           value={lane.data.autoSetTaskSymbol || ''}
           maxLength={2}
           placeholder={t('Task symbol placeholder')}
-          onInput={e => {
+          onInput={(e) => {
             const value = (e.target as HTMLInputElement).value;
             boardModifiers.updateLane(
               lanePath,

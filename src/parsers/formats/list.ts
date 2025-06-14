@@ -242,7 +242,7 @@ function parseLaneExtra(str: string) {
   if (obsidianMatch) {
     return { autoSetTaskSymbol: obsidianMatch[1].trim() };
   }
-  
+
   return {};
 }
 
@@ -250,14 +250,14 @@ function findColumnConfigFromNode(node: any): string | null {
   if (node.type === 'html' && node.value) {
     return node.value;
   }
-  
+
   if (node.children) {
     for (const child of node.children) {
       const result = findColumnConfigFromNode(child);
       if (result) return result;
     }
   }
-  
+
   return null;
 }
 
@@ -282,20 +282,20 @@ export function astToUnhydratedBoard(
       for (let i = index + 1; i < root.children.length; i++) {
         const nextChild = root.children[i];
         if (nextChild.type === 'heading') break;
-        
+
         if (nextChild.type === 'paragraph') {
           const paraStr = toString(nextChild);
-          
+
           const extra = parseLaneExtra(paraStr);
           if (extra.autoSetTaskSymbol) {
             autoSetTaskSymbol = extra.autoSetTaskSymbol;
           }
-          
+
           if (paraStr === t('Complete')) {
             shouldMarkItemsComplete = true;
           }
         }
-        
+
         if (nextChild.type === 'html') {
           const commentStr = nextChild.value || '';
           const extra = parseLaneExtra(commentStr);
@@ -303,7 +303,7 @@ export function astToUnhydratedBoard(
             autoSetTaskSymbol = extra.autoSetTaskSymbol;
           }
         }
-        
+
         const commentStr = findColumnConfigFromNode(nextChild);
         if (commentStr) {
           const extra = parseLaneExtra(commentStr);

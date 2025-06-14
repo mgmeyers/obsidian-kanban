@@ -17,7 +17,13 @@ interface ItemFormProps {
   defaultCheckChar?: string;
 }
 
-export function ItemForm({ addItems, editState, setEditState, hideButton, defaultCheckChar = ' ' }: ItemFormProps) {
+export function ItemForm({
+  addItems,
+  editState,
+  setEditState,
+  hideButton,
+  defaultCheckChar = ' ',
+}: ItemFormProps) {
   const { stateManager } = useContext(KanbanContext);
   const editorRef = useRef<EditorView>();
 
@@ -29,7 +35,7 @@ export function ItemForm({ addItems, editState, setEditState, hideButton, defaul
   const createItem = (title: string) => {
     const newItem = stateManager.getNewItem(title, defaultCheckChar);
     addItems([newItem]);
-    
+
     // Force UI update to ensure correct checkChar display
     const cm = editorRef.current;
     if (cm) {

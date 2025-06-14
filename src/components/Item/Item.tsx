@@ -189,7 +189,12 @@ interface ItemsProps {
   lane?: Lane;
 }
 
-export const Items = memo(function Items({ isStatic, items, shouldMarkItemsComplete, lane }: ItemsProps) {
+export const Items = memo(function Items({
+  isStatic,
+  items,
+  shouldMarkItemsComplete,
+  lane,
+}: ItemsProps) {
   const search = useContext(SearchContext);
   const { view } = useContext(KanbanContext);
   const boardView = view.useViewState(frontmatterKey);

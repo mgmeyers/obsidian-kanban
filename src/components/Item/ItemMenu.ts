@@ -8,7 +8,12 @@ import { t } from 'src/lang/helpers';
 import { getTaskStatusDone } from 'src/parsers/helpers/inlineMetadata';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
-import { applyTemplate, escapeRegExpStr, generateInstanceId, maybeCompleteForMove } from '../helpers';
+import {
+  applyTemplate,
+  escapeRegExpStr,
+  generateInstanceId,
+  maybeCompleteForMove,
+} from '../helpers';
 import { EditState, Item } from '../types';
 import {
   constructDatePicker,
@@ -132,7 +137,9 @@ export function useItemMenu({
             .onClick(async () => {
               const titles = item.data.titleRaw.split(/[\r\n]+/g).map((t) => t.trim());
               const lane = stateManager.state.children[path[0]];
-              const checkChar = lane.data.autoSetTaskSymbol || (lane.data.shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
+              const checkChar =
+                lane.data.autoSetTaskSymbol ||
+                (lane.data.shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
               const newItems = await Promise.all(
                 titles.map((title) => {
                   return stateManager.getNewItem(title, checkChar);
@@ -155,7 +162,9 @@ export function useItemMenu({
             .setTitle(t('Insert card before'))
             .onClick(() => {
               const lane = stateManager.state.children[path[0]];
-              const checkChar = lane.data.autoSetTaskSymbol || (lane.data.shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
+              const checkChar =
+                lane.data.autoSetTaskSymbol ||
+                (lane.data.shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
               boardModifiers.insertItems(path, [stateManager.getNewItem('', checkChar, true)]);
             });
         })
@@ -165,9 +174,11 @@ export function useItemMenu({
             .onClick(() => {
               const newPath = [...path];
               newPath[newPath.length - 1] = newPath[newPath.length - 1] + 1;
-              
+
               const lane = stateManager.state.children[path[0]];
-              const checkChar = lane.data.autoSetTaskSymbol || (lane.data.shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
+              const checkChar =
+                lane.data.autoSetTaskSymbol ||
+                (lane.data.shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
               boardModifiers.insertItems(newPath, [stateManager.getNewItem('', checkChar, true)]);
             });
         })
