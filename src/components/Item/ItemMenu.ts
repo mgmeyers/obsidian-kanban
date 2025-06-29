@@ -14,6 +14,9 @@ import {
   constructMenuDatePickerOnChange,
   constructMenuTimePickerOnChange,
   constructTimePicker,
+  createCalendarEvent,
+  getFullCalendarDataSync,
+  getCalendarDisplayName,
 } from './helpers';
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
@@ -49,6 +52,8 @@ export function useItemMenu({
           .setTitle(t('Edit card'))
           .onClick(() => setEditState(coordinates));
       });
+
+
 
       menu
         .addItem((i) => {
@@ -295,6 +300,52 @@ export function useItemMenu({
 
           addMoveToOptions(submenu);
         });
+      }
+
+      // Add Copy to calendar functionality (like Move to list)
+      // Only show if the feature is enabled in settings
+      const copyToCalendarEnabled = stateManager.getSetting('enable-copy-to-calendar');
+      if (copyToCalendarEnabled) {
+        const calendars = getFullCalendarDataSync(stateManager);
+        console.log('Available calendars:', calendars);
+        
+        const addCopyToCalendarOptions = (menu: Menu) => {
+          if (calendars.length === 0) {
+            menu.addItem((item) =>
+              item.setTitle('No calendars found').setDisabled(true)
+            );
+            return;
+          }
+          
+          for (let i = 0, len = calendars.length; i < len; i++) {
+            const calendar = calendars[i];
+            const displayName = getCalendarDisplayName(calendar.directory);
+            
+            menu.addItem((menuItem) =>
+              menuItem
+                .setIcon('lucide-calendar')
+                .setTitle(displayName)
+                .onClick(async () => {
+                  await createCalendarEvent(stateManager, item, calendar);
+                })
+            );
+          }
+        };
+
+        if (Platform.isPhone) {
+          // For mobile, add calendar options directly to main menu
+          addCopyToCalendarOptions(menu);
+        } else {
+          // For desktop, create submenu like "Move to list"
+          menu.addItem((menuItem) => {
+            const submenu = (menuItem as any)
+              .setTitle(t('Copy to calendar'))
+              .setIcon('lucide-calendar-plus')
+              .setSubmenu();
+
+            addCopyToCalendarOptions(submenu);
+          });
+        }
       }
 
       menu.showAtPosition(coordinates);

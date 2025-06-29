@@ -142,6 +142,10 @@ const en = {
   'Inline Metadata': 'Inline Metadata',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.',
+  'Integrations': 'Integrations',
+  'Enable Copy to Calendar': 'Enable Copy to Calendar',
+  'Enables the "Copy to calendar" feature in card context menus. Integrates with the Full Calendar plugin\'s "Full note" mode. Requires Full Calendar plugin to be installed and configured.\n\nConfiguration file location: .obsidian/plugins/obsidian-full-calendar/data.json':
+    'Enables the "Copy to calendar" feature in card context menus. Integrates with the Full Calendar plugin\'s "Full note" mode. Requires Full Calendar plugin to be installed and configured.\n\nConfiguration file location: .obsidian/plugins/obsidian-full-calendar/data.json',
   'Board Header Buttons': 'Board Header Buttons',
   'Calendar: first day of week': 'Calendar: first day of week',
   'Override which day is used as the start of the week':
@@ -236,6 +240,7 @@ const en = {
   'Move to top': 'Move to top',
   'Move to bottom': 'Move to bottom',
   'Move to list': 'Move to list',
+  'Copy to calendar': 'Copy to calendar',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Enter list title...',

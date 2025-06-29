@@ -90,6 +90,7 @@ export interface KanbanSettings {
   'tag-sort'?: TagSort[];
   'time-format'?: string;
   'time-trigger'?: string;
+  'enable-copy-to-calendar'?: boolean;
 }
 
 export interface KanbanViewSettings {
@@ -138,6 +139,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'tag-sort',
   'time-format',
   'time-trigger',
+  'enable-copy-to-calendar',
 ]);
 
 export type SettingRetriever = <K extends keyof KanbanSettings>(
@@ -1288,6 +1290,55 @@ export class SettingsManager {
         }
       });
     });
+
+    contentEl.createEl('h4', { text: t('Integrations') });
+
+    new Setting(contentEl)
+      .setName(t('Enable Copy to Calendar'))
+      .setDesc(
+        t(
+          'Enables the "Copy to calendar" feature in card context menus. Integrates with the Full Calendar plugin\'s "Full note" mode. Requires Full Calendar plugin to be installed and configured.\n\nConfiguration file location: .obsidian/plugins/obsidian-full-calendar/data.json'
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('enable-copy-to-calendar', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            } else {
+              // default to false for new feature
+              toggle.setValue(false);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'enable-copy-to-calendar': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('enable-copy-to-calendar', local);
+                toggleComponent.setValue((globalValue as boolean) ?? false);
+
+                this.applySettingsUpdate({
+                  $unset: ['enable-copy-to-calendar'],
+                });
+              });
+          });
+      });
 
     contentEl.createEl('h4', { text: t('Board Header Buttons') });
 
