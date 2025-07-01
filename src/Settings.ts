@@ -91,6 +91,7 @@ export interface KanbanSettings {
   'time-format'?: string;
   'time-trigger'?: string;
   'enable-copy-to-calendar'?: boolean;
+  'place-settings-at-beginning'?: boolean;
 }
 
 export interface KanbanViewSettings {
@@ -140,6 +141,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'time-format',
   'time-trigger',
   'enable-copy-to-calendar',
+  'place-settings-at-beginning',
 ]);
 
 export type SettingRetriever = <K extends keyof KanbanSettings>(
@@ -1290,6 +1292,55 @@ export class SettingsManager {
         }
       });
     });
+
+    contentEl.createEl('h4', { text: t('File Format') });
+
+    new Setting(contentEl)
+      .setName(t('Place board settings at beginning'))
+      .setDesc(
+        t(
+          'When toggled, board-specific settings will be placed at the beginning of the file instead of at the end. This can make it easier to quickly edit board settings in markdown mode.'
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('place-settings-at-beginning', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            } else {
+              // default to false for backward compatibility
+              toggle.setValue(false);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'place-settings-at-beginning': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('place-settings-at-beginning', local);
+                toggleComponent.setValue((globalValue as boolean) ?? false);
+
+                this.applySettingsUpdate({
+                  $unset: ['place-settings-at-beginning'],
+                });
+              });
+          });
+      });
 
     contentEl.createEl('h4', { text: t('Integrations') });
 

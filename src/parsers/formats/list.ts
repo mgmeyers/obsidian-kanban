@@ -440,12 +440,22 @@ function archiveToMd(archive: Item[]) {
   return '';
 }
 
-export function boardToMd(board: Board) {
+export function boardToMd(board: Board, stateManager?: StateManager) {
   const lanes = board.children.reduce((md, lane) => {
     return md + laneToMd(lane);
   }, '');
 
   const frontmatter = ['---', '', stringifyYaml(board.data.frontmatter), '---', '', ''].join('\n');
-
-  return frontmatter + lanes + archiveToMd(board.data.archive) + settingsToCodeblock(board);
+  const settingsBlock = settingsToCodeblock(board);
+  
+  // Check if settings should be placed at the beginning
+  const placeSettingsAtBeginning = stateManager?.getSetting('place-settings-at-beginning');
+  
+  if (placeSettingsAtBeginning) {
+    // Place settings at the beginning (after frontmatter)
+    return frontmatter + settingsBlock + '\n\n' + lanes + archiveToMd(board.data.archive);
+  } else {
+    // Default behavior: place settings at the end
+    return frontmatter + lanes + archiveToMd(board.data.archive) + settingsBlock;
+  }
 }
