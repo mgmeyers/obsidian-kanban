@@ -265,6 +265,23 @@ export function useItemMenu({
 
       menu.addSeparator();
 
+      function addMoveToNextLaneOption(menu: Menu) {
+        const lanes = stateManager.state.children;
+        if (lanes.length <= 1) return;
+        if (path[0] == lanes.length - 1) return;
+        menu.addItem((i) => {
+          i.setIcon('lucide-arrow-right')
+            .setTitle(t('Move to next list'))
+            .onClick(() => {
+              stateManager.setState((boardData) => {
+                return moveEntity(boardData, path, [path[0] + 1, 0]);
+              });
+            });
+        });
+      }
+
+      addMoveToNextLaneOption(menu);
+
       const addMoveToOptions = (menu: Menu) => {
         const lanes = stateManager.state.children;
         if (lanes.length <= 1) return;
