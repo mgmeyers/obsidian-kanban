@@ -246,19 +246,35 @@ export function useGetTagColorFn(stateManager: StateManager): (tag: string) => T
  * Creates a function to get card colors by card ID
  */
 export function getCardColorFn(cardColors: CardColor[]) {
-  const cardMap = (cardColors || []).reduce<Record<string, CardColor>>((total, current) => {
+  const cardIdMap = (cardColors || []).reduce<Record<string, CardColor>>((total, current) => {
     if (!current.cardId) return total;
     total[current.cardId] = current;
     return total;
   }, {});
+  
+  const cardContentMap = (cardColors || []).reduce<Record<string, CardColor>>((total, current) => {
+    if (!current.cardContent) return total;
+    total[current.cardContent] = current;
+    return total;
+  }, {});
 
-  return (cardId: string) => {
-    if (cardMap[cardId]) return cardMap[cardId];
+  return (cardId: string, cardContent?: string) => {
+    // First try to match by current card ID
+    if (cardIdMap[cardId]) {
+      return cardIdMap[cardId];
+    }
+    
+    // If no ID match and we have content, try to match by content
+    if (cardContent && cardContentMap[cardContent]) {
+      const found = cardContentMap[cardContent];
+      return found;
+    }
+    
     return null;
   };
 }
 
-export function useGetCardColorFn(stateManager: StateManager): (cardId: string) => CardColor {
+export function useGetCardColorFn(stateManager: StateManager): (cardId: string, cardContent?: string) => CardColor {
   const cardColors = stateManager.useSetting('card-colors');
   return useMemo(() => getCardColorFn(cardColors), [cardColors]);
 }

@@ -152,7 +152,8 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
   const classModifiers: string[] = getItemClassModifiers(innerProps.item);
   
   // Get card color from calendar assignment
-  const cardColor = getCardColor(innerProps.item.id);
+  const cardContent = innerProps.item.data.titleRaw.trim();
+  const cardColor = getCardColor(innerProps.item.id, cardContent);
   
   // Add calendar color class if card has a calendar color
   if (cardColor) {

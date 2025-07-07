@@ -305,46 +305,119 @@ export function useItemMenu({
       // Add Copy to calendar functionality (like Move to list)
       // Only show if the feature is enabled in settings
       const copyToCalendarEnabled = stateManager.getSetting('enable-copy-to-calendar');
+      console.log('Copy to calendar enabled:', copyToCalendarEnabled);
       if (copyToCalendarEnabled) {
-        const calendars = getFullCalendarDataSync(stateManager);
-        console.log('Available calendars:', calendars);
+      const calendars = getFullCalendarDataSync(stateManager);
+      console.log('Available calendars:', calendars);
+      
+      const addCopyToCalendarOptions = (menu: Menu) => {
+        if (calendars.length === 0) {
+          menu.addItem((item) =>
+            item.setTitle('No calendars found').setDisabled(true)
+          );
+          return;
+        }
         
-        const addCopyToCalendarOptions = (menu: Menu) => {
-          if (calendars.length === 0) {
-            menu.addItem((item) =>
-              item.setTitle('No calendars found').setDisabled(true)
-            );
-            return;
+        // Helper function to get closest unicode circle for a color
+        function getColorCircle(color: string): string {
+          console.log(`🎨 Detecting color for: ${color}`);
+          
+          const colorLower = color.toLowerCase();
+          // Map common colors to Unicode circles
+          if (colorLower.includes('red') || colorLower === '#ff0000' || colorLower === '#f00') return '🔴';
+          if (colorLower.includes('blue') || colorLower === '#0000ff' || colorLower === '#00f') return '🔵';
+          if (colorLower.includes('green') || colorLower === '#00ff00' || colorLower === '#0f0') return '🟢';
+          if (colorLower.includes('yellow') || colorLower === '#ffff00' || colorLower === '#ff0') return '🟡';
+          if (colorLower.includes('purple') || colorLower.includes('violet') || colorLower.includes('magenta')) return '🟣';
+          if (colorLower.includes('orange') || colorLower === '#ffa500') return '🟠';
+          if (colorLower.includes('brown')) return '🟤';
+          if (colorLower.includes('black') || colorLower === '#000000' || colorLower === '#000') return '⚫';
+          if (colorLower.includes('white') || colorLower === '#ffffff' || colorLower === '#fff') return '⚪';
+          
+          // For hex colors, try to determine the dominant color
+          if (color.startsWith('#')) {
+            const hex = color.slice(1);
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            
+            console.log(`🎨 RGB values: R=${r}, G=${g}, B=${b}`);
+            
+            // Improved color detection logic
+            const maxVal = Math.max(r, g, b);
+            const minVal = Math.min(r, g, b);
+            const diff = maxVal - minVal;
+            
+            // Check for purple/magenta (high red + blue, low green)
+            if (r > 100 && b > 100 && g < Math.min(r, b) * 0.7) {
+              console.log(`🎨 Detected purple: ${color} -> 🟣`);
+              return '🟣';
+            }
+            
+            // Check for orange (high red, medium green, low blue)
+            if (r > g && g > b && r > 150 && g > 80 && b < 100) {
+              console.log(`🎨 Detected orange: ${color} -> 🟠`);
+              return '🟠';
+            }
+            
+            // Check for yellow (high red + green, low blue)
+            if (r > 150 && g > 150 && b < 100) {
+              console.log(`🎨 Detected yellow: ${color} -> 🟡`);
+              return '🟡';
+            }
+            
+            // Primary color detection
+            if (r > g && r > b && diff > 50) {
+              console.log(`🎨 Detected red: ${color} -> 🔴`);
+              return '🔴';
+            }
+            if (g > r && g > b && diff > 50) {
+              console.log(`🎨 Detected green: ${color} -> 🟢`);
+              return '🟢';
+            }
+            if (b > r && b > g && diff > 50) {
+              console.log(`🎨 Detected blue: ${color} -> 🔵`);
+              return '🔵';
+            }
           }
           
-          for (let i = 0, len = calendars.length; i < len; i++) {
-            const calendar = calendars[i];
-            const displayName = getCalendarDisplayName(calendar.directory);
-            
-            menu.addItem((menuItem) =>
-              menuItem
-                .setIcon('lucide-calendar')
-                .setTitle(displayName)
-                .onClick(async () => {
-                  await createCalendarEvent(stateManager, item, calendar);
-                })
-            );
-          }
-        };
+          console.log(`🎨 Defaulting to black: ${color} -> ⚫`);
+          return '⚫';
+        }
+        
+        for (let i = 0, len = calendars.length; i < len; i++) {
+          const calendar = calendars[i];
+          const displayName = getCalendarDisplayName(calendar.directory);
+          const colorCircle = getColorCircle(calendar.color);
+          const titleWithCircle = `${colorCircle} ${displayName}`;
+          
+          menu.addItem((menuItem) =>
+            menuItem
+              .setIcon('lucide-calendar')
+              .setTitle(titleWithCircle)
+              .onClick(async () => {
+                await createCalendarEvent(stateManager, item, calendar);
+              })
+          );
+        }
+      };
 
-        if (Platform.isPhone) {
-          // For mobile, add calendar options directly to main menu
-          addCopyToCalendarOptions(menu);
-        } else {
-          // For desktop, create submenu like "Move to list"
-          menu.addItem((menuItem) => {
-            const submenu = (menuItem as any)
-              .setTitle(t('Copy to calendar'))
-              .setIcon('lucide-calendar-plus')
-              .setSubmenu();
-
-            addCopyToCalendarOptions(submenu);
-          });
+      if (Platform.isPhone) {
+        // For mobile, add calendar options directly to main menu
+        addCopyToCalendarOptions(menu);
+      } else {
+        // For desktop, create submenu like "Move to list"
+        menu.addItem((menuItem) => {
+          console.log('Creating Copy to calendar submenu...');
+          const submenu = (menuItem as any)
+            .setTitle(t('Copy to calendar'))
+            .setIcon('lucide-calendar-plus')
+            .setSubmenu();
+          
+          console.log('Submenu created, adding calendar options...');
+          addCopyToCalendarOptions(submenu);
+          console.log('Calendar options added to submenu');
+        });
         }
       }
 

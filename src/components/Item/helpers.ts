@@ -632,15 +632,12 @@ export async function handleDragOrPaste(
  */
 export function getFullCalendarDataSync(stateManager: StateManager): CalendarSource[] {
   try {
-    console.log('Looking for Full Calendar data synchronously...');
     
     // Try direct access via Obsidian's plugin system first
     if ((stateManager.app as any).plugins?.plugins?.['obsidian-full-calendar']) {
       const fullCalendarPlugin = (stateManager.app as any).plugins.plugins['obsidian-full-calendar'];
-      console.log('Found Full Calendar plugin:', fullCalendarPlugin);
       
       if (fullCalendarPlugin.settings?.calendarSources) {
-        console.log('Found calendar sources from plugin settings:', fullCalendarPlugin.settings.calendarSources);
         return fullCalendarPlugin.settings.calendarSources;
       }
     }
@@ -655,22 +652,15 @@ export function getFullCalendarDataSync(stateManager: StateManager): CalendarSou
                          (stateManager.app.vault.adapter as any).basePath;
         const fullCalendarDataPath = path.join(vaultPath, '.obsidian', 'plugins', 'obsidian-full-calendar', 'data.json');
         
-        console.log('Trying file path:', fullCalendarDataPath);
-        
         if (fs.existsSync(fullCalendarDataPath)) {
           const content = fs.readFileSync(fullCalendarDataPath, 'utf8');
           const data = JSON.parse(content);
-          console.log('Found Full Calendar data from file:', data);
           return data.calendarSources || [];
-        } else {
-          console.log('File does not exist at:', fullCalendarDataPath);
         }
       } catch (fsError) {
-        console.log('Direct file access failed:', fsError);
+        // Silent fallback
       }
     }
-    
-    console.log('No calendar sources found');
     return [];
     
   } catch (error) {
@@ -844,6 +834,11 @@ export function constructCalendarPicker(
           // Add color circle
           item.createEl('span', { cls: c('calendar-color-circle') }, (circle) => {
             circle.style.backgroundColor = calendar.color;
+            circle.style.width = '12px';
+            circle.style.height = '12px';
+            circle.style.borderRadius = '50%';
+            circle.style.display = 'inline-block';
+            circle.style.marginRight = '8px';
           });
           
           // Add calendar name
@@ -1014,16 +1009,20 @@ async function applyCalendarColorToCard(
     // Calculate appropriate text color for contrast
     const textColor = getContrastTextColor(calendar.color);
     
-    // Create new card color entry
+    // Create new card color entry using both ID and content for matching
+    const cardContent = item.data.titleRaw.trim();
     const newCardColor = {
       cardId: item.id,
+      cardContent: cardContent,
       backgroundColor: calendar.color,
       color: textColor,
       calendarName: calendarDisplayName,
     };
     
-    // Remove existing color for this card (if any) and add the new one
-    const updatedCardColors = currentCardColors.filter(cc => cc.cardId !== item.id);
+    // Remove existing color for this card content (not just ID) and add the new one
+    const updatedCardColors = currentCardColors.filter(cc => 
+      cc.cardId !== item.id && cc.cardContent !== cardContent
+    );
     updatedCardColors.push(newCardColor);
     
     // Update the board settings with the new card color - pass the board directly
@@ -1040,8 +1039,12 @@ async function applyCalendarColorToCard(
     // Apply the updated board state and ensure it's saved to disk
     stateManager.setState(updatedBoard, true);
     
-    console.log(`Applied calendar color ${calendar.color} to card ${item.id} (${calendarDisplayName})`);
-    console.log(`Card colors saved to board settings:`, updatedCardColors);
+    console.log(`🎨 Saved calendar color ${calendar.color} for card ${item.id}`);
+    
+    // Force a save to disk to ensure persistence
+    setTimeout(() => {
+      stateManager.saveToDisk();
+    }, 100);
     
   } catch (error) {
     console.error('Error applying calendar color to card:', error);
