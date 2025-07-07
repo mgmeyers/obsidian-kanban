@@ -281,23 +281,34 @@ export function useGetCardColorFn(stateManager: StateManager): (cardId: string, 
 
 /**
  * Calculates appropriate text color based on background brightness
- * Returns either white or black for optimal contrast
+ * Uses a simpler algorithm similar to Full Calendar for better matching
  */
 export function getContrastTextColor(backgroundColor: string): string {
-  // Remove alpha channel and convert to RGB
+  // Handle hex colors
+  if (backgroundColor.startsWith('#')) {
+    const hex = backgroundColor.slice(1);
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Use simple perceived brightness calculation (similar to what Full Calendar likely uses)
+    // This is less aggressive than WCAG luminance
+    const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+    
+    // Higher threshold (more likely to use black text)
+    // Full Calendar seems to prefer black text unless the background is quite dark
+    return brightness > 140 ? '#000000' : '#ffffff';
+  }
+  
+  // Handle rgb/rgba colors
   const color = backgroundColor.replace(/rgba?\(|\s+|\)/g, '').split(',').map(Number);
-  if (color.length < 3) return '#ffffff'; // Default to white if parsing fails
+  if (color.length < 3) return '#000000'; // Default to black if parsing fails
   
-  // Calculate relative luminance using WCAG formula
-  const [r, g, b] = color.map(c => {
-    const sRGB = c / 255;
-    return sRGB <= 0.03928 ? sRGB / 12.92 : Math.pow((sRGB + 0.055) / 1.055, 2.4);
-  });
+  const [r, g, b] = color;
+  const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
   
-  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  
-  // Return white text for dark backgrounds, black text for light backgrounds
-  return luminance > 0.5 ? '#000000' : '#ffffff';
+  // Same threshold as hex colors
+  return brightness > 140 ? '#000000' : '#ffffff';
 }
 
 export function getDateColorFn(dateColors: DateColor[]) {
