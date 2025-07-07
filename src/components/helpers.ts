@@ -13,7 +13,7 @@ import {
 } from 'src/parsers/helpers/inlineMetadata';
 
 import { SearchContextProps } from './context';
-import { Board, DataKey, DateColor, Item, Lane, PageData, TagColor } from './types';
+import { Board, CardColor, DataKey, DateColor, Item, Lane, PageData, TagColor } from './types';
 
 export const baseClassName = 'kanban-plugin';
 
@@ -240,6 +240,48 @@ export function getTagColorFn(tagColors: TagColor[]) {
 export function useGetTagColorFn(stateManager: StateManager): (tag: string) => TagColor {
   const tagColors = stateManager.useSetting('tag-colors');
   return useMemo(() => getTagColorFn(tagColors), [tagColors]);
+}
+
+/**
+ * Creates a function to get card colors by card ID
+ */
+export function getCardColorFn(cardColors: CardColor[]) {
+  const cardMap = (cardColors || []).reduce<Record<string, CardColor>>((total, current) => {
+    if (!current.cardId) return total;
+    total[current.cardId] = current;
+    return total;
+  }, {});
+
+  return (cardId: string) => {
+    if (cardMap[cardId]) return cardMap[cardId];
+    return null;
+  };
+}
+
+export function useGetCardColorFn(stateManager: StateManager): (cardId: string) => CardColor {
+  const cardColors = stateManager.useSetting('card-colors');
+  return useMemo(() => getCardColorFn(cardColors), [cardColors]);
+}
+
+/**
+ * Calculates appropriate text color based on background brightness
+ * Returns either white or black for optimal contrast
+ */
+export function getContrastTextColor(backgroundColor: string): string {
+  // Remove alpha channel and convert to RGB
+  const color = backgroundColor.replace(/rgba?\(|\s+|\)/g, '').split(',').map(Number);
+  if (color.length < 3) return '#ffffff'; // Default to white if parsing fails
+  
+  // Calculate relative luminance using WCAG formula
+  const [r, g, b] = color.map(c => {
+    const sRGB = c / 255;
+    return sRGB <= 0.03928 ? sRGB / 12.92 : Math.pow((sRGB + 0.055) / 1.055, 2.4);
+  });
+  
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  
+  // Return white text for dark backgrounds, black text for light backgrounds
+  return luminance > 0.5 ? '#000000' : '#ffffff';
 }
 
 export function getDateColorFn(dateColors: DateColor[]) {

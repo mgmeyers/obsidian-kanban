@@ -1,4 +1,5 @@
 import { FileWithPath, fromEvent } from 'file-selector';
+import update from 'immutability-helper';
 import { Platform, TFile, TFolder, htmlToMarkdown, moment, parseLinktext, setIcon, Notice } from 'obsidian';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
@@ -9,7 +10,7 @@ import { BoardModifiers } from '../../helpers/boardModifiers';
 import { getDefaultLocale } from '../Editor/datePickerLocale';
 import flatpickr from '../Editor/flatpickr';
 import { Instance } from '../Editor/flatpickr/types/instance';
-import { c, escapeRegExpStr } from '../helpers';
+import { c, escapeRegExpStr, getContrastTextColor } from '../helpers';
 import { Item } from '../types';
 
 /**
@@ -981,6 +982,10 @@ completed: null
     try {
       await stateManager.app.vault.create(fullPath, fileContent);
       new Notice(`Created calendar event: ${fileName}`);
+      
+      // Apply calendar color to the card
+      await applyCalendarColorToCard(stateManager, item, calendar);
+      
       return true;
     } catch (fileError) {
       console.error('Error creating file:', fileError);
@@ -991,5 +996,54 @@ completed: null
     console.error('Error creating calendar event:', error);
     new Notice(`Error creating calendar event: ${error.message}`);
     return false;
+  }
+}
+
+/**
+ * Applies the calendar's color to a card by storing the color mapping in board settings
+ */
+async function applyCalendarColorToCard(
+  stateManager: StateManager,
+  item: Item,
+  calendar: CalendarSource
+) {
+  try {
+    const currentCardColors = stateManager.getSetting('card-colors') || [];
+    const calendarDisplayName = getCalendarDisplayName(calendar.directory);
+    
+    // Calculate appropriate text color for contrast
+    const textColor = getContrastTextColor(calendar.color);
+    
+    // Create new card color entry
+    const newCardColor = {
+      cardId: item.id,
+      backgroundColor: calendar.color,
+      color: textColor,
+      calendarName: calendarDisplayName,
+    };
+    
+    // Remove existing color for this card (if any) and add the new one
+    const updatedCardColors = currentCardColors.filter(cc => cc.cardId !== item.id);
+    updatedCardColors.push(newCardColor);
+    
+    // Update the board settings with the new card color
+    const updatedBoard = update(stateManager.state, {
+      data: {
+        settings: {
+          'card-colors': {
+            $set: updatedCardColors,
+          },
+        },
+      },
+    });
+    
+    // Apply the updated board state
+    stateManager.setState(() => updatedBoard);
+    
+    console.log(`Applied calendar color ${calendar.color} to card ${item.id} (${calendarDisplayName})`);
+    
+  } catch (error) {
+    console.error('Error applying calendar color to card:', error);
+    // Don't throw here - the calendar event was created successfully
   }
 }
