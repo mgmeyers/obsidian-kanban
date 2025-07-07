@@ -1026,7 +1026,7 @@ async function applyCalendarColorToCard(
     const updatedCardColors = currentCardColors.filter(cc => cc.cardId !== item.id);
     updatedCardColors.push(newCardColor);
     
-    // Update the board settings with the new card color
+    // Update the board settings with the new card color - pass the board directly
     const updatedBoard = update(stateManager.state, {
       data: {
         settings: {
@@ -1037,10 +1037,11 @@ async function applyCalendarColorToCard(
       },
     });
     
-    // Apply the updated board state
-    stateManager.setState(() => updatedBoard);
+    // Apply the updated board state and ensure it's saved to disk
+    stateManager.setState(updatedBoard, true);
     
     console.log(`Applied calendar color ${calendar.color} to card ${item.id} (${calendarDisplayName})`);
+    console.log(`Card colors saved to board settings:`, updatedCardColors);
     
   } catch (error) {
     console.error('Error applying calendar color to card:', error);

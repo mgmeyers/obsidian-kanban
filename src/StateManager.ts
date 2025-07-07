@@ -257,6 +257,7 @@ export class StateManager {
       'tag-colors': this.getSettingRaw('tag-colors', suppliedSettings) ?? [],
       'tag-sort': this.getSettingRaw('tag-sort', suppliedSettings) ?? [],
       'date-colors': this.getSettingRaw('date-colors', suppliedSettings) ?? [],
+      'card-colors': this.getSettingRaw('card-colors', suppliedSettings) ?? [],
       'tag-action': this.getSettingRaw('tag-action', suppliedSettings) ?? 'obsidian',
     };
   }
