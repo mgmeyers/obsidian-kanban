@@ -249,17 +249,22 @@ export function MarkdownEditor({
     return () => {
       if (Platform.isMobile) {
         cm.dom.win.removeEventListener('keyboardDidShow', onShow);
-
-        if (view.activeEditor === controller) {
-          view.activeEditor = null;
-        }
-
-        if (app.workspace.activeEditor === controller) {
-          app.workspace.activeEditor = null;
-          (app as any).mobileToolbar.update();
-          view.contentEl.removeClass('is-mobile-editing');
-        }
       }
+
+      // Clean up activeEditor references on all platforms
+      if (view.activeEditor === controller) {
+        view.activeEditor = null;
+      }
+
+      if (app.workspace.activeEditor === controller) {
+        app.workspace.activeEditor = null;
+      }
+
+      if (Platform.isMobile) {
+        (app as any).mobileToolbar.update();
+        view.contentEl.removeClass('is-mobile-editing');
+      }
+
       view.plugin.removeChild(editor);
       internalRef.current = null;
       if (editorRef) editorRef.current = null;
