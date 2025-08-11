@@ -20,11 +20,6 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
   const { stateManager } = useContext(KanbanContext);
   const editorRef = useRef<EditorView>();
 
-  const clear = () => setEditState(EditingState.cancel);
-  const clickOutsideRef = useOnclickOutside(clear, {
-    ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],
-  });
-
   const createItem = (title: string) => {
     addItems([stateManager.getNewItem(title, ' ')]);
     const cm = editorRef.current;
@@ -38,6 +33,28 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
       });
     }
   };
+
+  const clear = () => setEditState(EditingState.cancel);
+
+  const handleClickOutside = () => {
+    const cm = editorRef.current;
+    if (cm) {
+      const content = cm.state.doc.toString().trim();
+      if (content) {
+        // Si il y a du contenu, on sauvegarde la carte
+        createItem(content);
+      } else {
+        // Si il n'y a pas de contenu, on annule
+        clear();
+      }
+    } else {
+      clear();
+    }
+  };
+
+  const clickOutsideRef = useOnclickOutside(handleClickOutside, {
+    ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],
+  });
 
   if (isEditing(editState)) {
     return (
