@@ -9,6 +9,7 @@ import {
   useMemo,
   useRef,
 } from 'preact/hooks';
+import useOnclickOutside from 'react-cool-onclickoutside';
 import { StateManager } from 'src/StateManager';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { Path } from 'src/dnd/types';
@@ -205,6 +206,21 @@ export const ItemContent = memo(function ItemContent({
 
   const path = useNestedEntityPath();
   const { onEditDate, onEditTime } = useDatePickers(item);
+
+  const handleClickOutside = useCallback(() => {
+    if (titleRef.current !== null && titleRef.current.trim()) {
+      // Si il y a du contenu modifié, on sauvegarde
+      setEditState(EditingState.complete);
+    } else {
+      // Si pas de modification ou contenu vide, on annule
+      setEditState(EditingState.cancel);
+    }
+  }, [setEditState]);
+
+  const clickOutsideRef = useOnclickOutside(handleClickOutside, {
+    ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],
+  });
+
   const onEnter = useCallback(
     (cm: EditorView, mod: boolean, shift: boolean) => {
       if (!allowNewLine(stateManager, mod, shift)) {
@@ -256,7 +272,7 @@ export const ItemContent = memo(function ItemContent({
 
   if (!isStatic && isEditing(editState)) {
     return (
-      <div className={c('item-input-wrapper')}>
+      <div className={c('item-input-wrapper')} ref={clickOutsideRef}>
         <MarkdownEditor
           editState={editState}
           className={c('item-input')}
