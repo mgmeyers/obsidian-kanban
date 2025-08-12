@@ -209,10 +209,10 @@ export const ItemContent = memo(function ItemContent({
 
   const handleClickOutside = useCallback(() => {
     if (titleRef.current !== null && titleRef.current.trim()) {
-      // Si il y a du contenu modifié, on sauvegarde
+      // If there is modified content, we save
       setEditState(EditingState.complete);
     } else {
-      // Si pas de modification ou contenu vide, on annule
+      // if there is no modification, we cancel
       setEditState(EditingState.cancel);
     }
   }, [setEditState]);

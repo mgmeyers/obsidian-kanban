@@ -41,10 +41,10 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
     if (cm) {
       const content = cm.state.doc.toString().trim();
       if (content) {
-        // Si il y a du contenu, on sauvegarde la carte
+        // If there is content, we save the card
         createItem(content);
       } else {
-        // Si il n'y a pas de contenu, on annule
+        // If there is no content, we cancel
         clear();
       }
     } else {
