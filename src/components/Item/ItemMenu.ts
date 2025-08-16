@@ -401,109 +401,100 @@ export function useItemMenu({
             );
           }
         }
+      };
 
-        // Add associated file lanes
+      // Create separate menu items for each associated file
+      const addAssociatedFileMenus = (mainMenu: Menu) => {
         const associatedFiles = (stateManager.getSetting('associated-files') as string[]) || [];
         console.log('Associated files found:', associatedFiles);
 
-        if (associatedFiles.length > 0) {
-          // Add separator if we have current board lanes
-          if (lanes.length > 1) {
-            menu.addSeparator();
-          }
+        associatedFiles.forEach((filePath) => {
+          const file = stateManager.app.vault.getAbstractFileByPath(filePath);
+          console.log('Processing associated file:', filePath, 'found:', !!file);
 
-          // Process all associated files and create submenus directly
-          associatedFiles.forEach((filePath) => {
-            const file = stateManager.app.vault.getAbstractFileByPath(filePath);
-            console.log('Processing associated file:', filePath, 'found:', !!file);
+          if (file && 'extension' in file && file.extension === 'md') {
+            const fileBasename = (file as any).basename;
 
-            if (file && 'extension' in file && file.extension === 'md') {
-              const fileBasename = (file as any).basename;
+            // Create a separate "Move to list (FileName)" menu item
+            mainMenu.addItem((fileMenuItem) => {
+              const fileSubmenu = (fileMenuItem as any)
+                .setIcon('lucide-file-text')
+                .setTitle(`Move to list (${fileBasename})`)
+                .setSubmenu();
 
-              // Always create the submenu item - populate it via direct file reading
-              menu.addItem((fileItem) => {
-                const fileSubmenu = (fileItem as any)
-                  .setIcon('lucide-file-text')
-                  .setTitle(fileBasename)
-                  .setSubmenu();
+              console.log('Created separate menu item for:', fileBasename);
 
-                console.log('Created submenu for:', fileBasename);
+              // Load file content and populate submenu
+              stateManager.app.vault
+                .cachedRead(file as TFile)
+                .then((content: string) => {
+                  console.log('Read cached content from:', fileBasename, 'length:', content.length);
 
-                // Load file content immediately and populate submenu
-                stateManager.app.vault
-                  .cachedRead(file as TFile)
-                  .then((content: string) => {
-                    console.log(
-                      'Read cached content from:',
-                      fileBasename,
-                      'length:',
-                      content.length
-                    );
+                  // Parse H2 headers to find lanes
+                  const lines = content.split('\n');
+                  const fileLanes: string[] = [];
 
-                    // Parse H2 headers to find lanes
-                    const lines = content.split('\n');
-                    const fileLanes: string[] = [];
-
-                    for (const line of lines) {
-                      const trimmed = line.trim();
-                      if (trimmed.startsWith('## ') && !trimmed.includes('%%')) {
-                        const laneTitle = trimmed.substring(3).trim();
-                        if (laneTitle) {
-                          fileLanes.push(laneTitle);
-                        }
+                  for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (trimmed.startsWith('## ') && !trimmed.includes('%%')) {
+                      const laneTitle = trimmed.substring(3).trim();
+                      if (laneTitle) {
+                        fileLanes.push(laneTitle);
                       }
                     }
+                  }
 
-                    console.log('Parsed lanes for', fileBasename + ':', fileLanes);
+                  console.log('Parsed lanes for', fileBasename + ':', fileLanes);
 
-                    // Add lanes to submenu
-                    if (fileLanes.length > 0) {
-                      fileLanes.forEach((laneTitle) => {
-                        console.log('Adding lane to submenu:', laneTitle);
-                        fileSubmenu.addItem((laneItem: any) =>
-                          laneItem
-                            .setIcon('lucide-square-kanban')
-                            .setTitle(laneTitle)
-                            .onClick(async () => {
-                              console.log(`Moving card to ${fileBasename}/${laneTitle}`);
-                              await moveCardToAssociatedFile(
-                                stateManager,
-                                file as TFile,
-                                item,
-                                path,
-                                laneTitle
-                              );
-                            })
-                        );
-                      });
-                    } else {
-                      // No lanes found
+                  // Add lanes to this file's submenu
+                  if (fileLanes.length > 0) {
+                    fileLanes.forEach((laneTitle) => {
+                      console.log('Adding lane to', fileBasename, 'submenu:', laneTitle);
                       fileSubmenu.addItem((laneItem: any) =>
                         laneItem
-                          .setIcon('lucide-alert-circle')
-                          .setTitle('No lanes found')
-                          .setDisabled(true)
+                          .setIcon('lucide-square-kanban')
+                          .setTitle(laneTitle)
+                          .onClick(async () => {
+                            console.log(`Moving card to ${fileBasename}/${laneTitle}`);
+                            await moveCardToAssociatedFile(
+                              stateManager,
+                              file as TFile,
+                              item,
+                              path,
+                              laneTitle
+                            );
+                          })
                       );
-                    }
-                  })
-                  .catch((error: any) => {
-                    console.error('Error reading file for submenu:', fileBasename, error);
+                    });
+                  } else {
+                    // No lanes found
                     fileSubmenu.addItem((laneItem: any) =>
                       laneItem
                         .setIcon('lucide-alert-circle')
-                        .setTitle('Error loading')
+                        .setTitle('No lanes found')
                         .setDisabled(true)
                     );
-                  });
-              });
-            }
-          });
-        }
+                  }
+                })
+                .catch((error: any) => {
+                  console.error('Error reading file for submenu:', fileBasename, error);
+                  fileSubmenu.addItem((laneItem: any) =>
+                    laneItem
+                      .setIcon('lucide-alert-circle')
+                      .setTitle('Error loading')
+                      .setDisabled(true)
+                  );
+                });
+            });
+          }
+        });
       };
 
       if (Platform.isPhone) {
         addMoveToOptions(menu);
+        addAssociatedFileMenus(menu);
       } else {
+        // Add the main "Move to list" submenu for current board
         menu.addItem((item) => {
           const submenu = (item as any)
             .setTitle(t('Move to list'))
@@ -512,6 +503,9 @@ export function useItemMenu({
 
           addMoveToOptions(submenu);
         });
+
+        // Add separate "Move to list (FileName)" menu items for associated files
+        addAssociatedFileMenus(menu);
       }
 
       // Add Copy to calendar functionality (like Move to list)
