@@ -155,7 +155,7 @@ export function useItemMenu({
   stateManager,
 }: UseItemMenuParams) {
   return useCallback(
-    (e: MouseEvent) => {
+    async (e: MouseEvent) => {
       const coordinates = { x: e.clientX, y: e.clientY };
       const hasDate = !!item.data.metadata.date;
       const hasTime = !!item.data.metadata.time;
@@ -513,10 +513,8 @@ export function useItemMenu({
       }
 
       // Add separate "Move to list (FileName)" menu items for associated files
-      // This runs after menu creation to avoid async timing issues
-      setTimeout(() => {
-        addAssociatedFileMenus(menu);
-      }, 0);
+      // Load associated files synchronously before showing menu
+      await addAssociatedFileMenus(menu);
 
       // Add Copy to calendar functionality (like Move to list)
       // Only show if the feature is enabled in settings
