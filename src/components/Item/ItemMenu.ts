@@ -65,51 +65,70 @@ async function ensureStateManager(app: any, file: any, plugin: any): Promise<Sta
 async function moveCardToAssociatedFile(
   sourceStateManager: StateManager,
   targetFile: any,
-  item: any, // Item type
+  cardItem: any, // Item type
   sourcePath: number[], // Path type
-  targetLaneIndex: number
+  targetLaneName: string // Name of the target lane (e.g., "Inbox")
 ) {
   try {
-    // Get the plugin instance
-    const plugin = (sourceStateManager.app as any).plugins.plugins['kanban-plus'];
+    console.log(`Starting card move to ${targetFile.basename}/${targetLaneName}`);
 
-    if (!plugin) {
-      console.error('Kanban Plus plugin not found');
+    // Get the card text from the source
+    const cardText = cardItem.data.titleRaw || cardItem.data.title;
+    console.log('Card text to move:', cardText);
+
+    // Read the target file content
+    const targetContent = await sourceStateManager.app.vault.read(targetFile as TFile);
+    const lines = targetContent.split('\n');
+
+    // Find the target lane (H2 header)
+    let targetLaneLineIndex = -1;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line === `## ${targetLaneName}`) {
+        targetLaneLineIndex = i;
+        break;
+      }
+    }
+
+    if (targetLaneLineIndex === -1) {
+      console.error(`Target lane "${targetLaneName}" not found in ${targetFile.basename}`);
       return;
     }
 
-    // Ensure target file has a state manager
-    const targetStateManager = await ensureStateManager(sourceStateManager.app, targetFile, plugin);
+    console.log(`Found target lane at line ${targetLaneLineIndex}`);
 
-    if (!targetStateManager) {
-      console.error('Could not create state manager for target file:', targetFile.path);
-      return;
+    // Find where to insert the card (after the lane header)
+    let insertLineIndex = targetLaneLineIndex + 1;
+
+    // Skip any empty lines after the header
+    while (insertLineIndex < lines.length && lines[insertLineIndex].trim() === '') {
+      insertLineIndex++;
     }
 
-    // Get the card entity from source board
-    const sourceEntity = getEntityFromPath(sourceStateManager.state, sourcePath);
+    // Create the new card line (maintaining the checkbox format)
+    const checkbox = cardItem.data.checked ? '[x]' : '[ ]';
+    const newCardLine = `- ${checkbox} ${cardText}`;
 
-    if (!sourceEntity) {
-      console.error('Could not find card at path:', sourcePath);
-      return;
-    }
+    // Insert the card at the appropriate position
+    lines.splice(insertLineIndex, 0, newCardLine);
 
-    // Add card to target board first
-    targetStateManager.setState((targetBoard) => {
-      const targetPath = [targetLaneIndex, 0]; // Add to top of target lane
-      return insertEntity(targetBoard, targetPath, [sourceEntity]);
-    });
+    // Write the updated content back to the target file
+    const updatedContent = lines.join('\n');
+    await sourceStateManager.app.vault.modify(targetFile as TFile, updatedContent);
 
-    // Remove card from source board
+    console.log(`Added card to ${targetFile.basename}/${targetLaneName}`);
+
+    // Now remove the card from the source board
     sourceStateManager.setState((sourceBoard) => {
       return removeEntity(sourceBoard, sourcePath);
     });
 
     console.log(
-      `Successfully moved card from ${sourceStateManager.file.path} to ${targetFile.path}`
+      `Successfully moved card from ${sourceStateManager.file.basename} to ${targetFile.basename}/${targetLaneName}`
     );
   } catch (error) {
     console.error('Error moving card to associated file:', error);
+    console.error('Error details:', error.stack);
   }
 }
 
@@ -446,7 +465,7 @@ export function useItemMenu({
                                   file as TFile,
                                   item,
                                   path,
-                                  laneIndex
+                                  laneTitle
                                 );
                               })
                           );
