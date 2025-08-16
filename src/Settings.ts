@@ -5,6 +5,7 @@ import {
   Modal,
   PluginSettingTab,
   Setting,
+  TFile,
   ToggleComponent,
 } from 'obsidian';
 
@@ -94,6 +95,7 @@ export interface KanbanSettings {
   'enable-copy-to-calendar'?: boolean;
   'place-settings-at-beginning'?: boolean;
   'card-colors'?: CardColor[];
+  'associated-files'?: string[];
 }
 
 export interface KanbanViewSettings {
@@ -145,6 +147,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'enable-copy-to-calendar',
   'place-settings-at-beginning',
   'card-colors',
+  'associated-files',
 ]);
 
 export type SettingRetriever = <K extends keyof KanbanSettings>(
@@ -545,9 +548,9 @@ export class SettingsManager {
       });
 
     new Setting(contentEl).then((setting) => {
-      const [value, globalValue] = this.getSetting('tag-sort', local);
+      const [value] = this.getSetting('tag-sort', local);
 
-      const keys: TagSortSetting[] = ((value || globalValue || []) as TagSort[]).map((k) => {
+      const keys: TagSortSetting[] = ((value || []) as TagSort[]).map((k) => {
         return {
           ...TagSortSettingTemplate,
           id: generateInstanceId(),
@@ -1635,12 +1638,172 @@ export class SettingsManager {
             });
         });
     });
+
+    // Associated Files (Board-specific only)
+    if (local) {
+      contentEl.createEl('br');
+      contentEl.createEl('h4', { text: t('Associated Files') });
+      contentEl.createEl('p', {
+        text: t('Link this board to other Kanban files to enable moving cards between them'),
+      });
+
+      new Setting(contentEl).then((setting) => {
+        const [value] = this.getSetting('associated-files', local);
+        const associatedFiles: string[] = (value as string[]) || [];
+
+        const refreshAssociatedFiles = () => {
+          setting.settingEl.empty();
+
+          // Create container for file list
+          const container = setting.settingEl.createDiv();
+
+          // Display existing associated files
+          associatedFiles.forEach((filePath, index) => {
+            const fileEl = container.createDiv({ cls: 'setting-item' });
+            const infoEl = fileEl.createDiv({ cls: 'setting-item-info' });
+            infoEl.createDiv({ cls: 'setting-item-name', text: filePath });
+
+            const controlEl = fileEl.createDiv({ cls: 'setting-item-control' });
+            const removeBtn = controlEl.createEl('button', {
+              text: t('Remove file'),
+              cls: 'mod-warning',
+            });
+            removeBtn.onclick = () => {
+              associatedFiles.splice(index, 1);
+              this.applySettingsUpdate({
+                'associated-files': { $set: associatedFiles },
+              });
+              refreshAssociatedFiles();
+            };
+          });
+
+          // Add file button
+          const addContainer = container.createDiv({ cls: 'setting-item' });
+          const addControlEl = addContainer.createDiv({ cls: 'setting-item-control' });
+          const addBtn = addControlEl.createEl('button', { text: t('Add associated file') });
+          addBtn.onclick = () => {
+            const modal = new FileSelectionModal(this.app, (selectedFile: TFile) => {
+              if (selectedFile && !associatedFiles.includes(selectedFile.path)) {
+                associatedFiles.push(selectedFile.path);
+                this.applySettingsUpdate({
+                  'associated-files': { $set: associatedFiles },
+                });
+
+                // Ensure the selected file has kanban metadata
+                this.ensureKanbanMetadata(selectedFile);
+                refreshAssociatedFiles();
+              }
+            });
+            modal.open();
+          };
+        };
+
+        refreshAssociatedFiles();
+      });
+    }
+  }
+
+  private async ensureKanbanMetadata(file: TFile) {
+    try {
+      const content = await this.app.vault.read(file);
+
+      // Check if file already has kanban metadata
+      if (content.includes('kanban-plugin')) {
+        return; // Already has kanban metadata
+      }
+
+      // Add kanban metadata to the file
+      let newContent = content;
+      if (content.startsWith('---')) {
+        // File has frontmatter, add to it
+        const frontmatterEnd = content.indexOf('---', 3);
+        if (frontmatterEnd !== -1) {
+          const beforeFrontmatter = content.substring(0, frontmatterEnd);
+          const afterFrontmatter = content.substring(frontmatterEnd);
+          newContent = beforeFrontmatter + 'kanban-plugin: board\n' + afterFrontmatter;
+        } else {
+          // Malformed frontmatter, add new frontmatter
+          newContent = '---\nkanban-plugin: board\n---\n\n' + content;
+        }
+      } else {
+        // No frontmatter, add it
+        newContent = '---\nkanban-plugin: board\n---\n\n' + content;
+      }
+
+      await this.app.vault.modify(file, newContent);
+    } catch (error) {
+      console.error('Error ensuring kanban metadata for file:', file.path, error);
+    }
   }
 
   cleanUp() {
     this.win = null;
     this.cleanupFns.forEach((fn) => fn());
     this.cleanupFns = [];
+  }
+}
+
+class FileSelectionModal extends Modal {
+  onSubmit: (file: TFile) => void;
+
+  constructor(app: App, onSubmit: (file: TFile) => void) {
+    super(app);
+    this.onSubmit = onSubmit;
+  }
+
+  onOpen() {
+    const { contentEl } = this;
+
+    contentEl.createEl('h2', { text: 'Select Kanban file' });
+
+    // Get all markdown files in the vault
+    const files = this.app.vault.getMarkdownFiles();
+    const kanbanFiles = files.filter((file) => file.name.endsWith('.md'));
+
+    // Create a searchable list
+    const inputEl = contentEl.createEl('input', {
+      type: 'text',
+      placeholder: 'Search for files...',
+    });
+
+    const listContainer = contentEl.createDiv({ cls: 'file-selection-list' });
+
+    const renderFiles = (filesToShow: TFile[]) => {
+      listContainer.empty();
+
+      filesToShow.forEach((file) => {
+        const fileEl = listContainer.createDiv({
+          cls: 'file-selection-item',
+          text: file.path,
+        });
+
+        fileEl.onclick = () => {
+          this.onSubmit(file);
+          this.close();
+        };
+      });
+    };
+
+    // Initial render
+    renderFiles(kanbanFiles);
+
+    // Search functionality
+    inputEl.oninput = () => {
+      const query = inputEl.value.toLowerCase();
+      const filtered = kanbanFiles.filter(
+        (file) =>
+          file.path.toLowerCase().includes(query) || file.basename.toLowerCase().includes(query)
+      );
+      renderFiles(filtered);
+    };
+
+    // Focus the input
+    inputEl.focus();
+  }
+
+  onClose() {
+    const { contentEl } = this;
+    contentEl.empty();
   }
 }
 

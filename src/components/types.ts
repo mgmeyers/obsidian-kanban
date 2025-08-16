@@ -37,6 +37,7 @@ export interface TagColor {
 
 export interface CardColor {
   cardId: string;
+  cardContent: string; // Store card content for matching across ID changes
   color: string;
   backgroundColor: string;
   calendarName?: string;

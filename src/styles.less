@@ -707,28 +707,28 @@ button.kanban-plugin__new-item-button {
     background: var(--card-background-color) !important;
     color: var(--card-color) !important;
   }
-  
+
   .kanban-plugin__item-title-wrapper {
     background: var(--card-background-color) !important;
     color: var(--card-color) !important;
   }
-  
+
   /* Ensure text inside is also properly colored */
   .kanban-plugin__item-title {
     color: var(--card-color) !important;
   }
-  
+
   .kanban-plugin__item-markdown {
     color: var(--card-color) !important;
   }
-  
+
   /* Maintain proper text colors for links and other elements */
   .kanban-plugin__item-markdown a {
     color: var(--card-color) !important;
     opacity: 0.8;
     text-decoration: underline;
   }
-  
+
   .kanban-plugin__item-markdown a:hover {
     opacity: 1;
   }
@@ -1568,7 +1568,7 @@ button.kanban-plugin__cancel-action-button {
   border-radius: 4px;
   cursor: pointer;
   gap: 8px;
-  
+
   &:hover {
     background-color: var(--background-modifier-hover);
   }
@@ -1900,4 +1900,48 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   .kanban-plugin__date:hover {
     background-color: var(--date-background-color, rgba(var(--mono-rgb-100), 0.05));
   }
+}
+
+// File selection modal styles
+.file-selection-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+}
+
+.file-selection-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--background-modifier-border);
+
+  &:hover {
+    background-color: var(--background-modifier-hover);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+// Associated files settings styles
+.associated-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  background-color: var(--background-secondary);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.associated-file-name {
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+}
+
+.associated-file-remove {
+  padding: 4px 8px;
+  font-size: 0.8em;
 }

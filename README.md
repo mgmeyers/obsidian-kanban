@@ -1,22 +1,198 @@
-# Obsidian Kanban Plugin
+# Kanban Plus
 
-Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
+**Enhanced Kanban boards with cross-file card movement, calendar integration, and advanced workflow features.**
 
-- [Bugs, Issues, & Feature Requests](https://github.com/mgmeyers/obsidian-kanban/issues)
-- [Development Roadmap](https://github.com/mgmeyers/obsidian-kanban/projects/1)
+Kanban Plus extends the popular Kanban plugin with powerful new features designed for complex project management and interconnected workflows in Obsidian.
 
-![Screen Shot 2021-09-16 at 12.58.22 PM.png](https://github.com/mgmeyers/obsidian-kanban/blob/main/docs/Assets/Screen%20Shot%202021-09-16%20at%2012.58.22%20PM.png)
+## ✨ Key Features
 
-![Screen Shot 2021-09-16 at 1.10.38 PM.png](https://github.com/mgmeyers/obsidian-kanban/blob/main/docs/Assets/Screen%20Shot%202021-09-16%20at%201.10.38%20PM.png)
+### 🔗 **Cross-File Card Movement**
 
-## Documentation
+- **Associate multiple Kanban files** with any board
+- **Move cards between different files** seamlessly
+- **Unified workflow management** across projects
+- **Smart metadata injection** - automatically adds kanban metadata to associated files
 
-Find the plugin documentation here: [Obsidian Kanban Plugin Documentation](https://publish.obsidian.md/kanban/)
+### 📅 **Calendar Integration**
 
-## Support
+- **Copy cards to Full Calendar** with one click
+- **Visual color feedback** - cards show calendar colors
+- **Smart text contrast** - readable text on any background
+- **Emoji color indicators** in calendar picker
+- **Cross-platform support** (desktop and mobile)
 
-If you find this plugin useful and would like to support its development, you can sponsor [me](https://github.com/mgmeyers) on Github, or buy me a coffee.
+### ⚙️ **Advanced Configuration**
 
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/mgmeyers?label=Sponsor&logo=GitHub%20Sponsors&style=for-the-badge)](https://github.com/sponsors/mgmeyers)
+- **Board-specific settings** can be placed at file beginning
+- **Associated file management** through intuitive UI
+- **Flexible settings inheritance** from global to board level
 
-<a href="https://www.buymeacoffee.com/mgme"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=mgme&button_colour=5F7FFF&font_colour=ffffff&font_family=Lato&outline_colour=000000&coffee_colour=FFDD00"></a>
+### 🎨 **Enhanced Visual Experience**
+
+- **Calendar-matched card colors** with automatic persistence
+- **Smart contrast algorithms** for optimal readability
+- **Modern, responsive interface**
+
+## 🚀 Getting Started
+
+### Installation
+
+1. **Download**: Get Kanban Plus from the Obsidian Community Plugins
+2. **Enable**: Activate the plugin in Settings → Community Plugins
+3. **Configure**: Set up your preferences in the plugin settings
+
+### Basic Usage
+
+1. **Create a Kanban board**: Add `kanban-plugin: board` to any markdown file's frontmatter
+2. **Add lists and cards**: Use the intuitive drag-and-drop interface
+3. **Associate files**: Open board settings to link other Kanban files
+4. **Move cards across files**: Right-click any card → Move to file → Select destination
+
+## 📋 Cross-File Workflow
+
+### Setting Up Associated Files
+
+1. Open any Kanban board
+2. Click the settings gear icon
+3. Scroll to **"Associated Files"** section
+4. Click **"Add associated file"**
+5. Select another markdown file from your vault
+6. The file will automatically get kanban metadata if needed
+
+### Moving Cards Between Files
+
+1. Right-click on any card
+2. Select **"Move to list"**
+3. Choose from:
+   - **Local lists**: Current board lanes
+   - **File lists**: `filename/list-name` format
+4. Card moves instantly with all content preserved
+
+## 📅 Calendar Integration
+
+### Setup
+
+1. Install and configure the [Full Calendar](https://github.com/davish/obsidian-full-calendar) plugin
+2. Enable "Full note" mode in Full Calendar settings
+3. In Kanban Plus settings, enable **"Copy to Calendar"**
+
+### Usage
+
+1. Right-click any card
+2. Select **"Copy to calendar"**
+3. Choose destination calendar with emoji color indicators
+4. Card appears in calendar as all-day event
+5. Card background updates to match calendar color
+6. Drag in Full Calendar to set specific times
+
+## 🛠️ Advanced Configuration
+
+### Board Settings Location
+
+- **Traditional**: Settings stored at end of file
+- **Header Mode**: Settings at beginning for quick editing
+- Configure per-board in board settings
+
+### Settings Hierarchy
+
+```
+Global Plugin Settings
+    ↓ (inherited by)
+Board-Specific Settings
+    ↓ (inherited by)
+Individual Card Properties
+```
+
+### Associated Files Management
+
+- **Add files**: Through board settings file picker
+- **Remove files**: Click "Remove file" button
+- **Auto-metadata**: Files automatically get kanban support
+- **No limits**: Associate as many files as needed
+
+## 🎯 Use Cases
+
+### Project Management
+
+- **Main board**: Project overview with major milestones
+- **Sub-boards**: Detailed tasks for each milestone
+- **Cross-movement**: Promote tasks from sub-projects to main board
+
+### Content Creation
+
+- **Ideas board**: Brainstorming and initial concepts
+- **Writing board**: Articles in progress
+- **Publishing board**: Final review and publishing pipeline
+- **Calendar sync**: Deadlines and publication dates
+
+### Personal Productivity
+
+- **Inbox board**: Capture all incoming tasks
+- **Weekly board**: Current week's priorities
+- **Project boards**: Long-term initiatives
+- **Calendar integration**: Time-blocked scheduling
+
+## 🔧 Technical Details
+
+### File Format Compatibility
+
+- **Markdown-based**: All boards are standard markdown files
+- **Portable**: Works across different Obsidian installations
+- **Version control friendly**: Git-compatible format
+- **Future-proof**: No proprietary formats
+
+### Performance
+
+- **Optimized rendering**: Fast even with large boards
+- **Lazy loading**: Associated files loaded on-demand
+- **Efficient sync**: Only changed boards are saved
+- **Mobile optimized**: Smooth performance on all platforms
+
+### Data Safety
+
+- **Non-destructive**: Original file structure preserved
+- **Atomic operations**: All changes are transactional
+- **Backup compatible**: Works with any backup solution
+- **Sync friendly**: Compatible with Obsidian Sync
+
+## 🤝 Contributing
+
+We welcome contributions! Whether it's:
+
+- 🐛 **Bug reports**
+- 💡 **Feature suggestions**
+- 📝 **Documentation improvements**
+- 🔧 **Code contributions**
+
+### Development Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/geetduggal/kanban-plus
+cd kanban-plus
+
+# Install dependencies
+npm install
+
+# Build for development
+npm run dev
+
+# Build for production
+npm run build
+```
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+## 🙏 Acknowledgments
+
+- Built upon the excellent [obsidian-kanban](https://github.com/mgmeyers/obsidian-kanban) by mgmeyers
+- Inspired by the Obsidian community's collaborative spirit
+- Calendar integration designed for [Full Calendar](https://github.com/davish/obsidian-full-calendar) plugin
+
+---
+
+**Made with ❤️ for the Obsidian community**
+
+_Transform your markdown files into a powerful, interconnected project management system._

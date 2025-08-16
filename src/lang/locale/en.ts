@@ -130,7 +130,7 @@ const en = {
   'This will be used to separate the archived date/time from the title':
     'This will be used to separate the archived date/time from the title',
   'Archive date/time format': 'Archive date/time format',
-  'Kanban Plugin': 'Kanban Plugin',
+  'Kanban Plugin': 'Kanban Plus',
   'Tag click action': 'Tag click action',
   'Search Kanban Board': 'Search Kanban Board',
   'Search Obsidian Vault': 'Search Obsidian Vault',
@@ -146,7 +146,7 @@ const en = {
   'Place board settings at beginning': 'Place board settings at beginning',
   'When toggled, board-specific settings will be placed at the beginning of the file instead of at the end. This can make it easier to quickly edit board settings in markdown mode.':
     'When toggled, board-specific settings will be placed at the beginning of the file instead of at the end. This can make it easier to quickly edit board settings in markdown mode.',
-  'Integrations': 'Integrations',
+  Integrations: 'Integrations',
   'Enable Copy to Calendar': 'Enable Copy to Calendar',
   'Enables the "Copy to calendar" feature in card context menus. Integrates with the Full Calendar plugin\'s "Full note" mode. Requires Full Calendar plugin to be installed and configured.\n\nConfiguration file location: .obsidian/plugins/obsidian-full-calendar/data.json':
     'Enables the "Copy to calendar" feature in card context menus. Integrates with the Full Calendar plugin\'s "Full note" mode. Requires Full Calendar plugin to be installed and configured.\n\nConfiguration file location: .obsidian/plugins/obsidian-full-calendar/data.json',
@@ -283,6 +283,12 @@ const en = {
 
   // components/Editor/MarkdownEditor.tsx
   Submit: 'Submit',
+  'Associated Files': 'Associated Files',
+  'Link this board to other Kanban files to enable moving cards between them':
+    'Link this board to other Kanban files to enable moving cards between them',
+  'Add associated file': 'Add associated file',
+  'Remove file': 'Remove file',
+  'Move to file': 'Move to file',
 };
 
 export type Lang = typeof en;
