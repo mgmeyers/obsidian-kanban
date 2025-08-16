@@ -27,10 +27,10 @@ Kanban Plus introduces the revolutionary ability to move cards between different
 #### Moving Cards Between Files
 
 1. Right-click any card to open context menu
-2. Select "Move to list"
-3. See options for:
-   - **Current board lanes**: `List Name`
-   - **Associated file lanes**: `filename/List Name`
+2. See separate menu options:
+   - **"Move to list"** → Shows current board's lanes (`List Name`)
+   - **"Move to list (filename)"** → Shows associated file's lanes (`List Name`)
+3. Hover over any option to see available destination lanes
 4. Click destination to move card instantly
 
 ### Use Cases
