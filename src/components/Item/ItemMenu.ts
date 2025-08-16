@@ -412,7 +412,7 @@ export function useItemMenu({
             menu.addSeparator();
           }
 
-          // Process all associated files and create submenus
+          // Process all associated files and create submenus directly
           associatedFiles.forEach((filePath) => {
             const file = stateManager.app.vault.getAbstractFileByPath(filePath);
             console.log('Processing associated file:', filePath, 'found:', !!file);
@@ -420,21 +420,27 @@ export function useItemMenu({
             if (file && 'extension' in file && file.extension === 'md') {
               const fileBasename = (file as any).basename;
 
-              // Create the file submenu item immediately
+              // Always create the submenu item - populate it via direct file reading
               menu.addItem((fileItem) => {
                 const fileSubmenu = (fileItem as any)
                   .setIcon('lucide-file-text')
                   .setTitle(fileBasename)
                   .setSubmenu();
 
-                // Populate the submenu asynchronously after creation
-                setTimeout(async () => {
-                  try {
-                    console.log('Loading lanes for submenu:', fileBasename);
-                    const content = await stateManager.app.vault.read(file as TFile);
-                    console.log('Read content from:', fileBasename, 'length:', content.length);
+                console.log('Created submenu for:', fileBasename);
 
-                    // Simple markdown parsing to find H2 headers (lanes)
+                // Load file content immediately and populate submenu
+                stateManager.app.vault
+                  .cachedRead(file as TFile)
+                  .then((content: string) => {
+                    console.log(
+                      'Read cached content from:',
+                      fileBasename,
+                      'length:',
+                      content.length
+                    );
+
+                    // Parse H2 headers to find lanes
                     const lines = content.split('\n');
                     const fileLanes: string[] = [];
 
@@ -448,29 +454,30 @@ export function useItemMenu({
                       }
                     }
 
-                    console.log('Found lanes in', fileBasename + ':', fileLanes);
+                    console.log('Parsed lanes for', fileBasename + ':', fileLanes);
 
-                    // Add lanes to the file's submenu
-                    fileLanes.forEach((laneTitle) => {
-                      fileSubmenu.addItem((laneItem: any) =>
-                        laneItem
-                          .setIcon('lucide-square-kanban')
-                          .setTitle(laneTitle)
-                          .onClick(async () => {
-                            console.log(`Moving card to ${fileBasename}/${laneTitle}`);
-                            await moveCardToAssociatedFile(
-                              stateManager,
-                              file as TFile,
-                              item,
-                              path,
-                              laneTitle
-                            );
-                          })
-                      );
-                    });
-
-                    if (fileLanes.length === 0) {
-                      // No lanes found, add placeholder
+                    // Add lanes to submenu
+                    if (fileLanes.length > 0) {
+                      fileLanes.forEach((laneTitle) => {
+                        console.log('Adding lane to submenu:', laneTitle);
+                        fileSubmenu.addItem((laneItem: any) =>
+                          laneItem
+                            .setIcon('lucide-square-kanban')
+                            .setTitle(laneTitle)
+                            .onClick(async () => {
+                              console.log(`Moving card to ${fileBasename}/${laneTitle}`);
+                              await moveCardToAssociatedFile(
+                                stateManager,
+                                file as TFile,
+                                item,
+                                path,
+                                laneTitle
+                              );
+                            })
+                        );
+                      });
+                    } else {
+                      // No lanes found
                       fileSubmenu.addItem((laneItem: any) =>
                         laneItem
                           .setIcon('lucide-alert-circle')
@@ -478,17 +485,16 @@ export function useItemMenu({
                           .setDisabled(true)
                       );
                     }
-                  } catch (error) {
-                    console.error('Error loading lanes for submenu:', fileBasename, error);
-                    // Add error item to submenu
+                  })
+                  .catch((error: any) => {
+                    console.error('Error reading file for submenu:', fileBasename, error);
                     fileSubmenu.addItem((laneItem: any) =>
                       laneItem
                         .setIcon('lucide-alert-circle')
-                        .setTitle('Error loading lanes')
+                        .setTitle('Error loading')
                         .setDisabled(true)
                     );
-                  }
-                }, 0);
+                  });
               });
             }
           });
