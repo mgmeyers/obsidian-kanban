@@ -412,7 +412,7 @@ export function useItemMenu({
             menu.addSeparator();
           }
 
-          // Process all associated files synchronously using cached data
+          // Process all associated files and create submenus
           associatedFiles.forEach((filePath) => {
             const file = stateManager.app.vault.getAbstractFileByPath(filePath);
             console.log('Processing associated file:', filePath, 'found:', !!file);
@@ -420,67 +420,76 @@ export function useItemMenu({
             if (file && 'extension' in file && file.extension === 'md') {
               const fileBasename = (file as any).basename;
 
-              // Add a loading item that will populate lanes when clicked
-              menu.addItem((item) =>
-                item
+              // Create the file submenu item immediately
+              menu.addItem((fileItem) => {
+                const fileSubmenu = (fileItem as any)
                   .setIcon('lucide-file-text')
-                  .setTitle(`${fileBasename} →`)
-                  .onClick(async () => {
-                    try {
-                      console.log('Loading lanes for:', fileBasename);
+                  .setTitle(fileBasename)
+                  .setSubmenu();
 
-                      // Parse the file content to get lane information
-                      const content = await stateManager.app.vault.read(file as TFile);
-                      console.log('Read content from:', fileBasename, 'length:', content.length);
+                // Populate the submenu asynchronously after creation
+                setTimeout(async () => {
+                  try {
+                    console.log('Loading lanes for submenu:', fileBasename);
+                    const content = await stateManager.app.vault.read(file as TFile);
+                    console.log('Read content from:', fileBasename, 'length:', content.length);
 
-                      // Simple markdown parsing to find H2 headers (lanes)
-                      const lines = content.split('\n');
-                      const lanes: string[] = [];
+                    // Simple markdown parsing to find H2 headers (lanes)
+                    const lines = content.split('\n');
+                    const fileLanes: string[] = [];
 
-                      for (const line of lines) {
-                        const trimmed = line.trim();
-                        if (trimmed.startsWith('## ') && !trimmed.includes('%%')) {
-                          const laneTitle = trimmed.substring(3).trim();
-                          if (laneTitle) {
-                            lanes.push(laneTitle);
-                          }
+                    for (const line of lines) {
+                      const trimmed = line.trim();
+                      if (trimmed.startsWith('## ') && !trimmed.includes('%%')) {
+                        const laneTitle = trimmed.substring(3).trim();
+                        if (laneTitle) {
+                          fileLanes.push(laneTitle);
                         }
                       }
-
-                      console.log('Found lanes in', fileBasename + ':', lanes);
-
-                      if (lanes.length > 0) {
-                        // Create a submenu with the lanes
-                        const submenu = new Menu();
-
-                        lanes.forEach((laneTitle, laneIndex) => {
-                          submenu.addItem((subItem) =>
-                            subItem
-                              .setIcon('lucide-square-kanban')
-                              .setTitle(laneTitle)
-                              .onClick(async () => {
-                                console.log(`Moving card to ${fileBasename}/${laneTitle}`);
-                                await moveCardToAssociatedFile(
-                                  stateManager,
-                                  file as TFile,
-                                  item,
-                                  path,
-                                  laneTitle
-                                );
-                              })
-                          );
-                        });
-
-                        // Show submenu at current position
-                        submenu.showAtPosition(coordinates);
-                      } else {
-                        console.error('No lanes found in:', fileBasename);
-                      }
-                    } catch (error) {
-                      console.error('Error loading lanes for:', fileBasename, error);
                     }
-                  })
-              );
+
+                    console.log('Found lanes in', fileBasename + ':', fileLanes);
+
+                    // Add lanes to the file's submenu
+                    fileLanes.forEach((laneTitle) => {
+                      fileSubmenu.addItem((laneItem: any) =>
+                        laneItem
+                          .setIcon('lucide-square-kanban')
+                          .setTitle(laneTitle)
+                          .onClick(async () => {
+                            console.log(`Moving card to ${fileBasename}/${laneTitle}`);
+                            await moveCardToAssociatedFile(
+                              stateManager,
+                              file as TFile,
+                              item,
+                              path,
+                              laneTitle
+                            );
+                          })
+                      );
+                    });
+
+                    if (fileLanes.length === 0) {
+                      // No lanes found, add placeholder
+                      fileSubmenu.addItem((laneItem: any) =>
+                        laneItem
+                          .setIcon('lucide-alert-circle')
+                          .setTitle('No lanes found')
+                          .setDisabled(true)
+                      );
+                    }
+                  } catch (error) {
+                    console.error('Error loading lanes for submenu:', fileBasename, error);
+                    // Add error item to submenu
+                    fileSubmenu.addItem((laneItem: any) =>
+                      laneItem
+                        .setIcon('lucide-alert-circle')
+                        .setTitle('Error loading lanes')
+                        .setDisabled(true)
+                    );
+                  }
+                }, 0);
+              });
             }
           });
         }
