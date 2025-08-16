@@ -21,29 +21,93 @@ import {
 } from './helpers';
 
 /**
+ * Ensures a file has a StateManager and returns it
+ */
+async function ensureStateManager(app: any, file: any, plugin: any): Promise<StateManager | null> {
+  try {
+    // Check if state manager already exists
+    if (plugin.stateManagers.has(file)) {
+      return plugin.stateManagers.get(file);
+    }
+
+    // Read the file content to create a state manager
+    const content = await app.vault.read(file);
+
+    // Create a temporary view-like object for state manager creation
+    const tempView = {
+      file: file,
+      app: app,
+      plugin: plugin,
+    };
+
+    // Create the state manager
+    const stateManager = new StateManager(
+      app,
+      tempView as any,
+      content,
+      () => plugin.stateManagers.delete(file),
+      () => plugin.settings
+    );
+
+    // Register it
+    plugin.stateManagers.set(file, stateManager);
+
+    return stateManager;
+  } catch (error) {
+    console.error('Error ensuring state manager for file:', file.path, error);
+    return null;
+  }
+}
+
+/**
  * Moves a card from the current board to a lane in an associated file
  */
 async function moveCardToAssociatedFile(
   sourceStateManager: StateManager,
-  targetStateManager: StateManager,
+  targetFile: any,
   item: any, // Item type
   sourcePath: number[], // Path type
   targetLaneIndex: number
 ) {
   try {
+    // Get the plugin instance
+    const plugin = (sourceStateManager.app as any).plugins.plugins['kanban-plus'];
+
+    if (!plugin) {
+      console.error('Kanban Plus plugin not found');
+      return;
+    }
+
+    // Ensure target file has a state manager
+    const targetStateManager = await ensureStateManager(sourceStateManager.app, targetFile, plugin);
+
+    if (!targetStateManager) {
+      console.error('Could not create state manager for target file:', targetFile.path);
+      return;
+    }
+
+    // Get the card entity from source board
+    const sourceEntity = getEntityFromPath(sourceStateManager.state, sourcePath);
+
+    if (!sourceEntity) {
+      console.error('Could not find card at path:', sourcePath);
+      return;
+    }
+
+    // Add card to target board first
+    targetStateManager.setState((targetBoard) => {
+      const targetPath = [targetLaneIndex, 0]; // Add to top of target lane
+      return insertEntity(targetBoard, targetPath, [sourceEntity]);
+    });
+
     // Remove card from source board
     sourceStateManager.setState((sourceBoard) => {
-      const entity = getEntityFromPath(sourceBoard, sourcePath);
-
-      // Add card to target board
-      targetStateManager.setState((targetBoard) => {
-        const targetPath = [targetLaneIndex, 0]; // Add to top of target lane
-        return insertEntity(targetBoard, targetPath, [entity]);
-      });
-
-      // Remove from source board
       return removeEntity(sourceBoard, sourcePath);
     });
+
+    console.log(
+      `Successfully moved card from ${sourceStateManager.file.path} to ${targetFile.path}`
+    );
   } catch (error) {
     console.error('Error moving card to associated file:', error);
   }
@@ -321,44 +385,83 @@ export function useItemMenu({
 
         // Add associated file lanes
         const associatedFiles = (stateManager.getSetting('associated-files') as string[]) || [];
+        console.log('Associated files found:', associatedFiles);
+
         if (associatedFiles.length > 0) {
           // Add separator if we have current board lanes
           if (lanes.length > 1) {
             menu.addSeparator();
           }
 
+          // Process all associated files synchronously using cached data
           associatedFiles.forEach((filePath) => {
             const file = stateManager.app.vault.getAbstractFileByPath(filePath);
+            console.log('Processing associated file:', filePath, 'found:', !!file);
+
             if (file && 'extension' in file && file.extension === 'md') {
-              try {
-                // Get the plugin instance and its state managers
-                const kanbanPlugin = (stateManager.app as any).plugins.plugins['kanban-plus'];
-                const targetStateManager = kanbanPlugin?.stateManagers?.get(file);
+              const fileBasename = (file as any).basename;
 
-                if (targetStateManager) {
-                  const targetLanes = targetStateManager.state.children;
-                  const fileBasename = (file as any).basename;
+              // Add a loading item that will populate lanes when clicked
+              menu.addItem((item) =>
+                item
+                  .setIcon('lucide-file-text')
+                  .setTitle(`${fileBasename} →`)
+                  .onClick(async () => {
+                    try {
+                      console.log('Loading lanes for:', fileBasename);
 
-                  targetLanes.forEach((lane: any, laneIndex: number) => {
-                    menu.addItem((item) =>
-                      item
-                        .setIcon('lucide-file-text')
-                        .setTitle(`${fileBasename}/${lane.data.title}`)
-                        .onClick(async () => {
-                          await moveCardToAssociatedFile(
-                            stateManager,
-                            targetStateManager,
-                            item,
-                            path,
-                            laneIndex
+                      // Parse the file content to get lane information
+                      const content = await stateManager.app.vault.read(file as TFile);
+                      console.log('Read content from:', fileBasename, 'length:', content.length);
+
+                      // Simple markdown parsing to find H2 headers (lanes)
+                      const lines = content.split('\n');
+                      const lanes: string[] = [];
+
+                      for (const line of lines) {
+                        const trimmed = line.trim();
+                        if (trimmed.startsWith('## ') && !trimmed.includes('%%')) {
+                          const laneTitle = trimmed.substring(3).trim();
+                          if (laneTitle) {
+                            lanes.push(laneTitle);
+                          }
+                        }
+                      }
+
+                      console.log('Found lanes in', fileBasename + ':', lanes);
+
+                      if (lanes.length > 0) {
+                        // Create a submenu with the lanes
+                        const submenu = new Menu();
+
+                        lanes.forEach((laneTitle, laneIndex) => {
+                          submenu.addItem((subItem) =>
+                            subItem
+                              .setIcon('lucide-square-kanban')
+                              .setTitle(laneTitle)
+                              .onClick(async () => {
+                                console.log(`Moving card to ${fileBasename}/${laneTitle}`);
+                                await moveCardToAssociatedFile(
+                                  stateManager,
+                                  file as TFile,
+                                  item,
+                                  path,
+                                  laneIndex
+                                );
+                              })
                           );
-                        })
-                    );
-                  });
-                }
-              } catch (error) {
-                console.error('Error loading associated file lanes:', error);
-              }
+                        });
+
+                        // Show submenu at current position
+                        submenu.showAtPosition(coordinates);
+                      } else {
+                        console.error('No lanes found in:', fileBasename);
+                      }
+                    } catch (error) {
+                      console.error('Error loading lanes for:', fileBasename, error);
+                    }
+                  })
+              );
             }
           });
         }
