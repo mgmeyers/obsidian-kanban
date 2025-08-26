@@ -1,39 +1,57 @@
 # Kanban Plus
 
-**Enhanced Kanban boards with cross-file card movement, calendar integration, and advanced workflow features.**
+**A feature-enhanced fork of the popular Kanban plugin for Obsidian**
 
-Kanban Plus extends the popular Kanban plugin with powerful new features designed for complex project management and interconnected workflows in Obsidian.
+Kanban Plus is built on the solid foundation of [mgmeyers/obsidian-kanban](https://github.com/mgmeyers/obsidian-kanban) and stays synchronized with upstream while adding powerful new capabilities for advanced project management and interconnected workflows.
 
-## ✨ Key Features
+## 🔄 About This Fork
 
-### 🔗 **Cross-File Card Movement**
+Kanban Plus maintains **100% compatibility** with the original Kanban plugin while extending it with:
+- **Cross-file card movement** between associated Kanban boards
+- **Advanced calendar integration** with hashtag-based visual feedback  
+- **Enhanced workflow features** for complex project management
+- **Zero breaking changes** - all your existing boards continue to work perfectly
 
+This plugin is designed to **stay in sync** with the original Kanban plugin, incorporating upstream improvements while providing additional functionality for power users.
+
+## ✨ What's New in Kanban Plus
+
+### 🆕 **Enhanced Features Beyond the Original**
+
+All the beloved features of the original Kanban plugin, **PLUS**:
+
+#### 🔗 **Cross-File Card Movement** *(Kanban Plus Exclusive)*
 - **Associate multiple Kanban files** with any board
-- **Move cards between different files** seamlessly
+- **Move cards between different files** seamlessly  
 - **Unified workflow management** across projects
 - **Smart metadata injection** - automatically adds kanban metadata to associated files
 
-### 📅 **Calendar Integration**
+#### 📅 **Advanced Calendar Integration** *(Kanban Plus Exclusive)*
+- **Hashtag-based color display** - cards automatically show calendar colors based on hashtags
+- **One-click copy to Full Calendar** with automatic hashtag addition
+- **Dynamic color resolution** - zero configuration required
+- **Smart text contrast** - readable text on any background color
+- **Emoji color indicators** in calendar picker for visual clarity
+- **Clean calendar filenames** - hashtags stripped from event names
 
-- **Hashtag-based color display** - cards automatically show calendar colors
-- **Copy cards to Full Calendar** with one click and automatic hashtag addition
-- **Dynamic color resolution** - no configuration required
-- **Smart text contrast** - readable text on any background
-- **Emoji color indicators** in calendar picker
-- **Cross-platform support** (desktop and mobile)
+#### ⚙️ **Advanced Configuration Options** *(Kanban Plus Exclusive)*
+- **Flexible settings placement** - board settings at file beginning or end
+- **Associated file management** through intuitive file picker UI
+- **Enhanced settings inheritance** from global to board level
 
-### ⚙️ **Advanced Configuration**
-
-- **Board-specific settings** can be placed at file beginning
-- **Associated file management** through intuitive UI
-- **Flexible settings inheritance** from global to board level
-
-### 🎨 **Enhanced Visual Experience**
-
+#### 🎨 **Enhanced Visual Experience** *(Kanban Plus Exclusive)*
 - **Hashtag-driven card colors** with instant visual feedback
 - **Zero-configuration color management** - works with existing Full Calendar settings
-- **Smart contrast algorithms** for optimal readability
-- **Modern, responsive interface**
+- **Smart contrast algorithms** for optimal readability across all themes
+
+### 🔄 **All Original Kanban Features Included**
+- Drag-and-drop card management
+- Lane customization and archiving
+- Date and time picker integration
+- Tag and metadata support  
+- Mobile-responsive design
+- Theme compatibility
+- And much more!
 
 ## 🚀 Getting Started
 
@@ -170,10 +188,17 @@ Individual Card Properties
 
 We welcome contributions! Whether it's:
 
-- 🐛 **Bug reports**
-- 💡 **Feature suggestions**
+- 🐛 **Bug reports** (especially ones affecting both plugins)
+- 💡 **Feature suggestions** for Kanban Plus enhancements
 - 📝 **Documentation improvements**
 - 🔧 **Code contributions**
+
+### 🔀 **Contribution Guidelines**
+
+- **Core Kanban bugs**: Consider reporting to the [original repository](https://github.com/mgmeyers/obsidian-kanban) first
+- **Enhancement bugs**: Report here if they affect Kanban Plus exclusive features
+- **New features**: Best contributed to Kanban Plus to maintain our extended functionality
+- **Documentation**: Always welcome for clarifying the relationship between plugins
 
 ### Development Setup
 
@@ -192,15 +217,34 @@ npm run dev
 npm run build
 ```
 
+### 🚀 **Sync with Upstream**
+
+This fork periodically syncs with the original repository to incorporate improvements. If you're contributing core functionality improvements, consider contributing to the original project as well to benefit the entire community.
+
 ## 📄 License
 
 MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-- Built upon the excellent [obsidian-kanban](https://github.com/mgmeyers/obsidian-kanban) by mgmeyers
-- Inspired by the Obsidian community's collaborative spirit
-- Calendar integration designed for [Full Calendar](https://github.com/davish/obsidian-full-calendar) plugin
+### 🫡 **Standing on the Shoulders of Giants**
+
+This plugin exists thanks to the incredible foundation provided by:
+
+- **[mgmeyers/obsidian-kanban](https://github.com/mgmeyers/obsidian-kanban)** - The original Kanban plugin that makes all of this possible
+- **The Obsidian Community** - For creating an ecosystem where collaborative development thrives
+- **[Full Calendar Plugin](https://github.com/davish/obsidian-full-calendar)** - Seamless calendar integration partner
+
+### 🤝 **Relationship with Original Plugin**
+
+Kanban Plus is built with deep respect for the original Kanban plugin and its maintainer. This fork:
+- **Preserves all original functionality** without modification
+- **Adds new features** as extensions rather than replacements
+- **Maintains compatibility** with the original plugin's file format
+- **Stays synchronized** with upstream improvements when possible
+- **Contributes back** bug fixes and improvements to the community
+
+We encourage users to support both projects and choose the version that best fits their workflow needs.
 
 ---
 
