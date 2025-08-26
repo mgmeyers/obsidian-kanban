@@ -7,51 +7,62 @@ Kanban Plus is built on the solid foundation of [mgmeyers/obsidian-kanban](https
 ## 🔄 About This Fork
 
 Kanban Plus maintains **100% compatibility** with the original Kanban plugin while extending it with:
+
 - **Cross-file card movement** between associated Kanban boards
-- **Advanced calendar integration** with hashtag-based visual feedback  
+- **Advanced calendar integration** with hashtag-based visual feedback
 - **Enhanced workflow features** for complex project management
 - **Zero breaking changes** - all your existing boards continue to work perfectly
 
 This plugin is designed to **stay in sync** with the original Kanban plugin, incorporating upstream improvements while providing additional functionality for power users.
 
-## ✨ What's New in Kanban Plus
+### 🤖 **AI-Powered Development**
 
-### 🆕 **Enhanced Features Beyond the Original**
+Kanban Plus is developed and maintained using AI-assisted tools to ensure:
+- Rapid feature development and bug fixes
+- Comprehensive testing across different scenarios
+- Up-to-date documentation and compatibility
+- Quick adaptation to Obsidian API changes
 
-All the beloved features of the original Kanban plugin, **PLUS**:
+## ✨ Enhanced Features
 
-#### 🔗 **Cross-File Card Movement** *(Kanban Plus Exclusive)*
-- **Associate multiple Kanban files** with any board
-- **Move cards between different files** seamlessly  
-- **Unified workflow management** across projects
-- **Smart metadata injection** - automatically adds kanban metadata to associated files
+The original Kanban plugin features, plus:
 
-#### 📅 **Advanced Calendar Integration** *(Kanban Plus Exclusive)*
-- **Hashtag-based color display** - cards automatically show calendar colors based on hashtags
-- **One-click copy to Full Calendar** with automatic hashtag addition
-- **Dynamic color resolution** - zero configuration required
-- **Smart text contrast** - readable text on any background color
-- **Emoji color indicators** in calendar picker for visual clarity
-- **Clean calendar filenames** - hashtags stripped from event names
+#### 🔗 **Cross-File Card Movement**
 
-#### ⚙️ **Advanced Configuration Options** *(Kanban Plus Exclusive)*
-- **Flexible settings placement** - board settings at file beginning or end
-- **Associated file management** through intuitive file picker UI
-- **Enhanced settings inheritance** from global to board level
+- Associate multiple Kanban files with any board
+- Move cards between different files seamlessly
+- Unified workflow management across projects
+- Smart metadata injection - automatically adds kanban metadata to associated files
 
-#### 🎨 **Enhanced Visual Experience** *(Kanban Plus Exclusive)*
-- **Hashtag-driven card colors** with instant visual feedback
-- **Zero-configuration color management** - works with existing Full Calendar settings
-- **Smart contrast algorithms** for optimal readability across all themes
+#### 📅 **Advanced Calendar Integration**
 
-### 🔄 **All Original Kanban Features Included**
+- Hashtag-based color display - cards automatically show calendar colors based on hashtags
+- One-click copy to Full Calendar with automatic hashtag addition
+- Dynamic color resolution - zero configuration required
+- Smart text contrast - readable text on any background color
+- Emoji color indicators in calendar picker for visual clarity
+- Clean calendar filenames - hashtags stripped from event names
+
+#### ⚙️ **Advanced Configuration Options**
+
+- Flexible settings placement - board settings at file beginning or end
+- Associated file management through intuitive file picker UI
+- Enhanced settings inheritance from global to board level
+
+#### 🎨 **Enhanced Visual Experience**
+
+- Hashtag-driven card colors with instant visual feedback
+- Zero-configuration color management - works with existing Full Calendar settings
+- Smart contrast algorithms for optimal readability across all themes
+
+### 🔄 **Original Kanban Features**
+
 - Drag-and-drop card management
 - Lane customization and archiving
 - Date and time picker integration
-- Tag and metadata support  
+- Tag and metadata support
 - Mobile-responsive design
 - Theme compatibility
-- And much more!
 
 ## 🚀 Getting Started
 
@@ -227,17 +238,18 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-### 🫡 **Standing on the Shoulders of Giants**
+### 🫡 **Built On**
 
-This plugin exists thanks to the incredible foundation provided by:
+This plugin is built on:
 
-- **[mgmeyers/obsidian-kanban](https://github.com/mgmeyers/obsidian-kanban)** - The original Kanban plugin that makes all of this possible
-- **The Obsidian Community** - For creating an ecosystem where collaborative development thrives
-- **[Full Calendar Plugin](https://github.com/davish/obsidian-full-calendar)** - Seamless calendar integration partner
+- **[mgmeyers/obsidian-kanban](https://github.com/mgmeyers/obsidian-kanban)** - The original Kanban plugin
+- **The Obsidian Community** - Collaborative development ecosystem
+- **[Full Calendar Plugin](https://github.com/davish/obsidian-full-calendar)** - Calendar integration partner
 
 ### 🤝 **Relationship with Original Plugin**
 
 Kanban Plus is built with deep respect for the original Kanban plugin and its maintainer. This fork:
+
 - **Preserves all original functionality** without modification
 - **Adds new features** as extensions rather than replacements
 - **Maintains compatibility** with the original plugin's file format
@@ -248,6 +260,4 @@ We encourage users to support both projects and choose the version that best fit
 
 ---
 
-**Made with ❤️ for the Obsidian community**
-
-_Transform your markdown files into a powerful, interconnected project management system._
+**Made for the Obsidian community**
