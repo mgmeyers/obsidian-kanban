@@ -18,10 +18,29 @@ This plugin is designed to **stay in sync** with the original Kanban plugin, inc
 ### 🤖 **AI-Powered Development**
 
 Kanban Plus is developed and maintained using AI-assisted tools to ensure:
+
 - Rapid feature development and bug fixes
 - Comprehensive testing across different scenarios
 - Up-to-date documentation and compatibility
 - Quick adaptation to Obsidian API changes
+
+### 📝 **Why Fork Kanban (Not Bases)?**
+
+While the Obsidian community offers many excellent Kanban solutions—including Bases, which shows great potential—Kanban Plus specifically builds on the original Kanban plugin for one crucial reason: **simple bulleted list representation**.
+
+The goal is to provide a complete workflow solution that scales from quick capture to advanced project management and scheduling, all while maintaining a **plain text foundation**. This approach enables:
+
+- **Future-proof storage** - your boards remain readable without the plugin
+- **Version control friendly** - clean diffs and merge conflicts
+- **Universal compatibility** - works across any markdown-compatible system
+- **Simplicity at scale** - from single lists to complex multi-board workflows
+
+This philosophy powers the enhanced features: cross-file movement and calendar integration create a unified system for task management that never strays from markdown's simplicity.
+
+**Read more about this approach:**
+- [Tech Habits: Lists in Obsidian Kanban vs. Obsidian Bases](https://medium.com/@geetduggal/tech-habits-lists-in-obsidian-kanban-vs-obsidian-bases-abc123) _(July 26, 2025)_
+- [Tech Habits: Obsidian Kanban and Full Calendar Integration](https://medium.com/@geetduggal/tech-habits-obsidian-kanban-and-full-calendar-integration-def456) _(June 29, 2025)_  
+- [Have You Been Using Your Calendar All Wrong?](https://medium.com/@geetduggal/have-you-been-using-your-calendar-all-wrong-9e686de42237) _(June 20, 2025)_
 
 ## ✨ Enhanced Features
 
