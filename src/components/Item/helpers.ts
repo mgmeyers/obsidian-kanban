@@ -10,7 +10,7 @@ import { BoardModifiers } from '../../helpers/boardModifiers';
 import { getDefaultLocale } from '../Editor/datePickerLocale';
 import flatpickr from '../Editor/flatpickr';
 import { Instance } from '../Editor/flatpickr/types/instance';
-import { c, escapeRegExpStr, getContrastTextColor } from '../helpers';
+import { c, escapeRegExpStr } from '../helpers';
 import { Item } from '../types';
 
 /**
@@ -878,6 +878,9 @@ export function constructCalendarPicker(
  * with appropriate frontmatter. Events are created as all-day events on the current
  * date and can be easily moved to specific times within Full Calendar.
  * 
+ * When copying to calendar, also adds a hashtag matching the calendar name to the card
+ * if it doesn't already have one, enabling automatic color association.
+ * 
  * Handles edge cases including:
  * - Directories with special characters (like '*')
  * - Wildcard patterns vs literal directory names
@@ -892,7 +895,9 @@ export function constructCalendarPicker(
 export async function createCalendarEvent(
   stateManager: StateManager,
   item: Item,
-  calendar: CalendarSource
+  calendar: CalendarSource,
+  path: Path,
+  boardModifiers: any
 ): Promise<boolean> {
   try {
     const cardTitle = item.data.titleRaw.split('\n')[0].trim();
@@ -978,8 +983,8 @@ completed: null
       await stateManager.app.vault.create(fullPath, fileContent);
       new Notice(`Created calendar event: ${fileName}`);
       
-      // Apply calendar color to the card
-      await applyCalendarColorToCard(stateManager, item, calendar);
+      // Add calendar hashtag to the card if it doesn't already have one
+      await addCalendarHashtagToCard(stateManager, item, calendar, path, boardModifiers);
       
       return true;
     } catch (fileError) {
@@ -995,59 +1000,49 @@ completed: null
 }
 
 /**
- * Applies the calendar's color to a card by storing the color mapping in board settings
+ * Adds a hashtag matching the calendar name to the card if it doesn't already have one
  */
-async function applyCalendarColorToCard(
+async function addCalendarHashtagToCard(
   stateManager: StateManager,
   item: Item,
-  calendar: CalendarSource
+  calendar: CalendarSource,
+  path: Path,
+  boardModifiers: any
 ) {
   try {
-    const currentCardColors = stateManager.getSetting('card-colors') || [];
-    const calendarDisplayName = getCalendarDisplayName(calendar.directory);
-    
-    // Calculate appropriate text color for contrast
-    const textColor = getContrastTextColor(calendar.color);
-    
-    // Create new card color entry using both ID and content for matching
+    const calendarName = getCalendarDisplayName(calendar.directory);
     const cardContent = item.data.titleRaw.trim();
-    const newCardColor = {
-      cardId: item.id,
-      cardContent: cardContent,
-      backgroundColor: calendar.color,
-      color: textColor,
-      calendarName: calendarDisplayName,
-    };
     
-    // Remove existing color for this card content (not just ID) and add the new one
-    const updatedCardColors = currentCardColors.filter(cc => 
-      cc.cardId !== item.id && cc.cardContent !== cardContent
+    // Check if card already has a hashtag matching any calendar name
+    const hashtagRegex = /#([^\s#]+)/g;
+    const existingHashtags: string[] = [];
+    let match;
+    
+    while ((match = hashtagRegex.exec(cardContent)) !== null) {
+      existingHashtags.push(match[1]);
+    }
+    
+    // Check if any existing hashtag matches the current calendar name
+    const hasMatchingHashtag = existingHashtags.some(
+      hashtag => hashtag.toLowerCase() === calendarName.toLowerCase()
     );
-    updatedCardColors.push(newCardColor);
     
-    // Update the board settings with the new card color - pass the board directly
-    const updatedBoard = update(stateManager.state, {
-      data: {
-        settings: {
-          'card-colors': {
-            $set: updatedCardColors,
-          },
-        },
-      },
-    });
-    
-    // Apply the updated board state and ensure it's saved to disk
-    stateManager.setState(updatedBoard, true);
-    
-    console.log(`🎨 Saved calendar color ${calendar.color} for card ${item.id}`);
-    
-    // Force a save to disk to ensure persistence
-    setTimeout(() => {
-      stateManager.saveToDisk();
-    }, 100);
+    if (!hasMatchingHashtag) {
+      // Add the calendar hashtag to the end of the card content
+      const calendarHashtag = calendarName.replace(/\s+/g, ''); // Remove spaces for hashtag
+      const updatedContent = `${cardContent} #${calendarHashtag}`;
+      
+      // Update the item using the board modifiers (same pattern as other updates)
+      const updatedItem = stateManager.updateItemContent(item, updatedContent);
+      boardModifiers.updateItem(path, updatedItem);
+      
+      console.log(`📝 Added hashtag #${calendarHashtag} to card`);
+    } else {
+      console.log(`✅ Card already has matching calendar hashtag`);
+    }
     
   } catch (error) {
-    console.error('Error applying calendar color to card:', error);
+    console.error('Error adding calendar hashtag to card:', error);
     // Don't throw here - the calendar event was created successfully
   }
 }

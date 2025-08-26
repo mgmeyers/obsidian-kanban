@@ -619,7 +619,7 @@ export function useItemMenu({
                 .setIcon('lucide-calendar')
                 .setTitle(titleWithCircle)
                 .onClick(async () => {
-                  await createCalendarEvent(stateManager, item, calendar);
+                  await createCalendarEvent(stateManager, item, calendar, path, boardModifiers);
                 })
             );
           }

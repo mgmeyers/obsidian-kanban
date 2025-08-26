@@ -46,25 +46,35 @@ Kanban Plus introduces the revolutionary ability to move cards between different
 
 ### Overview
 
-Seamless integration with Full Calendar plugin, featuring visual feedback and smart color management.
+Revolutionary hashtag-based integration with Full Calendar plugin, featuring automatic color association and smart visual feedback.
 
 ### Enhanced Features
 
-- **One-click card copying** to Full Calendar
-- **Automatic color matching** - cards adopt calendar colors
+- **Hashtag-driven color display** - cards automatically show calendar colors
+- **One-click card copying** to Full Calendar with automatic hashtag addition
+- **Dynamic color resolution** - no configuration required
 - **Smart text contrast** for optimal readability
 - **Emoji color indicators** in calendar picker
-- **Persistent colors** across sessions and devices
+- **Live sync** with Full Calendar settings
 - **Cross-platform support** (desktop and mobile)
 
-### Visual Feedback System
+### Hashtag-Based Visual System
+
+Cards automatically display calendar colors when they contain matching hashtags:
+
+1. **Hashtag detection** - scans card content for hashtags like `#Work`, `#Personal`
+2. **Calendar matching** - compares hashtags to Full Calendar configuration
+3. **Color application** - first matching hashtag determines card appearance
+4. **Real-time updates** - colors change instantly when hashtags are modified
+
+### Copy to Calendar Enhancement
 
 When you copy a card to a calendar:
 
-1. **Card background** updates to match calendar color
-2. **Text color** automatically adjusts for readability
-3. **Color persists** when you reload the file
-4. **Syncs across devices** via Obsidian Sync
+1. **Event creation** - markdown file created in calendar directory
+2. **Hashtag addition** - calendar name added as hashtag if not present
+3. **Instant visual feedback** - card immediately displays calendar colors
+4. **Persistent association** - hashtag provides lasting visual connection
 
 ### Calendar Picker Enhancements
 
@@ -77,12 +87,19 @@ When you copy a card to a calendar:
 
 ### Smart Color Algorithm
 
-Our advanced contrast algorithm ensures text is always readable:
+Advanced contrast algorithm ensures text is always readable:
 
-- **Light backgrounds** → black text
-- **Dark backgrounds** → white text
-- **Mid-tone backgrounds** → optimized contrast
-- **Matches Full Calendar** text color decisions
+- **Light backgrounds** → black text for optimal contrast
+- **Dark backgrounds** → white text for maximum readability
+- **Mid-tone backgrounds** → calculated contrast optimization
+- **Matches Full Calendar** color decisions exactly
+
+### Zero-Configuration Design
+
+- **No setup required** - reads existing Full Calendar settings
+- **No data storage** - colors calculated dynamically from hashtags
+- **Always current** - reflects latest Full Calendar configuration
+- **Automatic updates** - changes to calendars instantly update card colors
 
 ---
 
@@ -151,15 +168,15 @@ Individual Card Properties (final)
 interface KanbanSettings {
   // ... existing settings
   'associated-files'?: string[]; // New: linked file paths
-  'card-colors'?: CardColor[]; // Enhanced: persistent colors
+  'enable-copy-to-calendar'?: boolean; // Calendar integration toggle
 }
 
-interface CardColor {
-  cardId: string; // Unique card identifier
-  cardContent: string; // Fallback for ID changes
-  backgroundColor: string; // Calendar color
-  color: string; // Calculated text color
-  calendarName: string; // Source calendar
+// Hashtag-based color resolution - no storage required
+function getCardColor(cardContent: string): CardColor | null {
+  // Parse hashtags from content: /#([^\s#]+)/g
+  // Match against Full Calendar configuration
+  // Return dynamic color calculation
+  return dynamicallyResolvedColor;
 }
 ```
 

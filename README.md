@@ -15,8 +15,9 @@ Kanban Plus extends the popular Kanban plugin with powerful new features designe
 
 ### 📅 **Calendar Integration**
 
-- **Copy cards to Full Calendar** with one click
-- **Visual color feedback** - cards show calendar colors
+- **Hashtag-based color display** - cards automatically show calendar colors
+- **Copy cards to Full Calendar** with one click and automatic hashtag addition
+- **Dynamic color resolution** - no configuration required
 - **Smart text contrast** - readable text on any background
 - **Emoji color indicators** in calendar picker
 - **Cross-platform support** (desktop and mobile)
@@ -29,7 +30,8 @@ Kanban Plus extends the popular Kanban plugin with powerful new features designe
 
 ### 🎨 **Enhanced Visual Experience**
 
-- **Calendar-matched card colors** with automatic persistence
+- **Hashtag-driven card colors** with instant visual feedback
+- **Zero-configuration color management** - works with existing Full Calendar settings
 - **Smart contrast algorithms** for optimal readability
 - **Modern, responsive interface**
 
@@ -76,14 +78,23 @@ Kanban Plus extends the popular Kanban plugin with powerful new features designe
 2. Enable "Full note" mode in Full Calendar settings
 3. In Kanban Plus settings, enable **"Copy to Calendar"**
 
-### Usage
+### Automatic Color Display
+
+Cards automatically display calendar colors when they contain hashtags matching calendar names:
+
+- **Add hashtags manually**: `My task #Work` → shows Work calendar color
+- **Multiple calendars**: `#Work #Personal` → uses first matching calendar
+- **Case-insensitive**: `#work` matches "Work" calendar
+
+### Copy to Calendar
 
 1. Right-click any card
 2. Select **"Copy to calendar"**
 3. Choose destination calendar with emoji color indicators
 4. Card appears in calendar as all-day event
-5. Card background updates to match calendar color
-6. Drag in Full Calendar to set specific times
+5. If missing, calendar hashtag is automatically added to card
+6. Card background instantly updates to match calendar color
+7. Drag in Full Calendar to set specific times
 
 ## 🛠️ Advanced Configuration
 

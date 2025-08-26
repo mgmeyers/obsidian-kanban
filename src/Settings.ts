@@ -17,7 +17,6 @@ import {
   getDefaultTimeFormat,
 } from './components/helpers';
 import {
-  CardColor,
   DataKey,
   DateColor,
   DateColorSetting,
@@ -94,7 +93,6 @@ export interface KanbanSettings {
   'time-trigger'?: string;
   'enable-copy-to-calendar'?: boolean;
   'place-settings-at-beginning'?: boolean;
-  'card-colors'?: CardColor[];
   'associated-files'?: string[];
 }
 
@@ -146,7 +144,6 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'time-trigger',
   'enable-copy-to-calendar',
   'place-settings-at-beginning',
-  'card-colors',
   'associated-files',
 ]);
 
