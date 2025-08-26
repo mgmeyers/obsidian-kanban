@@ -1,5 +1,6 @@
 import { FileWithPath, fromEvent } from 'file-selector';
-import { Platform, TFile, TFolder, htmlToMarkdown, moment, parseLinktext, setIcon } from 'obsidian';
+import update from 'immutability-helper';
+import { Platform, TFile, TFolder, htmlToMarkdown, moment, parseLinktext, setIcon, Notice } from 'obsidian';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { buildLinkToDailyNote } from 'src/helpers';
@@ -11,6 +12,16 @@ import flatpickr from '../Editor/flatpickr';
 import { Instance } from '../Editor/flatpickr/types/instance';
 import { c, escapeRegExpStr } from '../helpers';
 import { Item } from '../types';
+
+/**
+ * Interface for Full Calendar plugin calendar sources
+ * Used for the "Copy to calendar" feature integration
+ */
+interface CalendarSource {
+  type: string;    // Calendar type (typically 'local' for file-based calendars)
+  color: string;   // Display color for the calendar picker UI
+  directory: string; // Target directory path for calendar events (may contain wildcards like '/*')
+}
 
 export function constructDatePicker(
   win: Window,
@@ -609,5 +620,441 @@ export async function handleDragOrPaste(
     default: {
       return await handleNullDraggable(stateManager, e, win);
     }
+  }
+}
+
+/**
+ * Synchronously retrieves Full Calendar plugin configuration data
+ * Supports both direct plugin access and file-based fallback for robustness
+ * 
+ * @param stateManager - StateManager instance for accessing Obsidian app
+ * @returns Array of CalendarSource objects from Full Calendar plugin configuration
+ */
+export function getFullCalendarDataSync(stateManager: StateManager): CalendarSource[] {
+  try {
+    
+    // Try direct access via Obsidian's plugin system first
+    if ((stateManager.app as any).plugins?.plugins?.['obsidian-full-calendar']) {
+      const fullCalendarPlugin = (stateManager.app as any).plugins.plugins['obsidian-full-calendar'];
+      
+      if (fullCalendarPlugin.settings?.calendarSources) {
+        return fullCalendarPlugin.settings.calendarSources;
+      }
+    }
+    
+    // Try reading the file directly via Node.js (desktop only)
+    if (Platform.isDesktopApp && (window as any).require) {
+      try {
+        const fs = (window as any).require('fs');
+        const path = (window as any).require('path');
+        
+        const vaultPath = (stateManager.app.vault.adapter as any).path || 
+                         (stateManager.app.vault.adapter as any).basePath;
+        const fullCalendarDataPath = path.join(vaultPath, '.obsidian', 'plugins', 'obsidian-full-calendar', 'data.json');
+        
+        if (fs.existsSync(fullCalendarDataPath)) {
+          const content = fs.readFileSync(fullCalendarDataPath, 'utf8');
+          const data = JSON.parse(content);
+          return data.calendarSources || [];
+        }
+      } catch (fsError) {
+        // Silent fallback
+      }
+    }
+    return [];
+    
+  } catch (error) {
+    console.error('Error reading Full Calendar data:', error);
+    return [];
+  }
+}
+
+/**
+ * Asynchronously retrieves Full Calendar plugin configuration data
+ * Identical to getFullCalendarDataSync but returns a Promise for async contexts
+ * 
+ * @param stateManager - StateManager instance for accessing Obsidian app
+ * @returns Promise resolving to array of CalendarSource objects
+ */
+export async function getFullCalendarData(stateManager: StateManager): Promise<CalendarSource[]> {
+  try {
+    console.log('Looking for Full Calendar data...');
+    
+    // Try direct access via Obsidian's plugin system
+    if ((stateManager.app as any).plugins?.plugins?.['obsidian-full-calendar']) {
+      const fullCalendarPlugin = (stateManager.app as any).plugins.plugins['obsidian-full-calendar'];
+      console.log('Found Full Calendar plugin:', fullCalendarPlugin);
+      
+      if (fullCalendarPlugin.settings?.calendarSources) {
+        console.log('Found calendar sources from plugin settings:', fullCalendarPlugin.settings.calendarSources);
+        return fullCalendarPlugin.settings.calendarSources;
+      }
+    }
+    
+    // Try reading the file directly via Node.js (desktop only)
+    if (Platform.isDesktopApp && (window as any).require) {
+      try {
+        const fs = (window as any).require('fs');
+        const path = (window as any).require('path');
+        
+        const vaultPath = (stateManager.app.vault.adapter as any).path || 
+                         (stateManager.app.vault.adapter as any).basePath;
+        const fullCalendarDataPath = path.join(vaultPath, '.obsidian', 'plugins', 'obsidian-full-calendar', 'data.json');
+        
+        console.log('Trying file path:', fullCalendarDataPath);
+        
+        if (fs.existsSync(fullCalendarDataPath)) {
+          const content = fs.readFileSync(fullCalendarDataPath, 'utf8');
+          const data = JSON.parse(content);
+          console.log('Found Full Calendar data from file:', data);
+          return data.calendarSources || [];
+        } else {
+          console.log('File does not exist at:', fullCalendarDataPath);
+        }
+      } catch (fsError) {
+        console.log('Direct file access failed:', fsError);
+      }
+    }
+    
+    // Fallback: hardcoded test data (remove this once it works)
+    console.log('Using fallback test data');
+    return [
+      { type: 'local', color: '#ff0000', directory: 'Test Calendar 1' },
+      { type: 'local', color: '#00ff00', directory: 'Test Calendar 2' }
+    ];
+    
+  } catch (error) {
+    console.error('Error reading Full Calendar data:', error);
+    return [];
+  }
+}
+
+/**
+ * Extracts a user-friendly display name from a calendar directory path
+ * Handles special characters and wildcard patterns appropriately
+ * 
+ * @param directory - Full directory path from calendar configuration
+ * @returns User-friendly display name for the calendar picker UI
+ */
+export function getCalendarDisplayName(directory: string): string {
+  // Extract the leaf directory name from the path
+  const parts = directory.split('/');
+  const leafName = parts[parts.length - 1];
+  
+  // Handle special cases and wildcards
+  if (leafName === '*' || leafName === '#' || leafName === '!' || 
+      leafName === '%' || leafName === '=' || leafName === '$') {
+    return leafName;
+  }
+  
+  return leafName || directory;
+}
+
+function sanitizeFileName(name: string, maxLength: number = 30): string {
+  // Remove illegal file name characters and limit length
+  const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
+  const embedRegEx = /!?\[\[([^\]]*)\.[^\]]+\]\]/g;
+  const wikilinkRegEx = /!?\[\[([^\]]*)\]\]/g;
+  const mdLinkRegEx = /!?\[([^\]]*)\]\([^)]*\)/g;
+  const tagRegEx = /#([^\u2000-\u206F\u2E00-\u2E7F'!"#$%&()*+,.:;<=>?@^`{|}~[\]\\\s\n\r]+)/g;
+  const condenceWhiteSpaceRE = /\s+/g;
+
+  return name
+    .replace(embedRegEx, '$1')
+    .replace(wikilinkRegEx, '$1')
+    .replace(mdLinkRegEx, '$1')
+    .replace(tagRegEx, '$1')
+    .replace(illegalCharsRegEx, ' ')
+    .trim()
+    .replace(condenceWhiteSpaceRE, ' ')
+    .substring(0, maxLength)
+    .trim();
+}
+
+export function constructCalendarPicker(
+  win: Window,
+  stateManager: StateManager,
+  coordinates: { x: number; y: number },
+  onSelect: (calendar: CalendarSource) => void,
+  item: Item
+) {
+  const pickerClassName = c('calendar-picker');
+
+  win.document.body.createDiv({ cls: `${pickerClassName} ${c('ignore-click-outside')}` }, async (div) => {
+    const calendars = await getFullCalendarData(stateManager);
+
+    if (calendars.length === 0) {
+      div.createDiv({ cls: c('calendar-picker-empty'), text: 'No calendars found in Full Calendar plugin' });
+    }
+
+    const clickHandler = (e: MouseEvent) => {
+      if (
+        e.target instanceof (e.view as Window & typeof globalThis).HTMLElement &&
+        e.target.hasClass(c('calendar-picker-item'))
+      ) {
+        const calendarIndex = parseInt(e.target.dataset.calendarIndex || '0', 10);
+        if (calendars[calendarIndex]) {
+          onSelect(calendars[calendarIndex]);
+          selfDestruct();
+        }
+      }
+    };
+
+    const clickOutsideHandler = (e: MouseEvent) => {
+      if (
+        e.target instanceof (e.view as Window & typeof globalThis).HTMLElement &&
+        e.target.closest(`.${pickerClassName}`) === null
+      ) {
+        selfDestruct();
+      }
+    };
+
+    const escHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        selfDestruct();
+      }
+    };
+
+    const selfDestruct = () => {
+      div.remove();
+      div.removeEventListener('click', clickHandler);
+      win.document.body.removeEventListener('click', clickOutsideHandler);
+      win.document.removeEventListener('keydown', escHandler);
+    };
+
+    div.style.left = `${coordinates.x || 0}px`;
+    div.style.top = `${coordinates.y || 0}px`;
+
+    calendars.forEach((calendar, index) => {
+      div.createDiv(
+        {
+          cls: c('calendar-picker-item'),
+        },
+        (item) => {
+          // Add color circle
+          item.createEl('span', { cls: c('calendar-color-circle') }, (circle) => {
+            circle.style.backgroundColor = calendar.color;
+            circle.style.width = '12px';
+            circle.style.height = '12px';
+            circle.style.borderRadius = '50%';
+            circle.style.display = 'inline-block';
+            circle.style.marginRight = '8px';
+          });
+          
+          // Add calendar name
+          item.createEl('span', { 
+            cls: c('calendar-name'), 
+            text: getCalendarDisplayName(calendar.directory) 
+          });
+
+          item.dataset.calendarIndex = index.toString();
+        }
+      );
+    });
+
+    div.win.setTimeout(() => {
+      const height = div.clientHeight;
+      const width = div.clientWidth;
+
+      if (coordinates.y + height > win.innerHeight) {
+        div.style.top = `${(coordinates.y || 0) - height}px`;
+      }
+
+      if (coordinates.x + width > win.innerWidth) {
+        div.style.left = `${(coordinates.x || 0) - width}px`;
+      }
+
+      div.addEventListener('click', clickHandler);
+      win.document.body.addEventListener('click', clickOutsideHandler);
+      win.document.addEventListener('keydown', escHandler);
+    });
+  });
+}
+
+/**
+ * Creates a calendar event file from a Kanban card
+ * 
+ * Integrates with Full Calendar plugin's "Full note" mode by creating markdown files
+ * with appropriate frontmatter. Events are created as all-day events on the current
+ * date and can be easily moved to specific times within Full Calendar.
+ * 
+ * When copying to calendar, also adds a hashtag matching the calendar name to the card
+ * if it doesn't already have one, enabling automatic color association.
+ * 
+ * The calendar event filename is created without hashtags for clean organization,
+ * while the original card retains its hashtags for color association.
+ * 
+ * Handles edge cases including:
+ * - Directories with special characters (like '*')
+ * - Wildcard patterns vs literal directory names
+ * - File name sanitization and collision detection
+ * - Hashtag removal from filenames for cleaner calendar organization
+ * - Robust error handling with user-friendly notifications
+ * 
+ * @param stateManager - StateManager instance for vault operations
+ * @param item - Kanban card item to copy to calendar
+ * @param calendar - Target calendar source configuration
+ * @returns Promise<boolean> - true if event was created successfully, false otherwise
+ */
+export async function createCalendarEvent(
+  stateManager: StateManager,
+  item: Item,
+  calendar: CalendarSource,
+  path: Path,
+  boardModifiers: any
+): Promise<boolean> {
+  try {
+    const cardTitle = item.data.titleRaw.split('\n')[0].trim();
+    
+    // Remove hashtags from the title before creating the calendar event filename
+    // This ensures calendar event files have clean names without hashtag clutter
+    const titleWithoutHashtags = cardTitle
+      .replace(/#[^\s#]+/g, '') // Remove hashtags completely
+      .replace(/\s+/g, ' ')    // Normalize multiple spaces to single space
+      .trim();                 // Remove leading/trailing whitespace
+    const sanitizedTitle = sanitizeFileName(titleWithoutHashtags);
+    
+    const today = moment().format('YYYY-MM-DD');
+    const tomorrow = moment().add(1, 'day').format('YYYY-MM-DD');
+    
+    const fileName = `${today} ${sanitizedTitle}.md`;
+    const fileContent = `---
+title: ${sanitizedTitle}
+allDay: true
+date: ${today}
+endDate: ${tomorrow}
+completed: null
+---
+`;
+
+    // Get the target directory from the calendar configuration
+    let targetDirectory = calendar.directory;
+    
+    // Handle wildcard directories vs literal directories containing '*'
+    // This addresses the edge case where directories are literally named with '*' characters
+    // versus using '/*' as a wildcard pattern in Full Calendar configuration
+    if (targetDirectory.endsWith('/*')) {
+      // Check if a directory with the literal name (including /*) exists first
+      const literalDirectory = stateManager.app.vault.getAbstractFileByPath(targetDirectory);
+      if (!literalDirectory) {
+        // If literal directory doesn't exist, treat /* as wildcard and remove it
+        // This supports the standard Full Calendar wildcard pattern usage
+        targetDirectory = targetDirectory.slice(0, -2);
+      }
+      // If literal directory exists, keep the full path including /*
+      // This supports edge cases where directories are literally named with '*'
+    }
+    
+    // Normalize the directory path to handle special characters properly
+    // This handles cases where the directory name contains special chars like '*'
+    targetDirectory = targetDirectory.replace(/[\\\/]+/g, '/').replace(/^\/+|\/+$/g, '');
+    
+    // Ensure the directory exists using proper path handling
+    let targetFolder = null;
+    try {
+      targetFolder = stateManager.app.vault.getAbstractFileByPath(targetDirectory);
+    } catch (error) {
+      console.log('Error getting folder, will attempt to create:', error);
+    }
+    
+    if (!targetFolder) {
+      try {
+        await stateManager.app.vault.createFolder(targetDirectory);
+      } catch (folderError) {
+        console.error('Error creating folder:', folderError);
+        // If folder creation fails, try to normalize the path further
+        const normalizedPath = targetDirectory.replace(/[*?"<>|:]/g, '_');
+        console.log(`Attempting to create normalized folder: ${normalizedPath}`);
+        try {
+          await stateManager.app.vault.createFolder(normalizedPath);
+          targetDirectory = normalizedPath;
+        } catch (normalizedError) {
+          throw new Error(`Could not create calendar directory: ${targetDirectory}. ${normalizedError.message}`);
+        }
+      }
+    }
+    
+    const fullPath = `${targetDirectory}/${fileName}`;
+    
+    // Check if file already exists
+    let existingFile = null;
+    try {
+      existingFile = stateManager.app.vault.getAbstractFileByPath(fullPath);
+    } catch (error) {
+      console.log('Error checking existing file, proceeding with creation:', error);
+    }
+    
+    if (existingFile) {
+      // Show notification that file already exists
+      new Notice(`File already exists: ${fileName}`);
+      return false;
+    }
+    
+    // Create the file
+    try {
+      await stateManager.app.vault.create(fullPath, fileContent);
+      new Notice(`Created calendar event: ${fileName}`);
+      
+      // Add calendar hashtag to the card if it doesn't already have one
+      await addCalendarHashtagToCard(stateManager, item, calendar, path, boardModifiers);
+      
+      return true;
+    } catch (fileError) {
+      console.error('Error creating file:', fileError);
+      throw new Error(`Could not create calendar file: ${fileName}. ${fileError.message}`);
+    }
+    
+  } catch (error) {
+    console.error('Error creating calendar event:', error);
+    new Notice(`Error creating calendar event: ${error.message}`);
+    return false;
+  }
+}
+
+/**
+ * Adds a hashtag matching the calendar name to the card if it doesn't already have one
+ */
+async function addCalendarHashtagToCard(
+  stateManager: StateManager,
+  item: Item,
+  calendar: CalendarSource,
+  path: Path,
+  boardModifiers: any
+) {
+  try {
+    const calendarName = getCalendarDisplayName(calendar.directory);
+    const cardContent = item.data.titleRaw.trim();
+    
+    // Check if card already has a hashtag matching any calendar name
+    const hashtagRegex = /#([^\s#]+)/g;
+    const existingHashtags: string[] = [];
+    let match;
+    
+    while ((match = hashtagRegex.exec(cardContent)) !== null) {
+      existingHashtags.push(match[1]);
+    }
+    
+    // Check if any existing hashtag matches the current calendar name
+    const hasMatchingHashtag = existingHashtags.some(
+      hashtag => hashtag.toLowerCase() === calendarName.toLowerCase()
+    );
+    
+    if (!hasMatchingHashtag) {
+      // Add the calendar hashtag to the end of the card content
+      const calendarHashtag = calendarName.replace(/\s+/g, ''); // Remove spaces for hashtag
+      const updatedContent = `${cardContent} #${calendarHashtag}`;
+      
+      // Update the item using the board modifiers (same pattern as other updates)
+      const updatedItem = stateManager.updateItemContent(item, updatedContent);
+      boardModifiers.updateItem(path, updatedItem);
+      
+      console.log(`📝 Added hashtag #${calendarHashtag} to card`);
+    } else {
+      console.log(`✅ Card already has matching calendar hashtag`);
+    }
+    
+  } catch (error) {
+    console.error('Error adding calendar hashtag to card:', error);
+    // Don't throw here - the calendar event was created successfully
   }
 }

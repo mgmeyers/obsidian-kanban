@@ -13,7 +13,8 @@ import {
 } from 'src/parsers/helpers/inlineMetadata';
 
 import { SearchContextProps } from './context';
-import { Board, DataKey, DateColor, Item, Lane, PageData, TagColor } from './types';
+import { Board, CardColor, DataKey, DateColor, Item, Lane, PageData, TagColor } from './types';
+import { getFullCalendarDataSync, getCalendarDisplayName } from './Item/helpers';
 
 export const baseClassName = 'kanban-plugin';
 
@@ -241,6 +242,82 @@ export function useGetTagColorFn(stateManager: StateManager): (tag: string) => T
   const tagColors = stateManager.useSetting('tag-colors');
   return useMemo(() => getTagColorFn(tagColors), [tagColors]);
 }
+
+/**
+ * Creates a function to get card colors based on hashtags that match calendar names
+ */
+export function getCardColorFn(stateManager: StateManager) {
+  return (cardId: string, cardContent?: string): CardColor | null => {
+    if (!cardContent) return null;
+    
+    // Extract hashtags from card content
+    const hashtagRegex = /#([^\s#]+)/g;
+    const hashtags: string[] = [];
+    let match;
+    
+    while ((match = hashtagRegex.exec(cardContent)) !== null) {
+      hashtags.push(match[1]);
+    }
+    
+    if (hashtags.length === 0) return null;
+    
+    // Get calendar sources from Full Calendar plugin
+    const calendars = getFullCalendarDataSync(stateManager);
+    if (calendars.length === 0) return null;
+    
+    // Find first hashtag that matches a calendar name
+    for (const hashtag of hashtags) {
+      for (const calendar of calendars) {
+        const calendarName = getCalendarDisplayName(calendar.directory);
+        
+        // Check if hashtag matches calendar name (case-insensitive)
+        if (hashtag.toLowerCase() === calendarName.toLowerCase()) {
+          // Calculate appropriate text color for contrast
+          const backgroundColor = calendar.color;
+          let textColor = '#000000'; // Default to black
+          
+          // Handle hex colors
+          if (backgroundColor.startsWith('#')) {
+            const hex = backgroundColor.slice(1);
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            
+            // Use simple perceived brightness calculation (similar to what Full Calendar likely uses)
+            const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+            
+            // Higher threshold (more likely to use black text)
+            textColor = brightness > 140 ? '#000000' : '#ffffff';
+          } else {
+            // Handle rgb/rgba colors
+            const color = backgroundColor.replace(/rgba?\(|\s+|\)/g, '').split(',').map(Number);
+            if (color.length >= 3) {
+              const [r, g, b] = color;
+              const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+              textColor = brightness > 140 ? '#000000' : '#ffffff';
+            }
+          }
+          
+          return {
+            cardId,
+            cardContent,
+            backgroundColor: calendar.color,
+            color: textColor,
+            calendarName,
+          };
+        }
+      }
+    }
+    
+    return null;
+  };
+}
+
+export function useGetCardColorFn(stateManager: StateManager): (cardId: string, cardContent?: string) => CardColor | null {
+  return useMemo(() => getCardColorFn(stateManager), [stateManager]);
+}
+
+
 
 export function getDateColorFn(dateColors: DateColor[]) {
   const orders = (dateColors || []).map<[moment.Moment | 'today' | 'before' | 'after', DateColor]>(

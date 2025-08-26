@@ -35,6 +35,14 @@ export interface TagColor {
   backgroundColor: string;
 }
 
+export interface CardColor {
+  cardId: string;
+  cardContent: string; // Store card content for matching across ID changes
+  color: string;
+  backgroundColor: string;
+  calendarName?: string;
+}
+
 export interface TagSort {
   tag: string;
 }

@@ -41,7 +41,7 @@ export class ListFormat implements BaseFormat {
   }
 
   boardToMd(board: Board) {
-    return boardToMd(board);
+    return boardToMd(board, this.stateManager);
   }
 
   mdToBoard(md: string) {
