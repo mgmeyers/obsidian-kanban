@@ -881,10 +881,14 @@ export function constructCalendarPicker(
  * When copying to calendar, also adds a hashtag matching the calendar name to the card
  * if it doesn't already have one, enabling automatic color association.
  * 
+ * The calendar event filename is created without hashtags for clean organization,
+ * while the original card retains its hashtags for color association.
+ * 
  * Handles edge cases including:
  * - Directories with special characters (like '*')
  * - Wildcard patterns vs literal directory names
  * - File name sanitization and collision detection
+ * - Hashtag removal from filenames for cleaner calendar organization
  * - Robust error handling with user-friendly notifications
  * 
  * @param stateManager - StateManager instance for vault operations
@@ -901,7 +905,15 @@ export async function createCalendarEvent(
 ): Promise<boolean> {
   try {
     const cardTitle = item.data.titleRaw.split('\n')[0].trim();
-    const sanitizedTitle = sanitizeFileName(cardTitle);
+    
+    // Remove hashtags from the title before creating the calendar event filename
+    // This ensures calendar event files have clean names without hashtag clutter
+    const titleWithoutHashtags = cardTitle
+      .replace(/#[^\s#]+/g, '') // Remove hashtags completely
+      .replace(/\s+/g, ' ')    // Normalize multiple spaces to single space
+      .trim();                 // Remove leading/trailing whitespace
+    const sanitizedTitle = sanitizeFileName(titleWithoutHashtags);
+    
     const today = moment().format('YYYY-MM-DD');
     const tomorrow = moment().add(1, 'day').format('YYYY-MM-DD');
     
