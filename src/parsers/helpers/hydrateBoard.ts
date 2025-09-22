@@ -7,8 +7,15 @@ import { getEntityFromPath } from 'src/dnd/util/data';
 import { Op } from 'src/helpers/patch';
 
 import { getSearchValue } from '../common';
+import { populateLaneFromQuery } from './taskQuery';
 
 export function hydrateLane(stateManager: StateManager, lane: Lane) {
+  // If the lane has a query, populate it with tasks from the query
+  if (lane.data.query) {
+    const populatedItems = populateLaneFromQuery(stateManager, lane);
+    lane.children = populatedItems;
+  }
+  
   return lane;
 }
 
