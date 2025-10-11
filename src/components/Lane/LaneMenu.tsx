@@ -4,7 +4,7 @@ import { Dispatch, StateUpdater, useContext, useEffect, useMemo, useState } from
 import { Path } from 'src/dnd/types';
 import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
-import { lableToName } from 'src/parsers/helpers/inlineMetadata';
+import { Priority, lableToName } from 'src/parsers/helpers/inlineMetadata';
 
 import { anyToString } from '../Item/MetadataTable';
 import { KanbanContext } from '../context';
@@ -290,8 +290,14 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
                 const desc = lane.data.sorted === k + '-asc' ? true : false;
 
                 children.sort((a, b) => {
-                  const valA = a.data.metadata.inlineMetadata?.find((m) => m.key === k);
-                  const valB = b.data.metadata.inlineMetadata?.find((m) => m.key === k);
+                  let valA = a.data.metadata.inlineMetadata?.find((m) => m.key === k)?.value;
+                  let valB = b.data.metadata.inlineMetadata?.find((m) => m.key === k)?.value;
+                  if (!valA && k === 'priority') {
+                    valA = Priority.None;
+                  }
+                  if (!valB && k === 'priority') {
+                    valB = Priority.None;
+                  }
 
                   if (valA === undefined && valB === undefined) return 0;
                   if (valA === undefined) return 1;
@@ -299,13 +305,13 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
 
                   if (desc) {
                     return defaultSort(
-                      anyToString(valB.value, stateManager),
-                      anyToString(valA.value, stateManager)
+                      anyToString(valB, stateManager),
+                      anyToString(valA, stateManager)
                     );
                   }
                   return defaultSort(
-                    anyToString(valA.value, stateManager),
-                    anyToString(valB.value, stateManager)
+                    anyToString(valA, stateManager),
+                    anyToString(valB, stateManager)
                   );
                 });
 
