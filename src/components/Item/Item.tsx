@@ -15,7 +15,7 @@ import { useDragHandle } from 'src/dnd/managers/DragManager';
 import { frontmatterKey } from 'src/parsers/common';
 
 import { KanbanContext, SearchContext } from '../context';
-import { c } from '../helpers';
+import { c, useGetCardColorFn } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
 import { ItemCheckbox } from './ItemCheckbox';
 import { ItemContent } from './ItemContent';
@@ -141,6 +141,8 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
   const elementRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const search = useContext(SearchContext);
+  const { stateManager } = useContext(KanbanContext);
+  const getCardColor = useGetCardColorFn(stateManager);
 
   const { itemIndex, ...innerProps } = props;
 
@@ -148,6 +150,15 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
 
   const isMatch = search?.query ? innerProps.item.data.titleSearch.includes(search.query) : false;
   const classModifiers: string[] = getItemClassModifiers(innerProps.item);
+  
+  // Get card color from calendar assignment
+  const cardContent = innerProps.item.data.titleRaw.trim();
+  const cardColor = getCardColor(innerProps.item.id, cardContent);
+  
+  // Add calendar color class if card has a calendar color
+  if (cardColor) {
+    classModifiers.push('has-calendar-color');
+  }
 
   return (
     <div
@@ -157,7 +168,14 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
       }}
       className={c('item-wrapper')}
     >
-      <div ref={elementRef} className={classcat([c('item'), ...classModifiers])}>
+      <div 
+        ref={elementRef} 
+        className={classcat([c('item'), ...classModifiers])}
+        style={cardColor ? {
+          '--card-color': cardColor.color,
+          '--card-background-color': cardColor.backgroundColor,
+        } : undefined}
+      >
         {props.isStatic ? (
           <ItemInner
             {...innerProps}

@@ -5,6 +5,7 @@ import {
   Modal,
   PluginSettingTab,
   Setting,
+  TFile,
   ToggleComponent,
 } from 'obsidian';
 
@@ -90,6 +91,9 @@ export interface KanbanSettings {
   'tag-sort'?: TagSort[];
   'time-format'?: string;
   'time-trigger'?: string;
+  'enable-copy-to-calendar'?: boolean;
+  'place-settings-at-beginning'?: boolean;
+  'associated-files'?: string[];
 }
 
 export interface KanbanViewSettings {
@@ -138,6 +142,9 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'tag-sort',
   'time-format',
   'time-trigger',
+  'enable-copy-to-calendar',
+  'place-settings-at-beginning',
+  'associated-files',
 ]);
 
 export type SettingRetriever = <K extends keyof KanbanSettings>(
@@ -538,9 +545,9 @@ export class SettingsManager {
       });
 
     new Setting(contentEl).then((setting) => {
-      const [value, globalValue] = this.getSetting('tag-sort', local);
+      const [value] = this.getSetting('tag-sort', local);
 
-      const keys: TagSortSetting[] = ((value || globalValue || []) as TagSort[]).map((k) => {
+      const keys: TagSortSetting[] = ((value || []) as TagSort[]).map((k) => {
         return {
           ...TagSortSettingTemplate,
           id: generateInstanceId(),
@@ -1289,6 +1296,104 @@ export class SettingsManager {
       });
     });
 
+    contentEl.createEl('h4', { text: t('File Format') });
+
+    new Setting(contentEl)
+      .setName(t('Place board settings at beginning'))
+      .setDesc(
+        t(
+          'When toggled, board-specific settings will be placed at the beginning of the file instead of at the end. This can make it easier to quickly edit board settings in markdown mode.'
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('place-settings-at-beginning', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            } else {
+              // default to false for backward compatibility
+              toggle.setValue(false);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'place-settings-at-beginning': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('place-settings-at-beginning', local);
+                toggleComponent.setValue((globalValue as boolean) ?? false);
+
+                this.applySettingsUpdate({
+                  $unset: ['place-settings-at-beginning'],
+                });
+              });
+          });
+      });
+
+    contentEl.createEl('h4', { text: t('Integrations') });
+
+    new Setting(contentEl)
+      .setName(t('Enable Copy to Calendar'))
+      .setDesc(
+        t(
+          'Enables the "Copy to calendar" feature in card context menus. Integrates with the Full Calendar plugin\'s "Full note" mode. Requires Full Calendar plugin to be installed and configured.\n\nConfiguration file location: .obsidian/plugins/obsidian-full-calendar/data.json'
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('enable-copy-to-calendar', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            } else {
+              // default to false for new feature
+              toggle.setValue(false);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'enable-copy-to-calendar': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('enable-copy-to-calendar', local);
+                toggleComponent.setValue((globalValue as boolean) ?? false);
+
+                this.applySettingsUpdate({
+                  $unset: ['enable-copy-to-calendar'],
+                });
+              });
+          });
+      });
+
     contentEl.createEl('h4', { text: t('Board Header Buttons') });
 
     new Setting(contentEl).setName(t('Add a list')).then((setting) => {
@@ -1530,12 +1635,172 @@ export class SettingsManager {
             });
         });
     });
+
+    // Associated Files (Board-specific only)
+    if (local) {
+      contentEl.createEl('br');
+      contentEl.createEl('h4', { text: t('Associated Files') });
+      contentEl.createEl('p', {
+        text: t('Link this board to other Kanban files to enable moving cards between them'),
+      });
+
+      new Setting(contentEl).then((setting) => {
+        const [value] = this.getSetting('associated-files', local);
+        const associatedFiles: string[] = (value as string[]) || [];
+
+        const refreshAssociatedFiles = () => {
+          setting.settingEl.empty();
+
+          // Create container for file list
+          const container = setting.settingEl.createDiv();
+
+          // Display existing associated files
+          associatedFiles.forEach((filePath, index) => {
+            const fileEl = container.createDiv({ cls: 'setting-item' });
+            const infoEl = fileEl.createDiv({ cls: 'setting-item-info' });
+            infoEl.createDiv({ cls: 'setting-item-name', text: filePath });
+
+            const controlEl = fileEl.createDiv({ cls: 'setting-item-control' });
+            const removeBtn = controlEl.createEl('button', {
+              text: t('Remove file'),
+              cls: 'mod-warning',
+            });
+            removeBtn.onclick = () => {
+              associatedFiles.splice(index, 1);
+              this.applySettingsUpdate({
+                'associated-files': { $set: associatedFiles },
+              });
+              refreshAssociatedFiles();
+            };
+          });
+
+          // Add file button
+          const addContainer = container.createDiv({ cls: 'setting-item' });
+          const addControlEl = addContainer.createDiv({ cls: 'setting-item-control' });
+          const addBtn = addControlEl.createEl('button', { text: t('Add associated file') });
+          addBtn.onclick = () => {
+            const modal = new FileSelectionModal(this.app, (selectedFile: TFile) => {
+              if (selectedFile && !associatedFiles.includes(selectedFile.path)) {
+                associatedFiles.push(selectedFile.path);
+                this.applySettingsUpdate({
+                  'associated-files': { $set: associatedFiles },
+                });
+
+                // Ensure the selected file has kanban metadata
+                this.ensureKanbanMetadata(selectedFile);
+                refreshAssociatedFiles();
+              }
+            });
+            modal.open();
+          };
+        };
+
+        refreshAssociatedFiles();
+      });
+    }
+  }
+
+  private async ensureKanbanMetadata(file: TFile) {
+    try {
+      const content = await this.app.vault.read(file);
+
+      // Check if file already has kanban metadata
+      if (content.includes('kanban-plugin')) {
+        return; // Already has kanban metadata
+      }
+
+      // Add kanban metadata to the file
+      let newContent = content;
+      if (content.startsWith('---')) {
+        // File has frontmatter, add to it
+        const frontmatterEnd = content.indexOf('---', 3);
+        if (frontmatterEnd !== -1) {
+          const beforeFrontmatter = content.substring(0, frontmatterEnd);
+          const afterFrontmatter = content.substring(frontmatterEnd);
+          newContent = beforeFrontmatter + 'kanban-plugin: board\n' + afterFrontmatter;
+        } else {
+          // Malformed frontmatter, add new frontmatter
+          newContent = '---\nkanban-plugin: board\n---\n\n' + content;
+        }
+      } else {
+        // No frontmatter, add it
+        newContent = '---\nkanban-plugin: board\n---\n\n' + content;
+      }
+
+      await this.app.vault.modify(file, newContent);
+    } catch (error) {
+      console.error('Error ensuring kanban metadata for file:', file.path, error);
+    }
   }
 
   cleanUp() {
     this.win = null;
     this.cleanupFns.forEach((fn) => fn());
     this.cleanupFns = [];
+  }
+}
+
+class FileSelectionModal extends Modal {
+  onSubmit: (file: TFile) => void;
+
+  constructor(app: App, onSubmit: (file: TFile) => void) {
+    super(app);
+    this.onSubmit = onSubmit;
+  }
+
+  onOpen() {
+    const { contentEl } = this;
+
+    contentEl.createEl('h2', { text: 'Select Kanban file' });
+
+    // Get all markdown files in the vault
+    const files = this.app.vault.getMarkdownFiles();
+    const kanbanFiles = files.filter((file) => file.name.endsWith('.md'));
+
+    // Create a searchable list
+    const inputEl = contentEl.createEl('input', {
+      type: 'text',
+      placeholder: 'Search for files...',
+    });
+
+    const listContainer = contentEl.createDiv({ cls: 'file-selection-list' });
+
+    const renderFiles = (filesToShow: TFile[]) => {
+      listContainer.empty();
+
+      filesToShow.forEach((file) => {
+        const fileEl = listContainer.createDiv({
+          cls: 'file-selection-item',
+          text: file.path,
+        });
+
+        fileEl.onclick = () => {
+          this.onSubmit(file);
+          this.close();
+        };
+      });
+    };
+
+    // Initial render
+    renderFiles(kanbanFiles);
+
+    // Search functionality
+    inputEl.oninput = () => {
+      const query = inputEl.value.toLowerCase();
+      const filtered = kanbanFiles.filter(
+        (file) =>
+          file.path.toLowerCase().includes(query) || file.basename.toLowerCase().includes(query)
+      );
+      renderFiles(filtered);
+    };
+
+    // Focus the input
+    inputEl.focus();
+  }
+
+  onClose() {
+    const { contentEl } = this;
+    contentEl.empty();
   }
 }
 

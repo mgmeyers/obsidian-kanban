@@ -130,7 +130,7 @@ const en = {
   'This will be used to separate the archived date/time from the title':
     'This will be used to separate the archived date/time from the title',
   'Archive date/time format': 'Archive date/time format',
-  'Kanban Plugin': 'Kanban Plugin',
+  'Kanban Plugin': 'Kanban Plus',
   'Tag click action': 'Tag click action',
   'Search Kanban Board': 'Search Kanban Board',
   'Search Obsidian Vault': 'Search Obsidian Vault',
@@ -142,6 +142,14 @@ const en = {
   'Inline Metadata': 'Inline Metadata',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.',
+  'File Format': 'File Format',
+  'Place board settings at beginning': 'Place board settings at beginning',
+  'When toggled, board-specific settings will be placed at the beginning of the file instead of at the end. This can make it easier to quickly edit board settings in markdown mode.':
+    'When toggled, board-specific settings will be placed at the beginning of the file instead of at the end. This can make it easier to quickly edit board settings in markdown mode.',
+  Integrations: 'Integrations',
+  'Enable Copy to Calendar': 'Enable Copy to Calendar',
+  'Enables the "Copy to calendar" feature in card context menus. Integrates with the Full Calendar plugin\'s "Full note" mode. Requires Full Calendar plugin to be installed and configured.\n\nConfiguration file location: .obsidian/plugins/obsidian-full-calendar/data.json':
+    'Enables the "Copy to calendar" feature in card context menus. Integrates with the Full Calendar plugin\'s "Full note" mode. Requires Full Calendar plugin to be installed and configured.\n\nConfiguration file location: .obsidian/plugins/obsidian-full-calendar/data.json',
   'Board Header Buttons': 'Board Header Buttons',
   'Calendar: first day of week': 'Calendar: first day of week',
   'Override which day is used as the start of the week':
@@ -236,6 +244,7 @@ const en = {
   'Move to top': 'Move to top',
   'Move to bottom': 'Move to bottom',
   'Move to list': 'Move to list',
+  'Copy to calendar': 'Copy to calendar',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Enter list title...',
@@ -274,6 +283,12 @@ const en = {
 
   // components/Editor/MarkdownEditor.tsx
   Submit: 'Submit',
+  'Associated Files': 'Associated Files',
+  'Link this board to other Kanban files to enable moving cards between them':
+    'Link this board to other Kanban files to enable moving cards between them',
+  'Add associated file': 'Add associated file',
+  'Remove file': 'Remove file',
+  'Move to file': 'Move to file',
 };
 
 export type Lang = typeof en;

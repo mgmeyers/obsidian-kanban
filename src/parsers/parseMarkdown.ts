@@ -62,6 +62,50 @@ function extractSettingsFooter(md: string) {
   }
 }
 
+/**
+ * Extracts kanban settings from the beginning of the markdown file
+ * Looks for %% kanban:settings blocks at the start (after frontmatter)
+ */
+function extractSettingsHeader(md: string) {
+  // Skip frontmatter if present
+  let startPos = 0;
+  if (md.startsWith('---')) {
+    const frontmatterEnd = md.indexOf('\n---', 3);
+    if (frontmatterEnd !== -1) {
+      startPos = frontmatterEnd + 4;
+    }
+  }
+  
+  // Look for kanban:settings block from the beginning
+  const searchText = md.slice(startPos);
+  const settingsStart = searchText.indexOf('%% kanban:settings');
+  
+  if (settingsStart === -1) {
+    return {};
+  }
+  
+  // Find the code block start (```)
+  const codeBlockStart = searchText.indexOf('```', settingsStart);
+  if (codeBlockStart === -1) {
+    return {};
+  }
+  
+  // Find the code block end
+  const codeBlockEnd = searchText.indexOf('```', codeBlockStart + 3);
+  if (codeBlockEnd === -1) {
+    return {};
+  }
+  
+  // Extract and parse the JSON settings
+  const settingsJson = searchText.slice(codeBlockStart + 3, codeBlockEnd).trim();
+  try {
+    return JSON.parse(settingsJson);
+  } catch (e) {
+    console.error('Error parsing kanban settings from header:', e);
+    return {};
+  }
+}
+
 function getExtensions(stateManager: StateManager) {
   return [
     gfmTaskListItem,
@@ -166,7 +210,13 @@ function getMdastExtensions(stateManager: StateManager) {
 
 export function parseMarkdown(stateManager: StateManager, md: string) {
   const mdFrontmatter = extractFrontmatter(md);
-  const mdSettings = extractSettingsFooter(md);
+  
+  // Try to extract settings from both header and footer
+  // Header takes precedence if both exist
+  const mdSettingsHeader = extractSettingsHeader(md);
+  const mdSettingsFooter = extractSettingsFooter(md);
+  const mdSettings = Object.keys(mdSettingsHeader).length > 0 ? mdSettingsHeader : mdSettingsFooter;
+  
   const settings = { ...mdSettings };
   const fileFrontmatter: Record<string, any> = {};
 

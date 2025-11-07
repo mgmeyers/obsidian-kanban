@@ -701,6 +701,39 @@ button.kanban-plugin__new-item-button {
   background: var(--background-primary);
 }
 
+/* Calendar color styling for cards */
+.kanban-plugin__item.has-calendar-color {
+  .kanban-plugin__item-content-wrapper {
+    background: var(--card-background-color) !important;
+    color: var(--card-color) !important;
+  }
+
+  .kanban-plugin__item-title-wrapper {
+    background: var(--card-background-color) !important;
+    color: var(--card-color) !important;
+  }
+
+  /* Ensure text inside is also properly colored */
+  .kanban-plugin__item-title {
+    color: var(--card-color) !important;
+  }
+
+  .kanban-plugin__item-markdown {
+    color: var(--card-color) !important;
+  }
+
+  /* Maintain proper text colors for links and other elements */
+  .kanban-plugin__item-markdown a {
+    color: var(--card-color) !important;
+    opacity: 0.8;
+    text-decoration: underline;
+  }
+
+  .kanban-plugin__item-markdown a:hover {
+    opacity: 1;
+  }
+}
+
 .kanban-plugin__item-title-wrapper {
   background: var(--background-primary);
   display: flex;
@@ -1477,6 +1510,92 @@ button.kanban-plugin__cancel-action-button {
   background: var(--background-secondary);
 }
 
+.kanban-plugin__calendar-picker {
+  position: absolute;
+  max-height: 250px;
+  overflow: auto;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: 0 2px 8px var(--background-modifier-box-shadow);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 14px;
+  z-index: var(--layer-menu);
+}
+
+.kanban-plugin__calendar-picker-empty {
+  padding: 12px;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.kanban-plugin__calendar-picker-item {
+  display: flex;
+  align-items: center;
+  cursor: var(--cursor);
+  line-height: 1;
+  padding-block: 8px;
+  padding-inline: 12px;
+
+  &:hover {
+    background: var(--background-secondary);
+  }
+}
+
+.kanban-plugin__calendar-color-circle {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-inline-end: 8px;
+  flex-shrink: 0;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.kanban-plugin__calendar-picker {
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  box-shadow: var(--shadow-s);
+  padding: 8px;
+  max-width: 250px;
+  z-index: var(--layer-popover);
+}
+
+.kanban-plugin__calendar-picker-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  gap: 8px;
+
+  &:hover {
+    background-color: var(--background-modifier-hover);
+  }
+}
+
+.kanban-plugin__calendar-color-circle {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(var(--mono-rgb-100), 0.1);
+}
+
+.kanban-plugin__calendar-name {
+  font-size: 13px;
+  color: var(--text-normal);
+  flex-grow: 1;
+}
+
+.kanban-plugin__calendar-picker-empty {
+  padding: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
 .kanban-plugin mark {
   background-color: var(--text-highlight-bg);
 }
@@ -1781,4 +1900,48 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   .kanban-plugin__date:hover {
     background-color: var(--date-background-color, rgba(var(--mono-rgb-100), 0.05));
   }
+}
+
+// File selection modal styles
+.file-selection-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+}
+
+.file-selection-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--background-modifier-border);
+
+  &:hover {
+    background-color: var(--background-modifier-hover);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+// Associated files settings styles
+.associated-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  background-color: var(--background-secondary);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.associated-file-name {
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+}
+
+.associated-file-remove {
+  padding: 4px 8px;
+  font-size: 0.8em;
 }
