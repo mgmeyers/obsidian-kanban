@@ -10,9 +10,9 @@
     "lint": "eslint ./src/**/*.{ts,tsx}",
     "lint:fix": "eslint ./src/**/*.{ts,tsx} --fix",
     "prettier": "prettier --write \"./src/**/*.{ts,tsx}\"",
-    "clean": "yarn prettier && yarn lint:fix",
+    "clean": "npm run prettier && npm run lint:fix",
     "rlnotes": "git log $(git describe --tags --abbrev=0)..HEAD --oneline > release-notes.md && git add release-notes.md",
-    "bump": "node version-bump.mjs && git add package.json manifest.json versions.json && yarn rlnotes",
+    "bump": "node version-bump.mjs && git add package.json manifest.json versions.json && npm run rlnotes",
     "release": "git commit -m $npm_package_version && git tag $npm_package_version && git push && git push --tags"
   },
   "keywords": [],
