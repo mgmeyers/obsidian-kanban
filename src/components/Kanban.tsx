@@ -14,6 +14,7 @@ import { t } from 'src/lang/helpers';
 import { DndScope } from '../dnd/components/Scope';
 import { getBoardModifiers } from '../helpers/boardModifiers';
 import { frontmatterKey } from '../parsers/common';
+import { BoardNotes } from './BoardNotes/BoardNotes';
 import { Icon } from './Icon/Icon';
 import { Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
@@ -261,6 +262,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                 </a>
               </div>
             )}
+            <BoardNotes notes={boardData.data.boardNotes} />
             {boardView === 'table' ? (
               <TableView boardData={boardData} stateManager={stateManager} />
             ) : (

@@ -100,6 +100,7 @@ export interface BoardData {
   frontmatter: Record<string, number | string | Array<number | string>>;
   archive: Item[];
   errors: ErrorReport[];
+  boardNotes?: string;
 }
 
 export type Item = Nestable<ItemData>;

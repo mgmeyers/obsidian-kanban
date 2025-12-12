@@ -246,6 +246,29 @@ export function astToUnhydratedBoard(
 ): Board {
   const lanes: Lane[] = [];
   const archive: Item[] = [];
+
+  // Extract content before the first heading as board notes
+  let boardNotes: string | undefined;
+  const firstHeadingIndex = root.children.findIndex((child) => child.type === 'heading');
+
+  if (firstHeadingIndex > 0) {
+    // There is content before the first heading
+    const preHeadingNodes = root.children.slice(0, firstHeadingIndex);
+    const firstNode = preHeadingNodes[0];
+    const lastNode = preHeadingNodes[preHeadingNodes.length - 1];
+
+    if (firstNode.position && lastNode.position) {
+      const start = firstNode.position.start.offset;
+      const end = lastNode.position.end.offset;
+      const notesContent = md.slice(start, end).trim();
+
+      // Only set boardNotes if there's actual content (not just whitespace or settings blocks)
+      if (notesContent && !notesContent.startsWith('%% kanban:settings')) {
+        boardNotes = notesContent;
+      }
+    }
+  }
+
   root.children.forEach((child, index) => {
     if (child.type === 'heading') {
       const isArchive = isArchiveLane(child, root.children, index);
@@ -328,6 +351,7 @@ export function astToUnhydratedBoard(
       archive,
       isSearching: false,
       errors: [],
+      boardNotes,
     },
   };
 }
@@ -447,5 +471,8 @@ export function boardToMd(board: Board) {
 
   const frontmatter = ['---', '', stringifyYaml(board.data.frontmatter), '---', '', ''].join('\n');
 
-  return frontmatter + lanes + archiveToMd(board.data.archive) + settingsToCodeblock(board);
+  // Add board notes after frontmatter if they exist
+  const notes = board.data.boardNotes ? board.data.boardNotes + '\n\n' : '';
+
+  return frontmatter + notes + lanes + archiveToMd(board.data.archive) + settingsToCodeblock(board);
 }

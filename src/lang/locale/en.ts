@@ -274,6 +274,13 @@ const en = {
 
   // components/Editor/MarkdownEditor.tsx
   Submit: 'Submit',
+
+  // components/BoardNotes/BoardNotes.tsx
+  Notes: 'Notes',
+  'Add board notes': 'Add board notes',
+  'Expand notes': 'Expand notes',
+  'Collapse notes': 'Collapse notes',
+  'Enter board notes...': 'Enter board notes...',
 };
 
 export type Lang = typeof en;

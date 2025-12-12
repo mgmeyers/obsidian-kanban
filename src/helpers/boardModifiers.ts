@@ -34,6 +34,7 @@ export interface BoardModifiers {
   updateItem: (path: Path, item: Item) => void;
   archiveItem: (path: Path) => void;
   duplicateEntity: (path: Path) => void;
+  updateBoardNotes: (notes: string | undefined) => void;
 }
 
 export function getBoardModifiers(view: KanbanView, stateManager: StateManager): BoardModifiers {
@@ -274,6 +275,18 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
         }
 
         return insertEntity(boardData, path, [entityWithNewID]);
+      });
+    },
+
+    updateBoardNotes: (notes: string | undefined) => {
+      stateManager.setState((boardData) => {
+        return update(boardData, {
+          data: {
+            boardNotes: {
+              $set: notes?.trim() || undefined,
+            },
+          },
+        });
       });
     },
   };

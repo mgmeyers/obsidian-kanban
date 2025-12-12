@@ -1782,3 +1782,165 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
     background-color: var(--date-background-color, rgba(var(--mono-rgb-100), 0.05));
   }
 }
+
+// Board Notes Styles
+.kanban-plugin__board-notes-empty {
+  padding-block: 8px;
+  padding-inline: 12px;
+}
+
+.kanban-plugin__board-notes-add-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-block: 6px;
+  padding-inline: 10px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px dashed var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  transition: all 150ms ease;
+
+  &:hover {
+    color: var(--text-normal);
+    border-color: var(--text-muted);
+    background: var(--background-secondary);
+  }
+
+  .kanban-plugin__icon {
+    display: flex;
+  }
+}
+
+.kanban-plugin__board-notes {
+  margin-block: 0 10px;
+  margin-inline: 12px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+}
+
+.kanban-plugin__board-notes-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-block: 6px;
+  padding-inline: 8px;
+  background: var(--background-secondary-alt);
+  border-bottom: 1px solid var(--background-modifier-border);
+  user-select: none;
+}
+
+.kanban-plugin__board-notes-collapsed .kanban-plugin__board-notes-header {
+  border-bottom: none;
+}
+
+.kanban-plugin__board-notes-collapse-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-normal);
+    background: var(--background-modifier-hover);
+  }
+
+  .kanban-plugin__icon {
+    display: flex;
+  }
+}
+
+.kanban-plugin__board-notes-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kanban-plugin__board-notes-content {
+  padding: 10px;
+}
+
+.kanban-plugin__board-notes-preview {
+  cursor: text;
+  min-height: 1.5em;
+
+  &:hover {
+    background: var(--background-primary-alt);
+    border-radius: var(--radius-s);
+  }
+
+  .kanban-plugin__markdown-preview-wrapper {
+    --font-text-size: 0.875rem;
+    --line-height-normal: var(--line-height-tight);
+  }
+}
+
+.kanban-plugin__board-notes-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kanban-plugin__board-notes-input {
+  --font-text-size: 0.875rem;
+
+  min-height: 60px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 8px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+
+  &:focus-within {
+    border-color: var(--background-modifier-border-focus);
+    outline: 1px solid var(--background-modifier-border-focus);
+  }
+}
+
+.kanban-plugin__board-notes-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.kanban-plugin__board-notes-save-button,
+.kanban-plugin__board-notes-cancel-button {
+  padding-block: 4px;
+  padding-inline: 10px;
+  font-size: 0.75rem;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+}
+
+.kanban-plugin__board-notes-save-button {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+
+  &:hover {
+    background: var(--interactive-accent-hover);
+  }
+}
+
+.kanban-plugin__board-notes-cancel-button {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--background-modifier-border);
+
+  &:hover {
+    color: var(--text-normal);
+    background: var(--background-modifier-hover);
+  }
+}
