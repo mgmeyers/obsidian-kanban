@@ -184,6 +184,10 @@ export class KanbanView extends TextFileView implements HoverParent {
   onunload(): void {
     super.onunload();
 
+    // Force save all editing items before view closes
+    const event = new CustomEvent('save-all-editing-items');
+    this.containerEl.dispatchEvent(event);
+
     this.previewQueue.clear();
     this.previewCache.clear();
     this.emitter.emit('queueEmpty');
