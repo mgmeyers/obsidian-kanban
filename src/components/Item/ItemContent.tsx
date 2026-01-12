@@ -189,7 +189,7 @@ export const ItemContent = memo(function ItemContent({
   showMetadata = true,
   isStatic,
 }: ItemContentProps) {
-  const { stateManager, filePath, boardModifiers } = useContext(KanbanContext);
+  const { stateManager, filePath, boardModifiers, view } = useContext(KanbanContext);
   const getDateColor = useGetDateColorFn(stateManager);
   const titleRef = useRef<string | null>(null);
 
@@ -216,6 +216,23 @@ export const ItemContent = memo(function ItemContent({
       setEditState(EditingState.cancel);
     }
   }, [setEditState]);
+
+  // Listen for global save event (triggered when view closes, tab changes, etc)
+  // Must be synchronous to ensure data is saved before view is unloaded
+  useEffect(() => {
+    const handleSaveAll = () => {
+      if (titleRef.current !== null && titleRef.current.trim()) {
+        // Save directly and synchronously, don't use setEditState (which is async)
+        boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRef.current));
+        titleRef.current = null;
+      }
+    };
+
+    view?.containerEl?.addEventListener('save-all-editing-items', handleSaveAll);
+    return () => {
+      view?.containerEl?.removeEventListener('save-all-editing-items', handleSaveAll);
+    };
+  }, [view, stateManager, boardModifiers, item, path]);
 
   const clickOutsideRef = useOnclickOutside(handleClickOutside, {
     ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],

@@ -1,5 +1,5 @@
 import { EditorView } from '@codemirror/view';
-import { Dispatch, StateUpdater, useContext, useRef } from 'preact/hooks';
+import { Dispatch, StateUpdater, useContext, useEffect, useRef } from 'preact/hooks';
 import useOnclickOutside from 'react-cool-onclickoutside';
 import { t } from 'src/lang/helpers';
 
@@ -17,7 +17,7 @@ interface ItemFormProps {
 }
 
 export function ItemForm({ addItems, editState, setEditState, hideButton }: ItemFormProps) {
-  const { stateManager } = useContext(KanbanContext);
+  const { stateManager, view } = useContext(KanbanContext);
   const editorRef = useRef<EditorView>();
 
   const createItem = (title: string) => {
@@ -51,6 +51,25 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
       clear();
     }
   };
+
+  // Listen for global save event (triggered when view closes, tab changes, etc)
+  useEffect(() => {
+    const handleSaveAll = () => {
+      const cm = editorRef.current;
+      if (cm) {
+        const content = cm.state.doc.toString().trim();
+        if (content) {
+          // If there is content, save the card
+          createItem(content);
+        }
+      }
+    };
+
+    view?.containerEl?.addEventListener('save-all-editing-items', handleSaveAll);
+    return () => {
+      view?.containerEl?.removeEventListener('save-all-editing-items', handleSaveAll);
+    };
+  }, [view]);
 
   const clickOutsideRef = useOnclickOutside(handleClickOutside, {
     ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],

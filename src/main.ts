@@ -78,6 +78,15 @@ export default class KanbanPlugin extends Plugin {
   }
 
   onunload() {
+    // Force save all editing items from all Kanban views before closing
+    this.app.workspace.getLeavesOfType(kanbanViewType).forEach((leaf) => {
+      const view = leaf.view as KanbanView;
+      if (view?.containerEl) {
+        const event = new CustomEvent('save-all-editing-items');
+        view.containerEl.dispatchEvent(event);
+      }
+    });
+
     this.MarkdownEditor = null;
     this.windowRegistry.forEach((reg, win) => {
       reg.viewStateReceivers.forEach((fn) => fn([]));
@@ -779,17 +788,28 @@ export default class KanbanPlugin extends Plugin {
 
         setViewState(next) {
           return function (state: ViewState, ...rest: any[]) {
+            // Check if we're leaving a Kanban view to switch to another type
+            if (
+              self._loaded &&
+              this.view instanceof KanbanView &&
+              state.type !== kanbanViewType
+            ) {
+              // Force save all editing items before switching views
+              const event = new CustomEvent('save-all-editing-items');
+              (this.view as KanbanView).containerEl.dispatchEvent(event);
+            }
+
             if (
               // Don't force kanban mode during shutdown
               self._loaded &&
               // If we have a markdown file
               state.type === 'markdown' &&
-              state.state?.file &&
+              (state.state as any)?.file &&
               // And the current mode of the file is not set to markdown
-              self.kanbanFileModes[this.id || state.state.file] !== 'markdown'
+              self.kanbanFileModes[this.id || (state.state as any).file] !== 'markdown'
             ) {
               // Then check for the kanban frontMatterKey
-              const cache = self.app.metadataCache.getCache(state.state.file);
+              const cache = self.app.metadataCache.getCache((state.state as any).file);
 
               if (cache?.frontmatter && cache.frontmatter[frontmatterKey]) {
                 // If we have it, force the view type to kanban
@@ -798,7 +818,7 @@ export default class KanbanPlugin extends Plugin {
                   type: kanbanViewType,
                 };
 
-                self.kanbanFileModes[state.state.file] = kanbanViewType;
+                self.kanbanFileModes[(state.state as any).file] = kanbanViewType;
 
                 return next.apply(this, [newState, ...rest]);
               }
