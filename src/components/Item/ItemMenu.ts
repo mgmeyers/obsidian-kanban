@@ -5,9 +5,15 @@ import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { moveEntity } from 'src/dnd/util/data';
 import { t } from 'src/lang/helpers';
+import { getTaskStatusDone } from 'src/parsers/helpers/inlineMetadata';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
-import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
+import {
+  applyTemplate,
+  escapeRegExpStr,
+  generateInstanceId,
+  maybeCompleteForMove,
+} from '../helpers';
 import { EditState, Item } from '../types';
 import {
   constructDatePicker,
@@ -130,9 +136,13 @@ export function useItemMenu({
             .setTitle(t('Split card'))
             .onClick(async () => {
               const titles = item.data.titleRaw.split(/[\r\n]+/g).map((t) => t.trim());
+              const lane = stateManager.state.children[path[0]];
+              const checkChar =
+                lane.data.autoSetTaskSymbol ||
+                (lane.data.shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
               const newItems = await Promise.all(
                 titles.map((title) => {
-                  return stateManager.getNewItem(title, ' ');
+                  return stateManager.getNewItem(title, checkChar);
                 })
               );
 
@@ -150,19 +160,26 @@ export function useItemMenu({
         .addItem((i) => {
           i.setIcon('lucide-list-start')
             .setTitle(t('Insert card before'))
-            .onClick(() =>
-              boardModifiers.insertItems(path, [stateManager.getNewItem('', ' ', true)])
-            );
+            .onClick(() => {
+              const lane = stateManager.state.children[path[0]];
+              const checkChar =
+                lane.data.autoSetTaskSymbol ||
+                (lane.data.shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
+              boardModifiers.insertItems(path, [stateManager.getNewItem('', checkChar, true)]);
+            });
         })
         .addItem((i) => {
           i.setIcon('lucide-list-end')
             .setTitle(t('Insert card after'))
             .onClick(() => {
               const newPath = [...path];
-
               newPath[newPath.length - 1] = newPath[newPath.length - 1] + 1;
 
-              boardModifiers.insertItems(newPath, [stateManager.getNewItem('', ' ', true)]);
+              const lane = stateManager.state.children[path[0]];
+              const checkChar =
+                lane.data.autoSetTaskSymbol ||
+                (lane.data.shouldMarkItemsComplete ? getTaskStatusDone() : ' ');
+              boardModifiers.insertItems(newPath, [stateManager.getNewItem('', checkChar, true)]);
             });
         })
         .addItem((i) => {
@@ -269,15 +286,39 @@ export function useItemMenu({
         const lanes = stateManager.state.children;
         if (lanes.length <= 1) return;
         for (let i = 0, len = lanes.length; i < len; i++) {
-          menu.addItem((item) =>
-            item
+          menu.addItem((itemMenu) =>
+            itemMenu
               .setIcon('lucide-square-kanban')
               .setChecked(path[0] === i)
               .setTitle(lanes[i].data.title)
               .onClick(() => {
                 if (path[0] === i) return;
                 stateManager.setState((boardData) => {
-                  return moveEntity(boardData, path, [i, 0]);
+                  const entity = boardData.children[path[0]].children[path[1]];
+                  const destinationLane = boardData.children[i];
+                  const { next } = maybeCompleteForMove(
+                    stateManager,
+                    boardData,
+                    path,
+                    stateManager,
+                    boardData,
+                    [i, 0],
+                    entity
+                  );
+                  const removed = update(boardData, {
+                    children: {
+                      [path[0]]: {
+                        children: { $splice: [[path[1], 1]] },
+                      },
+                    },
+                  });
+                  return update(removed, {
+                    children: {
+                      [i]: {
+                        children: { $splice: [[0, 0, next]] },
+                      },
+                    },
+                  });
                 });
               })
           );

@@ -16,7 +16,7 @@ import { frontmatterKey } from 'src/parsers/common';
 
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
-import { EditState, EditingState, Item, isEditing } from '../types';
+import { EditState, EditingState, Item, Lane, isEditing } from '../types';
 import { ItemCheckbox } from './ItemCheckbox';
 import { ItemContent } from './ItemContent';
 import { useItemMenu } from './ItemMenu';
@@ -29,6 +29,7 @@ export interface DraggableItemProps {
   itemIndex: number;
   isStatic?: boolean;
   shouldMarkItemsComplete?: boolean;
+  lane?: Lane;
 }
 
 export interface ItemInnerProps {
@@ -142,12 +143,12 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
   const measureRef = useRef<HTMLDivElement>(null);
   const search = useContext(SearchContext);
 
-  const { itemIndex, ...innerProps } = props;
+  const { itemIndex, lane, ...innerProps } = props;
 
   const bindHandle = useDragHandle(measureRef, measureRef);
 
   const isMatch = search?.query ? innerProps.item.data.titleSearch.includes(search.query) : false;
-  const classModifiers: string[] = getItemClassModifiers(innerProps.item);
+  const classModifiers: string[] = getItemClassModifiers(innerProps.item, lane);
 
   return (
     <div
@@ -185,9 +186,15 @@ interface ItemsProps {
   isStatic?: boolean;
   items: Item[];
   shouldMarkItemsComplete: boolean;
+  lane?: Lane;
 }
 
-export const Items = memo(function Items({ isStatic, items, shouldMarkItemsComplete }: ItemsProps) {
+export const Items = memo(function Items({
+  isStatic,
+  items,
+  shouldMarkItemsComplete,
+  lane,
+}: ItemsProps) {
   const search = useContext(SearchContext);
   const { view } = useContext(KanbanContext);
   const boardView = view.useViewState(frontmatterKey);
@@ -202,6 +209,7 @@ export const Items = memo(function Items({ isStatic, items, shouldMarkItemsCompl
             itemIndex={i}
             shouldMarkItemsComplete={shouldMarkItemsComplete}
             isStatic={isStatic}
+            lane={lane}
           />
         );
       })}

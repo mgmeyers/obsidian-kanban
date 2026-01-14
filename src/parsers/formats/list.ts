@@ -237,6 +237,30 @@ function isArchiveLane(child: Content, children: Content[], currentIndex: number
   return prev && prev.type === 'thematicBreak';
 }
 
+function parseLaneExtra(str: string) {
+  const obsidianMatch = str.match(/%%\s*kanban-column:\s*symbol=(.+?)\s*%%/);
+  if (obsidianMatch) {
+    return { autoSetTaskSymbol: obsidianMatch[1].trim() };
+  }
+
+  return {};
+}
+
+function findColumnConfigFromNode(node: any): string | null {
+  if (node.type === 'html' && node.value) {
+    return node.value;
+  }
+
+  if (node.children) {
+    for (const child of node.children) {
+      const result = findColumnConfigFromNode(child);
+      if (result) return result;
+    }
+  }
+
+  return null;
+}
+
 export function astToUnhydratedBoard(
   stateManager: StateManager,
   settings: KanbanSettings,
@@ -253,23 +277,50 @@ export function astToUnhydratedBoard(
       const title = getStringFromBoundary(md, headingBoundary);
 
       let shouldMarkItemsComplete = false;
+      let autoSetTaskSymbol;
 
-      const list = getNextOfType(root.children, index, 'list', (child) => {
-        if (child.type === 'heading') return false;
+      for (let i = index + 1; i < root.children.length; i++) {
+        const nextChild = root.children[i];
+        if (nextChild.type === 'heading') break;
 
-        if (child.type === 'paragraph') {
-          const childStr = toString(child);
+        if (nextChild.type === 'paragraph') {
+          const paraStr = toString(nextChild);
 
-          if (childStr.startsWith('%% kanban:settings')) {
-            return false;
+          const extra = parseLaneExtra(paraStr);
+          if (extra.autoSetTaskSymbol) {
+            autoSetTaskSymbol = extra.autoSetTaskSymbol;
           }
 
-          if (childStr === t('Complete')) {
+          if (paraStr === t('Complete')) {
             shouldMarkItemsComplete = true;
-            return true;
           }
         }
 
+        if (nextChild.type === 'html') {
+          const commentStr = nextChild.value || '';
+          const extra = parseLaneExtra(commentStr);
+          if (extra.autoSetTaskSymbol) {
+            autoSetTaskSymbol = extra.autoSetTaskSymbol;
+          }
+        }
+
+        const commentStr = findColumnConfigFromNode(nextChild);
+        if (commentStr) {
+          const extra = parseLaneExtra(commentStr);
+          if (extra.autoSetTaskSymbol) {
+            autoSetTaskSymbol = extra.autoSetTaskSymbol;
+          }
+        }
+      }
+
+      const list = getNextOfType(root.children, index, 'list', (child) => {
+        if (child.type === 'heading') return false;
+        if (child.type === 'paragraph') {
+          const childStr = toString(child);
+          if (childStr.startsWith('%% kanban:settings')) {
+            return false;
+          }
+        }
         return true;
       });
 
@@ -287,15 +338,18 @@ export function astToUnhydratedBoard(
         return;
       }
 
+      const laneData = {
+        ...parseLaneTitle(title),
+        shouldMarkItemsComplete,
+        autoSetTaskSymbol,
+      };
+
       if (!list) {
         lanes.push({
           ...LaneTemplate,
           children: [],
           id: generateInstanceId(),
-          data: {
-            ...parseLaneTitle(title),
-            shouldMarkItemsComplete,
-          },
+          data: laneData,
         });
       } else {
         lanes.push({
@@ -309,10 +363,7 @@ export function astToUnhydratedBoard(
             };
           }),
           id: generateInstanceId(),
-          data: {
-            ...parseLaneTitle(title),
-            shouldMarkItemsComplete,
-          },
+          data: laneData,
         });
       }
     }
@@ -346,7 +397,7 @@ export function updateItemContent(stateManager: StateManager, oldItem: Item, new
   try {
     hydrateItem(stateManager, newItem);
   } catch (e) {
-    console.error(e);
+    stateManager.setError(e);
   }
 
   return newItem;
@@ -373,7 +424,7 @@ export function newItem(
   try {
     hydrateItem(stateManager, newItem);
   } catch (e) {
-    console.error(e);
+    stateManager.setError(e);
   }
 
   return newItem;
@@ -409,7 +460,10 @@ function laneToMd(lane: Lane) {
 
   lines.push(`## ${replaceNewLines(laneTitleWithMaxItems(lane.data.title, lane.data.maxItems))}`);
 
-  lines.push('');
+  if (lane.data.autoSetTaskSymbol) {
+    lines.push(`%% kanban-column: symbol=${lane.data.autoSetTaskSymbol} %%`);
+    lines.push('');
+  }
 
   if (lane.data.shouldMarkItemsComplete) {
     lines.push(completeString);

@@ -45,52 +45,51 @@ export function maybeCompleteForMove(
   const sourceParent = getEntityFromPath(sourceBoard, sourcePath.slice(0, -1));
   const destinationParent = getEntityFromPath(destinationBoard, destinationPath.slice(0, -1));
 
+  const autoSymbol = destinationParent?.data?.autoSetTaskSymbol;
   const oldShouldComplete = sourceParent?.data?.shouldMarkItemsComplete;
   const newShouldComplete = destinationParent?.data?.shouldMarkItemsComplete;
 
-  // If neither the old or new lane set it complete, leave it alone
-  if (!oldShouldComplete && !newShouldComplete) return { next: item };
+  let currentItem = item;
+  let replacement: Item | undefined;
 
-  const isComplete = item.data.checked && item.data.checkChar === getTaskStatusDone();
-
-  // If it already matches the new lane, leave it alone
-  if (newShouldComplete === isComplete) return { next: item };
-
-  if (newShouldComplete) {
-    item = update(item, { data: { checkChar: { $set: getTaskStatusPreDone() } } });
-  }
-
-  const updates = toggleTask(item, destinationStateManager.file);
-
-  if (updates) {
-    const [itemStrings, checkChars, thisIndex] = updates;
-    let next: Item;
-    let replacement: Item;
-
-    itemStrings.forEach((str, i) => {
-      if (i === thisIndex) {
-        next = destinationStateManager.getNewItem(str, checkChars[i]);
-      } else {
-        replacement = destinationStateManager.getNewItem(str, checkChars[i]);
-      }
+  if (oldShouldComplete !== newShouldComplete) {
+    const statusDone = getTaskStatusDone();
+    const statusPreDone = getTaskStatusPreDone();
+    // Try to use Tasks plugin for state transition first
+    currentItem = update(currentItem, {
+      data: {
+        checkChar: { $set: oldShouldComplete ? statusDone : statusPreDone },
+        checked: { $set: oldShouldComplete },
+      },
     });
 
-    return { next, replacement };
+    const updates = toggleTask(currentItem, destinationStateManager.file);
+    if (updates) {
+      // Tasks plugin successfully handled state transition
+      const [itemStrings, checkChars, thisIndex] = updates;
+      itemStrings.forEach((str, i) => {
+        if (i === thisIndex) {
+          currentItem = destinationStateManager.getNewItem(str, checkChars[i]);
+        } else {
+          replacement = destinationStateManager.getNewItem(str, checkChars[i]);
+        }
+      });
+    } else {
+      // Tasks plugin not available, manually set correct state
+      currentItem = update(currentItem, {
+        data: {
+          checkChar: { $set: newShouldComplete ? statusDone : statusPreDone },
+          checked: { $set: newShouldComplete },
+        },
+      });
+    }
   }
 
-  // It's different, update it
-  return {
-    next: update(item, {
-      data: {
-        checked: {
-          $set: newShouldComplete,
-        },
-        checkChar: {
-          $set: newShouldComplete ? getTaskStatusDone() : ' ',
-        },
-      },
-    }),
-  };
+  if (autoSymbol) {
+    currentItem = destinationStateManager.getNewItem(currentItem.data.titleRaw, autoSymbol);
+  }
+
+  return { next: currentItem, replacement };
 }
 
 export function useIMEInputProps() {
@@ -161,7 +160,6 @@ export async function applyTemplate(stateManager: StateManager, templatePath?: s
         templateContent
       );
     } catch (e) {
-      console.error(e);
       stateManager.setError(e);
     }
   }

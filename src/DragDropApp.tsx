@@ -53,38 +53,31 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
 
         try {
           const items: Item[] = data.content.map((title: string) => {
-            let item = stateManager.getNewItem(title, ' ');
+            const autoSymbol = destinationParent?.data?.autoSetTaskSymbol;
             const isComplete = !!destinationParent?.data?.shouldMarkItemsComplete;
 
-            if (isComplete) {
-              item = update(item, { data: { checkChar: { $set: getTaskStatusPreDone() } } });
-              const updates = toggleTask(item, stateManager.file);
+            // Determine the final target state
+            const targetCheckChar = autoSymbol || (isComplete ? getTaskStatusDone() : ' ');
+
+            // If we need completion state and no autoSymbol, use toggleTask for timestamp
+            if (isComplete && !autoSymbol) {
+              // Start with incomplete state, then toggle to get completion timestamp
+              const incompleteItem = stateManager.getNewItem(title, getTaskStatusPreDone());
+              const updates = toggleTask(incompleteItem, stateManager.file);
+
               if (updates) {
                 const [itemStrings, checkChars, thisIndex] = updates;
-                const nextItem = itemStrings[thisIndex];
-                const checkChar = checkChars[thisIndex];
-                return stateManager.getNewItem(nextItem, checkChar);
+                return stateManager.getNewItem(itemStrings[thisIndex], checkChars[thisIndex]);
               }
             }
 
-            return update(item, {
-              data: {
-                checked: {
-                  $set: !!destinationParent?.data?.shouldMarkItemsComplete,
-                },
-                checkChar: {
-                  $set: destinationParent?.data?.shouldMarkItemsComplete
-                    ? getTaskStatusDone()
-                    : ' ',
-                },
-              },
-            });
+            // For other cases, create item with target state directly
+            return stateManager.getNewItem(title, targetCheckChar);
           });
 
           return stateManager.setState((board) => insertEntity(board, dropPath, items));
         } catch (e) {
           stateManager.setError(e);
-          console.error(e);
         }
 
         return;

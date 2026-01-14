@@ -34,6 +34,23 @@ export function LaneSettings({ lane, lanePath, editState }: LaneSettingsProps) {
           className={`checkbox-container ${lane.data.shouldMarkItemsComplete ? 'is-enabled' : ''}`}
         />
       </div>
+      <div className={c('input-wrapper')}>
+        <div className={c('checkbox-label')}>{t('Task symbol')}</div>
+        <input
+          type="text"
+          value={lane.data.autoSetTaskSymbol || ''}
+          maxLength={2}
+          placeholder={t('Task symbol placeholder')}
+          onInput={(e) => {
+            const value = (e.target as HTMLInputElement).value;
+            boardModifiers.updateLane(
+              lanePath,
+              update(lane, { data: { autoSetTaskSymbol: { $set: value } } })
+            );
+          }}
+          className={c('lane-symbol-input')}
+        />
+      </div>
     </div>
   );
 }
