@@ -17,6 +17,7 @@ export interface LaneData {
   shouldMarkItemsComplete?: boolean;
   title: string;
   maxItems?: number;
+  query?: string;
   dom?: HTMLDivElement;
   forceEditMode?: boolean;
   sorted?: LaneSort | string;
@@ -87,6 +88,12 @@ export interface ItemData {
   titleSearchRaw: string;
   metadata: ItemMetadata;
   forceEditMode?: boolean;
+  fromQuery?: boolean;
+  querySource?: {
+    path: string;
+    line: number;
+    blockId?: string;
+  };
 }
 
 export interface ErrorReport {

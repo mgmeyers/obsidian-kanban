@@ -11,6 +11,7 @@ import {
   getTaskStatusPreDone,
   toggleTask,
 } from 'src/parsers/helpers/inlineMetadata';
+import { updateItemForQuery } from 'src/parsers/helpers/taskQuery';
 
 import { SearchContextProps } from './context';
 import { Board, DataKey, DateColor, Item, Lane, PageData, TagColor } from './types';
@@ -42,11 +43,16 @@ export function maybeCompleteForMove(
   destinationPath: Path,
   item: Item
 ): { next: Item; replacement?: Item } {
-  const sourceParent = getEntityFromPath(sourceBoard, sourcePath.slice(0, -1));
-  const destinationParent = getEntityFromPath(destinationBoard, destinationPath.slice(0, -1));
+  const sourceParent = getEntityFromPath(sourceBoard, sourcePath.slice(0, -1)) as Lane;
+  const destinationParent = getEntityFromPath(destinationBoard, destinationPath.slice(0, -1)) as Lane;
 
   const oldShouldComplete = sourceParent?.data?.shouldMarkItemsComplete;
   const newShouldComplete = destinationParent?.data?.shouldMarkItemsComplete;
+
+  // Check if moving to a query lane and update item for query if needed
+  if (destinationParent?.data?.query) {
+    item = updateItemForQuery(item, destinationParent.data.query);
+  }
 
   // If neither the old or new lane set it complete, leave it alone
   if (!oldShouldComplete && !newShouldComplete) return { next: item };

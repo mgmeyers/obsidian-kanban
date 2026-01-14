@@ -407,7 +407,14 @@ function itemToMd(item: Item) {
 function laneToMd(lane: Lane) {
   const lines: string[] = [];
 
-  lines.push(`## ${replaceNewLines(laneTitleWithMaxItems(lane.data.title, lane.data.maxItems))}`);
+  let title = replaceNewLines(laneTitleWithMaxItems(lane.data.title, lane.data.maxItems));
+  
+  // Add query block if lane has a query
+  if (lane.data.query) {
+    title += `\n\`\`\`tasks\n${lane.data.query}\n\`\`\``;
+  }
+
+  lines.push(`## ${title}`);
 
   lines.push('');
 
@@ -415,7 +422,12 @@ function laneToMd(lane: Lane) {
     lines.push(completeString);
   }
 
-  lane.children.forEach((item) => {
+  // Only serialize non-query items to avoid duplicating query results
+  const itemsToSerialize = lane.children.filter((item: Item) => 
+    !(item.data as any)?.fromQuery
+  );
+
+  itemsToSerialize.forEach((item) => {
     lines.push(itemToMd(item));
   });
 
