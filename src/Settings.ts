@@ -32,7 +32,7 @@ import {
 import { getParentWindow } from './dnd/util/getWindow';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
-import { frontmatterKey } from './parsers/common';
+import { frontmatterKey, kanbanDataHeadingKey } from './parsers/common';
 import {
   createSearchSelect,
   defaultDateTrigger,
@@ -90,6 +90,7 @@ export interface KanbanSettings {
   'tag-sort'?: TagSort[];
   'time-format'?: string;
   'time-trigger'?: string;
+  [kanbanDataHeadingKey]?: string;
 }
 
 export interface KanbanViewSettings {
@@ -469,6 +470,34 @@ export class SettingsManager {
           manager: this,
         })
       );
+
+    new Setting(contentEl)
+      .setName(t('Kanban Data Heading'))
+      .setDesc(
+        t(
+          local ?
+          'When set for specific board, all Kanban data will be organized under this heading in the markdown file, enabling you to include other data alongside it in the same note.' :
+          'Specifies the "kanban-data-heading" frontmatter value used when executing the "Kanban: Convert markdown note to Kanban" command, allowing you to include other information in the same note alongside the Kanban data.'
+        )
+      )
+      .addText((text) => {
+        const [value, _] = this.getSetting(kanbanDataHeadingKey, local);
+
+        text.inputEl.placeholder = '';
+        text.inputEl.value = value ? value.toString() : '';
+
+        text.onChange((val) => {
+          if (val) {
+            this.applySettingsUpdate({
+              [kanbanDataHeadingKey]: {
+                $set: val
+              },
+            });
+
+            return;
+          }
+        });
+      });
 
     contentEl.createEl('h4', { text: t('Tags') });
 

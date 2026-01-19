@@ -19,7 +19,7 @@ import { DateSuggest, TimeSuggest } from './components/Editor/suggest';
 import { getParentWindow } from './dnd/util/getWindow';
 import { hasFrontmatterKey } from './helpers';
 import { t } from './lang/helpers';
-import { basicFrontmatter, frontmatterKey } from './parsers/common';
+import { basicFrontmatter, frontmatterKey, kanbanDataHeadingKey } from './parsers/common';
 
 interface WindowRegistry {
   viewMap: Map<string, KanbanView>;
@@ -642,6 +642,52 @@ export default class KanbanPlugin extends Plugin {
             })
             .catch((e) => console.error(e));
         }
+      },
+    });
+
+    this.addCommand({
+      id: 'convert-nonempty-to-kanban',
+      name: t('Convert markdown note to Kanban'),
+      checkCallback: (checking) => {
+        const activeView = app.workspace.getActiveViewOfType(MarkdownView);
+
+        if (!activeView) return false;
+
+        if (checking) {
+          return !hasFrontmatterKey(activeView.file);
+        }
+
+        const file = activeView.file;
+
+        app.vault.read(file).then((content) => {
+          let updatedContent = content;
+          const kanbanDataHeadingValue = this.settings[kanbanDataHeadingKey] || 'Kanban Data';
+
+          if (!content.startsWith('---')) {
+            updatedContent = `---
+${frontmatterKey}: board
+${kanbanDataHeadingKey}: "${kanbanDataHeadingValue}"
+---
+${content}`;
+          } else {
+            const frontmatterEnd = content.indexOf('---', 3) + 3;
+            const existingFrontmatter = content.slice(0, frontmatterEnd);
+            const updatedFrontmatter = existingFrontmatter
+              .replace(/---/, `---\n${frontmatterKey}: board\n${kanbanDataHeadingKey}: "${kanbanDataHeadingValue}"`);
+            updatedContent = updatedFrontmatter + content.slice(frontmatterEnd);
+          }
+
+          if (!content.trim().endsWith(`# ${kanbanDataHeadingValue}`)) {
+            updatedContent += `\n\n# ${kanbanDataHeadingValue}\n`;
+          }
+
+          app.vault
+            .modify(file, updatedContent)
+            .then(() => {
+              this.setKanbanView(activeView.leaf);
+            })
+            .catch((e) => console.error(e));
+        });
       },
     });
 

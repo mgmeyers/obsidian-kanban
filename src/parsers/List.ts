@@ -40,13 +40,13 @@ export class ListFormat implements BaseFormat {
     return updateItemContent(this.stateManager, item, content);
   }
 
-  boardToMd(board: Board) {
-    return boardToMd(board);
+  boardToMd(board: Board, originalData?: string) {
+    return boardToMd(board, this.stateManager, originalData);
   }
 
   mdToBoard(md: string) {
-    const { ast, settings, frontmatter } = parseMarkdown(this.stateManager, md);
-    const newBoard = astToUnhydratedBoard(this.stateManager, settings, frontmatter, ast, md);
+    const { ast, settings, frontmatter, operationalMd } = parseMarkdown(this.stateManager, md);
+    const newBoard = astToUnhydratedBoard(this.stateManager, settings, frontmatter, ast, operationalMd);
     const { state } = this.stateManager;
     const dv = getAPI();
 
