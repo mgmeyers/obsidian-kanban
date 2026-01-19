@@ -3,6 +3,7 @@ import update from 'immutability-helper';
 import { JSX, createPortal, memo, useCallback, useMemo } from 'preact/compat';
 
 import { KanbanView } from './KanbanView';
+import { ItemCollapseState } from './Settings';
 import { DraggableItem } from './components/Item/Item';
 import { DraggableLane } from './components/Lane/Lane';
 import { KanbanContext } from './components/context';
@@ -11,13 +12,7 @@ import { Board, DataTypes, Item, Lane } from './components/types';
 import { DndContext } from './dnd/components/DndContext';
 import { DragOverlay } from './dnd/components/DragOverlay';
 import { Entity, Nestable } from './dnd/types';
-import {
-  getEntityFromPath,
-  insertEntity,
-  moveEntity,
-  removeEntity,
-  updateEntity,
-} from './dnd/util/data';
+import { getEntityFromPath, insertEntity, moveEntity, removeEntity } from './dnd/util/data';
 import { getBoardModifiers } from './helpers/boardModifiers';
 import KanbanPlugin from './main';
 import { frontmatterKey } from './parsers/common';
@@ -152,36 +147,67 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
 
             if (from < to) to -= 1;
 
-            const collapsedState = view.getViewState('list-collapse');
-            const op = (collapsedState: boolean[]) => {
-              const newState = [...collapsedState];
+            const collapseStateLanes = view.getViewState('list-collapse');
+            const opLanes = (collapseState: boolean[]) => {
+              const newState = [...collapseState];
               newState.splice(to, 0, newState.splice(from, 1)[0]);
               return newState;
             };
+            view.setViewState('list-collapse', undefined, opLanes);
 
-            view.setViewState('list-collapse', undefined, op);
+            const collapseStateItems = view.getViewState('item-collapse');
+            const opItems = (collapseState: ItemCollapseState) => {
+              const newState = collapseState.map((inner) => [...inner]);
+              newState.splice(to, 0, newState.splice(from, 1)[0]);
+              return newState;
+            };
+            view.setViewState('item-collapse', undefined, opItems);
 
             return update<Board>(newBoard, {
-              data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
+              data: {
+                settings: {
+                  'list-collapse': { $set: opLanes(collapseStateLanes) },
+                  'item-collapse': { $set: opItems(collapseStateItems) },
+                },
+              },
             });
           }
 
-          // Remove sorting in the destination lane
-          const destinationParentPath = dropPath.slice(0, -1);
-          const destinationParent = getEntityFromPath(board, destinationParentPath);
+          if (entity.type === DataTypes.Item) {
+            const [fromLane, fromItem] = dragPath;
+            const [toLane, toItem] = dropPath;
 
-          if (destinationParent?.data?.sorted !== undefined) {
-            return updateEntity(newBoard, destinationParentPath, {
+            const collapseState = view.getViewState('item-collapse');
+            const op = (collapseState: ItemCollapseState) => {
+              const newState = collapseState.map((inner) => [...inner]);
+              newState[toLane].splice(toItem, 0, newState[fromLane].splice(fromItem, 1)[0]);
+              return newState;
+            };
+            view.setViewState('item-collapse', undefined, op);
+
+            // Remove sorting in the destination lane
+            const destinationLanePath = dropPath.slice(0, -1);
+            const destinationLane = getEntityFromPath(board, destinationLanePath);
+
+            const updateCommand = {
+              ...(destinationLane?.data?.sorted !== undefined
+                ? { children: { [toLane]: { data: { $unset: ['sorted'] } } } }
+                : {}),
               data: {
-                $unset: ['sorted'],
+                settings: {
+                  'item-collapse': { $set: op(collapseState) },
+                },
               },
-            });
+            };
+
+            return update<Board>(newBoard, updateCommand);
           }
 
           return newBoard;
         });
       }
 
+      // Different boards
       const sourceView = plugin.getKanbanView(dragEntity.scopeId, dragEntityData.win);
       const sourceStateManager = plugin.stateManagers.get(sourceView.file);
       const destinationView = plugin.getKanbanView(dropEntity.scopeId, dropEntityData.win);
@@ -221,38 +247,95 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
           }
 
           if (entity.type === DataTypes.Lane) {
-            const collapsedState = destinationView.getViewState('list-collapse');
-            const val = sourceView.getViewState('list-collapse')[dragPath.last()];
-            const op = (collapsedState: boolean[]) => {
-              const newState = [...collapsedState];
-              newState.splice(dropPath.last(), 0, val);
+            const collapseStateLanes = destinationView.getViewState('list-collapse');
+            const valLanes = sourceView.getViewState('list-collapse')[dragPath.last()];
+            const opLanes = (collapseState: boolean[]) => {
+              const newState = [...collapseState];
+              newState.splice(dropPath.last(), 0, valLanes);
               return newState;
             };
+            destinationView.setViewState('list-collapse', undefined, opLanes);
 
-            destinationView.setViewState('list-collapse', undefined, op);
+            const collapseStateItems = destinationView.getViewState('item-collapse');
+            const valItems = sourceView.getViewState('item-collapse')[dragPath.last()];
+            const opItems = (collapseState: ItemCollapseState) => {
+              const newState = collapseState.map((inner) => [...inner]);
+              newState.splice(dropPath.last(), 0, valItems);
+              return newState;
+            };
+            destinationView.setViewState('item-collapse', undefined, opItems);
 
             return update<Board>(insertEntity(destinationBoard, dropPath, toInsert), {
-              data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
+              data: {
+                settings: {
+                  'list-collapse': { $set: opLanes(collapseStateLanes) },
+                  'item-collapse': { $set: opItems(collapseStateItems) },
+                },
+              },
             });
           } else {
-            return insertEntity(destinationBoard, dropPath, toInsert);
+            // entity.type === DataTypes.Item
+            const collapseStateItems = destinationView.getViewState('item-collapse');
+            const valItems = sourceView.getViewState('item-collapse')[dragPath[0]][dragPath[1]];
+            const opItems = (collapseState: ItemCollapseState) => {
+              const newState = collapseState.map((inner) => [...inner]);
+              newState[dropPath[0]].splice(dropPath.last(), 0, valItems);
+              return newState;
+            };
+            destinationView.setViewState('item-collapse', undefined, opItems);
+
+            return update<Board>(insertEntity(destinationBoard, dropPath, toInsert), {
+              data: {
+                settings: {
+                  'item-collapse': { $set: opItems(collapseStateItems) },
+                },
+              },
+            });
           }
         });
+        // end of destination state setting
 
+        // source board's state setting
         if (entity.type === DataTypes.Lane) {
-          const collapsedState = sourceView.getViewState('list-collapse');
-          const op = (collapsedState: boolean[]) => {
-            const newState = [...collapsedState];
+          const collapseStateLanes = sourceView.getViewState('list-collapse');
+          const opLanes = (collapseState: boolean[]) => {
+            const newState = [...collapseState];
             newState.splice(dragPath.last(), 1);
             return newState;
           };
-          sourceView.setViewState('list-collapse', undefined, op);
+          sourceView.setViewState('list-collapse', undefined, opLanes);
+
+          const collapseStateItems = sourceView.getViewState('item-collapse');
+          const opItems = (collapseState: ItemCollapseState) => {
+            const newState = collapseState.map((inner) => [...inner]);
+            newState.splice(dragPath.last(), 1);
+            return newState;
+          };
 
           return update<Board>(removeEntity(sourceBoard, dragPath), {
-            data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
+            data: {
+              settings: {
+                'list-collapse': { $set: opLanes(collapseStateLanes) },
+                'item-collapse': { $set: opItems(collapseStateItems) },
+              },
+            },
           });
         } else {
-          return removeEntity(sourceBoard, dragPath, replacementEntity);
+          // entity.type === DataTypes.Item
+          const collapseStateItems = sourceView.getViewState('item-collapse');
+          const opItems = (collapseState: ItemCollapseState) => {
+            const newState = collapseState.map((inner) => [...inner]);
+            newState[dragPath[0]].splice(dragPath.last(), 1);
+            return newState;
+          };
+
+          return update<Board>(removeEntity(sourceBoard, dragPath, replacementEntity), {
+            data: {
+              settings: {
+                'item-collapse': { $set: opItems(collapseStateItems) },
+              },
+            },
+          });
         }
       });
     },
@@ -326,7 +409,12 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
               return (
                 <KanbanContext.Provider value={context}>
                   <div className={c('drag-container')} style={styles}>
-                    <DraggableItem item={data as Item} itemIndex={0} isStatic={true} />
+                    <DraggableItem
+                      item={data as Item}
+                      laneIndex={entity.getPath()[0]}
+                      itemIndex={0}
+                      isStatic={true}
+                    />
                   </div>
                 </KanbanContext.Provider>
               );

@@ -12,7 +12,13 @@ import {
   debounce,
 } from 'obsidian';
 
-import { KanbanFormat, KanbanSettings, KanbanViewSettings, SettingsModal } from './Settings';
+import {
+  ItemCollapseState,
+  KanbanFormat,
+  KanbanSettings,
+  KanbanViewSettings,
+  SettingsModal,
+} from './Settings';
 import { Kanban } from './components/Kanban';
 import { BasicMarkdownRenderer } from './components/MarkdownRenderer/MarkdownRenderer';
 import { c } from './components/helpers';
@@ -270,6 +276,7 @@ export class KanbanView extends TextFileView implements HoverParent {
   populateViewState(settings: KanbanSettings) {
     this.viewSettings['kanban-plugin'] ??= settings['kanban-plugin'] || 'board';
     this.viewSettings['list-collapse'] ??= settings['list-collapse'] || [];
+    this.viewSettings['item-collapse'] ??= settings['item-collapse'] || [];
   }
 
   getViewState<K extends keyof KanbanViewSettings>(key: K) {
@@ -359,9 +366,27 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   _initHeaderButtons = async () => {
     if (Platform.isPhone) return;
-    const stateManager = this.plugin.getStateManager(this.file);
 
+    const stateManager = this.plugin.getStateManager(this.file);
     if (!stateManager) return;
+
+    const countItemsState = (collapseState: ItemCollapseState) => {
+      const counts = { true: 0, false: 0, null: 0, total: 0 };
+
+      collapseState.forEach((lane) => {
+        lane.forEach((item) => {
+          const tmp = String(item);
+          if (tmp === 'null' || tmp === 'undefined') {
+            counts['null']++;
+          } else {
+            counts[tmp as 'true' | 'false']++;
+          }
+          counts.total++;
+        });
+      });
+
+      return counts;
+    };
 
     if (
       stateManager.getSetting('show-board-settings') &&
@@ -380,6 +405,59 @@ export class KanbanView extends TextFileView implements HoverParent {
     ) {
       this.actionButtons['show-board-settings'].remove();
       delete this.actionButtons['show-board-settings'];
+    }
+
+    if (stateManager.getSetting('toggle-metadata') && !this.actionButtons['toggle-metadata']) {
+      this.actionButtons['toggle-metadata'] = this.addAction(
+        'lucide-chevrons-up-down',
+        t('Show/Hide metadata'),
+        () => {
+          const stateManager = this.plugin.stateManagers.get(this.file);
+          stateManager.setState((boardData) => {
+            const collapseStateItems = this.getViewState('item-collapse');
+            const op = (collapseState: ItemCollapseState) => {
+              const newState = collapseState.map((inner) => [...inner]);
+
+              const counts = countItemsState(newState);
+              if (counts['null'] === counts['total']) {
+                // no items with inline or linked page metadata => do nothing
+                return newState;
+              } else if (
+                counts['true'] + counts['null'] === counts['total'] ||
+                counts['false'] + counts['null'] === counts['total']
+              ) {
+                // all items with metadata are collapsed/expanded => toggle state of items with metadata
+                return newState.map((lane) => {
+                  return lane.map((item) => {
+                    if (item === true) return false;
+                    if (item === false) return true;
+                    return item;
+                  });
+                });
+              } else {
+                // some items with metadata are collapsed some expanded => collapse them all
+                return newState.map((lane) => {
+                  return lane.map((item) => {
+                    if (item === false) return true;
+                    return item;
+                  });
+                });
+              }
+            };
+            this.setViewState('item-collapse', undefined, op);
+
+            return update<Board>(boardData, {
+              data: { settings: { 'item-collapse': { $set: op(collapseStateItems) } } },
+            });
+          });
+        }
+      );
+    } else if (
+      !stateManager.getSetting('toggle-metadata') &&
+      this.actionButtons['toggle-metadata']
+    ) {
+      this.actionButtons['toggle-metadata'].remove();
+      delete this.actionButtons['toggle-metadata'];
     }
 
     if (stateManager.getSetting('show-set-view') && !this.actionButtons['show-set-view']) {

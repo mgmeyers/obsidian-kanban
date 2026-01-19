@@ -16,9 +16,10 @@ import { MetadataValue } from './MetadataTable';
 interface InlineMetadataProps {
   item: Item;
   stateManager: StateManager;
+  isCollapsed: boolean;
 }
 
-export function InlineMetadata({ item, stateManager }: InlineMetadataProps) {
+export function InlineMetadata({ item, stateManager, isCollapsed }: InlineMetadataProps) {
   const search = useContext(SearchContext);
   const metaKeys = stateManager.getSetting('metadata-keys');
   const showInlineMetadata = stateManager.useSetting('inline-metadata-position') === 'footer';
@@ -30,7 +31,10 @@ export function InlineMetadata({ item, stateManager }: InlineMetadataProps) {
   const dataview = getDataviewPlugin();
 
   return (
-    <span className={c('item-task-metadata')}>
+    <span
+      className={c('item-task-metadata')}
+      style={isCollapsed ? 'display:none' : 'display:block'}
+    >
       {inlineMetadata.map((m, i) => {
         const data = parseMetadataWithOptions(m, metaKeys);
         const { metadataKey: key, value, label: explicitLabel } = data;

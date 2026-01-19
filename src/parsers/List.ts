@@ -4,6 +4,7 @@ import { getAPI } from 'obsidian-dataview';
 import { StateManager } from 'src/StateManager';
 import { Board, Item } from 'src/components/types';
 
+import { ItemCollapseState } from '../Settings';
 import { diff, diffApply } from '../helpers/patch';
 import { BaseFormat } from './common';
 import {
@@ -69,6 +70,19 @@ export class ListFormat implements BaseFormat {
       const patchedBoard = diffApply(state, ops) as Board;
 
       return hydratePostOp(this.stateManager, patchedBoard, ops);
+    }
+
+    // generate the item-collapse setting for backward compatibility
+    // (load older Kanban boards without metadata visibility control)
+    const boardSettings = new Set(Object.keys(newBoard.data.settings));
+    if (!boardSettings.has('item-collapse') && boardSettings.has('list-collapse')) {
+      const itemCollapse: ItemCollapseState = newBoard.children.map((lane) =>
+        lane.children.map((item) =>
+          item.data.metadata?.inlineMetadata || item.data.metadata?.fileMetadata ? false : undefined
+        )
+      );
+
+      newBoard.data.settings['item-collapse'] = itemCollapse;
     }
 
     return hydrateBoard(this.stateManager, newBoard);
