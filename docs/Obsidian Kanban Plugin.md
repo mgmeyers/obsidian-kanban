@@ -1,11 +1,61 @@
-Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
+# Obsidian Kanban Plugin
 
-- [Bugs, Issues, & Feature Requests](https://github.com/mgmeyers/obsidian-kanban/issues)
-- [Development Roadmap](https://github.com/mgmeyers/obsidian-kanban/projects/1)
+Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/). Organize your tasks, projects, and notes visually with drag-and-drop cards across customizable columns — all stored as plain Markdown files in your vault.
 
 ![[Screen Shot 2021-09-16 at 12.58.22 PM.png]]
 
-![[Screen Shot 2021-09-16 at 1.10.38 PM.png]]
+## Getting Started
+
+- [[Create a Kanban board]]
+- [[Install the plugin]]
+
+## How Do I...
+
+- [[Add a date to a card]]
+- [[Add a time to a card]]
+- [[Add an image to a card]]
+- [[Create notes from cards]]
+- [[Search a Kanban board]]
+- [[Set a WIP Limit]]
+- [[View a Kanban's archive]]
+
+## Settings
+
+- [[Local vs. global settings]]
+- [[Board Header Buttons]]
+- [[Lane width]]
+- [[Prepend append new cards]]
+- [[Date format]]
+- [[Date display format]]
+- [[Date trigger]]
+- [[Time format]]
+- [[Time trigger]]
+- [[Note folder]]
+- [[Note template]]
+- [[Linked page metadata]]
+- [[Display card checkbox]]
+- [[Hide card display tags]]
+- [[Hide card display dates]]
+- [[Hide tags in card titles]]
+- [[Hide dates in card titles]]
+- [[Show relative date]]
+- [[Add date and time to archived cards]]
+- [[Archive date time format]]
+- [[Archive date time separator]]
+- [[Archive date time position]]
+- [[Maximum number of archived cards]]
+- [[New line trigger]]
+- [[Link dates to daily notes]]
+
+## FAQs
+
+- [[Frontmatter limitations & gotchas]]
+
+## Links
+
+- [GitHub Repository](https://github.com/mgmeyers/obsidian-kanban)
+- [Bugs, Issues, & Feature Requests](https://github.com/mgmeyers/obsidian-kanban/issues)
+- [Development Roadmap](https://github.com/mgmeyers/obsidian-kanban/projects/1)
 
 ## Support
 
