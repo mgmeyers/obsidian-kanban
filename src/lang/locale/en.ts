@@ -236,6 +236,8 @@ const en = {
   'Move to top': 'Move to top',
   'Move to bottom': 'Move to bottom',
   'Move to list': 'Move to list',
+  'The note could not be created. Try reducing the length of the text before creating a note.':
+    'The note could not be created. Try reducing the length of the text before creating a note.',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Enter list title...',

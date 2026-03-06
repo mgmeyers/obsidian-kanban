@@ -1,5 +1,5 @@
 import update from 'immutability-helper';
-import { Menu, Platform, TFile, TFolder } from 'obsidian';
+import { Menu, Notice, Platform, TFile, TFolder } from 'obsidian';
 import { Dispatch, StateUpdater, useCallback } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
@@ -72,10 +72,21 @@ export function useItemMenu({
                 ? (stateManager.app.vault.getAbstractFileByPath(newNoteFolder as string) as TFolder)
                 : stateManager.app.fileManager.getNewFileParent(stateManager.file.path);
 
-              const newFile = (await (stateManager.app.fileManager as any).createNewMarkdownFile(
-                targetFolder,
-                sanitizedTitle
-              )) as TFile;
+              let newFile: TFile;
+
+              try {
+                newFile = (await (stateManager.app.fileManager as any).createNewMarkdownFile(
+                  targetFolder,
+                  sanitizedTitle
+                )) as TFile;
+              } catch (e) {
+                new Notice(
+                  t('The note could not be created. Try reducing the length of the text before creating a note.'),
+                  5000,
+                );
+
+                return;
+              }
 
               const newLeaf = stateManager.app.workspace.splitActiveLeaf();
 
