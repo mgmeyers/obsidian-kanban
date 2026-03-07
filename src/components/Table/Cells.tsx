@@ -58,9 +58,9 @@ export const ItemCell = memo(
     const showItemMenu = useItemMenu({
       boardModifiers,
       item,
+      path,
       setEditState,
       stateManager,
-      path,
     });
 
     const onContextMenu: JSX.MouseEventHandler<HTMLDivElement> = useCallback(

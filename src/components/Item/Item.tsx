@@ -73,9 +73,9 @@ const ItemInner = memo(function ItemInner({
   const showItemMenu = useItemMenu({
     boardModifiers,
     item,
+    path,
     setEditState: setEditState,
     stateManager,
-    path,
   });
 
   const onContextMenu: JSX.MouseEventHandler<HTMLDivElement> = useCallback(

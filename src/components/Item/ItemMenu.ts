@@ -15,6 +15,7 @@ import {
   constructMenuTimePickerOnChange,
   constructTimePicker,
 } from './helpers';
+import { MoveToColumnModal } from './MoveToColumnModal';
 
 const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
 const embedRegEx = /!?\[\[([^\]]*)\.[^\]]+\]\]/g;
@@ -176,6 +177,16 @@ export function useItemMenu({
             .onClick(() => boardModifiers.moveItemToBottom(path));
         })
         .addItem((i) => {
+          const hasOtherColumns = stateManager.state.children.length > 1;
+          i.setIcon('lucide-square-kanban')
+            .setTitle(t('Move to column'))
+            .setDisabled(!hasOtherColumns)
+            .onClick(() => {
+              if (!hasOtherColumns) return;
+              new MoveToColumnModal(stateManager.app, stateManager, path).open();
+            });
+        })
+        .addItem((i) => {
           i.setIcon('lucide-archive')
             .setTitle(t('Archive card'))
             .onClick(() => boardModifiers.archiveItem(path));
@@ -265,36 +276,24 @@ export function useItemMenu({
 
       menu.addSeparator();
 
-      const addMoveToOptions = (menu: Menu) => {
-        const lanes = stateManager.state.children;
-        if (lanes.length <= 1) return;
-        for (let i = 0, len = lanes.length; i < len; i++) {
-          menu.addItem((item) =>
-            item
-              .setIcon('lucide-square-kanban')
-              .setChecked(path[0] === i)
-              .setTitle(lanes[i].data.title)
-              .onClick(() => {
-                if (path[0] === i) return;
-                stateManager.setState((boardData) => {
-                  return moveEntity(boardData, path, [i, 0]);
-                });
-              })
-          );
-        }
-      };
-
       if (Platform.isPhone) {
-        addMoveToOptions(menu);
-      } else {
-        menu.addItem((item) => {
-          const submenu = (item as any)
-            .setTitle(t('Move to list'))
-            .setIcon('lucide-square-kanban')
-            .setSubmenu();
-
-          addMoveToOptions(submenu);
-        });
+        const lanes = stateManager.state.children;
+        if (lanes.length > 1) {
+          for (let i = 0, len = lanes.length; i < len; i++) {
+            menu.addItem((item) =>
+              item
+                .setIcon('lucide-square-kanban')
+                .setChecked(path[0] === i)
+                .setTitle(lanes[i].data.title)
+                .onClick(() => {
+                  if (path[0] === i) return;
+                  stateManager.setState((boardData) => {
+                    return moveEntity(boardData, path, [i, 0]);
+                  });
+                })
+            );
+          }
+        }
       }
 
       menu.showAtPosition(coordinates);
