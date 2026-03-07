@@ -9,6 +9,7 @@ import {
   useMemo,
   useRef,
 } from 'preact/hooks';
+import useOnclickOutside from 'react-cool-onclickoutside';
 import { StateManager } from 'src/StateManager';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { Path } from 'src/dnd/types';
@@ -188,7 +189,7 @@ export const ItemContent = memo(function ItemContent({
   showMetadata = true,
   isStatic,
 }: ItemContentProps) {
-  const { stateManager, filePath, boardModifiers } = useContext(KanbanContext);
+  const { stateManager, filePath, boardModifiers, view } = useContext(KanbanContext);
   const getDateColor = useGetDateColorFn(stateManager);
   const titleRef = useRef<string | null>(null);
 
@@ -205,6 +206,38 @@ export const ItemContent = memo(function ItemContent({
 
   const path = useNestedEntityPath();
   const { onEditDate, onEditTime } = useDatePickers(item);
+
+  const handleClickOutside = useCallback(() => {
+    if (titleRef.current !== null && titleRef.current.trim()) {
+      // If there is modified content, we save
+      setEditState(EditingState.complete);
+    } else {
+      // if there is no modification, we cancel
+      setEditState(EditingState.cancel);
+    }
+  }, [setEditState]);
+
+  // Listen for global save event (triggered when view closes, tab changes, etc)
+  // Must be synchronous to ensure data is saved before view is unloaded
+  useEffect(() => {
+    const handleSaveAll = () => {
+      if (titleRef.current !== null && titleRef.current.trim()) {
+        // Save directly and synchronously, don't use setEditState (which is async)
+        boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRef.current));
+        titleRef.current = null;
+      }
+    };
+
+    view?.containerEl?.addEventListener('save-all-editing-items', handleSaveAll);
+    return () => {
+      view?.containerEl?.removeEventListener('save-all-editing-items', handleSaveAll);
+    };
+  }, [view, stateManager, boardModifiers, item, path]);
+
+  const clickOutsideRef = useOnclickOutside(handleClickOutside, {
+    ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],
+  });
+
   const onEnter = useCallback(
     (cm: EditorView, mod: boolean, shift: boolean) => {
       if (!allowNewLine(stateManager, mod, shift)) {
@@ -256,7 +289,7 @@ export const ItemContent = memo(function ItemContent({
 
   if (!isStatic && isEditing(editState)) {
     return (
-      <div className={c('item-input-wrapper')}>
+      <div className={c('item-input-wrapper')} ref={clickOutsideRef}>
         <MarkdownEditor
           editState={editState}
           className={c('item-input')}
