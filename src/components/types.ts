@@ -39,6 +39,11 @@ export interface TagSort {
   tag: string;
 }
 
+export interface Category {
+  name: string;
+  color: string;
+}
+
 export interface DateColor {
   isToday?: boolean;
   isBefore?: boolean;
@@ -69,6 +74,12 @@ export interface ItemMetadata {
   date?: moment.Moment;
   timeStr?: string;
   time?: moment.Moment;
+  storyPoints?: number;
+  storyPointsStr?: string;
+  priority?: 'low' | 'medium' | 'high';
+  priorityStr?: string;
+  category?: string;
+  categoryStr?: string;
   tags?: string[];
   fileAccessor?: FileAccessor;
   file?: TFile | null;

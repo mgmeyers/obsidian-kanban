@@ -265,6 +265,58 @@ export function useItemMenu({
 
       menu.addSeparator();
 
+      const currentPriority = item.data.metadata.priority;
+      const pTrigger = stateManager.getSetting('priority-trigger') as string;
+      const pRegEx = new RegExp(
+        `(^|\\s)${escapeRegExpStr(pTrigger)}{([^}]+)}`
+      );
+
+      const setPriority = (level: string | null) => {
+        let titleRaw = item.data.titleRaw;
+        if (currentPriority) {
+          if (level) {
+            titleRaw = titleRaw.replace(pRegEx, `$1${pTrigger}{${level}}`);
+          } else {
+            titleRaw = titleRaw.replace(pRegEx, '').trim();
+          }
+        } else if (level) {
+          titleRaw = `${titleRaw} ${pTrigger}{${level}}`;
+        }
+        boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRaw));
+      };
+
+      const addPriorityOptions = (submenu: Menu) => {
+        (['high', 'medium', 'low'] as const).forEach((level) => {
+          submenu.addItem((mi) => {
+            mi.setTitle(t(level.charAt(0).toUpperCase() + level.slice(1)))
+              .setChecked(currentPriority === level)
+              .onClick(() => setPriority(currentPriority === level ? null : level));
+          });
+        });
+        if (currentPriority) {
+          submenu.addSeparator();
+          submenu.addItem((mi) => {
+            mi.setIcon('lucide-x')
+              .setTitle(t('Remove priority'))
+              .onClick(() => setPriority(null));
+          });
+        }
+      };
+
+      if (Platform.isPhone) {
+        addPriorityOptions(menu);
+      } else {
+        menu.addItem((mi) => {
+          const submenu = (mi as any)
+            .setTitle(t('Set priority'))
+            .setIcon('lucide-signal')
+            .setSubmenu();
+          addPriorityOptions(submenu);
+        });
+      }
+
+      menu.addSeparator();
+
       const addMoveToOptions = (menu: Menu) => {
         const lanes = stateManager.state.children;
         if (lanes.length <= 1) return;
