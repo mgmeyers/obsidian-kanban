@@ -151,6 +151,35 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
           .setTitle(t('Delete list'))
           .onClick(() => setConfirmAction('delete'));
       })
+      .addSeparator()
+      .addItem((item) => {
+        const isHoriz = !!lane.data.isHorizontal;
+        item
+          .setIcon('lucide-layout-list')
+          .setTitle(isHoriz ? t('Make this vertical') : t('Make this horizontal'))
+          .onClick(() => {
+            stateManager.setState((board) => {
+              return update(board, {
+                children: {
+                  $set: board.children.map((l, i) => {
+                    const targetIndex = path[path.length - 1];
+                    if (i === targetIndex) {
+                      return update(l, {
+                        data: { isHorizontal: { $set: !isHoriz } },
+                      });
+                    }
+                    if (!isHoriz && l.data.isHorizontal) {
+                      return update(l, {
+                        data: { isHorizontal: { $set: false } },
+                      });
+                    }
+                    return l;
+                  }),
+                },
+              });
+            });
+          });
+      })
       .addSeparator();
 
     const addSortOptions = (menu: Menu) => {

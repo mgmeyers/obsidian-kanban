@@ -20,8 +20,16 @@ import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
 import { visit } from 'unist-util-visit';
 
-import { archiveString, completeString, settingsToCodeblock } from '../common';
-import { DateNode, FileNode, TimeNode, ValueNode } from '../extensions/types';
+import { archiveString, completeString, horizontalString, settingsToCodeblock } from '../common';
+import {
+  CategoryNode,
+  DateNode,
+  FileNode,
+  PriorityNode,
+  StoryPointsNode,
+  TimeNode,
+  ValueNode,
+} from '../extensions/types';
 import {
   ContentBoundary,
   getNextOfType,
@@ -100,6 +108,10 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
       date: undefined,
       time: undefined,
       timeStr: undefined,
+      storyPoints: undefined,
+      storyPointsStr: undefined,
+      priority: undefined,
+      priorityStr: undefined,
       tags: [],
       fileAccessor: undefined,
       file: undefined,
@@ -162,6 +174,46 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
             end: node.position.end.offset - itemBoundary.start,
           });
         }
+        return true;
+      }
+
+      if (genericNode.type === 'storyPoints') {
+        const spValue = (genericNode as StoryPointsNode).storyPoints;
+        const parsed = parseFloat(spValue);
+        if (!isNaN(parsed)) {
+          itemData.metadata.storyPointsStr = spValue;
+          itemData.metadata.storyPoints = parsed;
+        }
+        title = markRangeForDeletion(title, {
+          start: node.position.start.offset - itemBoundary.start,
+          end: node.position.end.offset - itemBoundary.start,
+        });
+        return true;
+      }
+
+      if (genericNode.type === 'priority') {
+        const pValue = (genericNode as PriorityNode).priority?.toLowerCase();
+        if (pValue === 'low' || pValue === 'medium' || pValue === 'high') {
+          itemData.metadata.priorityStr = pValue;
+          itemData.metadata.priority = pValue;
+        }
+        title = markRangeForDeletion(title, {
+          start: node.position.start.offset - itemBoundary.start,
+          end: node.position.end.offset - itemBoundary.start,
+        });
+        return true;
+      }
+
+      if (genericNode.type === 'category') {
+        const catValue = (genericNode as CategoryNode).category;
+        if (catValue) {
+          itemData.metadata.categoryStr = catValue;
+          itemData.metadata.category = catValue;
+        }
+        title = markRangeForDeletion(title, {
+          start: node.position.start.offset - itemBoundary.start,
+          end: node.position.end.offset - itemBoundary.start,
+        });
         return true;
       }
 
@@ -253,6 +305,7 @@ export function astToUnhydratedBoard(
       const title = getStringFromBoundary(md, headingBoundary);
 
       let shouldMarkItemsComplete = false;
+      let isHorizontal = false;
 
       const list = getNextOfType(root.children, index, 'list', (child) => {
         if (child.type === 'heading') return false;
@@ -266,6 +319,11 @@ export function astToUnhydratedBoard(
 
           if (childStr === t('Complete')) {
             shouldMarkItemsComplete = true;
+            return true;
+          }
+
+          if (childStr.includes('kanban:horizontal')) {
+            isHorizontal = true;
             return true;
           }
         }
@@ -295,6 +353,7 @@ export function astToUnhydratedBoard(
           data: {
             ...parseLaneTitle(title),
             shouldMarkItemsComplete,
+            isHorizontal,
           },
         });
       } else {
@@ -312,6 +371,7 @@ export function astToUnhydratedBoard(
           data: {
             ...parseLaneTitle(title),
             shouldMarkItemsComplete,
+            isHorizontal,
           },
         });
       }
@@ -413,6 +473,11 @@ function laneToMd(lane: Lane) {
 
   if (lane.data.shouldMarkItemsComplete) {
     lines.push(completeString);
+  }
+
+  if (lane.data.isHorizontal) {
+    lines.push(horizontalString);
+    lines.push('');
   }
 
   lane.children.forEach((item) => {

@@ -15,7 +15,7 @@ import { DndScope } from '../dnd/components/Scope';
 import { getBoardModifiers } from '../helpers/boardModifiers';
 import { frontmatterKey } from '../parsers/common';
 import { Icon } from './Icon/Icon';
-import { Lanes } from './Lane/Lane';
+import { HorizontalLane, Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
 import { TableView } from './Table/Table';
 import { KanbanContext, SearchContext } from './context';
@@ -210,6 +210,19 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     setIsSearching
   );
 
+  const verticalLanes = useMemo(
+    () => boardData.children.filter((l) => !l.data.isHorizontal),
+    [boardData.children]
+  );
+  const horizontalLane = useMemo(
+    () => boardData.children.find((l) => l.data.isHorizontal),
+    [boardData.children]
+  );
+  const horizontalLaneIndex = useMemo(
+    () => boardData.children.findIndex((l) => l.data.isHorizontal),
+    [boardData.children]
+  );
+
   return (
     <DndScope id={view.id}>
       <KanbanContext.Provider value={kanbanContext}>
@@ -272,13 +285,14 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                     [c('horizontal')]: boardView !== 'list',
                     [c('vertical')]: boardView === 'list',
                     'is-adding-lane': isLaneFormVisible,
+                    'has-backlog': !!horizontalLane,
                   },
                 ])}
                 triggerTypes={boardScrollTiggers}
               >
                 <div>
                   <Sortable axis={axis}>
-                    <Lanes lanes={boardData.children} collapseDir={axis} />
+                    <Lanes lanes={verticalLanes} collapseDir={axis} />
                     <SortPlaceholder
                       accepts={boardAccepts}
                       className={c('lane-placeholder')}
@@ -286,6 +300,12 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                     />
                   </Sortable>
                 </div>
+                {horizontalLane && (
+                  <HorizontalLane
+                    lane={horizontalLane}
+                    laneIndex={horizontalLaneIndex}
+                  />
+                )}
               </ScrollContainer>
             )}
           </div>

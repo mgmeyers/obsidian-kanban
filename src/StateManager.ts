@@ -9,7 +9,14 @@ import { Board, BoardTemplate, Item } from './components/types';
 import { ListFormat } from './parsers/List';
 import { BaseFormat, frontmatterKey, shouldRefreshBoard } from './parsers/common';
 import { getTaskStatusDone } from './parsers/helpers/inlineMetadata';
-import { defaultDateTrigger, defaultMetadataPosition, defaultTimeTrigger } from './settingHelpers';
+import {
+  defaultCategoryTrigger,
+  defaultDateTrigger,
+  defaultMetadataPosition,
+  defaultPriorityTrigger,
+  defaultStoryPointsTrigger,
+  defaultTimeTrigger,
+} from './settingHelpers';
 
 export class StateManager {
   onEmpty: () => void;
@@ -240,6 +247,13 @@ export class StateManager {
         this.getSettingRaw('inline-metadata-position', suppliedSettings) || defaultMetadataPosition,
       'time-format': timeFormat,
       'time-trigger': this.getSettingRaw('time-trigger', suppliedSettings) || defaultTimeTrigger,
+      'story-points-trigger':
+        this.getSettingRaw('story-points-trigger', suppliedSettings) || defaultStoryPointsTrigger,
+      'priority-trigger':
+        this.getSettingRaw('priority-trigger', suppliedSettings) || defaultPriorityTrigger,
+      'category-trigger':
+        this.getSettingRaw('category-trigger', suppliedSettings) || defaultCategoryTrigger,
+      'categories': this.getSettingRaw('categories', suppliedSettings) ?? [],
       'link-date-to-daily-note': this.getSettingRaw('link-date-to-daily-note', suppliedSettings),
       'move-dates': this.getSettingRaw('move-dates', suppliedSettings),
       'move-tags': this.getSettingRaw('move-tags', suppliedSettings),
