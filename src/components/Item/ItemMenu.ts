@@ -65,12 +65,12 @@ export function useItemMenu({
                 .trim()
                 .replace(condenceWhiteSpaceRE, ' ');
 
-              const newNoteFolder = stateManager.getSetting('new-note-folder');
+              const newNoteFolder = stateManager.state.data.frontmatter['new-note-folder'] ?? stateManager.getSetting('new-note-folder');
               const newNoteTemplatePath = stateManager.getSetting('new-note-template');
 
               const targetFolder = newNoteFolder
                 ? (stateManager.app.vault.getAbstractFileByPath(newNoteFolder as string) as TFolder)
-                : stateManager.app.fileManager.getNewFileParent(stateManager.file.path);
+                : stateManager.app.vault.getAbstractFileByPath(stateManager.file.path).parent;
 
               const newFile = (await (stateManager.app.fileManager as any).createNewMarkdownFile(
                 targetFolder,
