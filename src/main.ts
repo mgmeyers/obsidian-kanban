@@ -45,6 +45,17 @@ function getEditorClass(app: any) {
   return MarkdownEditor;
 }
 
+export interface PendingTransfer {
+  itemTitleRaw: string;
+  itemCheckChar: string;
+  itemChecked: boolean;
+  sourceFilePath: string;
+  returnFilePath: string;
+  mouseX: number;
+  mouseY: number;
+  dragPath: number[];
+}
+
 export default class KanbanPlugin extends Plugin {
   settingsTab: KanbanSettingsTab;
   settings: KanbanSettings = {};
@@ -58,6 +69,8 @@ export default class KanbanPlugin extends Plugin {
   _loaded: boolean = false;
 
   isShiftPressed: boolean = false;
+
+  pendingTransfer: PendingTransfer | null = null;
 
   async loadSettings() {
     this.settings = Object.assign({}, await this.loadData());

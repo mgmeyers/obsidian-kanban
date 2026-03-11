@@ -79,9 +79,11 @@ export interface KanbanSettings {
   'show-add-list'?: boolean;
   'show-archive-all'?: boolean;
   'show-board-settings'?: boolean;
+  'show-board-switcher'?: boolean;
   'show-checkboxes'?: boolean;
   'show-relative-date'?: boolean;
   'show-search'?: boolean;
+  'show-send-to-board'?: boolean;
   'show-set-view'?: boolean;
   'show-view-as-markdown'?: boolean;
   'table-sizing'?: Record<string, number>;
@@ -127,9 +129,11 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'show-add-list',
   'show-archive-all',
   'show-board-settings',
+  'show-board-switcher',
   'show-checkboxes',
   'show-relative-date',
   'show-search',
+  'show-send-to-board',
   'show-set-view',
   'show-view-as-markdown',
   'table-sizing',
@@ -1530,6 +1534,88 @@ export class SettingsManager {
             });
         });
     });
+
+    contentEl.createEl('h4', { text: 'Cross-board features' });
+
+    new Setting(contentEl)
+      .setName('Board switcher panel')
+      .setDesc('Show a side panel with tiles for switching between kanban boards and dragging cards across boards')
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('show-board-switcher', local);
+
+            if (value !== undefined && value !== null) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined && globalValue !== null) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'show-board-switcher': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('show-board-switcher', local);
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ['show-board-switcher'],
+                });
+              });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName('Send to board menu')
+      .setDesc('Add a "Send to board" option in the card right-click menu to send cards to a specific column on another board')
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('show-send-to-board', local);
+
+            if (value !== undefined && value !== null) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined && globalValue !== null) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'show-send-to-board': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('show-send-to-board', local);
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ['show-send-to-board'],
+                });
+              });
+          });
+      });
   }
 
   cleanUp() {

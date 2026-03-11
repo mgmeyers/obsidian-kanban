@@ -21,7 +21,16 @@
   width: 100%;
   position: relative;
   display: flex;
+  flex-direction: row;
+}
+
+.kanban-plugin__board-main {
+  display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  position: relative;
 }
 
 .kanban-plugin,
@@ -1785,4 +1794,157 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   .kanban-plugin__date:hover {
     background-color: var(--date-background-color, rgba(var(--mono-rgb-100), 0.05));
   }
+}
+
+// Board Switcher Sidebar
+
+.kanban-plugin__board-switcher {
+  display: flex;
+  flex-direction: column;
+  width: 52px;
+  min-width: 52px;
+  background-color: var(--background-secondary);
+  border-right: 1px solid var(--background-modifier-border);
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+}
+
+.kanban-plugin__board-switcher-collapsed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 20px;
+  min-width: 20px;
+  background-color: var(--background-secondary);
+  border-right: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+  padding-top: 4px;
+}
+
+.kanban-plugin__board-switcher-header {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+  flex-shrink: 0;
+}
+
+.kanban-plugin__board-switcher-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: var(--cursor);
+  padding: 2px;
+  border-radius: var(--radius-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    color: var(--text-normal);
+    background-color: var(--background-modifier-hover);
+  }
+}
+
+.kanban-plugin__board-switcher-tiles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+}
+
+.kanban-plugin__board-switcher-tile {
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  border-radius: var(--radius-s);
+  background-color: var(--background-primary-alt);
+  border: 2px solid transparent;
+  cursor: var(--cursor);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--background-modifier-hover);
+    border-color: var(--background-modifier-border);
+  }
+}
+
+.kanban-plugin__board-switcher-tile-active {
+  border-color: var(--interactive-accent) !important;
+  background-color: hsla(var(--interactive-accent-hsl), 0.1);
+}
+
+.kanban-plugin__board-switcher-tile-drop {
+  border-color: var(--text-accent) !important;
+  background-color: hsla(var(--interactive-accent-hsl), 0.25);
+  transform: scale(1.1);
+  box-shadow: 0 0 8px hsla(var(--interactive-accent-hsl), 0.4);
+}
+
+.kanban-plugin__board-switcher-tile-label {
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.1;
+  text-align: center;
+  word-break: break-word;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  padding: 2px;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.kanban-plugin__board-switcher-tile-active .kanban-plugin__board-switcher-tile-label {
+  color: var(--text-normal);
+}
+
+.kanban-plugin__board-switcher-tile-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font-size: 9px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-normal);
+  padding: 2px;
+  outline: none;
+}
+
+// Placement mode: floating card follows cursor, click lane to place
+.kanban-plugin__placing-card {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  transform: translate(12px, 12px);
+  max-width: 250px;
+}
+
+.kanban-plugin__placing-card-content {
+  background: var(--background-primary);
+  border: 1px solid var(--interactive-accent);
+  border-radius: var(--radius-s);
+  padding: 6px 10px;
+  font-size: var(--font-ui-small);
+  color: var(--text-normal);
+  box-shadow: var(--shadow-s), 0 0 0 2px hsla(var(--interactive-accent-hsl), 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kanban-plugin__placing-mode .kanban-plugin__lane-wrapper {
+  cursor: crosshair;
+}
+
+.kanban-plugin__placing-mode .kanban-plugin__lane:hover {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
 }
