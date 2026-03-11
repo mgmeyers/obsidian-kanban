@@ -20,6 +20,7 @@ export interface LaneData {
   dom?: HTMLDivElement;
   forceEditMode?: boolean;
   sorted?: LaneSort | string;
+  autoSetTaskSymbol?: string;
 }
 
 export interface DataKey {

@@ -16,6 +16,7 @@ interface LaneFormProps {
 
 export function LaneForm({ onNewLane, closeLaneForm }: LaneFormProps) {
   const [shouldMarkAsComplete, setShouldMarkAsComplete] = useState(false);
+  const [autoSetTaskSymbol, setAutoSetTaskSymbol] = useState('');
   const editorRef = useRef<EditorView>();
   const inputRef = useRef<HTMLTextAreaElement>();
   const clickOutsideRef = useOnclickOutside(() => closeLaneForm(), {
@@ -37,6 +38,7 @@ export function LaneForm({ onNewLane, closeLaneForm }: LaneFormProps) {
         data: {
           ...parseLaneTitle(title),
           shouldMarkItemsComplete: shouldMarkAsComplete,
+          autoSetTaskSymbol: autoSetTaskSymbol || undefined,
         },
       });
 
@@ -49,9 +51,10 @@ export function LaneForm({ onNewLane, closeLaneForm }: LaneFormProps) {
       });
 
       setShouldMarkAsComplete(false);
+      setAutoSetTaskSymbol('');
       onNewLane();
     },
-    [onNewLane, setShouldMarkAsComplete, boardModifiers]
+    [onNewLane, setShouldMarkAsComplete, setAutoSetTaskSymbol, boardModifiers, autoSetTaskSymbol]
   );
 
   const editState = useMemo(() => ({ x: 0, y: 0 }), []);
@@ -86,6 +89,17 @@ export function LaneForm({ onNewLane, closeLaneForm }: LaneFormProps) {
         <div
           onClick={() => setShouldMarkAsComplete(!shouldMarkAsComplete)}
           className={`checkbox-container ${shouldMarkAsComplete ? 'is-enabled' : ''}`}
+        />
+      </div>
+      <div className={c('lane-symbol-input-wrapper')}>
+        <div className={c('checkbox-label')}>{t('Task symbol')}</div>
+        <input
+          type="text"
+          value={autoSetTaskSymbol}
+          maxLength={2}
+          placeholder={t('Task symbol placeholder')}
+          onInput={(e) => setAutoSetTaskSymbol((e.target as HTMLInputElement).value)}
+          className={c('lane-symbol-input')}
         />
       </div>
       <div className={c('lane-input-actions')}>

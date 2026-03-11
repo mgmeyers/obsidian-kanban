@@ -162,6 +162,8 @@ const lang: Partial<Lang> = {
   'Mark cards in this list as complete': '将该列设置为完成列',
   'Add list': '添加',
   'Add a list': '添加列',
+  'Task symbol': '任务符号（拖拽到本列时自动设置）',
+  'Task symbol placeholder': '如 /, -, > 等',
 
   // components/Lane/LaneHeader.tsx
   'Move list': '移动列',

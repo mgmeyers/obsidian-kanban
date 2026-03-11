@@ -242,6 +242,8 @@ const en = {
   'Mark cards in this list as complete': 'Mark cards in this list as complete',
   'Add list': 'Add list',
   'Add a list': 'Add a list',
+  'Task symbol': 'Task symbol (auto-set when dragging to this list)',
+  'Task symbol placeholder': 'e.g. /, -, > etc.',
 
   // components/Lane/LaneHeader.tsx
   'Move list': 'Move list',
