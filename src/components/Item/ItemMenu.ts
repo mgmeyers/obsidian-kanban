@@ -1,14 +1,18 @@
 import update from 'immutability-helper';
-import { Menu, Platform, TFile, TFolder } from 'obsidian';
+import { Menu, Notice, Platform, SuggestModal, TFile, TFolder } from 'obsidian';
 import { Dispatch, StateUpdater, useCallback } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
-import { moveEntity } from 'src/dnd/util/data';
+import { getEntityFromPath, moveEntity, removeEntity } from 'src/dnd/util/data';
 import { t } from 'src/lang/helpers';
+import { frontmatterKey } from 'src/parsers/common';
+import { parseMarkdown } from 'src/parsers/parseMarkdown';
+import { astToUnhydratedBoard, boardToMd } from 'src/parsers/formats/list';
+import { hydrateBoard } from 'src/parsers/helpers/hydrateBoard';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
-import { EditState, Item } from '../types';
+import { DataTypes, EditState, Item } from '../types';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
@@ -29,6 +33,67 @@ interface UseItemMenuParams {
   path: Path;
   boardModifiers: BoardModifiers;
   stateManager: StateManager;
+}
+
+interface MoveBoardOption {
+  file: TFile;
+}
+
+interface MoveListOption {
+  laneIndex: number;
+  laneTitle: string;
+}
+
+class MoveBoardSuggestModal extends SuggestModal<MoveBoardOption> {
+  constructor(
+    stateManager: StateManager,
+    private readonly options: MoveBoardOption[],
+    private readonly onChoose: (option: MoveBoardOption) => void
+  ) {
+    super(stateManager.app);
+    this.setPlaceholder(t('Select a board'));
+    this.emptyStateText = t('No other kanban boards found');
+  }
+
+  getSuggestions(query: string): MoveBoardOption[] {
+    const normalizedQuery = query.toLowerCase();
+    return this.options.filter((o) => o.file.path.toLowerCase().includes(normalizedQuery));
+  }
+
+  renderSuggestion(value: MoveBoardOption, el: HTMLElement) {
+    el.createDiv({ text: value.file.path });
+  }
+
+  onChooseSuggestion(item: MoveBoardOption): void {
+    this.onChoose(item);
+  }
+}
+
+class MoveListSuggestModal extends SuggestModal<MoveListOption> {
+  constructor(
+    stateManager: StateManager,
+    private readonly boardFile: TFile,
+    private readonly options: MoveListOption[],
+    private readonly onChoose: (option: MoveListOption) => void
+  ) {
+    super(stateManager.app);
+    this.setPlaceholder(t('Select a list'));
+    this.setInstructions([{ command: boardFile.path, purpose: t('Target board') }]);
+    this.emptyStateText = t('No lists found in this board');
+  }
+
+  getSuggestions(query: string): MoveListOption[] {
+    const normalizedQuery = query.toLowerCase();
+    return this.options.filter((o) => o.laneTitle.toLowerCase().includes(normalizedQuery));
+  }
+
+  renderSuggestion(value: MoveListOption, el: HTMLElement) {
+    el.createDiv({ text: value.laneTitle });
+  }
+
+  onChooseSuggestion(item: MoveListOption): void {
+    this.onChoose(item);
+  }
 }
 
 export function useItemMenu({
@@ -296,6 +361,61 @@ export function useItemMenu({
           addMoveToOptions(submenu);
         });
       }
+
+      menu.addItem((i) => {
+        i.setIcon('lucide-send')
+          .setTitle(t('Move to board'))
+          .onClick(async () => {
+            const allMarkdownFiles = stateManager.app.vault.getMarkdownFiles();
+            const boardOptions = allMarkdownFiles
+              .filter((file) => {
+                if (file.path === stateManager.file.path) return false;
+                return !!stateManager.app.metadataCache.getFileCache(file)?.frontmatter?.[
+                  frontmatterKey
+                ];
+              })
+              .map((file) => ({ file }));
+
+            if (!boardOptions.length) {
+              new Notice(t('No other kanban boards found'));
+              return;
+            }
+
+            new MoveBoardSuggestModal(stateManager, boardOptions, async ({ file }) => {
+              const boardData = await stateManager.app.vault.cachedRead(file);
+              const { ast, settings, frontmatter } = parseMarkdown(stateManager, boardData);
+              const targetBoard = hydrateBoard(
+                stateManager,
+                astToUnhydratedBoard(stateManager, settings, frontmatter, ast, boardData)
+              );
+
+              if (!targetBoard.children.length) {
+                new Notice(t('No lists found in this board'));
+                return;
+              }
+
+              const laneOptions = targetBoard.children.map((lane, laneIndex) => ({
+                laneIndex,
+                laneTitle: lane.data.title,
+              }));
+
+              new MoveListSuggestModal(stateManager, file, laneOptions, async (lane) => {
+                const currentItem = getEntityFromPath(stateManager.state, path);
+
+                if (!currentItem || currentItem.type !== DataTypes.Item) {
+                  return;
+                }
+
+                targetBoard.children[lane.laneIndex].children.push(currentItem);
+                await stateManager.app.vault.modify(file, boardToMd(targetBoard));
+
+                stateManager.setState((boardState) => removeEntity(boardState, path));
+
+                new Notice(t('Card moved to board'));
+              }).open();
+            }).open();
+          });
+      });
 
       menu.showAtPosition(coordinates);
     },
