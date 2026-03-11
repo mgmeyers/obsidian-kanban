@@ -23,6 +23,8 @@ const mdLinkRegEx = /!?\[([^\]]*)\]\([^)]*\)/g;
 const tagRegEx = /#([^\u2000-\u206F\u2E00-\u2E7F'!"#$%&()*+,.:;<=>?@^`{|}~[\]\\\s\n\r]+)/g;
 const condenceWhiteSpaceRE = /\s+/g;
 
+export const frontmatter = ['---', '', `tags: [{{tags}}]`, '', '---', '', ''].join('\n');
+
 interface UseItemMenuParams {
   setEditState: Dispatch<StateUpdater<EditState>>;
   item: Item;
@@ -56,11 +58,13 @@ export function useItemMenu({
             .setTitle(t('New note from card'))
             .onClick(async () => {
               const prevTitle = item.data.titleRaw.split('\n')[0].trim();
+              const tags = prevTitle.match(tagRegEx);
+              const tagReplace = stateManager.getSetting('tag-in-title') ? '$1' : '';
               const sanitizedTitle = prevTitle
                 .replace(embedRegEx, '$1')
                 .replace(wikilinkRegEx, '$1')
                 .replace(mdLinkRegEx, '$1')
-                .replace(tagRegEx, '$1')
+                .replace(tagRegEx, tagReplace)
                 .replace(illegalCharsRegEx, ' ')
                 .trim()
                 .replace(condenceWhiteSpaceRE, ' ');
@@ -77,6 +81,15 @@ export function useItemMenu({
                 sanitizedTitle
               )) as TFile;
 
+              if (stateManager.getSetting('tag-in-properties') && tags?.length > 0) {
+                const tagsProperty = tags.join(',').replace(/#/g, '');
+
+                stateManager.app.vault.modify(
+                  newFile,
+                  frontmatter.replace('{{tags}}', tagsProperty)
+                );
+              }
+
               const newLeaf = stateManager.app.workspace.splitActiveLeaf();
 
               await newLeaf.openFile(newFile);
@@ -85,10 +98,12 @@ export function useItemMenu({
 
               await applyTemplate(stateManager, newNoteTemplatePath as string | undefined);
 
-              const newTitleRaw = item.data.titleRaw.replace(
+              let newTitleRaw = item.data.titleRaw.replace(
                 prevTitle,
                 stateManager.app.fileManager.generateMarkdownLink(newFile, stateManager.file.path)
               );
+
+              newTitleRaw = tags?.length > 0 ? `${newTitleRaw} ${tags.join(' ')}` : newTitleRaw;
 
               boardModifiers.updateItem(path, stateManager.updateItemContent(item, newTitleRaw));
             });

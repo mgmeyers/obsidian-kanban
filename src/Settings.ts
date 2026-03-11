@@ -86,6 +86,8 @@ export interface KanbanSettings {
   'show-view-as-markdown'?: boolean;
   'table-sizing'?: Record<string, number>;
   'tag-action'?: 'kanban' | 'obsidian';
+  'tag-in-title'?: boolean;
+  'tag-in-properties'?: boolean;
   'tag-colors'?: TagColor[];
   'tag-sort'?: TagSort[];
   'time-format'?: string;
@@ -134,6 +136,8 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'show-view-as-markdown',
   'table-sizing',
   'tag-action',
+  'tag-in-title',
+  'tag-in-properties',
   'tag-colors',
   'tag-sort',
   'time-format',
@@ -535,6 +539,92 @@ export class SettingsManager {
             },
           });
         });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Add tags to note title'))
+      .setDesc(
+        t(
+          'When toggled, the tags used in the card title will also be added to the note title without the "#" before them'
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('tag-in-title', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'tag-in-title': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('tag-in-title', local);
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ['tag-in-title'],
+                });
+              });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Add tags to note properties'))
+      .setDesc(
+        t('When toggled, the tags used in the card title will also be added to the note properties')
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('tag-in-properties', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'tag-in-properties': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('tag-in-properties', local);
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ['tag-in-properties'],
+                });
+              });
+          });
       });
 
     new Setting(contentEl).then((setting) => {
