@@ -72,6 +72,7 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
 
   const settingsMenu = useMemo(() => {
     const metadataSortOptions = new Set<string>();
+    const fileMetadataSortOptions = new Set<string>();
     let canSortDate = false;
     let canSortTags = false;
 
@@ -84,9 +85,17 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
         });
       }
 
+      const fileData = item.data.metadata.fileMetadata;
+      if (fileData) {
+        Object.keys(fileData).forEach((k) => {
+          if (!fileMetadataSortOptions.has(k)) fileMetadataSortOptions.add(k);
+        });
+      }
+
       if (!canSortDate && item.data.metadata.date) canSortDate = true;
       if (!canSortTags && item.data.metadata.tags?.length) canSortTags = true;
     });
+    console.log(fileMetadataSortOptions);
 
     const menu = new Menu()
       .addItem((item) => {
@@ -280,51 +289,61 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
         });
       }
 
-      if (metadataSortOptions.size) {
-        metadataSortOptions.forEach((k) => {
-          menu.addItem((i) => {
-            i.setIcon('arrow-down-up')
-              .setTitle(t('Sort by') + ' ' + lableToName(k).toLocaleLowerCase())
-              .onClick(() => {
-                const children = lane.children.slice();
-                const desc = lane.data.sorted === k + '-asc' ? true : false;
+      const createSortHandler = (type: 'inline' | 'file') => (k: string) => {
+        menu.addItem((i) => {
+          i.setIcon('arrow-down-up')
+            .setTitle(t('Sort by') + ' ' + lableToName(k).toLocaleLowerCase())
+            .onClick(() => {
+              const children = lane.children.slice();
+              const desc = lane.data.sorted === k + '-asc' ? true : false;
 
-                children.sort((a, b) => {
-                  const valA = a.data.metadata.inlineMetadata?.find((m) => m.key === k);
-                  const valB = b.data.metadata.inlineMetadata?.find((m) => m.key === k);
+              children.sort((a, b) => {
+                const valA = type === 'inline'
+                  ? a.data.metadata.inlineMetadata?.find((m) => m.key === k)?.value
+                  : a.data.metadata.fileMetadata?.[k];
+                const valB = type === 'inline'
+                  ? b.data.metadata.inlineMetadata?.find((m) => m.key === k)?.value
+                  : b.data.metadata.fileMetadata?.[k];
 
-                  if (valA === undefined && valB === undefined) return 0;
-                  if (valA === undefined) return 1;
-                  if (valB === undefined) return -1;
+                if (valA === undefined && valB === undefined) return 0;
+                if (valA === undefined) return 1;
+                if (valB === undefined) return -1;
 
-                  if (desc) {
-                    return defaultSort(
-                      anyToString(valB.value, stateManager),
-                      anyToString(valA.value, stateManager)
-                    );
-                  }
+                if (desc) {
                   return defaultSort(
-                    anyToString(valA.value, stateManager),
-                    anyToString(valB.value, stateManager)
+                    anyToString(valB, stateManager),
+                    anyToString(valA, stateManager)
                   );
-                });
-
-                boardModifiers.updateLane(
-                  path,
-                  update(lane, {
-                    children: {
-                      $set: children,
-                    },
-                    data: {
-                      sorted: {
-                        $set: lane.data.sorted === k + '-asc' ? k + '-desc' : k + '-asc',
-                      },
-                    },
-                  })
+                }
+                return defaultSort(
+                  anyToString(valA, stateManager),
+                  anyToString(valB, stateManager)
                 );
               });
-          });
+
+              boardModifiers.updateLane(
+                path,
+                update(lane, {
+                  children: {
+                    $set: children,
+                  },
+                  data: {
+                    sorted: {
+                      $set: lane.data.sorted === k + '-asc' ? k + '-desc' : k + '-asc',
+                    },
+                  },
+                })
+              );
+            });
         });
+      };
+
+      if (metadataSortOptions.size) {
+        metadataSortOptions.forEach(createSortHandler('inline'));
+      }
+
+      if (fileMetadataSortOptions.size) {
+        fileMetadataSortOptions.forEach(createSortHandler('file'));
       }
     };
 
