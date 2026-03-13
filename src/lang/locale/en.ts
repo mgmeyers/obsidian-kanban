@@ -117,6 +117,10 @@ const en = {
   'Hide card counts in list titles': 'Hide card counts in list titles',
   'When toggled, card counts are hidden from the list title':
     'When toggled, card counts are hidden from the list title',
+  'Make "Move to List" the first option on the menu':
+    'Make "Move to List" the first option on the menu',
+  'When toggled, "Move to List" will be the first option in the card menu.':
+    'When toggled, "Move to List" will be the first option in the card menu.',
   'Link dates to daily notes': 'Link dates to daily notes',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]',

@@ -43,8 +43,47 @@ export function useItemMenu({
       const coordinates = { x: e.clientX, y: e.clientY };
       const hasDate = !!item.data.metadata.date;
       const hasTime = !!item.data.metadata.time;
+      const menu = new Menu();
+      const isMoveToListFirst = stateManager.getSetting('menu-move-to-list-first');
 
-      const menu = new Menu().addItem((i) => {
+      function addMoveToMenuItem() {
+        const addMoveToOptions = (menu: Menu) => {
+          const lanes = stateManager.state.children;
+          if (lanes.length <= 1) return;
+          for (let i = 0, len = lanes.length; i < len; i++) {
+            menu.addItem((item) =>
+              item
+                .setIcon('lucide-square-kanban')
+                .setChecked(path[0] === i)
+                .setTitle(lanes[i].data.title)
+                .onClick(() => {
+                  if (path[0] === i) return;
+                  stateManager.setState((boardData) => {
+                    return moveEntity(boardData, path, [i, 0]);
+                  });
+                })
+            );
+          }
+        };
+        if (Platform.isPhone) {
+          addMoveToOptions(menu);
+        } else {
+          menu.addItem((item) => {
+            const submenu = (item as any)
+              .setTitle(t('Move to list'))
+              .setIcon('lucide-square-kanban')
+              .setSubmenu();
+
+            addMoveToOptions(submenu);
+          });
+        }
+      }
+      if (isMoveToListFirst) {
+        addMoveToMenuItem();
+        menu.addSeparator();
+      }
+
+      menu.addItem((i) => {
         i.setIcon('lucide-edit')
           .setTitle(t('Edit card'))
           .onClick(() => setEditState(coordinates));
@@ -263,38 +302,9 @@ export function useItemMenu({
         }
       }
 
-      menu.addSeparator();
-
-      const addMoveToOptions = (menu: Menu) => {
-        const lanes = stateManager.state.children;
-        if (lanes.length <= 1) return;
-        for (let i = 0, len = lanes.length; i < len; i++) {
-          menu.addItem((item) =>
-            item
-              .setIcon('lucide-square-kanban')
-              .setChecked(path[0] === i)
-              .setTitle(lanes[i].data.title)
-              .onClick(() => {
-                if (path[0] === i) return;
-                stateManager.setState((boardData) => {
-                  return moveEntity(boardData, path, [i, 0]);
-                });
-              })
-          );
-        }
-      };
-
-      if (Platform.isPhone) {
-        addMoveToOptions(menu);
-      } else {
-        menu.addItem((item) => {
-          const submenu = (item as any)
-            .setTitle(t('Move to list'))
-            .setIcon('lucide-square-kanban')
-            .setSubmenu();
-
-          addMoveToOptions(submenu);
-        });
+      if (!isMoveToListFirst) {
+        menu.addSeparator();
+        addMoveToMenuItem();
       }
 
       menu.showAtPosition(coordinates);
