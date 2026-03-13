@@ -7,6 +7,7 @@ import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
 
 export const frontmatterKey = 'kanban-plugin';
+export const kanbanDataHeadingKey = "kanban-data-heading";
 
 export enum ParserFormats {
   List,
@@ -15,7 +16,7 @@ export enum ParserFormats {
 export interface BaseFormat {
   newItem(content: string, checkChar: string, forceEdit?: boolean): Item;
   updateItemContent(item: Item, content: string): Item;
-  boardToMd(board: Board): string;
+  boardToMd(board: Board, originalData?: string): string;
   mdToBoard(md: string): Board;
   reparseBoard(): Board;
 }

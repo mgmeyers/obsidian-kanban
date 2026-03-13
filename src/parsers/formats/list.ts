@@ -20,7 +20,7 @@ import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
 import { visit } from 'unist-util-visit';
 
-import { archiveString, completeString, settingsToCodeblock } from '../common';
+import { archiveString, completeString, kanbanDataHeadingKey, settingsToCodeblock } from '../common';
 import { DateNode, FileNode, TimeNode, ValueNode } from '../extensions/types';
 import {
   ContentBoundary,
@@ -42,7 +42,7 @@ import {
   replaceBrs,
   replaceNewLines,
 } from '../helpers/parser';
-import { parseFragment } from '../parseMarkdown';
+import { extractFrontmatter, extractKanbanDataHeadingData, parseFragment } from '../parseMarkdown';
 
 interface TaskItem extends ListItem {
   checkChar?: string;
@@ -440,12 +440,54 @@ function archiveToMd(archive: Item[]) {
   return '';
 }
 
-export function boardToMd(board: Board) {
+export function boardToMd(board: Board, stateManager: StateManager, originalData?: string) {
+  const kanbanDataHeadingChanged = board.data.settings[kanbanDataHeadingKey] != null;
+
+  // search for previous heading in case it was changed
+  let kanbanDataHeadingToSearch = board.data.frontmatter[kanbanDataHeadingKey] as string | null;
+  if(kanbanDataHeadingChanged) {
+    board.data.frontmatter[kanbanDataHeadingKey] = board.data.settings[kanbanDataHeadingKey];
+    delete board.data.settings[kanbanDataHeadingKey];
+  }
+  const kanbanDataHeading = board.data.frontmatter[kanbanDataHeadingKey] as string;
+
   const lanes = board.children.reduce((md, lane) => {
     return md + laneToMd(lane);
   }, '');
 
   const frontmatter = ['---', '', stringifyYaml(board.data.frontmatter), '---', '', ''].join('\n');
 
-  return frontmatter + lanes + archiveToMd(board.data.archive) + settingsToCodeblock(board);
+  if (!kanbanDataHeading || !originalData) {
+    return frontmatter + lanes + archiveToMd(board.data.archive) + settingsToCodeblock(board);
+  } else {
+
+    const kanbanSection = `\n${lanes}\n${archiveToMd(board.data.archive)}\n${settingsToCodeblock(board)}`;
+
+    let originalFrontmatter = {};
+    try {
+      originalFrontmatter = extractFrontmatter(originalData);
+    } catch (e) {
+      // No frontmatter found
+    }
+
+    const mergedFrontmatter = { ...originalFrontmatter, ...board.data.frontmatter };
+    const mergedFrontmatterYaml = ['---', '', stringifyYaml(mergedFrontmatter), '---'].join('\n');
+
+    let updatedData = originalData;
+  
+    const { kanbanSectionFound, offsetEnd, headerPosition } = extractKanbanDataHeadingData(originalData, kanbanDataHeadingToSearch);
+
+    if (kanbanSectionFound) {
+      updatedData = updatedData.slice(0, headerPosition) + `# ${kanbanDataHeading}` + kanbanSection + updatedData.slice(offsetEnd);
+    } else {
+      updatedData = `# ${kanbanDataHeading}\n${kanbanSection}`;
+    }
+
+    const frontmatterRegex = /^---\n[\s\S]*?\n---/;
+    if (updatedData.match(frontmatterRegex)) {
+      return updatedData.replace(frontmatterRegex, mergedFrontmatterYaml);
+    } else {
+      return `${mergedFrontmatterYaml}\n${updatedData}`;
+    }
+  }
 }
