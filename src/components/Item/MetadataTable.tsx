@@ -1,4 +1,5 @@
 import classcat from 'classcat';
+import update from 'immutability-helper';
 import { isPlainObject } from 'is-plain-object';
 import { TFile, moment } from 'obsidian';
 import { getAPI } from 'obsidian-dataview';
@@ -6,17 +7,21 @@ import { ComponentChild } from 'preact';
 import { memo, useContext, useMemo } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
+import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { InlineField, taskFields } from 'src/parsers/helpers/inlineMetadata';
 
+import { ItemCollapseState } from '../../Settings';
 import { MarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext } from '../context';
 import { c, parseMetadataWithOptions, useGetDateColorFn } from '../helpers';
+import { Board } from '../types';
 import { DataKey, FileMetadata, Item, PageData } from '../types';
 import { Tags } from './ItemContent';
 
 export interface ItemMetadataProps {
   item: Item;
   searchQuery?: string;
+  isCollapsed: boolean;
 }
 
 function mergeMetadata(
@@ -34,17 +39,44 @@ function mergeMetadata(
   }, fileMetadata || {});
 }
 
-export function ItemMetadata({ item, searchQuery }: ItemMetadataProps) {
-  const { stateManager } = useContext(KanbanContext);
+export function ItemMetadata({ item, searchQuery, isCollapsed }: ItemMetadataProps) {
+  const { view, stateManager } = useContext(KanbanContext);
   const mergeInlineMetadata =
     stateManager.useSetting('inline-metadata-position') === 'metadata-table';
+  const outsideInlineMetadata = stateManager.useSetting('inline-metadata-position') !== 'body';
   const metadataKeys = stateManager.useSetting('metadata-keys');
   const { fileMetadata, fileMetadataOrder, inlineMetadata } = item.data.metadata;
 
   const metadata = useMemo(() => {
+    const path = useNestedEntityPath();
     const metadata = mergeInlineMetadata
       ? mergeMetadata(fileMetadata, inlineMetadata, metadataKeys || [])
       : fileMetadata;
+
+    if (path.length) {
+      stateManager.setState((boardData: Board) => {
+        const collapseState = view.getViewState('item-collapse');
+        const op = (collapseState: ItemCollapseState) => {
+          const [laneIdx, itemIdx] = path;
+          const newState = collapseState.map((inner) => [...inner]);
+          const currentState = newState[laneIdx][itemIdx];
+          const metadataPresent = fileMetadata || (outsideInlineMetadata && inlineMetadata);
+          const metadataPresentBefore = newState[laneIdx][itemIdx] !== undefined;
+
+          newState[laneIdx][itemIdx] = metadataPresent
+            ? metadataPresentBefore
+              ? currentState
+              : false
+            : undefined;
+
+          return newState;
+        };
+        view.setViewState('item-collapse', op(collapseState), undefined);
+        return update<Board>(boardData, {
+          data: { settings: { 'item-collapse': { $set: op(collapseState) } } },
+        });
+      });
+    }
 
     if (!metadata) return null;
     if (!Object.keys(metadata).length) return null;
@@ -68,7 +100,10 @@ export function ItemMetadata({ item, searchQuery }: ItemMetadataProps) {
   }
 
   return (
-    <div className={c('item-metadata-wrapper')}>
+    <div
+      className={c('item-metadata-wrapper')}
+      style={isCollapsed ? 'display:none' : 'display:block'}
+    >
       <MetadataTable metadata={metadata} order={order} searchQuery={searchQuery} />
     </div>
   );

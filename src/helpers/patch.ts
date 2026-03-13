@@ -78,11 +78,13 @@ function getDiff(
   let path: OpPath;
 
   if (trimFromRight(obj1, obj2)) {
+    // if a property absent in new state, schedule its removal
     for (const k of obj1Keys) {
       const key = Array.isArray(obj1) ? Number(k) : k;
       if (!(key in obj2)) {
         path = basePathForRemoves.concat(key);
-        if (skip(path)) continue;
+        // allow file metadata to have names matching generated keys (date, time, id etc.)
+        if (skip(path) && !path.contains('fileMetadata')) continue;
         diffs.remove.push({
           op: REMOVE,
           path,
@@ -114,7 +116,7 @@ function getDiff(
       });
     }
 
-    // now make a copy of obj1 with excess elements left trimmed and see if there any replaces
+    // now make a copy of obj1 with excess elements left trimmed and see if there are any replaces
     const obj1Trimmed = obj1.slice(lengthDelta);
     for (let i = 0; i < obj2KeysLength; i++) {
       pushReplaces(
@@ -148,11 +150,14 @@ function pushReplaces(
   const obj1AtKey = obj1[key];
   const obj2AtKey = obj2[key];
 
-  if (skip(path, obj2AtKey)) return;
+  // allow file metadata to have names matching generated keys (date, time, id etc.)
+  if (skip(path, obj2AtKey) && !path.contains('fileMetadata')) return;
 
+  // if property absent in current state, schedule its addition
   if (!(key in obj1) && key in obj2) {
     diffs.add.push({ op: ADD, path, value: obj2AtKey });
   } else if (obj1AtKey !== obj2AtKey) {
+    // property present in both states yet holding different values
     if (
       Object(obj1AtKey) !== obj1AtKey ||
       Object(obj2AtKey) !== obj2AtKey ||
@@ -199,7 +204,7 @@ function trimFromRight(obj1: Record<string, any>, obj2: Record<string, any>) {
       }
     }
 
-    // bias to trim right becase it requires less index shifting
+    // bias to trim right because it requires less index shifting
     return leftMatches >= rightMatches;
   }
 
@@ -253,6 +258,12 @@ export function diffApply(obj: Diffable, diff: Op[]) {
 
     if (thisOp === REMOVE && typeof lastProp === 'number') {
       Array.isArray(subObject) ? subObject.splice(lastProp, 1) : delete subObject[lastProp];
+    }
+
+    if (thisOp === REMOVE && typeof lastProp === 'string') {
+      if (isPlainObject(subObject)) {
+        delete subObject[lastProp];
+      }
     }
 
     if (thisOp === REPLACE || thisOp === ADD) {

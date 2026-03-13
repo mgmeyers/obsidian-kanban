@@ -1,4 +1,5 @@
 import classcat from 'classcat';
+import update from 'immutability-helper';
 import {
   JSX,
   memo,
@@ -27,6 +28,7 @@ import { getItemClassModifiers } from './helpers';
 export interface DraggableItemProps {
   item: Item;
   itemIndex: number;
+  laneIndex: number;
   isStatic?: boolean;
   shouldMarkItemsComplete?: boolean;
 }
@@ -37,6 +39,7 @@ export interface ItemInnerProps {
   shouldMarkItemsComplete?: boolean;
   isMatch?: boolean;
   searchQuery?: string;
+  isCollapsed?: boolean;
 }
 
 const ItemInner = memo(function ItemInner({
@@ -45,8 +48,9 @@ const ItemInner = memo(function ItemInner({
   isMatch,
   searchQuery,
   isStatic,
+  isCollapsed = false,
 }: ItemInnerProps) {
-  const { stateManager, boardModifiers } = useContext(KanbanContext);
+  const { stateManager, boardModifiers, view } = useContext(KanbanContext);
   const [editState, setEditState] = useState<EditState>(EditingState.cancel);
 
   const dndManager = useContext(DndManagerContext);
@@ -69,6 +73,23 @@ const ItemInner = memo(function ItemInner({
   }, [item.data.forceEditMode]);
 
   const path = useNestedEntityPath();
+
+  const toggleIsCollapsed = useCallback(() => {
+    stateManager.setState((board) => {
+      const collapseState = view.getViewState('item-collapse');
+      const op = (collapseState: boolean[][]) => {
+        const [laneIdx, itemIdx] = path;
+        const newState = collapseState.map((inner) => [...inner]);
+        newState[laneIdx][itemIdx] = !newState[laneIdx][itemIdx];
+        return newState;
+      };
+
+      view.setViewState('item-collapse', undefined, op);
+      return update(board, {
+        data: { settings: { 'item-collapse': { $set: op(collapseState) } } },
+      });
+    });
+  }, [stateManager, path]);
 
   const showItemMenu = useItemMenu({
     boardModifiers,
@@ -129,10 +150,16 @@ const ItemInner = memo(function ItemInner({
           setEditState={setEditState}
           editState={editState}
           isStatic={isStatic}
+          isCollapsed={isCollapsed}
+          toggleIsCollapsed={toggleIsCollapsed}
         />
         <ItemMenuButton editState={editState} setEditState={setEditState} showMenu={showItemMenu} />
       </div>
-      <ItemMetadata searchQuery={isMatch ? searchQuery : undefined} item={item} />
+      <ItemMetadata
+        searchQuery={isMatch ? searchQuery : undefined}
+        item={item}
+        isCollapsed={isCollapsed}
+      />
     </div>
   );
 });
@@ -141,8 +168,10 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
   const elementRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const search = useContext(SearchContext);
+  const { view } = useContext(KanbanContext);
 
-  const { itemIndex, ...innerProps } = props;
+  const { itemIndex, laneIndex, ...innerProps } = props;
+  const collapseState = view.useViewState('item-collapse') || [[]];
 
   const bindHandle = useDragHandle(measureRef, measureRef);
 
@@ -164,6 +193,7 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
             isMatch={isMatch}
             searchQuery={search?.query}
             isStatic={true}
+            isCollapsed={!!collapseState[laneIndex][itemIndex]}
           />
         ) : (
           <Droppable
@@ -173,7 +203,12 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
             index={itemIndex}
             data={props.item}
           >
-            <ItemInner {...innerProps} isMatch={isMatch} searchQuery={search?.query} />
+            <ItemInner
+              {...innerProps}
+              isMatch={isMatch}
+              searchQuery={search?.query}
+              isCollapsed={!!collapseState[laneIndex][itemIndex]}
+            />
           </Droppable>
         )}
       </div>
@@ -183,11 +218,17 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
 
 interface ItemsProps {
   isStatic?: boolean;
+  laneIndex: number;
   items: Item[];
   shouldMarkItemsComplete: boolean;
 }
 
-export const Items = memo(function Items({ isStatic, items, shouldMarkItemsComplete }: ItemsProps) {
+export const Items = memo(function Items({
+  isStatic,
+  laneIndex,
+  items,
+  shouldMarkItemsComplete,
+}: ItemsProps) {
   const search = useContext(SearchContext);
   const { view } = useContext(KanbanContext);
   const boardView = view.useViewState(frontmatterKey);
@@ -200,6 +241,7 @@ export const Items = memo(function Items({ isStatic, items, shouldMarkItemsCompl
             key={boardView + item.id}
             item={item}
             itemIndex={i}
+            laneIndex={laneIndex}
             shouldMarkItemsComplete={shouldMarkItemsComplete}
             isStatic={isStatic}
           />
