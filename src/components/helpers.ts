@@ -280,6 +280,10 @@ export function getDateColorFn(dateColors: DateColor[]) {
     if (b[0] === 'after') return -1;
     if (b[0] === 'before') return -1;
 
+    if (a[1].direction === 'before' && b[1].direction === 'before') {
+      return a[0].isBefore(b[0]) ? 1 : -1;
+    }
+
     return a[0].isBefore(b[0]) ? -1 : 1;
   });
 
