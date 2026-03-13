@@ -60,8 +60,20 @@ export function dedentNewLines(str: string) {
 export function parseLaneTitle(str: string) {
   str = replaceBrs(str);
 
-  const match = str.match(/^(.*?)\s*\((\d+)\)$/);
-  if (match == null) return { title: str, maxItems: 0 };
+  // Check for tasks query block first
+  const queryMatch = str.match(/```tasks\n([\s\S]*?)\n```/);
+  let query: string | undefined;
+  
+  if (queryMatch) {
+    query = queryMatch[1].trim();
+    // Remove the query block from the title
+    str = str.replace(/```tasks\n[\s\S]*?\n```/, '').trim();
+  }
 
-  return { title: match[1], maxItems: Number(match[2]) };
+  const match = str.match(/^(.*?)\s*\((\d+)\)$/);
+  if (match == null) {
+    return { title: str, maxItems: 0, query };
+  }
+
+  return { title: match[1], maxItems: Number(match[2]), query };
 }

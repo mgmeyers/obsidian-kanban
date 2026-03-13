@@ -8,6 +8,7 @@ import { getDefaultDateFormat, getDefaultTimeFormat } from './components/helpers
 import { Board, BoardTemplate, Item } from './components/types';
 import { ListFormat } from './parsers/List';
 import { BaseFormat, frontmatterKey, shouldRefreshBoard } from './parsers/common';
+import { refreshDynamicLanes } from './parsers/helpers/taskQuery';
 import { getTaskStatusDone } from './parsers/helpers/inlineMetadata';
 import { defaultDateTrigger, defaultMetadataPosition, defaultTimeTrigger } from './settingHelpers';
 
@@ -351,6 +352,18 @@ export class StateManager {
 
   onFileMetadataChange() {
     this.reparseBoardFromMd();
+    this.refreshDynamicLanes();
+  }
+
+  refreshDynamicLanes() {
+    const board = this.state;
+    const refreshedLanes = refreshDynamicLanes(this, board.children);
+    
+    if (refreshedLanes !== board.children) {
+      this.setState(update(board, {
+        children: { $set: refreshedLanes }
+      }), false);
+    }
   }
 
   async reparseBoardFromMd() {
