@@ -64,6 +64,7 @@ export interface KanbanSettings {
   'full-list-lane-width'?: boolean;
   'hide-card-count'?: boolean;
   'inline-metadata-position'?: 'body' | 'footer' | 'metadata-table';
+  'hide-task-count'?: boolean;
   'lane-width'?: number;
   'link-date-to-daily-note'?: boolean;
   'list-collapse'?: boolean[];
@@ -112,6 +113,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'full-list-lane-width',
   'hide-card-count',
   'inline-metadata-position',
+  'hide-task-count',
   'lane-width',
   'link-date-to-daily-note',
   'list-collapse',
