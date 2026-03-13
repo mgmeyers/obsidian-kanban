@@ -23,7 +23,7 @@ export type IntersectionObserverHandler = (entry: IntersectionObserverEntry) => 
 
 export const scrollContainerEntityType = 'scroll-container';
 
-const scrollStrengthModifier = 8;
+const scrollStrengthModifier = 1;
 
 const sides: Side[] = ['top', 'right', 'bottom', 'left'];
 
