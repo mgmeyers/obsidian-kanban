@@ -14,6 +14,11 @@ const lang: Partial<Lang> = {
   'Untitled Kanban': '이름 없는 보드',
   'Toggle between Kanban and markdown mode': '칸반 모드와 마크다운 모드 전환',
 
+  'View as board': '보드로 보기',
+  'View as list': '목록으로 보기',
+  'View as table': '표로 보기',
+  'Board view': '보기 모드',
+
   // KanbanView.tsx
   'Open as markdown': '마크다운으로 열기',
   'Open board settings': '보드 설정 열기',
