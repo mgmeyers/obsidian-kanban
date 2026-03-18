@@ -14,13 +14,14 @@ import { DndManagerContext } from 'src/dnd/components/context';
 import { useDragHandle } from 'src/dnd/managers/DragManager';
 import { frontmatterKey } from 'src/parsers/common';
 
-import { KanbanContext, SearchContext } from '../context';
+import { KanbanContext, LaneTitleContext, SearchContext } from '../context';
 import { c } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
 import { ItemCheckbox } from './ItemCheckbox';
 import { ItemContent } from './ItemContent';
 import { useItemMenu } from './ItemMenu';
 import { ItemMenuButton } from './ItemMenuButton';
+import { ItemProperties } from './ItemProperties';
 import { ItemMetadata } from './MetadataTable';
 import { getItemClassModifiers } from './helpers';
 
@@ -46,7 +47,8 @@ const ItemInner = memo(function ItemInner({
   searchQuery,
   isStatic,
 }: ItemInnerProps) {
-  const { stateManager, boardModifiers } = useContext(KanbanContext);
+  const { stateManager, boardModifiers, onOpenFile, getOpenFilePath } = useContext(KanbanContext);
+  const laneTitle = useContext(LaneTitleContext);
   const [editState, setEditState] = useState<EditState>(EditingState.cancel);
 
   const dndManager = useContext(DndManagerContext);
@@ -107,10 +109,32 @@ const ItemInner = memo(function ItemInner({
     return {};
   }, [editState]);
 
+  const onCardClick: JSX.MouseEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      if (isEditing(editState)) return;
+      const target = e.target as HTMLElement;
+      if (
+        target.closest('a') ||
+        target.closest('button') ||
+        target.closest('input') ||
+        target.closest(`.${c('item-prefix-button-wrapper')}`) ||
+        target.closest(`.${c('item-postfix-button-wrapper')}`)
+      ) {
+        return;
+      }
+      const file = item.data.metadata.file;
+      if (file && onOpenFile) {
+        e.preventDefault();
+        e.stopPropagation();
+        onOpenFile(getOpenFilePath?.() === file.path ? null : file);
+      }
+    },
+    [item, onOpenFile, getOpenFilePath, editState]
+  );
+
   return (
     <div
-      // eslint-disable-next-line react/no-unknown-property
-      onDblClick={onDoubleClick}
+      onClick={onCardClick}
       onContextMenu={onContextMenu}
       className={c('item-content-wrapper')}
       {...ignoreAttr}
@@ -133,6 +157,10 @@ const ItemInner = memo(function ItemInner({
         <ItemMenuButton editState={editState} setEditState={setEditState} showMenu={showItemMenu} />
       </div>
       <ItemMetadata searchQuery={isMatch ? searchQuery : undefined} item={item} />
+      <ItemProperties
+        item={item}
+        laneTitle={laneTitle}
+      />
     </div>
   );
 });

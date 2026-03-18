@@ -2,7 +2,7 @@ import update from 'immutability-helper';
 import { Content, List, Parent, Root } from 'mdast';
 import { ListItem } from 'mdast-util-from-markdown/lib';
 import { toString } from 'mdast-util-to-string';
-import { stringifyYaml } from 'obsidian';
+import { moment, stringifyYaml } from 'obsidian';
 import { KanbanSettings } from 'src/Settings';
 import { StateManager } from 'src/StateManager';
 import { generateInstanceId } from 'src/components/helpers';
@@ -219,6 +219,28 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
       }
 
       itemData.title = title;
+    }
+
+    // Always strip created/modified fields from title display
+    {
+      let title = itemData.title;
+      for (const item of [...inlineMetadata].reverse()) {
+        if (item.key === 'created' || item.key === 'modified') {
+          title = title.slice(0, item.start) + title.slice(item.end);
+        }
+      }
+      itemData.title = title;
+    }
+  }
+
+  // Extract created/modified dates from inline fields
+  if (itemData.metadata.inlineMetadata?.length) {
+    for (const field of itemData.metadata.inlineMetadata) {
+      if (field.key === 'created') {
+        itemData.metadata.createdDate = field.value;
+      } else if (field.key === 'modified') {
+        itemData.metadata.modifiedDate = field.value;
+      }
     }
   }
 
@@ -438,6 +460,28 @@ function archiveToMd(archive: Item[]) {
   }
 
   return '';
+}
+
+const inlineFieldRegex = (key: string) => new RegExp(`\\(${key}::\\s*[^)]*\\)`);
+
+function appendInlineField(content: string, key: string, value: string): string {
+  const firstLine = content.split('\n')[0];
+  if (inlineFieldRegex(key).test(firstLine)) {
+    return content;
+  }
+  const lines = content.split('\n');
+  lines[0] = `${lines[0]} (${key}:: ${value})`;
+  return lines.join('\n');
+}
+
+function upsertInlineField(content: string, key: string, value: string): string {
+  const regex = inlineFieldRegex(key);
+  if (regex.test(content)) {
+    return content.replace(regex, `(${key}:: ${value})`);
+  }
+  const lines = content.split('\n');
+  lines[0] = `${lines[0]} (${key}:: ${value})`;
+  return lines.join('\n');
 }
 
 export function boardToMd(board: Board) {

@@ -85,6 +85,10 @@ export interface KanbanSettings {
   'show-set-view'?: boolean;
   'show-view-as-markdown'?: boolean;
   'table-sizing'?: Record<string, number>;
+  'show-created-date'?: boolean;
+  'show-modified-date'?: boolean;
+  'show-status-property'?: boolean;
+  'show-tags-property'?: boolean;
   'tag-action'?: 'kanban' | 'obsidian';
   'tag-colors'?: TagColor[];
   'tag-sort'?: TagSort[];
@@ -128,9 +132,13 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'show-archive-all',
   'show-board-settings',
   'show-checkboxes',
+  'show-created-date',
+  'show-modified-date',
   'show-relative-date',
   'show-search',
   'show-set-view',
+  'show-status-property',
+  'show-tags-property',
   'show-view-as-markdown',
   'table-sizing',
   'tag-action',

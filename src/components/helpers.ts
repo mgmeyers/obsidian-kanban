@@ -1,5 +1,5 @@
 import update from 'immutability-helper';
-import { App, MarkdownView, TFile, moment } from 'obsidian';
+import { App, MarkdownView, TFile, TFolder, moment } from 'obsidian';
 import Preact, { Dispatch, RefObject, useEffect } from 'preact/compat';
 import { StateUpdater, useMemo } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
@@ -167,6 +167,69 @@ export async function applyTemplate(stateManager: StateManager, templatePath?: s
   }
 }
 
+const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
+const condenceWhiteSpaceRE = /\s+/g;
+const embedRegEx = /!?\[\[([^\]]*)\.[^\]]+\]\]/g;
+const wikilinkRegEx = /!?\[\[([^\]]*)\]\]/g;
+const mdLinkRegEx = /!?\[([^\]]*)\]\([^)]*\)/g;
+const tagRegEx = /#([^\u2000-\u206F\u2E00-\u2E7F'!"#$%&()*+,.:;<=>?@^`{|}~[\]\\\s\n\r]+)/g;
+
+function sanitizeTitle(title: string): string {
+  return title
+    .replace(embedRegEx, '$1')
+    .replace(wikilinkRegEx, '$1')
+    .replace(mdLinkRegEx, '$1')
+    .replace(tagRegEx, '$1')
+    .replace(illegalCharsRegEx, ' ')
+    .trim()
+    .replace(condenceWhiteSpaceRE, ' ');
+}
+
+export async function createNoteForItem(
+  stateManager: StateManager,
+  title: string
+): Promise<string> {
+  const sanitizedTitle = sanitizeTitle(title.split('\n')[0].trim());
+  if (!sanitizedTitle) return title;
+
+  const newNoteTemplatePath = stateManager.getSetting('new-note-template');
+
+  // Create subfolder named after the board file (e.g., Projects/Work/ for Work.md)
+  const boardFile = stateManager.file;
+  const boardDir = boardFile.parent?.path || '';
+  const boardName = boardFile.basename;
+  const subfolderPath = boardDir ? `${boardDir}/${boardName}` : boardName;
+
+  let targetFolder = stateManager.app.vault.getAbstractFileByPath(subfolderPath) as TFolder;
+  if (!targetFolder) {
+    await stateManager.app.vault.createFolder(subfolderPath);
+    targetFolder = stateManager.app.vault.getAbstractFileByPath(subfolderPath) as TFolder;
+  }
+
+  const newFile = (await (stateManager.app.fileManager as any).createNewMarkdownFile(
+    targetFolder,
+    sanitizedTitle
+  )) as TFile;
+
+  await applyTemplate(stateManager, newNoteTemplatePath as string | undefined);
+
+  // Write properties to frontmatter via Obsidian API
+  const created = moment().format('YYYY-MM-DD');
+  const tagMatches = title.match(/#[^\s#]+/g);
+  const tags = tagMatches ? tagMatches.map((t) => t.slice(1)) : [];
+
+  await stateManager.app.fileManager.processFrontMatter(newFile, (fm) => {
+    fm.created = created;
+    fm.modified = created;
+    if (tags.length) fm.tags = tags;
+  });
+
+  // Return title with wikilink (keep inline tags for board display)
+  const link = stateManager.app.fileManager.generateMarkdownLink(newFile, stateManager.file.path);
+  const newTitle = title.replace(title.split('\n')[0].trim(), link);
+  return newTitle;
+}
+
 export function getDefaultDateFormat(app: App) {
   const internalPlugins = (app as any).internalPlugins.plugins;
   const dailyNotesEnabled = internalPlugins['daily-notes']?.enabled;
@@ -224,6 +287,54 @@ export function getTemplatePlugins(app: App) {
   };
 }
 
+// Notion-inspired tag color palette
+export const TAG_COLOR_PALETTE: Array<{ color: string; backgroundColor: string }> = [
+  { color: '#487CA5', backgroundColor: '#E9F3F7' }, // Blue
+  { color: '#548164', backgroundColor: '#EEF3ED' }, // Green
+  { color: '#8A67AB', backgroundColor: '#F6F3F8' }, // Purple
+  { color: '#CC782F', backgroundColor: '#F8ECDF' }, // Orange
+  { color: '#B35488', backgroundColor: '#F9F2F5' }, // Pink
+  { color: '#C4554D', backgroundColor: '#FAECEC' }, // Red
+  { color: '#C29343', backgroundColor: '#FAF3DD' }, // Yellow
+  { color: '#976D57', backgroundColor: '#F3EEEE' }, // Brown
+  { color: '#487CA5', backgroundColor: '#E1ECF4' }, // Teal-ish blue
+  { color: '#787774', backgroundColor: '#F1F1EF' }, // Gray
+];
+
+export function hashTagToIndex(tag: string): number {
+  let hash = 0;
+  const name = tag.startsWith('#') ? tag.slice(1) : tag;
+  for (let i = 0; i < name.length; i++) {
+    hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) % TAG_COLOR_PALETTE.length;
+}
+
+export function getAutoTagColor(tag: string) {
+  return TAG_COLOR_PALETTE[hashTagToIndex(tag)];
+}
+
+export function injectGlobalTagStyles(tags: Set<string>) {
+  const styleId = 'kanban-plugin-tag-colors';
+  let styleEl = document.getElementById(styleId) as HTMLStyleElement;
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = styleId;
+    document.head.appendChild(styleEl);
+  }
+
+  const rules: string[] = [];
+  tags.forEach((tag) => {
+    const name = tag.startsWith('#') ? tag.slice(1) : tag;
+    const palette = getAutoTagColor(tag);
+    const escaped = CSS.escape(name);
+    // Properties panel pills
+    rules.push(`.multi-select-pill[data-value="${escaped}"] { background-color: ${palette.backgroundColor} !important; color: ${palette.color} !important; border: none !important; }`);
+  });
+
+  styleEl.textContent = rules.join('\n');
+}
+
 export function getTagColorFn(tagColors: TagColor[]) {
   const tagMap = (tagColors || []).reduce<Record<string, TagColor>>((total, current) => {
     if (!current.tagKey) return total;
@@ -233,7 +344,8 @@ export function getTagColorFn(tagColors: TagColor[]) {
 
   return (tag: string) => {
     if (tagMap[tag]) return tagMap[tag];
-    return null;
+    const palette = getAutoTagColor(tag);
+    return { tagKey: tag, color: palette.color, backgroundColor: palette.backgroundColor };
   };
 }
 

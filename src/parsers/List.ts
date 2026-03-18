@@ -23,6 +23,9 @@ const generatedKeys: Array<string | number> = [
   'titleSearch',
   'titleSearchRaw',
   'file',
+  'tags',
+  'createdDate',
+  'modifiedDate',
 ];
 
 export class ListFormat implements BaseFormat {

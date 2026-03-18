@@ -75,6 +75,8 @@ export interface ItemMetadata {
   fileMetadata?: FileMetadata;
   fileMetadataOrder?: string[];
   inlineMetadata?: InlineField[];
+  createdDate?: string;
+  modifiedDate?: string;
 }
 
 export interface ItemData {
