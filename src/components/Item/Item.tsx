@@ -47,7 +47,7 @@ const ItemInner = memo(function ItemInner({
   searchQuery,
   isStatic,
 }: ItemInnerProps) {
-  const { stateManager, boardModifiers } = useContext(KanbanContext);
+  const { stateManager, boardModifiers, onOpenFile, getOpenFilePath } = useContext(KanbanContext);
   const laneTitle = useContext(LaneTitleContext);
   const [editState, setEditState] = useState<EditState>(EditingState.cancel);
 
@@ -123,27 +123,17 @@ const ItemInner = memo(function ItemInner({
         return;
       }
       const file = item.data.metadata.file;
-      if (file) {
+      if (file && onOpenFile) {
         e.preventDefault();
-        // Check if file is already open in a leaf — if so, close it
-        const existing = stateManager.app.workspace.getLeavesOfType('markdown').find(
-          (leaf) => (leaf.view as any)?.file?.path === file.path
-        );
-        if (existing) {
-          existing.detach();
-        } else {
-          const leaf = stateManager.app.workspace.getLeaf('split');
-          leaf.openFile(file);
-        }
+        e.stopPropagation();
+        onOpenFile(getOpenFilePath?.() === file.path ? null : file);
       }
     },
-    [item, stateManager, editState]
+    [item, onOpenFile, getOpenFilePath, editState]
   );
 
   return (
     <div
-      // eslint-disable-next-line react/no-unknown-property
-      onDblClick={onDoubleClick}
       onClick={onCardClick}
       onContextMenu={onContextMenu}
       className={c('item-content-wrapper')}

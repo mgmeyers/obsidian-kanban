@@ -224,10 +224,9 @@ export async function createNoteForItem(
     if (tags.length) fm.tags = tags;
   });
 
-  // Return title with wikilink, stripping inline tags (they're in frontmatter now)
+  // Return title with wikilink (keep inline tags for board display)
   const link = stateManager.app.fileManager.generateMarkdownLink(newFile, stateManager.file.path);
-  let newTitle = title.replace(title.split('\n')[0].trim(), link);
-  newTitle = newTitle.replace(/#[^\s#]+/g, '').replace(/\s+/g, ' ').trim();
+  const newTitle = title.replace(title.split('\n')[0].trim(), link);
   return newTitle;
 }
 

@@ -1,3 +1,4 @@
+import { TFile } from 'obsidian';
 import { createContext } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
@@ -11,6 +12,8 @@ export interface KanbanContextProps {
   stateManager: StateManager;
   boardModifiers: BoardModifiers;
   view: KanbanView;
+  onOpenFile?: (file: TFile | null) => void;
+  getOpenFilePath?: () => string | null;
 }
 
 export const KanbanContext = createContext<KanbanContextProps>(null);
