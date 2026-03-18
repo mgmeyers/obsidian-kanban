@@ -109,10 +109,35 @@ const ItemInner = memo(function ItemInner({
     return {};
   }, [editState]);
 
+  const onCardClick: JSX.MouseEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      if (isEditing(editState)) return;
+      const target = e.target as HTMLElement;
+      // Skip if clicking on interactive elements
+      if (
+        target.closest('a') ||
+        target.closest('button') ||
+        target.closest('input') ||
+        target.closest(`.${c('item-prefix-button-wrapper')}`) ||
+        target.closest(`.${c('item-postfix-button-wrapper')}`)
+      ) {
+        return;
+      }
+      const file = item.data.metadata.file;
+      if (file) {
+        e.preventDefault();
+        const leaf = stateManager.app.workspace.getLeaf('split');
+        leaf.openFile(file);
+      }
+    },
+    [item, stateManager, editState]
+  );
+
   return (
     <div
       // eslint-disable-next-line react/no-unknown-property
       onDblClick={onDoubleClick}
+      onClick={onCardClick}
       onContextMenu={onContextMenu}
       className={c('item-content-wrapper')}
       {...ignoreAttr}
