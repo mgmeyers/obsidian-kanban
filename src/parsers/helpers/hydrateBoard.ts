@@ -127,6 +127,7 @@ export function hydrateItem(stateManager: StateManager, item: Item) {
 
     if (file) {
       item.data.metadata.file = file;
+      item.data.metadata.modifiedDate = moment(file.stat.mtime).format('YYYY-MM-DD');
     }
   }
 

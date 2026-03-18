@@ -932,6 +932,144 @@ button.kanban-plugin__new-item-button {
   color: var(--text-normal);
 }
 
+// Board toolbar
+.kanban-plugin__board-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 4px 8px;
+  gap: 4px;
+}
+
+// Property toggle dropdown
+.kanban-plugin__property-toggle-wrapper {
+  position: relative;
+}
+
+.kanban-plugin__property-toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  color: var(--text-muted);
+
+  &:hover {
+    color: var(--text-normal);
+    background: var(--background-modifier-hover);
+  }
+}
+
+.kanban-plugin__property-toggle-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--layer-menu);
+}
+
+.kanban-plugin__property-toggle-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: var(--layer-menu);
+  min-width: 200px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-s);
+  padding: 4px 0;
+}
+
+.kanban-plugin__property-toggle-header {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kanban-plugin__property-toggle-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: var(--font-ui-small);
+
+  &:hover {
+    background: var(--background-modifier-hover);
+  }
+
+  input[type='checkbox'] {
+    margin: 0;
+  }
+}
+
+// Item properties (Notion-style badges)
+.kanban-plugin__item-properties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px 8px 6px;
+  background: var(--background-primary);
+  border-top: 1px solid var(--background-modifier-border);
+  font-size: 0.7rem;
+}
+
+.kanban-plugin__item-property {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: var(--radius-s);
+  background: var(--background-secondary);
+  color: var(--text-muted);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.kanban-plugin__item-property-icon {
+  font-size: 0.65rem;
+  flex-shrink: 0;
+}
+
+.kanban-plugin__item-property-value {
+  color: var(--text-normal);
+}
+
+.kanban-plugin__item-property-status {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+
+  .kanban-plugin__item-property-icon {
+    color: var(--text-on-accent);
+    opacity: 0.7;
+  }
+
+  .kanban-plugin__item-property-value {
+    color: var(--text-on-accent);
+  }
+}
+
+.kanban-plugin__item-property-tags {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.kanban-plugin__item-property-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: var(--radius-s);
+  background: var(--background-secondary);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
 .kanban-plugin__item-prefix-button-wrapper,
 .kanban-plugin__item-postfix-button-wrapper {
   display: flex;

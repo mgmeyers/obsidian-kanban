@@ -191,6 +191,7 @@ const en = {
   Priority: 'Priority',
   Start: 'Start',
   Created: 'Created',
+  Modified: 'Modified',
   Scheduled: 'Scheduled',
   Due: 'Due',
   Cancelled: 'Cancelled',
@@ -203,6 +204,18 @@ const en = {
   Cancel: 'Cancel',
   Done: 'Done',
   Save: 'Save',
+
+  // components/Item/ItemProperties.tsx
+  'Created date': 'Created date',
+  'Modified date': 'Modified date',
+  Status: 'Status',
+
+  // components/PropertyToggle.tsx
+  Properties: 'Properties',
+  'Show created date': 'Show created date',
+  'Show modified date': 'Show modified date',
+  'Show status': 'Show status',
+  'Show tags': 'Show tags',
 
   // components/Item/ItemContent.tsx
   today: 'today',

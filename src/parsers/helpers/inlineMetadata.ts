@@ -90,6 +90,8 @@ export function lableToIcon(label: string, value: any) {
       return DEFAULT_SYMBOLS.startDateSymbol;
     case 'created':
       return DEFAULT_SYMBOLS.createdDateSymbol;
+    case 'modified':
+      return '✏️';
     case 'scheduled':
       return DEFAULT_SYMBOLS.scheduledDateSymbol;
     case 'due':
@@ -117,6 +119,8 @@ export function lableToName(label: string) {
       return t('Start');
     case 'created':
       return t('Created');
+    case 'modified':
+      return t('Modified');
     case 'scheduled':
       return t('Scheduled');
     case 'due':
@@ -360,6 +364,7 @@ export const taskFields = new Set([
   'priority',
   'start',
   'created',
+  'modified',
   'scheduled',
   'due',
   'completion',

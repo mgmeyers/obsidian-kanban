@@ -1,12 +1,12 @@
 import { EditorView } from '@codemirror/view';
-import { Dispatch, StateUpdater, useContext, useRef } from 'preact/hooks';
+import { Dispatch, StateUpdater, useCallback, useContext, useRef } from 'preact/hooks';
 import useOnclickOutside from 'react-cool-onclickoutside';
 import { t } from 'src/lang/helpers';
 
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
 import { getDropAction } from '../Editor/helpers';
 import { KanbanContext } from '../context';
-import { c } from '../helpers';
+import { c, createNoteForItem } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
 
 interface ItemFormProps {
@@ -25,19 +25,23 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
     ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],
   });
 
-  const createItem = (title: string) => {
-    addItems([stateManager.getNewItem(title, ' ')]);
+  const clearEditor = useCallback(() => {
     const cm = editorRef.current;
     if (cm) {
       cm.dispatch({
-        changes: {
-          from: 0,
-          to: cm.state.doc.length,
-          insert: '',
-        },
+        changes: { from: 0, to: cm.state.doc.length, insert: '' },
       });
     }
-  };
+  }, []);
+
+  const createItem = useCallback(
+    async (title: string) => {
+      const linkedTitle = await createNoteForItem(stateManager, title);
+      addItems([stateManager.getNewItem(linkedTitle, ' ')]);
+      clearEditor();
+    },
+    [stateManager, addItems, clearEditor]
+  );
 
   if (isEditing(editState)) {
     return (

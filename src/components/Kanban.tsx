@@ -17,6 +17,7 @@ import { frontmatterKey } from '../parsers/common';
 import { Icon } from './Icon/Icon';
 import { Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
+import { PropertyToggle } from './PropertyToggle';
 import { TableView } from './Table/Table';
 import { KanbanContext, SearchContext } from './context';
 import { baseClassName, c, useSearchValue } from './helpers';
@@ -228,6 +229,9 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
             {(isLaneFormVisible || boardData.children.length === 0) && (
               <LaneForm onNewLane={onNewLane} closeLaneForm={closeLaneForm} />
             )}
+            <div className={c('board-toolbar')}>
+              <PropertyToggle />
+            </div>
             {isSearching && (
               <div className={c('search-wrapper')}>
                 <input

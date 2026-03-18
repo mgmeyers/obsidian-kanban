@@ -1,5 +1,5 @@
 import update from 'immutability-helper';
-import { App, MarkdownView, TFile, moment } from 'obsidian';
+import { App, MarkdownView, TFile, TFolder, moment } from 'obsidian';
 import Preact, { Dispatch, RefObject, useEffect } from 'preact/compat';
 import { StateUpdater, useMemo } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
@@ -165,6 +165,49 @@ export async function applyTemplate(stateManager: StateManager, templatePath?: s
       stateManager.setError(e);
     }
   }
+}
+
+const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
+const condenceWhiteSpaceRE = /\s+/g;
+const embedRegEx = /!?\[\[([^\]]*)\.[^\]]+\]\]/g;
+const wikilinkRegEx = /!?\[\[([^\]]*)\]\]/g;
+const mdLinkRegEx = /!?\[([^\]]*)\]\([^)]*\)/g;
+const tagRegEx = /#([^\u2000-\u206F\u2E00-\u2E7F'!"#$%&()*+,.:;<=>?@^`{|}~[\]\\\s\n\r]+)/g;
+
+function sanitizeTitle(title: string): string {
+  return title
+    .replace(embedRegEx, '$1')
+    .replace(wikilinkRegEx, '$1')
+    .replace(mdLinkRegEx, '$1')
+    .replace(tagRegEx, '$1')
+    .replace(illegalCharsRegEx, ' ')
+    .trim()
+    .replace(condenceWhiteSpaceRE, ' ');
+}
+
+export async function createNoteForItem(
+  stateManager: StateManager,
+  title: string
+): Promise<string> {
+  const sanitizedTitle = sanitizeTitle(title.split('\n')[0].trim());
+  if (!sanitizedTitle) return title;
+
+  const newNoteFolder = stateManager.getSetting('new-note-folder');
+  const newNoteTemplatePath = stateManager.getSetting('new-note-template');
+
+  const targetFolder = newNoteFolder
+    ? (stateManager.app.vault.getAbstractFileByPath(newNoteFolder as string) as TFolder)
+    : stateManager.app.fileManager.getNewFileParent(stateManager.file.path);
+
+  const newFile = (await (stateManager.app.fileManager as any).createNewMarkdownFile(
+    targetFolder,
+    sanitizedTitle
+  )) as TFile;
+
+  await applyTemplate(stateManager, newNoteTemplatePath as string | undefined);
+
+  const link = stateManager.app.fileManager.generateMarkdownLink(newFile, stateManager.file.path);
+  return title.replace(title.split('\n')[0].trim(), link);
 }
 
 export function getDefaultDateFormat(app: App) {
