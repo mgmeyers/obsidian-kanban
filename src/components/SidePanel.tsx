@@ -11,6 +11,14 @@ interface SidePanelProps {
   onClose: () => void;
 }
 
+// Track all active side panel leaves globally for cleanup
+const activeSidePanelLeaves = new Set<WorkspaceLeaf>();
+
+export function cleanupSidePanelLeaves() {
+  activeSidePanelLeaves.forEach((leaf) => leaf.detach());
+  activeSidePanelLeaves.clear();
+}
+
 export function SidePanel({ file, onClose }: SidePanelProps) {
   const { stateManager } = useContext(KanbanContext);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -24,6 +32,14 @@ export function SidePanel({ file, onClose }: SidePanelProps) {
       0
     );
 
+    // Remove from workspace tree so it won't be serialized,
+    // but keep the DOM element alive in our container
+    const parentChildren = (leaf as any).parentSplit?.children;
+    if (parentChildren) {
+      const idx = parentChildren.indexOf(leaf);
+      if (idx >= 0) parentChildren.splice(idx, 1);
+    }
+
     containerRef.current.empty();
     containerRef.current.appendChild(leaf.containerEl);
     leaf.containerEl.style.width = '100%';
@@ -31,17 +47,8 @@ export function SidePanel({ file, onClose }: SidePanelProps) {
 
     leaf.openFile(file);
     leafRef.current = leaf;
+    activeSidePanelLeaves.add(leaf);
 
-    // Detach leaf before Obsidian saves workspace on quit
-    const detachLeaf = () => {
-      if (leafRef.current) {
-        leafRef.current.detach();
-        leafRef.current = null;
-      }
-    };
-    stateManager.app.workspace.on('quit', detachLeaf);
-
-    // Sync sub-page changes back to the board
     const onMetadataChange = (changedFile: TFile) => {
       if (changedFile.path === file.path) {
         stateManager.forceRefresh();
@@ -50,9 +57,10 @@ export function SidePanel({ file, onClose }: SidePanelProps) {
     stateManager.app.metadataCache.on('changed', onMetadataChange);
 
     return () => {
-      stateManager.app.workspace.off('quit', detachLeaf);
       stateManager.app.metadataCache.off('changed', onMetadataChange);
-      detachLeaf();
+      activeSidePanelLeaves.delete(leaf);
+      leaf.detach();
+      leafRef.current = null;
     };
   }, [file, stateManager]);
 
@@ -64,7 +72,6 @@ export function SidePanel({ file, onClose }: SidePanelProps) {
     if (!panel) return;
     const startX = e.clientX;
     const startWidth = panel.offsetWidth;
-
     const onMouseMove = (e: MouseEvent) => {
       const newWidth = Math.max(250, startWidth + (startX - e.clientX));
       panel.style.width = `${newWidth}px`;

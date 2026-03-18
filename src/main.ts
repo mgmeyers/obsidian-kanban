@@ -16,6 +16,7 @@ import { KanbanView, kanbanIcon, kanbanViewType } from './KanbanView';
 import { KanbanSettings, KanbanSettingsTab } from './Settings';
 import { StateManager } from './StateManager';
 import { DateSuggest, TimeSuggest } from './components/Editor/suggest';
+import { cleanupSidePanelLeaves } from './components/SidePanel';
 import { getParentWindow } from './dnd/util/getWindow';
 import { hasFrontmatterKey } from './helpers';
 import { t } from './lang/helpers';
@@ -78,6 +79,7 @@ export default class KanbanPlugin extends Plugin {
   }
 
   onunload() {
+    cleanupSidePanelLeaves();
     this.MarkdownEditor = null;
     this.windowRegistry.forEach((reg, win) => {
       reg.viewStateReceivers.forEach((fn) => fn([]));
