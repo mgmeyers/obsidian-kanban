@@ -8,27 +8,24 @@ import { Item } from '../types';
 interface ItemPropertiesProps {
   item: Item;
   laneTitle?: string;
-  searchQuery?: string;
 }
 
 export const ItemProperties = memo(function ItemProperties({
   item,
   laneTitle,
-  searchQuery,
 }: ItemPropertiesProps) {
   const { stateManager } = useContext(KanbanContext);
 
   const showCreated = stateManager.useSetting('show-created-date') !== false;
   const showModified = stateManager.useSetting('show-modified-date') !== false;
   const showStatus = !!stateManager.useSetting('show-status-property');
-  const showTags = stateManager.useSetting('show-tags-property') !== false;
 
-  const { createdDate, modifiedDate, tags } = item.data.metadata;
+  const { createdDate, modifiedDate } = item.data.metadata;
   const createdDateDisplay = createdDate?.split(' ')[0];
   const modifiedDateDisplay = modifiedDate?.split(' ')[0];
 
   const hasAnyProperty =
-    showCreated || showModified || (showStatus && laneTitle) || showTags;
+    showCreated || showModified || (showStatus && laneTitle);
 
   if (!hasAnyProperty) return null;
 
@@ -47,22 +44,6 @@ export const ItemProperties = memo(function ItemProperties({
       {showModified && (
         <PropertyRow icon="✏️" label={t('Modified date')}>
           <span className={c('item-property-value')}>{modifiedDateDisplay || '—'}</span>
-        </PropertyRow>
-      )}
-      {showTags && tags?.length > 0 && (
-        <PropertyRow icon="#" label="Tags">
-          <span className={c('item-property-tags-list')}>
-            {tags.map((tag, i) => (
-              <span
-                key={i}
-                className={`${c('item-property-tag-badge')} ${
-                  searchQuery && tag.toLowerCase().includes(searchQuery) ? 'is-search-match' : ''
-                }`}
-              >
-                {tag}
-              </span>
-            ))}
-          </span>
         </PropertyRow>
       )}
     </div>

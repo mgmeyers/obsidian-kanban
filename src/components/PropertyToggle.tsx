@@ -14,7 +14,6 @@ const propertyItems: PropertyToggleItem[] = [
   { key: 'show-status-property', label: 'Show status' },
   { key: 'show-created-date', label: 'Show created date' },
   { key: 'show-modified-date', label: 'Show modified date' },
-  { key: 'show-tags-property', label: 'Show tags' },
 ];
 
 export function PropertyToggle() {

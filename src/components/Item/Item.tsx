@@ -138,7 +138,6 @@ const ItemInner = memo(function ItemInner({
       <ItemProperties
         item={item}
         laneTitle={laneTitle}
-        searchQuery={isMatch ? searchQuery : undefined}
       />
     </div>
   );
