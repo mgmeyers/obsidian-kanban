@@ -64,6 +64,11 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     boardData?.children.length === 0
   );
 
+  // Close side panel on unmount to prevent workspace serialization
+  useEffect(() => {
+    return () => setSidePanelFile(null);
+  }, []);
+
   const filePath = stateManager.file.path;
   const maxArchiveLength = stateManager.useSetting('max-archive-size');
   const dateColors = stateManager.useSetting('date-colors');

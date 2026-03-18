@@ -287,6 +287,54 @@ export function getTemplatePlugins(app: App) {
   };
 }
 
+// Notion-inspired tag color palette
+export const TAG_COLOR_PALETTE: Array<{ color: string; backgroundColor: string }> = [
+  { color: '#487CA5', backgroundColor: '#E9F3F7' }, // Blue
+  { color: '#548164', backgroundColor: '#EEF3ED' }, // Green
+  { color: '#8A67AB', backgroundColor: '#F6F3F8' }, // Purple
+  { color: '#CC782F', backgroundColor: '#F8ECDF' }, // Orange
+  { color: '#B35488', backgroundColor: '#F9F2F5' }, // Pink
+  { color: '#C4554D', backgroundColor: '#FAECEC' }, // Red
+  { color: '#C29343', backgroundColor: '#FAF3DD' }, // Yellow
+  { color: '#976D57', backgroundColor: '#F3EEEE' }, // Brown
+  { color: '#487CA5', backgroundColor: '#E1ECF4' }, // Teal-ish blue
+  { color: '#787774', backgroundColor: '#F1F1EF' }, // Gray
+];
+
+export function hashTagToIndex(tag: string): number {
+  let hash = 0;
+  const name = tag.startsWith('#') ? tag.slice(1) : tag;
+  for (let i = 0; i < name.length; i++) {
+    hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) % TAG_COLOR_PALETTE.length;
+}
+
+export function getAutoTagColor(tag: string) {
+  return TAG_COLOR_PALETTE[hashTagToIndex(tag)];
+}
+
+export function injectGlobalTagStyles(tags: Set<string>) {
+  const styleId = 'kanban-plugin-tag-colors';
+  let styleEl = document.getElementById(styleId) as HTMLStyleElement;
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = styleId;
+    document.head.appendChild(styleEl);
+  }
+
+  const rules: string[] = [];
+  tags.forEach((tag) => {
+    const name = tag.startsWith('#') ? tag.slice(1) : tag;
+    const palette = getAutoTagColor(tag);
+    const escaped = CSS.escape(name);
+    // Properties panel pills
+    rules.push(`.multi-select-pill[data-value="${escaped}"] { background-color: ${palette.backgroundColor} !important; color: ${palette.color} !important; border: none !important; }`);
+  });
+
+  styleEl.textContent = rules.join('\n');
+}
+
 export function getTagColorFn(tagColors: TagColor[]) {
   const tagMap = (tagColors || []).reduce<Record<string, TagColor>>((total, current) => {
     if (!current.tagKey) return total;
@@ -296,7 +344,8 @@ export function getTagColorFn(tagColors: TagColor[]) {
 
   return (tag: string) => {
     if (tagMap[tag]) return tagMap[tag];
-    return null;
+    const palette = getAutoTagColor(tag);
+    return { tagKey: tag, color: palette.color, backgroundColor: palette.backgroundColor };
   };
 }
 
