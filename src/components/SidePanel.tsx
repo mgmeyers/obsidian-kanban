@@ -1,5 +1,5 @@
-import { MarkdownRenderer as ObsidianMarkdownRenderer, TFile } from 'obsidian';
-import { useCallback, useContext, useEffect, useRef, useState } from 'preact/compat';
+import { TFile, WorkspaceLeaf } from 'obsidian';
+import { useContext, useEffect, useRef } from 'preact/compat';
 import { t } from 'src/lang/helpers';
 
 import { Icon } from './Icon/Icon';
@@ -13,72 +13,74 @@ interface SidePanelProps {
 
 export function SidePanel({ file, onClose }: SidePanelProps) {
   const { stateManager } = useContext(KanbanContext);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [content, setContent] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const loadContent = useCallback(async () => {
-    const text = await stateManager.app.vault.read(file);
-    setContent(text);
-  }, [file, stateManager]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const leafRef = useRef<WorkspaceLeaf | null>(null);
 
   useEffect(() => {
-    loadContent();
-  }, [file]);
+    if (!containerRef.current) return;
 
-  // Render markdown preview
-  useEffect(() => {
-    if (!contentRef.current || isEditing) return;
-    const el = contentRef.current;
-    el.empty();
-
-    // Strip frontmatter for display
-    const displayContent = content.replace(/^---\n[\s\S]*?\n---\n?/, '');
-    ObsidianMarkdownRenderer.renderMarkdown(
-      displayContent,
-      el,
-      file.path,
-      null
+    const leaf = stateManager.app.workspace.createLeafInParent(
+      stateManager.app.workspace.rootSplit,
+      0
     );
-  }, [content, isEditing, file]);
 
-  const handleSave = useCallback(async () => {
-    if (textareaRef.current) {
-      await stateManager.app.vault.modify(file, textareaRef.current.value);
-      setContent(textareaRef.current.value);
-    }
-    setIsEditing(false);
+    containerRef.current.empty();
+    containerRef.current.appendChild(leaf.containerEl);
+    leaf.containerEl.style.width = '100%';
+    leaf.containerEl.style.height = '100%';
+
+    leaf.openFile(file);
+    leafRef.current = leaf;
+
+    // Sync sub-page changes back to the board
+    const onMetadataChange = (changedFile: TFile) => {
+      if (changedFile.path === file.path) {
+        stateManager.forceRefresh();
+      }
+    };
+    stateManager.app.metadataCache.on('changed', onMetadataChange);
+
+    return () => {
+      stateManager.app.metadataCache.off('changed', onMetadataChange);
+      leaf.detach();
+      leafRef.current = null;
+    };
   }, [file, stateManager]);
 
-  const handleOpenInTab = useCallback(() => {
-    const leaf = stateManager.app.workspace.getLeaf('tab');
-    leaf.openFile(file);
-    onClose();
-  }, [file, stateManager, onClose]);
+  // Resize handle
+  const panelRef = useRef<HTMLDivElement>(null);
+  const handleMouseDown = useRef((e: MouseEvent) => {
+    e.preventDefault();
+    const panel = panelRef.current;
+    if (!panel) return;
+    const startX = e.clientX;
+    const startWidth = panel.offsetWidth;
+
+    const onMouseMove = (e: MouseEvent) => {
+      const newWidth = Math.max(250, startWidth + (startX - e.clientX));
+      panel.style.width = `${newWidth}px`;
+    };
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }).current;
 
   return (
-    <div className={c('side-panel')}>
+    <div ref={panelRef} className={c('side-panel')}>
+      <div className={c('side-panel-resize')} onMouseDown={handleMouseDown} />
       <div className={c('side-panel-header')}>
         <span className={c('side-panel-title')}>{file.basename}</span>
         <div className={c('side-panel-actions')}>
           <a
             className={`${c('side-panel-action')} clickable-icon`}
             onClick={() => {
-              if (isEditing) {
-                handleSave();
-              } else {
-                setIsEditing(true);
-                setTimeout(() => textareaRef.current?.focus(), 50);
-              }
+              const leaf = stateManager.app.workspace.getLeaf('tab');
+              leaf.openFile(file);
+              onClose();
             }}
-            aria-label={isEditing ? t('Save') : t('Edit card')}
-          >
-            <Icon name={isEditing ? 'lucide-check' : 'lucide-edit'} />
-          </a>
-          <a
-            className={`${c('side-panel-action')} clickable-icon`}
-            onClick={handleOpenInTab}
             aria-label="Open in new tab"
           >
             <Icon name="lucide-external-link" />
@@ -92,28 +94,7 @@ export function SidePanel({ file, onClose }: SidePanelProps) {
           </a>
         </div>
       </div>
-      <div className={c('side-panel-content')}>
-        {isEditing ? (
-          <textarea
-            ref={textareaRef}
-            className={c('side-panel-editor')}
-            value={content}
-            onInput={(e) => setContent((e.target as HTMLTextAreaElement).value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                loadContent();
-                setIsEditing(false);
-              }
-              if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
-                e.preventDefault();
-                handleSave();
-              }
-            }}
-          />
-        ) : (
-          <div ref={contentRef} className={`${c('side-panel-preview')} markdown-preview-view`} />
-        )}
-      </div>
+      <div ref={containerRef} className={c('side-panel-content')} />
     </div>
   );
 }
