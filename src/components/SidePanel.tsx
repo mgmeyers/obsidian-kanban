@@ -32,6 +32,15 @@ export function SidePanel({ file, onClose }: SidePanelProps) {
     leaf.openFile(file);
     leafRef.current = leaf;
 
+    // Detach leaf before Obsidian saves workspace on quit
+    const detachLeaf = () => {
+      if (leafRef.current) {
+        leafRef.current.detach();
+        leafRef.current = null;
+      }
+    };
+    stateManager.app.workspace.on('quit', detachLeaf);
+
     // Sync sub-page changes back to the board
     const onMetadataChange = (changedFile: TFile) => {
       if (changedFile.path === file.path) {
@@ -41,9 +50,9 @@ export function SidePanel({ file, onClose }: SidePanelProps) {
     stateManager.app.metadataCache.on('changed', onMetadataChange);
 
     return () => {
+      stateManager.app.workspace.off('quit', detachLeaf);
       stateManager.app.metadataCache.off('changed', onMetadataChange);
-      leaf.detach();
-      leafRef.current = null;
+      detachLeaf();
     };
   }, [file, stateManager]);
 
