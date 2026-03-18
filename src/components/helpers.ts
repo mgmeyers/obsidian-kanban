@@ -192,12 +192,19 @@ export async function createNoteForItem(
   const sanitizedTitle = sanitizeTitle(title.split('\n')[0].trim());
   if (!sanitizedTitle) return title;
 
-  const newNoteFolder = stateManager.getSetting('new-note-folder');
   const newNoteTemplatePath = stateManager.getSetting('new-note-template');
 
-  const targetFolder = newNoteFolder
-    ? (stateManager.app.vault.getAbstractFileByPath(newNoteFolder as string) as TFolder)
-    : stateManager.app.fileManager.getNewFileParent(stateManager.file.path);
+  // Create subfolder named after the board file (e.g., Projects/Work/ for Work.md)
+  const boardFile = stateManager.file;
+  const boardDir = boardFile.parent?.path || '';
+  const boardName = boardFile.basename;
+  const subfolderPath = boardDir ? `${boardDir}/${boardName}` : boardName;
+
+  let targetFolder = stateManager.app.vault.getAbstractFileByPath(subfolderPath) as TFolder;
+  if (!targetFolder) {
+    await stateManager.app.vault.createFolder(subfolderPath);
+    targetFolder = stateManager.app.vault.getAbstractFileByPath(subfolderPath) as TFolder;
+  }
 
   const newFile = (await (stateManager.app.fileManager as any).createNewMarkdownFile(
     targetFolder,

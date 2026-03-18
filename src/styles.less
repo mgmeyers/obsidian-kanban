@@ -1063,105 +1063,26 @@ button.kanban-plugin__new-item-button {
   line-height: 1.7;
 }
 
-// Tag editor
-.kanban-plugin__tag-editor {
+// Read-only tag badges
+.kanban-plugin__item-property-tags-list {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: 3px;
 }
 
-.kanban-plugin__tag-editor-tag {
+.kanban-plugin__item-property-tag-badge {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
   padding: 0 5px;
   border-radius: var(--radius-s);
   background: var(--background-secondary);
   color: var(--text-muted);
   font-size: 0.65rem;
   line-height: 1.7;
-  cursor: default;
 
   &.is-search-match {
     background-color: var(--text-highlight-bg);
     color: var(--text-normal);
-  }
-}
-
-.kanban-plugin__tag-editor-remove {
-  cursor: pointer;
-  opacity: 0.5;
-  font-size: 0.75rem;
-  line-height: 1;
-
-  &:hover {
-    opacity: 1;
-    color: var(--text-error);
-  }
-}
-
-.kanban-plugin__tag-editor-add {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: var(--radius-s);
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 0.8rem;
-  line-height: 1;
-
-  &:hover {
-    background: var(--background-modifier-hover);
-    color: var(--text-normal);
-  }
-}
-
-.kanban-plugin__tag-editor-input-wrapper {
-  position: relative;
-}
-
-.kanban-plugin__tag-editor-input {
-  width: 80px;
-  padding: 0 4px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-s);
-  background: var(--background-primary);
-  color: var(--text-normal);
-  font-size: 0.65rem;
-  line-height: 1.7;
-  outline: none;
-
-  &:focus {
-    border-color: var(--interactive-accent);
-  }
-}
-
-.kanban-plugin__tag-editor-suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: var(--layer-menu);
-  min-width: 120px;
-  max-height: 160px;
-  overflow-y: auto;
-  background: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-s);
-  box-shadow: var(--shadow-s);
-  margin-top: 2px;
-}
-
-.kanban-plugin__tag-editor-suggestion {
-  padding: 3px 8px;
-  font-size: 0.7rem;
-  cursor: pointer;
-  color: var(--text-normal);
-
-  &:hover {
-    background: var(--background-modifier-hover);
   }
 }
 
