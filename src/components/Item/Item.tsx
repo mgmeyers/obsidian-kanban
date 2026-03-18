@@ -113,7 +113,6 @@ const ItemInner = memo(function ItemInner({
     (e) => {
       if (isEditing(editState)) return;
       const target = e.target as HTMLElement;
-      // Skip if clicking on interactive elements
       if (
         target.closest('a') ||
         target.closest('button') ||
@@ -126,8 +125,16 @@ const ItemInner = memo(function ItemInner({
       const file = item.data.metadata.file;
       if (file) {
         e.preventDefault();
-        const leaf = stateManager.app.workspace.getLeaf('split');
-        leaf.openFile(file);
+        // Check if file is already open in a leaf — if so, close it
+        const existing = stateManager.app.workspace.getLeavesOfType('markdown').find(
+          (leaf) => (leaf.view as any)?.file?.path === file.path
+        );
+        if (existing) {
+          existing.detach();
+        } else {
+          const leaf = stateManager.app.workspace.getLeaf('split');
+          leaf.openFile(file);
+        }
       }
     },
     [item, stateManager, editState]
