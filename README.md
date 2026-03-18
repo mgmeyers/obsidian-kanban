@@ -1,18 +1,26 @@
-# Obsidian Kanban Plugin
+# Obsidian Kanban Plugin (Personal Fork)
 
-**The Kanban plugin is looking for new maintainers.** Interested? [Read more here.](https://github.com/mgmeyers/obsidian-kanban/blob/main/MAINTAINERS.md)
+> Forked from [obsidian-community/obsidian-kanban](https://github.com/obsidian-community/obsidian-kanban). This fork is customized for my own workflow and is not intended for general use.
 
 ---
 
-Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
+Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/) — with Notion-like enhancements.
 
-- [Bugs, Issues, & Feature Requests](https://github.com/mgmeyers/obsidian-kanban/issues)
-- [Development Roadmap](https://github.com/mgmeyers/obsidian-kanban/projects/1)
+## What's different in this fork
 
-![Screen Shot 2021-09-16 at 12.58.22 PM.png](https://github.com/mgmeyers/obsidian-kanban/blob/main/docs/Assets/Screen%20Shot%202021-09-16%20at%2012.58.22%20PM.png)
+### 🗂️ Auto-linked notes
+Every new card automatically creates a separate Obsidian note in a subfolder named after the board. Properties (created date, tags) are written to the note's YAML frontmatter.
 
-![Screen Shot 2021-09-16 at 1.10.38 PM.png](https://github.com/mgmeyers/obsidian-kanban/blob/main/docs/Assets/Screen%20Shot%202021-09-16%20at%201.10.38%20PM.png)
+### 📋 Card properties
+Cards display created date, modified date, and status as Notion-style property rows. Visibility is togglable via a toolbar dropdown.
 
-## Documentation
+### 📝 Inline side panel
+Click a card to open its linked note in a resizable side panel within the board view — full Obsidian editor, no tab switching. Changes sync back to the board in real-time.
 
-Find the plugin documentation here: [Obsidian Kanban Plugin Documentation](https://publish.obsidian.md/kanban/)
+### 🏷️ Auto tag colors
+Tags are auto-colored from a 10-color Notion-inspired palette based on the tag name. User-configured colors take priority.
+
+## Upstream
+
+- Original repo: [obsidian-community/obsidian-kanban](https://github.com/obsidian-community/obsidian-kanban)
+- Original documentation: [Obsidian Kanban Plugin Documentation](https://publish.obsidian.md/kanban/)
