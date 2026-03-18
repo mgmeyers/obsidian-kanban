@@ -206,8 +206,26 @@ export async function createNoteForItem(
 
   await applyTemplate(stateManager, newNoteTemplatePath as string | undefined);
 
+  // Write properties to frontmatter
+  const created = moment().format('YYYY-MM-DD');
+  const tagMatches = title.match(/#[^\s#]+/g);
+  const tags = tagMatches ? tagMatches.map((t) => t.slice(1)) : [];
+
+  const frontmatterLines = ['---', `created: ${created}`];
+  if (tags.length) {
+    frontmatterLines.push('tags:');
+    tags.forEach((tag) => frontmatterLines.push(`  - ${tag}`));
+  }
+  frontmatterLines.push('---', '');
+
+  const existing = await stateManager.app.vault.read(newFile);
+  await stateManager.app.vault.modify(newFile, frontmatterLines.join('\n') + existing);
+
+  // Return title with wikilink, stripping inline tags (they're in frontmatter now)
   const link = stateManager.app.fileManager.generateMarkdownLink(newFile, stateManager.file.path);
-  return title.replace(title.split('\n')[0].trim(), link);
+  let newTitle = title.replace(title.split('\n')[0].trim(), link);
+  newTitle = newTitle.replace(/#[^\s#]+/g, '').replace(/\s+/g, ' ').trim();
+  return newTitle;
 }
 
 export function getDefaultDateFormat(app: App) {

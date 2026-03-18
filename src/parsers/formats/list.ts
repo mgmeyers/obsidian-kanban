@@ -355,9 +355,7 @@ export function astToUnhydratedBoard(
 }
 
 export function updateItemContent(stateManager: StateManager, oldItem: Item, newContent: string) {
-  const now = moment().format('YYYY-MM-DD');
-  const contentWithMeta = upsertInlineField(newContent, 'modified', now);
-  const md = `- [${oldItem.data.checkChar}] ${addBlockId(indentNewLines(contentWithMeta), oldItem)}`;
+  const md = `- [${oldItem.data.checkChar}] ${addBlockId(indentNewLines(newContent), oldItem)}`;
 
   const ast = parseFragment(stateManager, md);
   const itemData = listItemToItemData(stateManager, md, (ast.children[0] as List).children[0]);
@@ -382,9 +380,7 @@ export function newItem(
   checkChar: string,
   forceEdit?: boolean
 ) {
-  const now = moment().format('YYYY-MM-DD');
-  const contentWithMeta = appendInlineField(newContent, 'created', now);
-  const md = `- [${checkChar}] ${indentNewLines(contentWithMeta)}`;
+  const md = `- [${checkChar}] ${indentNewLines(newContent)}`;
   const ast = parseFragment(stateManager, md);
   const itemData = listItemToItemData(stateManager, md, (ast.children[0] as List).children[0]);
 

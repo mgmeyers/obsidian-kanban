@@ -1,10 +1,35 @@
+import { TFile } from 'obsidian';
 import { memo, useCallback, useContext, useMemo, useRef, useState } from 'preact/compat';
+import { StateManager } from 'src/StateManager';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { t } from 'src/lang/helpers';
 
 import { KanbanContext } from '../context';
 import { c } from '../helpers';
 import { Item } from '../types';
+
+async function updateFrontmatterTags(stateManager: StateManager, file: TFile, tags: string[]) {
+  const content = await stateManager.app.vault.read(file);
+  const stripped = tags.map((t) => (t.startsWith('#') ? t.slice(1) : t));
+  const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+
+  if (fmMatch) {
+    let fm = fmMatch[1];
+    // Remove existing tags block
+    fm = fm.replace(/tags:\n(?:\s+-\s+.*\n)*/g, '').replace(/tags:\s*\[.*\]\n?/g, '').trimEnd();
+    if (stripped.length) {
+      fm += '\ntags:\n' + stripped.map((t) => `  - ${t}`).join('\n');
+    }
+    const newContent = `---\n${fm}\n---` + content.slice(fmMatch[0].length);
+    await stateManager.app.vault.modify(file, newContent);
+  } else {
+    // No frontmatter — prepend it
+    const tagBlock = stripped.length
+      ? 'tags:\n' + stripped.map((t) => `  - ${t}`).join('\n') + '\n'
+      : '';
+    await stateManager.app.vault.modify(file, `---\n${tagBlock}---\n` + content);
+  }
+}
 
 interface ItemPropertiesProps {
   item: Item;
@@ -35,20 +60,33 @@ export const ItemProperties = memo(function ItemProperties({
   if (!hasAnyProperty) return null;
 
   const addTag = useCallback(
-    (tag: string) => {
-      const normalized = tag.startsWith('#') ? tag : `#${tag}`;
+    async (tag: string) => {
+      const cleaned = tag.startsWith('#') ? tag.slice(1) : tag;
+      const normalized = `#${cleaned}`;
       if (item.data.metadata.tags?.includes(normalized)) return;
-      const newTitle = `${item.data.titleRaw} ${normalized}`;
-      boardModifiers.updateItem(path, stateManager.updateItemContent(item, newTitle));
+
+      const file = item.data.metadata.file;
+      if (file) {
+        await updateFrontmatterTags(stateManager, file, [...(item.data.metadata.tags || []), normalized]);
+      } else {
+        const newTitle = `${item.data.titleRaw} ${normalized}`;
+        boardModifiers.updateItem(path, stateManager.updateItemContent(item, newTitle));
+      }
     },
     [item, path, boardModifiers, stateManager]
   );
 
   const removeTag = useCallback(
-    (tag: string) => {
-      const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const newTitle = item.data.titleRaw.replace(new RegExp(`\\s*${escaped}`), '').trim();
-      boardModifiers.updateItem(path, stateManager.updateItemContent(item, newTitle));
+    async (tag: string) => {
+      const file = item.data.metadata.file;
+      if (file) {
+        const newTags = (item.data.metadata.tags || []).filter((t) => t !== tag);
+        await updateFrontmatterTags(stateManager, file, newTags);
+      } else {
+        const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const newTitle = item.data.titleRaw.replace(new RegExp(`\\s*${escaped}`), '').trim();
+        boardModifiers.updateItem(path, stateManager.updateItemContent(item, newTitle));
+      }
     },
     [item, path, boardModifiers, stateManager]
   );
