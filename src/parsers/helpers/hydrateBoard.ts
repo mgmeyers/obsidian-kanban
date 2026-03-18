@@ -127,7 +127,6 @@ export function hydrateItem(stateManager: StateManager, item: Item) {
 
     if (file) {
       item.data.metadata.file = file;
-      item.data.metadata.modifiedDate = moment(file.stat.mtime).format('YYYY-MM-DD');
 
       // Read properties from linked file frontmatter
       const cache = stateManager.app.metadataCache.getFileCache(file);
@@ -135,6 +134,11 @@ export function hydrateItem(stateManager: StateManager, item: Item) {
         const fm = cache.frontmatter;
         if (fm.created) {
           item.data.metadata.createdDate = String(fm.created).split(' ')[0];
+        }
+        if (fm.modified) {
+          item.data.metadata.modifiedDate = String(fm.modified).split(' ')[0];
+        } else {
+          item.data.metadata.modifiedDate = moment(file.stat.mtime).format('YYYY-MM-DD');
         }
         if (fm.tags) {
           const fmTags: string[] = Array.isArray(fm.tags)
@@ -144,6 +148,8 @@ export function hydrateItem(stateManager: StateManager, item: Item) {
             item.data.metadata.tags = fmTags;
           }
         }
+      } else {
+        item.data.metadata.modifiedDate = moment(file.stat.mtime).format('YYYY-MM-DD');
       }
     }
   }

@@ -9,26 +9,10 @@ import { c } from '../helpers';
 import { Item } from '../types';
 
 async function updateFrontmatterTags(stateManager: StateManager, file: TFile, tags: string[]) {
-  const content = await stateManager.app.vault.read(file);
   const stripped = tags.map((t) => (t.startsWith('#') ? t.slice(1) : t));
-  const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
-
-  if (fmMatch) {
-    let fm = fmMatch[1];
-    // Remove existing tags block
-    fm = fm.replace(/tags:\n(?:\s+-\s+.*\n)*/g, '').replace(/tags:\s*\[.*\]\n?/g, '').trimEnd();
-    if (stripped.length) {
-      fm += '\ntags:\n' + stripped.map((t) => `  - ${t}`).join('\n');
-    }
-    const newContent = `---\n${fm}\n---` + content.slice(fmMatch[0].length);
-    await stateManager.app.vault.modify(file, newContent);
-  } else {
-    // No frontmatter — prepend it
-    const tagBlock = stripped.length
-      ? 'tags:\n' + stripped.map((t) => `  - ${t}`).join('\n') + '\n'
-      : '';
-    await stateManager.app.vault.modify(file, `---\n${tagBlock}---\n` + content);
-  }
+  await stateManager.app.fileManager.processFrontMatter(file, (fm) => {
+    fm.tags = stripped.length ? stripped : undefined;
+  });
 }
 
 interface ItemPropertiesProps {

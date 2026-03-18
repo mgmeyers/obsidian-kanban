@@ -206,20 +206,16 @@ export async function createNoteForItem(
 
   await applyTemplate(stateManager, newNoteTemplatePath as string | undefined);
 
-  // Write properties to frontmatter
+  // Write properties to frontmatter via Obsidian API
   const created = moment().format('YYYY-MM-DD');
   const tagMatches = title.match(/#[^\s#]+/g);
   const tags = tagMatches ? tagMatches.map((t) => t.slice(1)) : [];
 
-  const frontmatterLines = ['---', `created: ${created}`];
-  if (tags.length) {
-    frontmatterLines.push('tags:');
-    tags.forEach((tag) => frontmatterLines.push(`  - ${tag}`));
-  }
-  frontmatterLines.push('---', '');
-
-  const existing = await stateManager.app.vault.read(newFile);
-  await stateManager.app.vault.modify(newFile, frontmatterLines.join('\n') + existing);
+  await stateManager.app.fileManager.processFrontMatter(newFile, (fm) => {
+    fm.created = created;
+    fm.modified = created;
+    if (tags.length) fm.tags = tags;
+  });
 
   // Return title with wikilink, stripping inline tags (they're in frontmatter now)
   const link = stateManager.app.fileManager.generateMarkdownLink(newFile, stateManager.file.path);
