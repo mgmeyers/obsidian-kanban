@@ -5,22 +5,22 @@ description: Use this skill when an OpenClaw agent needs to list Obsidian Kanban
 
 # Obsidian Kanban CLI
 
-Use this repo's CLI to work with markdown kanban boards. Always pass `--vault <vault>`.
+Use the CLI shipped in the installed plugin folder. Always pass `--vault <vault>`.
 
 ```bash
-PLUGIN_REPO=/path/to/obsidian-kanban
-npm --prefix "$PLUGIN_REPO" run cli-build
-node "$PLUGIN_REPO/openclaw-kanban-cli.cjs" list --vault <vault>
+VAULT=/path/to/vault
+CLI="$VAULT/.obsidian/plugins/obsidian-kanban/openclaw-kanban-cli.cjs"
+node "$CLI" list --vault "$VAULT"
 ```
 
 Inspect or add cards:
 
 ```bash
-node "$PLUGIN_REPO/openclaw-kanban-cli.cjs" cards --vault <vault> --path "Board.md"
-node "$PLUGIN_REPO/openclaw-kanban-cli.cjs" add-card --vault <vault> --path "Board.md" --lane "Todo" --text "Draft outline"
+node "$CLI" cards --vault "$VAULT" --path "Board.md"
+node "$CLI" add-card --vault "$VAULT" --path "Board.md" --lane "Todo" --text "Draft outline"
 ```
 
-If installed or linked, `obsidian-kanban-cli ...` may be used instead.
+If the installed plugin does not include the CLI yet, use `obsidian-kanban-cli` from `PATH` or `node "$PLUGIN_REPO/openclaw-kanban-cli.cjs"` from a checkout.
 
 ## Safety
 
