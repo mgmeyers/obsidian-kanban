@@ -16,6 +16,7 @@ import {
 
 import { generateInstanceId } from '../components/helpers';
 import { Board, DataTypes, Item, Lane } from '../components/types';
+import { t } from '../lang/helpers';
 
 export interface BoardModifiers {
   appendItems: (path: Path, items: Item[]) => void;
@@ -25,6 +26,7 @@ export interface BoardModifiers {
   splitItem: (path: Path, items: Item[]) => void;
   moveItemToTop: (path: Path) => void;
   moveItemToBottom: (path: Path) => void;
+  moveItemToLane: (path: Path, laneIndex: number, shouldAppend?: boolean) => void;
   addLane: (lane: Lane) => void;
   insertLane: (path: Path, lane: Lane) => void;
   updateLane: (path: Path, lane: Lane) => void;
@@ -80,14 +82,24 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
     },
 
     moveItemToTop: (path: Path) => {
-      stateManager.setState((boardData) => moveEntity(boardData, path, [path[0], 0]));
+      view.plugin.undoManager.run(t('Move card'), stateManager, (boardData) =>
+        moveEntity(boardData, path, [path[0], 0])
+      );
     },
 
     moveItemToBottom: (path: Path) => {
-      stateManager.setState((boardData) => {
+      view.plugin.undoManager.run(t('Move card'), stateManager, (boardData) => {
         const laneIndex = path[0];
         const lane = boardData.children[laneIndex];
         return moveEntity(boardData, path, [laneIndex, lane.children.length]);
+      });
+    },
+
+    moveItemToLane: (path: Path, laneIndex: number, shouldAppend: boolean = false) => {
+      view.plugin.undoManager.run(t('Move card'), stateManager, (boardData) => {
+        const lane = boardData.children[laneIndex];
+        const itemIndex = shouldAppend ? lane.children.length : 0;
+        return moveEntity(boardData, path, [laneIndex, itemIndex]);
       });
     },
 
@@ -137,7 +149,7 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
     },
 
     archiveLane: (path: Path) => {
-      stateManager.setState((boardData) => {
+      view.plugin.undoManager.run(t('Archive list'), stateManager, (boardData) => {
         const lane = getEntityFromPath(boardData, path);
         const items = lane.children;
 
@@ -168,7 +180,7 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
     },
 
     archiveLaneItems: (path: Path) => {
-      stateManager.setState((boardData) => {
+      view.plugin.undoManager.run(t('Archive cards'), stateManager, (boardData) => {
         const lane = getEntityFromPath(boardData, path);
         const items = lane.children;
 
@@ -197,7 +209,10 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
     },
 
     deleteEntity: (path: Path) => {
-      stateManager.setState((boardData) => {
+      const entity = getEntityFromPath(stateManager.state, path);
+      const label = entity.type === DataTypes.Lane ? t('Delete list') : t('Delete card');
+
+      view.plugin.undoManager.run(label, stateManager, (boardData) => {
         const entity = getEntityFromPath(boardData, path);
 
         if (entity.type === DataTypes.Lane) {
@@ -231,7 +246,7 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
     },
 
     archiveItem: (path: Path) => {
-      stateManager.setState((boardData) => {
+      view.plugin.undoManager.run(t('Archive card'), stateManager, (boardData) => {
         const item = getEntityFromPath(boardData, path);
         try {
           return update(removeEntity(boardData, path), {

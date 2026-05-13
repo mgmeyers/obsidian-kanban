@@ -12,6 +12,11 @@ const en = {
   'New kanban board': 'New kanban board',
   'Untitled Kanban': 'Untitled Kanban',
   'Toggle between Kanban and markdown mode': 'Toggle between Kanban and markdown mode',
+  'Undo last Kanban action': 'Undo last Kanban action',
+  'Nothing to undo': 'Nothing to undo',
+  'Unable to undo because the board has changed': 'Unable to undo because the board has changed',
+  'Undid Kanban action': 'Undid Kanban action',
+  Undo: 'Undo',
 
   'View as board': 'View as board',
   'View as list': 'View as list',
@@ -46,6 +51,12 @@ const en = {
   'New line trigger': 'New line trigger',
   'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lists.':
     'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lists.',
+  'Enable undo': 'Enable undo',
+  'When toggled, archive, move, and delete actions can be undone from Kanban.':
+    'When toggled, archive, move, and delete actions can be undone from Kanban.',
+  'Show undo notice': 'Show undo notice',
+  'Shows a small undo chip after undoable actions. This can be convenient, but it may get in the way; undo is still available from the command palette and keyboard shortcut when this is off.':
+    'Shows a small undo chip after undoable actions. This can be convenient, but it may get in the way; undo is still available from the command palette and keyboard shortcut when this is off.',
   'Shift + Enter': 'Shift + Enter',
   Enter: 'Enter',
   'Prepend / append new cards': 'Prepend / append new cards',
@@ -215,6 +226,10 @@ const en = {
   'Card title...': 'Card title...',
   'Add card': 'Add card',
   'Add a card': 'Add a card',
+  'Discard card draft?': 'Discard card draft?',
+  'This card has text that has not been saved.': 'This card has text that has not been saved.',
+  'Keep editing': 'Keep editing',
+  'Discard draft': 'Discard draft',
 
   // components/Item/ItemMenu.ts
   'Edit card': 'Edit card',
@@ -236,6 +251,10 @@ const en = {
   'Move to top': 'Move to top',
   'Move to bottom': 'Move to bottom',
   'Move to list': 'Move to list',
+  'Move card': 'Move card',
+  'Complete card': 'Complete card',
+  'Uncheck card': 'Uncheck card',
+  'Toggle checkbox': 'Toggle checkbox',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Enter list title...',

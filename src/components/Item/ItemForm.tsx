@@ -1,6 +1,6 @@
 import { EditorView } from '@codemirror/view';
-import { Dispatch, StateUpdater, useContext, useRef } from 'preact/hooks';
-import useOnclickOutside from 'react-cool-onclickoutside';
+import { App, Modal, Setting } from 'obsidian';
+import { Dispatch, StateUpdater, useCallback, useContext, useEffect, useRef } from 'preact/hooks';
 import { t } from 'src/lang/helpers';
 
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
@@ -16,14 +16,117 @@ interface ItemFormProps {
   hideButton?: boolean;
 }
 
+class DiscardCardDraftModal extends Modal {
+  private shouldRestoreEditor = true;
+
+  constructor(app: App, private onDiscard: () => void, private onKeepEditing: () => void) {
+    super(app);
+  }
+
+  onOpen() {
+    this.setTitle(t('Discard card draft?'));
+
+    this.contentEl.createEl('p', {
+      text: t('This card has text that has not been saved.'),
+    });
+
+    new Setting(this.contentEl)
+      .addButton((button) => {
+        button
+          .setButtonText(t('Keep editing'))
+          .setCta()
+          .onClick(() => {
+            this.close();
+          });
+      })
+      .addButton((button) => {
+        button
+          .setButtonText(t('Discard draft'))
+          .setWarning()
+          .onClick(() => {
+            this.shouldRestoreEditor = false;
+            this.close();
+            this.onDiscard();
+          });
+      });
+  }
+
+  onClose() {
+    this.contentEl.empty();
+    if (this.shouldRestoreEditor) {
+      this.onKeepEditing();
+    }
+  }
+}
+
 export function ItemForm({ addItems, editState, setEditState, hideButton }: ItemFormProps) {
   const { stateManager } = useContext(KanbanContext);
   const editorRef = useRef<EditorView>();
+  const formRef = useRef<HTMLDivElement>();
+  const isPromptOpenRef = useRef(false);
 
   const clear = () => setEditState(EditingState.cancel);
-  const clickOutsideRef = useOnclickOutside(clear, {
-    ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],
-  });
+
+  const confirmDiscardDraft = useCallback(
+    (cm: EditorView) => {
+      if (!cm.state.doc.toString().trim()) {
+        clear();
+        return;
+      }
+
+      if (isPromptOpenRef.current) return;
+      isPromptOpenRef.current = true;
+
+      new DiscardCardDraftModal(
+        stateManager.app,
+        () => {
+          isPromptOpenRef.current = false;
+          clear();
+        },
+        () => {
+          isPromptOpenRef.current = false;
+          cm.focus();
+        }
+      ).open();
+    },
+    [stateManager]
+  );
+
+  useEffect(() => {
+    if (!isEditing(editState)) return;
+
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as HTMLElement;
+      const cm = editorRef.current;
+      const formEl = formRef.current;
+
+      if (!cm || !formEl || formEl.contains(target)) return;
+      if (
+        target.closest(`.${c('ignore-click-outside')}`) ||
+        target.closest('.mobile-toolbar') ||
+        target.closest('.suggestion-container') ||
+        target.closest('.modal-container')
+      ) {
+        return;
+      }
+
+      if (!cm.state.doc.toString().trim()) {
+        clear();
+        return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      confirmDiscardDraft(cm);
+    };
+
+    activeDocument.addEventListener('pointerdown', onPointerDown, true);
+
+    return () => {
+      activeDocument.removeEventListener('pointerdown', onPointerDown, true);
+    };
+  }, [editState, confirmDiscardDraft]);
 
   const createItem = (title: string) => {
     addItems([stateManager.getNewItem(title, ' ')]);
@@ -41,7 +144,7 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
 
   if (isEditing(editState)) {
     return (
-      <div className={c('item-form')} ref={clickOutsideRef}>
+      <div className={c('item-form')} ref={formRef}>
         <div className={c('item-input-wrapper')}>
           <MarkdownEditor
             editorRef={editorRef}
@@ -57,7 +160,9 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
             onSubmit={(cm) => {
               createItem(cm.state.doc.toString());
             }}
-            onEscape={clear}
+            onEscape={(cm) => {
+              confirmDiscardDraft(cm);
+            }}
           />
         </div>
       </div>

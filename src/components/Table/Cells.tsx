@@ -3,7 +3,6 @@ import { Menu } from 'obsidian';
 import { JSX, memo, useCallback, useContext, useState } from 'preact/compat';
 import isEqual from 'react-fast-compare';
 import { ExplicitPathContext } from 'src/dnd/components/context';
-import { moveEntity } from 'src/dnd/util/data';
 
 import { Icon } from '../Icon/Icon';
 import { DateAndTime, RelativeDate } from '../Item/DateAndTime';
@@ -121,7 +120,7 @@ export const ItemCell = memo(
 );
 
 export const LaneCell = memo(function LaneCell({ lane, path }: { lane: Lane; path: number[] }) {
-  const { stateManager } = useContext(KanbanContext);
+  const { boardModifiers, stateManager } = useContext(KanbanContext);
   const search = useContext(SearchContext);
   return (
     <div className={c('cell-flex-wrapper')}>
@@ -139,10 +138,7 @@ export const LaneCell = memo(function LaneCell({ lane, path }: { lane: Lane; pat
                 .setTitle(l.data.title)
                 .onClick(() => {
                   if (lane === l) return;
-                  stateManager.setState((boardData) => {
-                    const target = boardData.children[i];
-                    return moveEntity(boardData, path, [i, target.children.length]);
-                  });
+                  boardModifiers.moveItemToLane(path, i, true);
                 })
             );
           }
