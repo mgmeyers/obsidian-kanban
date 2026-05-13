@@ -13,8 +13,11 @@ const en = {
   'Untitled Kanban': 'Untitled Kanban',
   'Toggle between Kanban and markdown mode': 'Toggle between Kanban and markdown mode',
   'Undo last Kanban action': 'Undo last Kanban action',
+  'Redo last Kanban action': 'Redo last Kanban action',
   'Nothing to undo': 'Nothing to undo',
+  'Nothing to redo': 'Nothing to redo',
   'Unable to undo because the board has changed': 'Unable to undo because the board has changed',
+  'Unable to redo because the board has changed': 'Unable to redo because the board has changed',
   'Undid Kanban action': 'Undid Kanban action',
   Undo: 'Undo',
 
@@ -53,7 +56,7 @@ const en = {
     'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lists.',
   'Enable undo': 'Enable undo',
   'When toggled, archive, move, and delete actions can be undone from Kanban.':
-    'When toggled, archive, move, and delete actions can be undone from Kanban.',
+    'When toggled, archive, move, and delete actions can be undone and redone from Kanban.',
   'Show undo notice': 'Show undo notice',
   'Shows a small undo chip after undoable actions. This can be convenient, but it may get in the way; undo is still available from the command palette and keyboard shortcut when this is off.':
     'Shows a small undo chip after undoable actions. This can be convenient, but it may get in the way; undo is still available from the command palette and keyboard shortcut when this is off.',

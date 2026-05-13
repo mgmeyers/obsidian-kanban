@@ -14,15 +14,17 @@ interface UndoFileState {
   file: TFile;
   before: Board;
   beforeMd: string;
+  beforeViewStates: ViewStateSnapshot[];
+  after: Board;
   afterMd: string;
-  viewStates: ViewStateSnapshot[];
+  afterViewStates: ViewStateSnapshot[];
 }
 
 interface PendingFileState {
   manager: StateManager;
   before: Board;
   beforeMd: string;
-  viewStates: ViewStateSnapshot[];
+  beforeViewStates: ViewStateSnapshot[];
 }
 
 interface UndoEntry {
@@ -32,6 +34,7 @@ interface UndoEntry {
 }
 
 type BoardUpdater = Board | ((board: Board) => Board);
+type RestoreTarget = 'before' | 'after';
 
 function cloneViewState(state: KanbanViewSettings): KanbanViewSettings {
   const next = { ...state };
@@ -45,6 +48,7 @@ function cloneViewState(state: KanbanViewSettings): KanbanViewSettings {
 
 export class KanbanUndoManager {
   private stack: UndoEntry[] = [];
+  private redoStack: UndoEntry[] = [];
   private nextId = 1;
   private maxEntries = 50;
   private currentNotice: Notice | null = null;
@@ -56,12 +60,16 @@ export class KanbanUndoManager {
     return this.stack.length > 0;
   }
 
+  canRedo() {
+    return this.redoStack.length > 0;
+  }
+
   capture(manager: StateManager): PendingFileState {
     return {
       manager,
       before: manager.state,
       beforeMd: manager.parser.boardToMd(manager.state),
-      viewStates: Array.from(manager.viewSet).map((view) => ({
+      beforeViewStates: Array.from(manager.viewSet).map((view) => ({
         state: cloneViewState(view.viewSettings),
       })),
     };
@@ -94,8 +102,12 @@ export class KanbanUndoManager {
         file: manager.file,
         before: beforeState.before,
         beforeMd: beforeState.beforeMd,
+        beforeViewStates: beforeState.beforeViewStates,
+        after: manager.state,
         afterMd,
-        viewStates: beforeState.viewStates,
+        afterViewStates: Array.from(manager.viewSet).map((view) => ({
+          state: cloneViewState(view.viewSettings),
+        })),
       });
     }
 
@@ -108,6 +120,7 @@ export class KanbanUndoManager {
     };
 
     this.stack.push(entry);
+    this.redoStack = [];
 
     if (this.stack.length > this.maxEntries) {
       this.stack.shift();
@@ -126,28 +139,51 @@ export class KanbanUndoManager {
       return;
     }
 
-    if (!(await this.canApply(entry))) {
+    if (!(await this.canApply(entry, 'before'))) {
       new Notice(t('Unable to undo because the board has changed'));
       return;
     }
 
     for (const fileState of entry.files) {
-      await this.restore(fileState);
+      await this.restore(fileState, 'before');
     }
 
     this.stack.pop();
+    this.redoStack.push(entry);
     this.dismissCurrentNotice();
   }
 
-  private async canApply(entry: UndoEntry) {
+  async redoLast() {
+    const entry = this.redoStack[this.redoStack.length - 1];
+
+    if (!entry) {
+      new Notice(t('Nothing to redo'));
+      return;
+    }
+
+    if (!(await this.canApply(entry, 'after'))) {
+      new Notice(t('Unable to redo because the board has changed'));
+      return;
+    }
+
+    for (const fileState of entry.files) {
+      await this.restore(fileState, 'after');
+    }
+
+    this.redoStack.pop();
+    this.stack.push(entry);
+    this.dismissCurrentNotice();
+  }
+
+  private async canApply(entry: UndoEntry, target: RestoreTarget) {
     for (const fileState of entry.files) {
       const manager = this.plugin.getStateManager(fileState.file);
+      const expectedMd = target === 'before' ? fileState.afterMd : fileState.beforeMd;
+      const currentMd = manager
+        ? manager.parser.boardToMd(manager.state)
+        : await this.plugin.app.vault.cachedRead(fileState.file);
 
-      if (manager) continue;
-
-      const currentMd = await this.plugin.app.vault.cachedRead(fileState.file);
-
-      if (currentMd !== fileState.afterMd) {
+      if (currentMd !== expectedMd) {
         return false;
       }
     }
@@ -155,18 +191,22 @@ export class KanbanUndoManager {
     return true;
   }
 
-  private async restore(fileState: UndoFileState) {
+  private async restore(fileState: UndoFileState, target: RestoreTarget) {
     const manager = this.plugin.getStateManager(fileState.file);
+    const board = target === 'before' ? fileState.before : fileState.after;
+    const md = target === 'before' ? fileState.beforeMd : fileState.afterMd;
+    const viewStates =
+      target === 'before' ? fileState.beforeViewStates : fileState.afterViewStates;
 
     if (!manager) {
-      await this.plugin.app.vault.modify(fileState.file, fileState.beforeMd);
+      await this.plugin.app.vault.modify(fileState.file, md);
       return;
     }
 
-    manager.setState(fileState.before);
+    manager.setState(board);
 
     Array.from(manager.viewSet).forEach((view, index) => {
-      const snapshot = fileState.viewStates[index];
+      const snapshot = viewStates[index];
       if (snapshot) {
         view.viewSettings = cloneViewState(snapshot.state);
       }

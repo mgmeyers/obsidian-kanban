@@ -159,15 +159,25 @@ export default class KanbanPlugin extends Plugin {
   handleUndoHotkey = (e: KeyboardEvent) => {
     const isUndo =
       (e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'z';
+    const isRedo =
+      ((e.metaKey || e.ctrlKey) && e.shiftKey && !e.altKey && e.key.toLowerCase() === 'z') ||
+      (e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'y');
 
-    if (!isUndo || e.defaultPrevented) return;
+    if ((!isUndo && !isRedo) || e.defaultPrevented) return;
 
     const view = this.app.workspace.getActiveViewOfType(KanbanView);
-    if (!view || view.activeEditor || !this.undoManager.canUndo()) return;
+    if (!view || view.activeEditor) return;
+    if (isUndo && !this.undoManager.canUndo()) return;
+    if (isRedo && !this.undoManager.canRedo()) return;
 
     e.preventDefault();
     e.stopPropagation();
-    this.undoManager.undoLast();
+
+    if (isUndo) {
+      this.undoManager.undoLast();
+    } else {
+      this.undoManager.redoLast();
+    }
   };
 
   getKanbanViews(win: Window) {
@@ -748,6 +758,17 @@ export default class KanbanPlugin extends Plugin {
         if (checking) return true;
 
         this.undoManager.undoLast();
+      },
+    });
+
+    this.addCommand({
+      id: 'redo-last-kanban-action',
+      name: t('Redo last Kanban action'),
+      checkCallback: (checking) => {
+        if (!this.undoManager.canRedo()) return false;
+        if (checking) return true;
+
+        this.undoManager.redoLast();
       },
     });
   }
