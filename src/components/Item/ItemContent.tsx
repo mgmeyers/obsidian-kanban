@@ -12,6 +12,7 @@ import {
 import { StateManager } from 'src/StateManager';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { Path } from 'src/dnd/types';
+import { t } from 'src/lang/helpers';
 import { getTaskStatusDone, toggleTaskString } from 'src/parsers/helpers/inlineMetadata';
 
 import { MarkdownEditor, allowNewLine } from '../Editor/MarkdownEditor';
@@ -247,8 +248,13 @@ export const ItemContent = memo(function ItemContent({
         const checkboxIndex = parseInt(target.dataset.checkboxIndex, 10);
         const checked = checkCheckbox(stateManager, item.data.titleRaw, checkboxIndex);
         const updated = stateManager.updateItemContent(item, checked);
+        const before = stateManager.undoManager?.capture(stateManager);
 
         boardModifiers.updateItem(path, updated);
+
+        if (before) {
+          stateManager.undoManager?.record(t('Toggle checkbox'), [before]);
+        }
       }
     },
     [path, boardModifiers, stateManager, item]
