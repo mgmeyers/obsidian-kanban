@@ -72,7 +72,13 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
   }, [view]);
 
   const clickOutsideRef = useOnclickOutside(handleClickOutside, {
-    ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],
+    ignoreClass: [
+      c('ignore-click-outside'),
+      'mobile-toolbar',
+      'suggestion-container',
+      'menu',
+      'menu-item',
+    ],
   });
 
   if (isEditing(editState)) {

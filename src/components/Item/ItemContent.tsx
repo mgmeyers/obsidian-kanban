@@ -235,7 +235,13 @@ export const ItemContent = memo(function ItemContent({
   }, [view, stateManager, boardModifiers, item, path]);
 
   const clickOutsideRef = useOnclickOutside(handleClickOutside, {
-    ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],
+    ignoreClass: [
+      c('ignore-click-outside'),
+      'mobile-toolbar',
+      'suggestion-container',
+      'menu',
+      'menu-item',
+    ],
   });
 
   const onEnter = useCallback(
