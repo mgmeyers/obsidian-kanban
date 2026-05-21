@@ -592,6 +592,63 @@ button.kanban-plugin__lane-settings-button + button.kanban-plugin__lane-settings
   border-color: hsla(var(--interactive-accent-hsl), 0.6);
 }
 
+.kanban-plugin__item-inserter {
+  // Zero height + no top margin: the inserter sits inside the existing 4px gap
+  // between cards without changing the layout at all.
+  height: 0;
+  margin-block-start: 0 !important;
+  position: relative;
+  overflow: visible;
+  z-index: 5;
+  flex-shrink: 0;
+
+  // Invisible hover hit-zone straddling the gap line (16px tall, centered on
+  // this box's top edge). Reveals the button only when hovering between cards —
+  // hovering a card body does NOT trigger it. data-ignore-drag (on the element)
+  // means a press here never starts/blocks a drag.
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -8px;
+    height: 16px;
+  }
+
+  &:hover .kanban-plugin__item-inserter-button {
+    opacity: 1;
+  }
+}
+
+.kanban-plugin__item-inserter-button {
+  position: absolute;
+  // This zero-height box's top edge sits at the top of the 4px gap; nudge the
+  // button down by half the gap so it centers between the two cards.
+  top: 2px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--interactive-accent);
+  background-color: var(--background-primary);
+  color: var(--interactive-accent);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  &:hover {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+  }
+}
+
 .kanban-plugin__item-button-wrapper {
   border-top: 1px solid var(--background-modifier-border);
   padding: 8px;

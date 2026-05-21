@@ -80,6 +80,7 @@ export interface KanbanSettings {
   'show-archive-all'?: boolean;
   'show-board-settings'?: boolean;
   'show-checkboxes'?: boolean;
+  'show-insert-card-button'?: boolean;
   'show-relative-date'?: boolean;
   'show-search'?: boolean;
   'show-set-view'?: boolean;
@@ -128,6 +129,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'show-archive-all',
   'show-board-settings',
   'show-checkboxes',
+  'show-insert-card-button',
   'show-relative-date',
   'show-search',
   'show-set-view',
@@ -327,6 +329,48 @@ export class SettingsManager {
 
                 this.applySettingsUpdate({
                   $unset: ['hide-card-count'],
+                });
+              });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Show insert card button between cards'))
+      .setDesc(
+        t('When toggled, a + button appears on hover between cards to insert a new card there')
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('show-insert-card-button', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'show-insert-card-button': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('show-insert-card-button', local);
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ['show-insert-card-button'],
                 });
               });
           });

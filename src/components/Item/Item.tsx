@@ -12,6 +12,7 @@ import {
 import { Droppable, useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { DndManagerContext } from 'src/dnd/components/context';
 import { useDragHandle } from 'src/dnd/managers/DragManager';
+import { Path } from 'src/dnd/types';
 import { frontmatterKey } from 'src/parsers/common';
 
 import { KanbanContext, SearchContext } from '../context';
@@ -181,30 +182,79 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
   );
 });
 
+interface ItemInserterProps {
+  laneIndex: number;
+  insertIndex: number;
+}
+
+// Thin hover zone rendered inline between cards. Shows a '+' button to insert a
+// new card at that position. Marked data-ignore-drag so a press here is ignored
+// by the drag system (same mechanism the card's menu button uses) rather than
+// blocking drag-and-drop.
+function ItemInserter({ laneIndex, insertIndex }: ItemInserterProps) {
+  const { boardModifiers, stateManager } = useContext(KanbanContext);
+
+  const handleInsert = useCallback(() => {
+    const path: Path = [laneIndex, insertIndex];
+    boardModifiers.insertItems(path, [stateManager.getNewItem('', ' ', true)]);
+  }, [boardModifiers, stateManager, laneIndex, insertIndex]);
+
+  return (
+    <div className={c('item-inserter')} data-ignore-drag={true}>
+      <button
+        className={c('item-inserter-button')}
+        onClick={handleInsert}
+        aria-label="Insert card here"
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
 interface ItemsProps {
   isStatic?: boolean;
   items: Item[];
   shouldMarkItemsComplete: boolean;
+  laneIndex: number;
 }
 
-export const Items = memo(function Items({ isStatic, items, shouldMarkItemsComplete }: ItemsProps) {
+export const Items = memo(function Items({
+  isStatic,
+  items,
+  shouldMarkItemsComplete,
+  laneIndex,
+}: ItemsProps) {
   const search = useContext(SearchContext);
-  const { view } = useContext(KanbanContext);
+  const { view, stateManager } = useContext(KanbanContext);
   const boardView = view.useViewState(frontmatterKey);
+  const insertButtonEnabled = stateManager.useSetting('show-insert-card-button');
+
+  // Inserters are opt-in (setting), and skipped in static/search views (indices
+  // would be unreliable while filtered, and drag isn't active there anyway).
+  const showInserters = !!insertButtonEnabled && !isStatic && !search?.query;
 
   return (
     <>
       {items.map((item, i) => {
-        return search?.query && !search.items.has(item) ? null : (
+        if (search?.query && !search.items.has(item)) return null;
+        return [
+          showInserters && (
+            <ItemInserter key={`inserter-${item.id}`} laneIndex={laneIndex} insertIndex={i} />
+          ),
           <DraggableItem
             key={boardView + item.id}
             item={item}
             itemIndex={i}
             shouldMarkItemsComplete={shouldMarkItemsComplete}
             isStatic={isStatic}
-          />
-        );
+          />,
+        ];
       })}
+      {/* Trailing inserter after the last card (insert at end). */}
+      {showInserters && items.length > 0 && (
+        <ItemInserter key="inserter-end" laneIndex={laneIndex} insertIndex={items.length} />
+      )}
     </>
   );
 });
