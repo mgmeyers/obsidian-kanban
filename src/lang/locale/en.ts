@@ -117,6 +117,9 @@ const en = {
   'Hide card counts in list titles': 'Hide card counts in list titles',
   'When toggled, card counts are hidden from the list title':
     'When toggled, card counts are hidden from the list title',
+  'Show insert card button between cards': 'Show insert card button between cards',
+  'When toggled, a + button appears on hover between cards to insert a new card there':
+    'When toggled, a + button appears on hover between cards to insert a new card there',
   'Link dates to daily notes': 'Link dates to daily notes',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]',
