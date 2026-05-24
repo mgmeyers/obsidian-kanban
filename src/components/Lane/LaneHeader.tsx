@@ -21,6 +21,7 @@ interface LaneHeaderProps {
   laneIndex: number;
   bindHandle: (el: HTMLElement) => void;
   setIsItemInputVisible?: Dispatch<StateUpdater<EditState>>;
+  onAutoCreate?: () => void;
   isCollapsed: boolean;
   toggleIsCollapsed: () => void;
 }
@@ -30,6 +31,7 @@ interface LaneButtonProps {
   editState: EditState;
   setEditState: Dispatch<StateUpdater<EditState>>;
   setIsItemInputVisible?: Dispatch<StateUpdater<EditState>>;
+  onAutoCreate?: () => void;
 }
 
 function LaneButtons({
@@ -37,6 +39,7 @@ function LaneButtons({
   editState,
   setEditState,
   setIsItemInputVisible,
+  onAutoCreate,
 }: LaneButtonProps) {
   const { stateManager } = useContext(KanbanContext);
   return (
@@ -55,7 +58,13 @@ function LaneButtons({
             <a
               aria-label={t('Add a card')}
               className={`${c('lane-settings-button')} clickable-icon`}
-              onClick={() => setIsItemInputVisible({ x: 0, y: 0 })}
+              onClick={() => {
+                if (onAutoCreate) {
+                  onAutoCreate();
+                } else {
+                  setIsItemInputVisible({ x: 0, y: 0 });
+                }
+              }}
               onDragOver={(e) => {
                 if (getDropAction(stateManager, e.dataTransfer)) {
                   setIsItemInputVisible({ x: 0, y: 0 });
@@ -85,6 +94,7 @@ export const LaneHeader = memo(function LaneHeader({
   laneIndex,
   bindHandle,
   setIsItemInputVisible,
+  onAutoCreate,
   isCollapsed,
   toggleIsCollapsed,
 }: LaneHeaderProps) {
@@ -161,6 +171,7 @@ export const LaneHeader = memo(function LaneHeader({
           editState={editState}
           setEditState={setEditState}
           setIsItemInputVisible={setIsItemInputVisible}
+          onAutoCreate={onAutoCreate}
           settingsMenu={settingsMenu}
         />
       </div>

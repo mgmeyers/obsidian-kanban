@@ -72,6 +72,9 @@ export interface KanbanSettings {
   'move-dates'?: boolean;
   'move-tags'?: boolean;
   'move-task-metadata'?: boolean;
+  'auto-create-note'?: boolean;
+  'auto-create-note-counter'?: number;
+  'auto-create-note-name-format'?: string;
   'new-card-insertion-method'?: 'prepend' | 'prepend-compact' | 'append';
   'new-line-trigger'?: 'enter' | 'shift-enter';
   'new-note-folder'?: string;
@@ -120,6 +123,9 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'move-dates',
   'move-tags',
   'move-task-metadata',
+  'auto-create-note',
+  'auto-create-note-counter',
+  'auto-create-note-name-format',
   'new-card-insertion-method',
   'new-line-trigger',
   'new-note-folder',
@@ -469,6 +475,93 @@ export class SettingsManager {
           manager: this,
         })
       );
+
+    new Setting(contentEl)
+      .setName(t('Auto-create note on card add'))
+      .setDesc(
+        t(
+          'When enabled, adding a card will automatically create a linked note (BOARD-ID format) instead of a plain text card.'
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('auto-create-note', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            } else {
+              toggle.setValue(false);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'auto-create-note': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('auto-create-note', local);
+                toggleComponent.setValue(!!(globalValue ?? false));
+
+                this.applySettingsUpdate({
+                  $unset: ['auto-create-note'],
+                });
+              });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Auto-create note name format'))
+      .setDesc(
+        t(
+          'Template for the note name when auto-creating notes. Available tokens: {{board}}, {{board_lower}}, {{board_raw}}, {{id}}, {{millis}}, {{date}}, {{time}}, {{random}}'
+        )
+      )
+      .addText((text) => {
+        const [value, globalValue] = this.getSetting('auto-create-note-name-format', local);
+
+        text.setPlaceholder((globalValue as string) || '{{board}}-{{id}}');
+        text.setValue((value as string) || '');
+
+        text.onChange((newValue) => {
+          if (newValue) {
+            this.applySettingsUpdate({
+              'auto-create-note-name-format': { $set: newValue },
+            });
+          } else {
+            this.applySettingsUpdate({
+              $unset: ['auto-create-note-name-format'],
+            });
+          }
+        });
+      })
+      .addExtraButton((b) => {
+        b.setIcon('lucide-rotate-ccw')
+          .setTooltip(t('Reset to default'))
+          .onClick(() => {
+            const [, globalValue] = this.getSetting('auto-create-note-name-format', local);
+            const el = b.extraSettingsEl
+              .closest('.setting-item')
+              ?.querySelector('input') as HTMLInputElement | null;
+            if (el) el.value = '';
+
+            this.applySettingsUpdate({
+              $unset: ['auto-create-note-name-format'],
+            });
+          });
+      });
 
     contentEl.createEl('h4', { text: t('Tags') });
 

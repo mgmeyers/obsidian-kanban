@@ -14,9 +14,16 @@ interface ItemFormProps {
   editState: EditState;
   setEditState: Dispatch<StateUpdater<EditState>>;
   hideButton?: boolean;
+  onAutoCreate?: () => void;
 }
 
-export function ItemForm({ addItems, editState, setEditState, hideButton }: ItemFormProps) {
+export function ItemForm({
+  addItems,
+  editState,
+  setEditState,
+  hideButton,
+  onAutoCreate,
+}: ItemFormProps) {
   const { stateManager } = useContext(KanbanContext);
   const editorRef = useRef<EditorView>();
 
@@ -70,7 +77,13 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
     <div className={c('item-button-wrapper')}>
       <button
         className={c('new-item-button')}
-        onClick={() => setEditState({ x: 0, y: 0 })}
+        onClick={() => {
+          if (onAutoCreate) {
+            onAutoCreate();
+          } else {
+            setEditState({ x: 0, y: 0 });
+          }
+        }}
         onDragOver={(e) => {
           if (getDropAction(stateManager, e.dataTransfer)) {
             setEditState({ x: 0, y: 0 });

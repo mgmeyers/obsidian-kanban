@@ -1,6 +1,7 @@
 import animateScrollTo from 'animated-scroll-to';
 import classcat from 'classcat';
 import update from 'immutability-helper';
+import { TFile, TFolder } from 'obsidian';
 import { Fragment, memo, useCallback, useContext, useMemo, useRef, useState } from 'preact/compat';
 import {
   DraggableProps,
@@ -18,7 +19,7 @@ import { getTaskStatusDone } from 'src/parsers/helpers/inlineMetadata';
 import { Items } from '../Item/Item';
 import { ItemForm } from '../Item/ItemForm';
 import { KanbanContext, SearchContext, SortContext } from '../context';
-import { c, generateInstanceId } from '../helpers';
+import { applyTemplate, c, generateInstanceId, resolveNoteNameFormat } from '../helpers';
 import { DataTypes, EditState, EditingState, Item, Lane } from '../types';
 import { LaneHeader } from './LaneHeader';
 
@@ -117,6 +118,47 @@ function DraggableLaneRaw({
     [boardModifiers, path, lane, shouldPrepend]
   );
 
+  const createAutoNote = useCallback(async () => {
+    const currentCounter =
+      (stateManager.state.data.settings?.['auto-create-note-counter'] as number) ?? 0;
+    const nextCounter = currentCounter + 1;
+
+    const nameFormat =
+      (stateManager.getSetting('auto-create-note-name-format') as string) || '{{board}}-{{id}}';
+    const noteName = resolveNoteNameFormat(nameFormat, stateManager, nextCounter);
+
+    const newNoteFolder = stateManager.getSetting('new-note-folder');
+    const newNoteTemplatePath = stateManager.getSetting('new-note-template');
+
+    const targetFolder = newNoteFolder
+      ? (stateManager.app.vault.getAbstractFileByPath(newNoteFolder as string) as TFolder)
+      : stateManager.app.fileManager.getNewFileParent(stateManager.file.path);
+
+    stateManager.setState((board) =>
+      update(board, {
+        data: { settings: { 'auto-create-note-counter': { $set: nextCounter } } },
+      })
+    );
+
+    const newFile = (await (stateManager.app.fileManager as any).createNewMarkdownFile(
+      targetFolder,
+      noteName
+    )) as TFile;
+
+    const newLeaf = stateManager.app.workspace.splitActiveLeaf();
+    await newLeaf.openFile(newFile);
+    stateManager.app.workspace.setActiveLeaf(newLeaf, false, true);
+
+    await applyTemplate(stateManager, newNoteTemplatePath as string | undefined);
+
+    const wikilink = stateManager.app.fileManager.generateMarkdownLink(
+      newFile,
+      stateManager.file.path
+    );
+
+    addItems([stateManager.getNewItem(wikilink, ' ')]);
+  }, [stateManager, addItems]);
+
   const DroppableComponent = isStatic ? StaticDroppable : Droppable;
   const SortableComponent = isStatic ? StaticSortable : Sortable;
   const CollapsedDropArea = !isCollapsed || isStatic ? Fragment : Droppable;
@@ -162,6 +204,7 @@ function DraggableLaneRaw({
               laneIndex={laneIndex}
               lane={lane}
               setIsItemInputVisible={isCompactPrepend ? setEditState : undefined}
+              onAutoCreate={isCompactPrepend ? createAutoNote : undefined}
               isCollapsed={isCollapsed}
               toggleIsCollapsed={toggleIsCollapsed}
             />
@@ -172,6 +215,7 @@ function DraggableLaneRaw({
                 hideButton={isCompactPrepend}
                 editState={editState}
                 setEditState={setEditState}
+                onAutoCreate={createAutoNote}
               />
             )}
 
@@ -207,7 +251,12 @@ function DraggableLaneRaw({
             )}
 
             {!search?.query && !isCollapsed && !shouldPrepend && (
-              <ItemForm addItems={addItems} editState={editState} setEditState={setEditState} />
+              <ItemForm
+                addItems={addItems}
+                editState={editState}
+                setEditState={setEditState}
+                onAutoCreate={createAutoNote}
+              />
             )}
           </CollapsedDropArea>
         </div>

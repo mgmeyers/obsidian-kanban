@@ -33,6 +33,46 @@ export function generateInstanceId(len: number = 9): string {
     .slice(2, 2 + len);
 }
 
+export const DEFAULT_NOTE_NAME_FORMAT = '{{board}}-{{id}}';
+
+/**
+ * Resolves a note name format string, replacing tokens with actual values.
+ *
+ * Available tokens:
+ *   {{board}}       — board name, uppercased, spaces → "-"
+ *   {{board_lower}} — board name, lowercased, spaces → "-"
+ *   {{board_raw}}   — board name as-is, spaces → "-"
+ *   {{id}}          — autoincremental counter (persisted in board settings)
+ *   {{millis}}      — current timestamp in milliseconds
+ *   {{date}}        — current date using the board's date-format setting
+ *   {{time}}        — current time using the board's time-format setting
+ *   {{random}}      — short random alphanumeric string (6 chars)
+ */
+export function resolveNoteNameFormat(
+  format: string,
+  stateManager: StateManager,
+  nextCounter: number
+): string {
+  const basename = stateManager.file.basename;
+  const boardUpper = basename.toUpperCase().replace(/\s+/g, '-');
+  const boardLower = basename.toLowerCase().replace(/\s+/g, '-');
+  const boardRaw = basename.replace(/\s+/g, '-');
+
+  const dateFormat = (stateManager.getSetting('date-format') as string) || 'YYYY-MM-DD';
+  const timeFormat = (stateManager.getSetting('time-format') as string) || 'HH:mm';
+  const now = moment();
+
+  return format
+    .replace(/\{\{board\}\}/g, boardUpper)
+    .replace(/\{\{board_lower\}\}/g, boardLower)
+    .replace(/\{\{board_raw\}\}/g, boardRaw)
+    .replace(/\{\{id\}\}/g, String(nextCounter))
+    .replace(/\{\{millis\}\}/g, String(Date.now()))
+    .replace(/\{\{date\}\}/g, now.format(dateFormat))
+    .replace(/\{\{time\}\}/g, now.format(timeFormat))
+    .replace(/\{\{random\}\}/g, generateInstanceId(6));
+}
+
 export function maybeCompleteForMove(
   sourceStateManager: StateManager,
   sourceBoard: Board,

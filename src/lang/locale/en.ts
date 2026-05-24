@@ -215,6 +215,12 @@ const en = {
   'Card title...': 'Card title...',
   'Add card': 'Add card',
   'Add a card': 'Add a card',
+  'Auto-create note on card add': 'Auto-create note on card add',
+  'When enabled, adding a card will automatically create a linked note (BOARD-ID format) instead of a plain text card.':
+    'When enabled, adding a card will automatically create a linked note (BOARD-ID format) instead of a plain text card.',
+  'Auto-create note name format': 'Auto-create note name format',
+  'Template for the note name when auto-creating notes. Available tokens: {{board}}, {{board_lower}}, {{board_raw}}, {{id}}, {{millis}}, {{date}}, {{time}}, {{random}}':
+    'Template for the note name when auto-creating notes. Available tokens: {{board}}, {{board_lower}}, {{board_raw}}, {{id}}, {{millis}}, {{date}}, {{time}}, {{random}}',
 
   // components/Item/ItemMenu.ts
   'Edit card': 'Edit card',
