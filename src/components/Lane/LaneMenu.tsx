@@ -2,6 +2,7 @@ import update from 'immutability-helper';
 import { Menu, Platform } from 'obsidian';
 import { Dispatch, StateUpdater, useContext, useEffect, useMemo, useState } from 'preact/hooks';
 import { Path } from 'src/dnd/types';
+import { sortLaneByDate } from 'src/helpers/dateSort';
 import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
 import { lableToName } from 'src/parsers/helpers/inlineMetadata';
@@ -193,40 +194,16 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
         menu.addItem((item) => {
           item
             .setIcon('arrow-down-up')
-            .setTitle(t('Sort by date'))
-            .onClick(() => {
-              const children = lane.children.slice();
-              const mod = lane.data.sorted === LaneSort.DateAsc ? -1 : 1;
+              .setTitle(t('Sort by date'))
+              .onClick(() => {
+                const direction = lane.data.sorted === LaneSort.DateAsc ? 'dsc' : 'asc';
 
-              children.sort((a, b) => {
-                const aDate: moment.Moment | undefined =
-                  a.data.metadata.time || a.data.metadata.date;
-                const bDate: moment.Moment | undefined =
-                  b.data.metadata.time || b.data.metadata.date;
-
-                if (aDate && !bDate) return -1 * mod;
-                if (bDate && !aDate) return 1 * mod;
-                if (!aDate && !bDate) return 0;
-
-                return (aDate.isBefore(bDate) ? -1 : 1) * mod;
+                boardModifiers.updateLane(
+                  path,
+                  sortLaneByDate(lane, direction).value
+                );
               });
-
-              boardModifiers.updateLane(
-                path,
-                update(lane, {
-                  children: {
-                    $set: children,
-                  },
-                  data: {
-                    sorted: {
-                      $set:
-                        lane.data.sorted === LaneSort.DateAsc ? LaneSort.DateDsc : LaneSort.DateAsc,
-                    },
-                  },
-                })
-              );
-            });
-        });
+          });
       }
 
       if (canSortTags) {

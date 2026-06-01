@@ -10,8 +10,17 @@ package-lock.json
 .DS_Store
 *.js.map
 .env
-yarn*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
 dist
 test-vault/
 main.js
 styles.css
+
+# Локальная конфигурация Obsidian
+docs/.obsidian/

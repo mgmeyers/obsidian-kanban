@@ -125,14 +125,17 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
     },
 
     updateLane: (path: Path, lane: Lane) => {
-      stateManager.setState((boardData) =>
-        updateParentEntity(boardData, path, {
-          children: {
-            [path[path.length - 1]]: {
-              $set: lane,
+      stateManager.setState(
+        (boardData) =>
+          updateParentEntity(boardData, path, {
+            children: {
+              [path[path.length - 1]]: {
+                $set: lane,
+              },
             },
-          },
-        })
+          }),
+        true,
+        false
       );
     },
 

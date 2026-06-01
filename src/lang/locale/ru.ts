@@ -13,11 +13,12 @@ const lang: Partial<Lang> = {
   'New kanban board': 'Новая Kanban-доска',
   'Untitled Kanban': 'Безымянная Kanban-доска',
   'Toggle between Kanban and markdown mode': 'Переключиться между Kanban и markdown режимами',
+  'Board view': 'Вид доски',
 
   // KanbanView.tsx
-  'Open as markdown': 'Открыть как markdown',
+  'Open as markdown': 'Открыть как Markdown',
   'Open board settings': 'Открыть настройки доски',
-  'Archive completed cards': 'Архивировать завершённые карточки',
+  'Archive completed cards': 'Архивировать выполненные карточки',
   'Something went wrong': 'Что-то пошло не так',
   'You may wish to open as markdown and inspect or edit the file.':
     'Вы можете открыть файл как markdown и проверить или отредактировать его.',
@@ -36,82 +37,99 @@ const lang: Partial<Lang> = {
   'Note: No template plugins are currently enabled.':
     'Примечание: В настоящее время ни один плагин шаблона не включен.',
   default: 'по умолчанию',
-  'Search...': 'Найти...',
+  'Search...': 'Поиск…',
 
   // Settings.ts
-  'New line trigger': 'Триггер новой строки',
+  'New line trigger': 'Горячая клавиша для новой строки',
   'Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lists.':
-    'Выберите, будет ли создаваться новая строка с помощью Enter или Shift+Enter. Противоположность тому, что вы выберете, позволит создать и завершить редактирование карточек и списков.',
+    'Выберите, что создаёт новую строку: Enter или Shift+Enter. Другая комбинация завершает редактирование карточек и списков.',
   'Shift + Enter': 'Shift + Enter',
   Enter: 'Enter',
-  'Prepend / append new cards': 'Положение новых карточек',
+  'Prepend / append new cards': 'Добавлять новые карточки в начало / конец списка',
   'This setting controls whether new cards are added to the beginning or end of the list.':
-    'Эта настройка управляет положением новых карточек, в начале или в конце списка.',
+    'Настраивает, добавлять ли новые карточки в начало или в конец списка.',
   Prepend: 'В начале',
   'Prepend (compact)': 'В начале (компактно)',
   Append: 'В конце',
   'These settings will take precedence over the default Kanban board settings.':
-    'Эти настройки будут иметь приоритет над настройками доски Kanban по умолчанию.',
+    'Эти настройки имеют приоритет над настройками Канбан по умолчанию.',
   'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.':
-    'Установите настройки доски Kanban по умолчанию. Настройки можно переопределить для каждой доски.',
+    'Настройте значения по умолчанию. Их можно переопределить для каждой доски.',
   'Note template': 'Шаблон заметки',
   'This template will be used when creating new notes from Kanban cards.':
-    'Этот шаблон будет использоваться при создании новых заметок из карточек Kanban.',
+    'Этот шаблон используется при создании заметок из карточек.',
   'No template': 'Нет шаблона',
-  'Note folder': 'Директория заметок',
+  'Note folder': 'Папка для заметок',
   'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.':
-    'В эту папку будут помещены заметки, созданные из карточек Kanban. Если поле пустое, они будут помещены в папку по умолчанию для этого хранилища.',
+    'Заметки из карточек будут сохранены в этой папке; если пусто — в папку по умолчанию.',
   'Default folder': 'Директория по умолчанию',
   'List width': 'Ширина списка',
+  'Expand lists to full width in list view': 'Растягивать списки на всю ширину в режиме списка',
   'Enter a number to set the list width in pixels.':
-    'Введите число, чтобы установить ширину списка в пикселях.',
-  'Maximum number of archived cards': 'Максимальное количество архивированных карточек',
+    'Укажите число — ширина списка в пикселях.',
+  'Maximum number of archived cards': 'Максимум карточек в архиве',
   "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
-    'Архивированные карточки можно просмотреть в режиме markdown. Эта настройка начнет удалять старые карточки после достижения лимита. Установка этого значения на -1 позволит архиву доски расти бесконечно.',
-  'Display card checkbox': 'Показывать флажок карточки',
+    'Архивные карточки видны в Markdown. При достижении лимита старые удаляются. Значение -1 — без лимита.',
+  'Display card checkbox': 'Показывать чекбокс у карточек',
   'When toggled, a checkbox will be displayed with each card':
-    'Когда включено, для каждой карточки будет показан флажок',
+    'При включении у каждой карточки будет чекбокс',
   'Reset to default': 'Сбросить настройки',
   'Date & Time': 'Дата и время',
   'Date trigger': 'Триггер даты',
-  'When this is typed, it will trigger the date selector': 'Ввод активирует выбор даты',
+  'When this is typed, it will trigger the date selector':
+    'Ввод этого триггера открывает выбор даты',
   'Time trigger': 'Триггер времени',
   'When this is typed, it will trigger the time selector': 'Ввод активирует выбор времени',
   'Date format': 'Формат даты',
   'This format will be used when saving dates in markdown.':
-    'Этот формат будет использован при сохранении дат в markdown.',
+    'Этот формат используется при сохранении даты в Markdown.',
   'For more syntax, refer to': 'Полный синтаксис смотрите на',
   'format reference': 'справка по формату',
   'Your current syntax looks like this': 'Ваш текущий синтаксис выглядит так',
   'Time format': 'Формат времени',
-  'Date display format': 'Формат показа даты',
+  'Date display format': 'Формат отображения даты',
   'This format will be used when displaying dates in Kanban cards.':
-    'Этот формат будет использован при показе дат в Kanban-карточках.',
+    'Этот формат используется при показе дат на карточках.',
   'Show relative date': 'Показывать относительную дату',
-  'Hide card counts in list titles': 'Скрыть счётчики карточек в заголовках списка',
+  "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'. Relative dates will not be shown for dates from the Tasks and Dataview plugins.":
+    'При включении показывается разница до/от текущей даты (например, «Через 3 дня», «Месяц назад»). Не применяется к датам из Tasks/Dataview.',
+  'Move dates to card footer': 'Перемещать даты в подвал карточки',
+  'Move tags to card footer': 'Перемещать теги в подвал карточки',
+  'Move task data to card footer': 'Перемещать данные задачи в подвал карточки',
+  'Inline Metadata': 'Встроенные метаданные',
+  'Controls where the inline metadata (from the Dataview plugin) will be displayed.':
+    'Определяет, где показывать встроенные метаданные (Dataview).',
+  'Card body': 'Тело карточки',
+  'Card footer': 'Подвал карточки',
+  'Merge with linked page metadata': 'Объединить с метаданными связанной страницы',
+  'Hide card counts in list titles': 'Скрывать счётчик карточек в заголовке списка',
   'When toggled, card counts are hidden from the list title':
-    'Когда включено, счётчики карточек скрыты в заголовках списка',
-  'Link dates to daily notes': 'Связывать даты с ежедневными заметками',
+    'При включении счётчики карточек не показываются в заголовке списка.',
+  'Link dates to daily notes': 'Привязывать даты к ежедневным заметкам',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
     'Когда включено, даты будут указывать на ежедневные заметки. Например, [[2021-04-26]]',
-  'Add date and time to archived cards': 'Добавлять дату и время к архивированным карточкам',
+  'Add date and time to archived cards': 'Добавлять дату/время в архивируемые карточки',
   'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     'Когда включено, текущие дата и время будут добавлены к заголовку карточки, когда она заархивирована. Например, - [ ] 2021-05-14 10:00am Мой заголовок карточки',
   'Add archive date/time after card title':
-    'Добавлять дату/время архивирования после заголовка карточки',
+    'Добавлять дату/время архива после заголовка',
   'When toggled, the archived date/time will be added after the card title, e.g.- [ ] My card title 2021-05-14 10:00am. By default, it is inserted before the title.':
     'Когда включено, дата и время архивирования будет добавлено после заголовка карточки, например, - [ ] Мой заголовок карточки 2021-05-14 10:00am. По умолчанию добавление производится перед заголовком.',
-  'Archive date/time separator': 'Разделитель даты/времени архивирования',
+  'Archive date/time separator': 'Разделитель даты/времени архива',
   'This will be used to separate the archived date/time from the title':
     'Будет использоваться для отделения даты/времени архивирования от заголовка',
-  'Archive date/time format': 'Формат даты/времени архивирования',
+  'Archive date/time format': 'Формат даты/времени архива',
   'Kanban Plugin': 'Плагин Kanban',
-  'Tag colors': 'Показывать цвета меток',
-  'Set colors for tags displayed in cards.': 'Установить цвета для меток под заголовками карточек.',
-  'Linked Page Metadata': 'Метаданные связанных страниц',
+  Tags: 'Теги',
+  'Tag click action': 'Действие по клику на тег',
+  'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.':
+    'Определяет, открывать ли поиск Obsidian или поиск по доске при клике на тег.',
+  'Tag colors': 'Цвета тегов',
+  'Set colors for tags displayed in cards.': 'Настройте цвета тегов в карточках.',
+  'Linked Page Metadata': 'Метаданные связанной страницы',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
-    'Отображение метаданных для первой заметки, связанной с карточкой. Ниже укажите, какие ключи метаданных отображать. Можно указать дополнительную метку, либо скрыть метки полностью.',
-  'Board Header Buttons': 'Кнопки заголовка доски',
+    'Показывать метаданные первой ссылки в карточке. Укажите ключи ниже; можно задать метки или скрыть их.',
+  'Board Header Buttons': 'Кнопки шапки доски',
   'Calendar: first day of week': 'Календарь: первый день недели',
   'Override which day is used as the start of the week':
     'Укажите, какой день должен использоваться как начало недели',
@@ -130,10 +148,10 @@ const lang: Partial<Lang> = {
   'After now': 'После текущего момента',
   'Before now': 'До текущего момента',
   'Between now and': 'Между сейчас и',
-  'Display date colors': 'Показывать цвета даты',
+  'Display date colors': 'Показывать цвета дат',
   'Set colors for dates displayed in cards based on the rules below.':
-    'Установить цвета для даты, отображаемой под карточкой, базируясь на правилах ниже',
-  'Add date color': 'Добавить цвет даты',
+    'Настройте цвета дат по правилам ниже.',
+  'Add date color': 'Добавить правило цвета даты',
 
   // MetadataSettings.tsx
   'Metadata key': 'Ключ метаданных',
@@ -143,9 +161,12 @@ const lang: Partial<Lang> = {
   Delete: 'Удалить',
   'Add key': 'Добавить ключ',
   'Field contains markdown': 'Поле содержит markdown',
+  'Tag sort order': 'Порядок сортировки тегов',
+  'Set an explicit sort order for the specified tags.':
+    'Задайте явный порядок для выбранных тегов.',
 
   // TagColorSettings.tsx
-  'Add tag color': 'Добавить цвет метки',
+  'Add tag color': 'Добавить цвет для тега',
 
   // components/Item/Item.tsx
   'More options': 'Больше настроек',
@@ -195,13 +216,13 @@ const lang: Partial<Lang> = {
 
   // components/Lane/LaneMenu.tsx
   'Are you sure you want to delete this list and all its cards?':
-    'Вы уверены, что хотите удалить этот список и все его карточки?',
+    'Удалить этот список и все его карточки?',
   'Yes, delete list': 'Да, удалить список',
   'Are you sure you want to archive this list and all its cards?':
-    'Вы уверены, что хотите архивировать этот список и все его карточки?',
+    'Архивировать этот список и все его карточки?',
   'Yes, archive list': 'Да, архивировать список',
   'Are you sure you want to archive all cards in this list?':
-    'Вы уверены, что хотите архивировать все карточки в этом списке?',
+    'Архивировать все карточки в этом списке?',
   'Yes, archive cards': 'Да, архивировать карточки',
   'Edit list': 'Редактировать список',
   'Archive cards': 'Архивировать карточки',

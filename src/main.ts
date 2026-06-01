@@ -59,6 +59,10 @@ export default class KanbanPlugin extends Plugin {
 
   isShiftPressed: boolean = false;
 
+  midnightTimeout: number | null = null;
+
+  lastRelativeRefreshDay: string | null = null;
+
   async loadSettings() {
     this.settings = Object.assign({}, await this.loadData());
   }
@@ -78,6 +82,7 @@ export default class KanbanPlugin extends Plugin {
   }
 
   onunload() {
+    this.clearMidnightTimer();
     this.MarkdownEditor = null;
     this.windowRegistry.forEach((reg, win) => {
       reg.viewStateReceivers.forEach((fn) => fn([]));
@@ -143,15 +148,70 @@ export default class KanbanPlugin extends Plugin {
 
     this.registerDomEvent(window, 'keydown', this.handleShift);
     this.registerDomEvent(window, 'keyup', this.handleShift);
+    this.registerDomEvent(window, 'focus', () => this.maybeRefreshByDay());
+    this.registerDomEvent(document, 'visibilitychange', () => {
+      if (!document.hidden) {
+        this.maybeRefreshByDay();
+      }
+    });
 
     this.addRibbonIcon(kanbanIcon, t('Create new board'), () => {
       this.newKanban();
     });
+
+    this.scheduleMidnightRefresh();
   }
 
   handleShift = (e: KeyboardEvent) => {
     this.isShiftPressed = e.shiftKey;
   };
+
+  clearMidnightTimer() {
+    if (this.midnightTimeout !== null) {
+      window.clearTimeout(this.midnightTimeout);
+      this.midnightTimeout = null;
+    }
+  }
+
+  currentDayStamp() {
+    return new Date().toDateString();
+  }
+
+  maybeRefreshByDay() {
+    const day = this.currentDayStamp();
+
+    if (this.lastRelativeRefreshDay !== day) {
+      this.runDailyRefresh();
+      this.scheduleMidnightRefresh();
+    }
+  }
+
+  scheduleMidnightRefresh() {
+    this.clearMidnightTimer();
+    this.lastRelativeRefreshDay = this.currentDayStamp();
+
+    const nextMidnight = new Date();
+    nextMidnight.setHours(24, 0, 0, 0);
+
+    const delay = Math.max(nextMidnight.getTime() - Date.now(), 1000);
+
+    this.midnightTimeout = window.setTimeout(() => {
+      this.runDailyRefresh();
+      this.scheduleMidnightRefresh();
+    }, delay);
+  }
+
+  runDailyRefresh() {
+    this.lastRelativeRefreshDay = this.currentDayStamp();
+
+    this.stateManagers.forEach((stateManager) => {
+      try {
+        stateManager.forceRefresh();
+      } catch (e) {
+        console.error('Kanban midnight refresh failed', e);
+      }
+    });
+  }
 
   getKanbanViews(win: Window) {
     const reg = this.windowRegistry.get(win);

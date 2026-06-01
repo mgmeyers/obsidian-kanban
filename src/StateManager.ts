@@ -6,6 +6,7 @@ import { KanbanView } from './KanbanView';
 import { KanbanSettings, SettingRetrievers } from './Settings';
 import { getDefaultDateFormat, getDefaultTimeFormat } from './components/helpers';
 import { Board, BoardTemplate, Item } from './components/types';
+import { sortBoardByDate } from './helpers/dateSort';
 import { ListFormat } from './parsers/List';
 import { BaseFormat, frontmatterKey, shouldRefreshBoard } from './parsers/common';
 import { getTaskStatusDone } from './parsers/helpers/inlineMetadata';
@@ -90,7 +91,7 @@ export class StateManager {
     try {
       const board = this.getParsedBoard(md);
       await view.prerender(board);
-      this.setState(board, false);
+      this.setState(board, false, true);
     } catch (e) {
       this.setError(e);
     }
@@ -121,7 +122,12 @@ export class StateManager {
     if (this.state) {
       try {
         this.compileSettings();
-        this.state = this.parser.reparseBoard();
+        const sorted = sortBoardByDate(this.parser.reparseBoard());
+        this.state = sorted.value;
+
+        if (sorted.orderChanged) {
+          this.saveToDisk();
+        }
 
         this.stateReceivers.forEach((receiver) => receiver(this.state));
         this.settingsNotifiers.forEach((notifiers) => {
@@ -135,7 +141,11 @@ export class StateManager {
     }
   }
 
-  setState(state: Board | ((board: Board) => Board), shouldSave: boolean = true) {
+  setState(
+    state: Board | ((board: Board) => Board),
+    shouldSave: boolean = true,
+    shouldAutoSort: boolean = shouldSave
+  ) {
     try {
       const oldSettings = this.state?.data.settings;
       const newState = typeof state === 'function' ? state(this.state) : state;
@@ -156,9 +166,13 @@ export class StateManager {
         this.compileSettings();
       }
 
+      if (shouldAutoSort) {
+        this.state = sortBoardByDate(this.state).value;
+      }
+
       this.viewSet.forEach((view) => {
         view.initHeaderButtons();
-        view.validatePreviewCache(newState);
+        view.validatePreviewCache(this.state);
       });
 
       if (shouldSave) {
@@ -355,7 +369,7 @@ export class StateManager {
 
   async reparseBoardFromMd() {
     try {
-      this.setState(this.getParsedBoard(this.getAView().data), false);
+      this.setState(this.getParsedBoard(this.getAView().data), false, true);
     } catch (e) {
       console.error(e);
       this.setError(e);
