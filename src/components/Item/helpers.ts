@@ -2,8 +2,8 @@ import { FileWithPath, fromEvent } from 'file-selector';
 import { Platform, TFile, TFolder, htmlToMarkdown, moment, parseLinktext, setIcon } from 'obsidian';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
-import { buildLinkToDailyNote } from 'src/helpers';
 import { getTaskStatusDone } from 'src/parsers/helpers/inlineMetadata';
+import { tasksDateFormat, upsertDueDate } from 'src/parsers/helpers/taskMetadataStorage';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { getDefaultLocale } from '../Editor/datePickerLocale';
@@ -87,7 +87,7 @@ interface ConstructMenuDatePickerOnChangeParams {
   stateManager: StateManager;
   boardModifiers: BoardModifiers;
   item: Item;
-  hasDate: boolean;
+  hasDate?: boolean;
   path: Path;
 }
 
@@ -95,31 +95,15 @@ export function constructMenuDatePickerOnChange({
   stateManager,
   boardModifiers,
   item,
-  hasDate,
   path,
 }: ConstructMenuDatePickerOnChangeParams) {
-  const dateFormat = stateManager.getSetting('date-format');
-  const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
-  const dateTrigger = stateManager.getSetting('date-trigger');
-  const contentMatch = shouldLinkDates
-    ? '(?:\\[[^\\]]+\\]\\([^)]+\\)|\\[\\[[^\\]]+\\]\\])'
-    : '{[^}]+}';
-  const dateRegEx = new RegExp(`(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`);
-
   return (dates: Date[]) => {
     const date = dates[0];
-    const formattedDate = moment(date).format(dateFormat);
-    const wrappedDate = shouldLinkDates
-      ? buildLinkToDailyNote(stateManager.app, formattedDate)
-      : `{${formattedDate}}`;
-
-    let titleRaw = item.data.titleRaw;
-
-    if (hasDate) {
-      titleRaw = item.data.titleRaw.replace(dateRegEx, `$1${dateTrigger}${wrappedDate}`);
-    } else {
-      titleRaw = `${item.data.titleRaw} ${dateTrigger}${wrappedDate}`;
-    }
+    const formattedDate = moment(date).format(tasksDateFormat);
+    const titleRaw = upsertDueDate(item.data.titleRaw, formattedDate, {
+      dateTrigger: stateManager.getSetting('date-trigger') as string,
+      dateFormat: stateManager.getSetting('date-format') as string,
+    });
 
     boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRaw));
   };

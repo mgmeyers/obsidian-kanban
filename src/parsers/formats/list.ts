@@ -50,6 +50,10 @@ import {
   replaceBrs,
   replaceNewLines,
 } from '../helpers/parser';
+import {
+  normalizeKanbanTaskMetadata,
+  parseTasksCompatibleMetadata,
+} from '../helpers/taskMetadataStorage';
 import { parseFragment } from '../parseMarkdown';
 
 interface TaskItem extends ListItem {
@@ -242,6 +246,17 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
       }
     }
   );
+
+  const tasksMetadata = parseTasksCompatibleMetadata(itemData.titleRaw);
+
+  if (tasksMetadata.dueDate) {
+    itemData.metadata.dateStr = tasksMetadata.dueDate;
+  }
+
+  if (tasksMetadata.priority) {
+    itemData.metadata.priorityStr = tasksMetadata.priority;
+    itemData.metadata.priority = tasksMetadata.priority;
+  }
 
   itemData.title = preprocessTitle(stateManager, dedentNewLines(executeDeletion(title)));
 
@@ -460,11 +475,17 @@ export function reparseBoard(stateManager: StateManager, board: Board) {
   }
 }
 
-function itemToMd(item: Item) {
-  return `- [${item.data.checkChar}] ${addBlockId(indentNewLines(item.data.titleRaw), item)}`;
+function itemToMd(item: Item, settings: KanbanSettings) {
+  const titleRaw = normalizeKanbanTaskMetadata(item.data.titleRaw, {
+    dateTrigger: settings['date-trigger'] as string,
+    dateFormat: settings['date-format'] as string,
+    priorityTrigger: settings['priority-trigger'] as string,
+  });
+
+  return `- [${item.data.checkChar}] ${addBlockId(indentNewLines(titleRaw), item)}`;
 }
 
-function laneToMd(lane: Lane) {
+function laneToMd(lane: Lane, settings: KanbanSettings) {
   const lines: string[] = [];
 
   lines.push(`## ${replaceNewLines(laneTitleWithMaxItems(lane.data.title, lane.data.maxItems))}`);
@@ -481,7 +502,7 @@ function laneToMd(lane: Lane) {
   }
 
   lane.children.forEach((item) => {
-    lines.push(itemToMd(item));
+    lines.push(itemToMd(item, settings));
   });
 
   lines.push('');
@@ -491,12 +512,12 @@ function laneToMd(lane: Lane) {
   return lines.join('\n');
 }
 
-function archiveToMd(archive: Item[]) {
+function archiveToMd(archive: Item[], settings: KanbanSettings) {
   if (archive.length) {
     const lines: string[] = [archiveString, '', `## ${t('Archive')}`, ''];
 
     archive.forEach((item) => {
-      lines.push(itemToMd(item));
+      lines.push(itemToMd(item, settings));
     });
 
     return lines.join('\n');
@@ -507,10 +528,10 @@ function archiveToMd(archive: Item[]) {
 
 export function boardToMd(board: Board) {
   const lanes = board.children.reduce((md, lane) => {
-    return md + laneToMd(lane);
+    return md + laneToMd(lane, board.data.settings);
   }, '');
 
   const frontmatter = ['---', '', stringifyYaml(board.data.frontmatter), '---', '', ''].join('\n');
 
-  return frontmatter + lanes + archiveToMd(board.data.archive) + settingsToCodeblock(board);
+  return frontmatter + lanes + archiveToMd(board.data.archive, board.data.settings) + settingsToCodeblock(board);
 }

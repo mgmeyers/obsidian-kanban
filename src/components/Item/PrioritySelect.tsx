@@ -1,9 +1,10 @@
 import { createPortal, useCallback, useContext, useEffect, useRef, useState } from 'preact/compat';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { Path } from 'src/dnd/types';
+import { removePriority, upsertPriority } from 'src/parsers/helpers/taskMetadataStorage';
 
 import { KanbanContext } from '../context';
-import { c, escapeRegExpStr } from '../helpers';
+import { c } from '../helpers';
 import { Item } from '../types';
 
 type Priority = 'low' | 'medium' | 'high';
@@ -37,19 +38,14 @@ export function PrioritySelect({ item, isStatic, explicitPath }: PrioritySelectP
       const target = newPriority === 'none' ? null : newPriority;
       if (target === currentPriority) return;
 
-      const pTrigger = stateManager.getSetting('priority-trigger') as string;
-      const pRegEx = new RegExp(`(^|\\s)${escapeRegExpStr(pTrigger)}{([^}]+)}`);
+      const titleRaw = target
+        ? upsertPriority(item.data.titleRaw, target, {
+            priorityTrigger: stateManager.getSetting('priority-trigger') as string,
+          })
+        : removePriority(item.data.titleRaw, {
+            priorityTrigger: stateManager.getSetting('priority-trigger') as string,
+          });
 
-      let titleRaw = item.data.titleRaw;
-      if (currentPriority) {
-        if (target) {
-          titleRaw = titleRaw.replace(pRegEx, `$1${pTrigger}{${target}}`);
-        } else {
-          titleRaw = titleRaw.replace(pRegEx, '').trim();
-        }
-      } else if (target) {
-        titleRaw = `${titleRaw} ${pTrigger}{${target}}`;
-      }
       boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRaw));
     },
     [currentPriority, item, stateManager, boardModifiers, path]

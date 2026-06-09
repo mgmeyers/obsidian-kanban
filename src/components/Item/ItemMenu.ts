@@ -5,6 +5,12 @@ import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { moveEntity } from 'src/dnd/util/data';
 import { t } from 'src/lang/helpers';
+import {
+  type KanbanTaskPriority,
+  removeDueDate,
+  removePriority,
+  upsertPriority,
+} from 'src/parsers/helpers/taskMetadataStorage';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
@@ -198,7 +204,6 @@ export function useItemMenu({
                   stateManager,
                   boardModifiers,
                   item,
-                  hasDate,
                   path,
                 }),
                 item.data.metadata.date?.toDate()
@@ -211,16 +216,10 @@ export function useItemMenu({
           i.setIcon('lucide-x')
             .setTitle(t('Remove date'))
             .onClick(() => {
-              const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
-              const dateTrigger = stateManager.getSetting('date-trigger');
-              const contentMatch = shouldLinkDates
-                ? '(?:\\[[^\\]]+\\]\\([^\\)]+\\)|\\[\\[[^\\]]+\\]\\])'
-                : '{[^}]+}';
-              const dateRegEx = new RegExp(
-                `(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`
-              );
-
-              const titleRaw = item.data.titleRaw.replace(dateRegEx, '').trim();
+              const titleRaw = removeDueDate(item.data.titleRaw, {
+                dateTrigger: stateManager.getSetting('date-trigger') as string,
+                dateFormat: stateManager.getSetting('date-format') as string,
+              });
 
               boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRaw));
             });
@@ -308,29 +307,28 @@ export function useItemMenu({
       menu.addSeparator();
 
       const currentPriority = item.data.metadata.priority;
-      const pTrigger = stateManager.getSetting('priority-trigger') as string;
-      const pRegEx = new RegExp(
-        `(^|\\s)${escapeRegExpStr(pTrigger)}{([^}]+)}`
-      );
+      const setPriority = (level: KanbanTaskPriority | null) => {
+        const titleRaw = level
+          ? upsertPriority(item.data.titleRaw, level, {
+              priorityTrigger: stateManager.getSetting('priority-trigger') as string,
+            })
+          : removePriority(item.data.titleRaw, {
+              priorityTrigger: stateManager.getSetting('priority-trigger') as string,
+            });
 
-      const setPriority = (level: string | null) => {
-        let titleRaw = item.data.titleRaw;
-        if (currentPriority) {
-          if (level) {
-            titleRaw = titleRaw.replace(pRegEx, `$1${pTrigger}{${level}}`);
-          } else {
-            titleRaw = titleRaw.replace(pRegEx, '').trim();
-          }
-        } else if (level) {
-          titleRaw = `${titleRaw} ${pTrigger}{${level}}`;
-        }
         boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRaw));
       };
 
       const addPriorityOptions = (submenu: Menu) => {
+        const priorityLabels: Record<KanbanTaskPriority, string> = {
+          high: t('High'),
+          medium: t('Medium'),
+          low: t('Low'),
+        };
+
         (['high', 'medium', 'low'] as const).forEach((level) => {
           submenu.addItem((mi) => {
-            mi.setTitle(t(level.charAt(0).toUpperCase() + level.slice(1)))
+            mi.setTitle(priorityLabels[level])
               .setChecked(currentPriority === level)
               .onClick(() => setPriority(currentPriority === level ? null : level));
           });
