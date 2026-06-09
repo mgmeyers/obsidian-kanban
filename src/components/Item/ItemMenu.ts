@@ -5,6 +5,12 @@ import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { moveEntity } from 'src/dnd/util/data';
 import { t } from 'src/lang/helpers';
+import {
+  type KanbanTaskPriority,
+  removeDueDate,
+  removePriority,
+  upsertPriority,
+} from 'src/parsers/helpers/taskMetadataStorage';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
@@ -198,7 +204,6 @@ export function useItemMenu({
                   stateManager,
                   boardModifiers,
                   item,
-                  hasDate,
                   path,
                 }),
                 item.data.metadata.date?.toDate()
@@ -211,16 +216,10 @@ export function useItemMenu({
           i.setIcon('lucide-x')
             .setTitle(t('Remove date'))
             .onClick(() => {
-              const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
-              const dateTrigger = stateManager.getSetting('date-trigger');
-              const contentMatch = shouldLinkDates
-                ? '(?:\\[[^\\]]+\\]\\([^\\)]+\\)|\\[\\[[^\\]]+\\]\\])'
-                : '{[^}]+}';
-              const dateRegEx = new RegExp(
-                `(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`
-              );
-
-              const titleRaw = item.data.titleRaw.replace(dateRegEx, '').trim();
+              const titleRaw = removeDueDate(item.data.titleRaw, {
+                dateTrigger: stateManager.getSetting('date-trigger') as string,
+                dateFormat: stateManager.getSetting('date-format') as string,
+              });
 
               boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRaw));
             });
@@ -261,6 +260,99 @@ export function useItemMenu({
               });
           });
         }
+      }
+
+      menu.addSeparator();
+
+      const hasStoryPoints = item.data.metadata.storyPoints != null;
+      const spTrigger = stateManager.getSetting('story-points-trigger');
+      const spRegEx = new RegExp(
+        `(^|\\s)${escapeRegExpStr(spTrigger as string)}{([^}]+)}`
+      );
+
+      menu.addItem((i) => {
+        i.setIcon('lucide-hash')
+          .setTitle(hasStoryPoints ? t('Edit story points') : t('Add story points'))
+          .onClick(() => {
+            const currentSp = item.data.metadata.storyPoints;
+            const input = prompt(
+              'Enter story points:',
+              currentSp != null ? String(currentSp) : ''
+            );
+            if (input === null) return;
+            const parsed = parseFloat(input);
+            if (isNaN(parsed)) return;
+
+            let titleRaw = item.data.titleRaw;
+            if (hasStoryPoints) {
+              titleRaw = titleRaw.replace(spRegEx, `$1${spTrigger}{${parsed}}`);
+            } else {
+              titleRaw = `${titleRaw} ${spTrigger}{${parsed}}`;
+            }
+            boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRaw));
+          });
+      });
+
+      if (hasStoryPoints) {
+        menu.addItem((i) => {
+          i.setIcon('lucide-x')
+            .setTitle(t('Remove story points'))
+            .onClick(() => {
+              const titleRaw = item.data.titleRaw.replace(spRegEx, '').trim();
+              boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRaw));
+            });
+        });
+      }
+
+      menu.addSeparator();
+
+      const currentPriority = item.data.metadata.priority;
+      const setPriority = (level: KanbanTaskPriority | null) => {
+        const titleRaw = level
+          ? upsertPriority(item.data.titleRaw, level, {
+              priorityTrigger: stateManager.getSetting('priority-trigger') as string,
+            })
+          : removePriority(item.data.titleRaw, {
+              priorityTrigger: stateManager.getSetting('priority-trigger') as string,
+            });
+
+        boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRaw));
+      };
+
+      const addPriorityOptions = (submenu: Menu) => {
+        const priorityLabels: Record<KanbanTaskPriority, string> = {
+          high: t('High'),
+          medium: t('Medium'),
+          low: t('Low'),
+        };
+
+        (['high', 'medium', 'low'] as const).forEach((level) => {
+          submenu.addItem((mi) => {
+            mi.setTitle(priorityLabels[level])
+              .setChecked(currentPriority === level)
+              .onClick(() => setPriority(currentPriority === level ? null : level));
+          });
+        });
+        if (currentPriority) {
+          submenu.addSeparator();
+          submenu.addItem((mi) => {
+            mi.setIcon('lucide-x')
+              .setTitle(t('Remove priority'))
+              .onClick(() => setPriority(null));
+          });
+        }
+      };
+
+      if (Platform.isPhone) {
+        addPriorityOptions(menu);
+      } else {
+        menu.addItem((mi) => {
+          const submenu = (mi as any)
+            .setTitle(t('Set priority'))
+            .setIcon('lucide-signal')
+            .setSubmenu();
+          addPriorityOptions(submenu);
+        });
       }
 
       menu.addSeparator();

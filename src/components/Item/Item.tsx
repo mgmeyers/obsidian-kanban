@@ -16,7 +16,7 @@ import { frontmatterKey } from 'src/parsers/common';
 
 import { KanbanContext, SearchContext } from '../context';
 import { c } from '../helpers';
-import { EditState, EditingState, Item, isEditing } from '../types';
+import { Category, EditState, EditingState, Item, isEditing } from '../types';
 import { ItemCheckbox } from './ItemCheckbox';
 import { ItemContent } from './ItemContent';
 import { useItemMenu } from './ItemMenu';
@@ -141,6 +141,7 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
   const elementRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const search = useContext(SearchContext);
+  const { stateManager } = useContext(KanbanContext);
 
   const { itemIndex, ...innerProps } = props;
 
@@ -148,6 +149,15 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
 
   const isMatch = search?.query ? innerProps.item.data.titleSearch.includes(search.query) : false;
   const classModifiers: string[] = getItemClassModifiers(innerProps.item);
+
+  const categoryStyle = useMemo(() => {
+    const catName = innerProps.item.data.metadata.category;
+    if (!catName) return undefined;
+    const categories = (stateManager.getSetting('categories') as Category[]) || [];
+    const cat = categories.find((c) => c.name === catName);
+    if (!cat) return undefined;
+    return { '--category-color': cat.color } as any;
+  }, [innerProps.item.data.metadata.category, stateManager]);
 
   return (
     <div
@@ -157,7 +167,7 @@ export const DraggableItem = memo(function DraggableItem(props: DraggableItemPro
       }}
       className={c('item-wrapper')}
     >
-      <div ref={elementRef} className={classcat([c('item'), ...classModifiers])}>
+      <div ref={elementRef} className={classcat([c('item'), ...classModifiers])} style={categoryStyle}>
         {props.isStatic ? (
           <ItemInner
             {...innerProps}

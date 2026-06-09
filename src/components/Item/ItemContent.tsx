@@ -9,6 +9,7 @@ import {
   useMemo,
   useRef,
 } from 'preact/hooks';
+import useOnclickOutside from 'react-cool-onclickoutside';
 import { StateManager } from 'src/StateManager';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { Path } from 'src/dnd/types';
@@ -20,10 +21,13 @@ import {
   MarkdownRenderer,
 } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext, SearchContext } from '../context';
-import { c, useGetDateColorFn, useGetTagColorFn } from '../helpers';
+import { c, useGetTagColorFn } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
-import { DateAndTime, RelativeDate } from './DateAndTime';
+import { CategorySelect } from './CategorySelect';
+import { DateBubble } from './DateBubble';
 import { InlineMetadata } from './InlineMetadata';
+import { PrioritySelect } from './PrioritySelect';
+import { StoryPoints } from './StoryPoints';
 import {
   constructDatePicker,
   constructMenuDatePickerOnChange,
@@ -188,8 +192,7 @@ export const ItemContent = memo(function ItemContent({
   showMetadata = true,
   isStatic,
 }: ItemContentProps) {
-  const { stateManager, filePath, boardModifiers } = useContext(KanbanContext);
-  const getDateColor = useGetDateColorFn(stateManager);
+  const { stateManager, boardModifiers } = useContext(KanbanContext);
   const titleRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -235,6 +238,13 @@ export const ItemContent = memo(function ItemContent({
     return true;
   }, [item]);
 
+  const clickOutsideRef = useOnclickOutside(
+    () => setEditState(EditingState.complete),
+    {
+      ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],
+    }
+  );
+
   const onCheckboxContainerClick = useCallback(
     (e: PointerEvent) => {
       const target = e.target as HTMLElement;
@@ -256,7 +266,7 @@ export const ItemContent = memo(function ItemContent({
 
   if (!isStatic && isEditing(editState)) {
     return (
-      <div className={c('item-input-wrapper')}>
+      <div ref={clickOutsideRef} className={c('item-input-wrapper')}>
         <MarkdownEditor
           editState={editState}
           className={c('item-input')}
@@ -295,15 +305,18 @@ export const ItemContent = memo(function ItemContent({
       )}
       {showMetadata && (
         <div className={c('item-metadata')}>
-          <RelativeDate item={item} stateManager={stateManager} />
-          <DateAndTime
-            item={item}
-            stateManager={stateManager}
-            filePath={filePath}
-            getDateColor={getDateColor}
-          />
           <InlineMetadata item={item} stateManager={stateManager} />
           <Tags tags={item.data.metadata.tags} searchQuery={searchQuery} />
+          <div className={c('item-metadata-bottom')}>
+            <span className={c('item-metadata-bottom-left')}>
+              <DateBubble item={item} isStatic={isStatic} />
+              <CategorySelect item={item} isStatic={isStatic} />
+            </span>
+            <span className={c('item-metadata-bottom-right')}>
+              <PrioritySelect item={item} isStatic={isStatic} />
+              <StoryPoints item={item} isStatic={isStatic} />
+            </span>
+          </div>
         </div>
       )}
     </div>

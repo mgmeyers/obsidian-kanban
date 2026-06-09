@@ -21,6 +21,7 @@ export interface BaseFormat {
 }
 
 export const completeString = `**${t('Complete')}**`;
+export const horizontalString = '%% kanban:horizontal %%';
 export const archiveString = '***';
 export const basicFrontmatter = ['---', '', `${frontmatterKey}: board`, '', '---', '', ''].join(
   '\n'

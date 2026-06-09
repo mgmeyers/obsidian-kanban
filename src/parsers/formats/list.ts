@@ -20,8 +20,16 @@ import { defaultSort } from 'src/helpers/util';
 import { t } from 'src/lang/helpers';
 import { visit } from 'unist-util-visit';
 
-import { archiveString, completeString, settingsToCodeblock } from '../common';
-import { DateNode, FileNode, TimeNode, ValueNode } from '../extensions/types';
+import { archiveString, completeString, horizontalString, settingsToCodeblock } from '../common';
+import {
+  CategoryNode,
+  DateNode,
+  FileNode,
+  PriorityNode,
+  StoryPointsNode,
+  TimeNode,
+  ValueNode,
+} from '../extensions/types';
 import {
   ContentBoundary,
   getNextOfType,
@@ -42,6 +50,10 @@ import {
   replaceBrs,
   replaceNewLines,
 } from '../helpers/parser';
+import {
+  normalizeKanbanTaskMetadata,
+  parseTasksCompatibleMetadata,
+} from '../helpers/taskMetadataStorage';
 import { parseFragment } from '../parseMarkdown';
 
 interface TaskItem extends ListItem {
@@ -100,6 +112,10 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
       date: undefined,
       time: undefined,
       timeStr: undefined,
+      storyPoints: undefined,
+      storyPointsStr: undefined,
+      priority: undefined,
+      priorityStr: undefined,
       tags: [],
       fileAccessor: undefined,
       file: undefined,
@@ -165,6 +181,46 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
         return true;
       }
 
+      if (genericNode.type === 'storyPoints') {
+        const spValue = (genericNode as StoryPointsNode).storyPoints;
+        const parsed = parseFloat(spValue);
+        if (!isNaN(parsed)) {
+          itemData.metadata.storyPointsStr = spValue;
+          itemData.metadata.storyPoints = parsed;
+        }
+        title = markRangeForDeletion(title, {
+          start: node.position.start.offset - itemBoundary.start,
+          end: node.position.end.offset - itemBoundary.start,
+        });
+        return true;
+      }
+
+      if (genericNode.type === 'priority') {
+        const pValue = (genericNode as PriorityNode).priority?.toLowerCase();
+        if (pValue === 'low' || pValue === 'medium' || pValue === 'high') {
+          itemData.metadata.priorityStr = pValue;
+          itemData.metadata.priority = pValue;
+        }
+        title = markRangeForDeletion(title, {
+          start: node.position.start.offset - itemBoundary.start,
+          end: node.position.end.offset - itemBoundary.start,
+        });
+        return true;
+      }
+
+      if (genericNode.type === 'category') {
+        const catValue = (genericNode as CategoryNode).category;
+        if (catValue) {
+          itemData.metadata.categoryStr = catValue;
+          itemData.metadata.category = catValue;
+        }
+        title = markRangeForDeletion(title, {
+          start: node.position.start.offset - itemBoundary.start,
+          end: node.position.end.offset - itemBoundary.start,
+        });
+        return true;
+      }
+
       if (genericNode.type === 'embedWikilink') {
         itemData.metadata.fileAccessor = (genericNode as FileNode).fileAccessor;
         return true;
@@ -190,6 +246,17 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
       }
     }
   );
+
+  const tasksMetadata = parseTasksCompatibleMetadata(itemData.titleRaw);
+
+  if (tasksMetadata.dueDate) {
+    itemData.metadata.dateStr = tasksMetadata.dueDate;
+  }
+
+  if (tasksMetadata.priority) {
+    itemData.metadata.priorityStr = tasksMetadata.priority;
+    itemData.metadata.priority = tasksMetadata.priority;
+  }
 
   itemData.title = preprocessTitle(stateManager, dedentNewLines(executeDeletion(title)));
 
@@ -253,6 +320,7 @@ export function astToUnhydratedBoard(
       const title = getStringFromBoundary(md, headingBoundary);
 
       let shouldMarkItemsComplete = false;
+      let isHorizontal = false;
 
       const list = getNextOfType(root.children, index, 'list', (child) => {
         if (child.type === 'heading') return false;
@@ -266,6 +334,11 @@ export function astToUnhydratedBoard(
 
           if (childStr === t('Complete')) {
             shouldMarkItemsComplete = true;
+            return true;
+          }
+
+          if (childStr.includes('kanban:horizontal')) {
+            isHorizontal = true;
             return true;
           }
         }
@@ -295,6 +368,7 @@ export function astToUnhydratedBoard(
           data: {
             ...parseLaneTitle(title),
             shouldMarkItemsComplete,
+            isHorizontal,
           },
         });
       } else {
@@ -312,6 +386,7 @@ export function astToUnhydratedBoard(
           data: {
             ...parseLaneTitle(title),
             shouldMarkItemsComplete,
+            isHorizontal,
           },
         });
       }
@@ -400,11 +475,17 @@ export function reparseBoard(stateManager: StateManager, board: Board) {
   }
 }
 
-function itemToMd(item: Item) {
-  return `- [${item.data.checkChar}] ${addBlockId(indentNewLines(item.data.titleRaw), item)}`;
+function itemToMd(item: Item, settings: KanbanSettings) {
+  const titleRaw = normalizeKanbanTaskMetadata(item.data.titleRaw, {
+    dateTrigger: settings['date-trigger'] as string,
+    dateFormat: settings['date-format'] as string,
+    priorityTrigger: settings['priority-trigger'] as string,
+  });
+
+  return `- [${item.data.checkChar}] ${addBlockId(indentNewLines(titleRaw), item)}`;
 }
 
-function laneToMd(lane: Lane) {
+function laneToMd(lane: Lane, settings: KanbanSettings) {
   const lines: string[] = [];
 
   lines.push(`## ${replaceNewLines(laneTitleWithMaxItems(lane.data.title, lane.data.maxItems))}`);
@@ -415,8 +496,13 @@ function laneToMd(lane: Lane) {
     lines.push(completeString);
   }
 
+  if (lane.data.isHorizontal) {
+    lines.push(horizontalString);
+    lines.push('');
+  }
+
   lane.children.forEach((item) => {
-    lines.push(itemToMd(item));
+    lines.push(itemToMd(item, settings));
   });
 
   lines.push('');
@@ -426,12 +512,12 @@ function laneToMd(lane: Lane) {
   return lines.join('\n');
 }
 
-function archiveToMd(archive: Item[]) {
+function archiveToMd(archive: Item[], settings: KanbanSettings) {
   if (archive.length) {
     const lines: string[] = [archiveString, '', `## ${t('Archive')}`, ''];
 
     archive.forEach((item) => {
-      lines.push(itemToMd(item));
+      lines.push(itemToMd(item, settings));
     });
 
     return lines.join('\n');
@@ -442,10 +528,10 @@ function archiveToMd(archive: Item[]) {
 
 export function boardToMd(board: Board) {
   const lanes = board.children.reduce((md, lane) => {
-    return md + laneToMd(lane);
+    return md + laneToMd(lane, board.data.settings);
   }, '');
 
   const frontmatter = ['---', '', stringifyYaml(board.data.frontmatter), '---', '', ''].join('\n');
 
-  return frontmatter + lanes + archiveToMd(board.data.archive) + settingsToCodeblock(board);
+  return frontmatter + lanes + archiveToMd(board.data.archive, board.data.settings) + settingsToCodeblock(board);
 }

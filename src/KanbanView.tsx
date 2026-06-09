@@ -13,6 +13,7 @@ import {
 } from 'obsidian';
 
 import { KanbanFormat, KanbanSettings, KanbanViewSettings, SettingsModal } from './Settings';
+import { CategoryModal } from './components/CategoryModal';
 import { Kanban } from './components/Kanban';
 import { BasicMarkdownRenderer } from './components/MarkdownRenderer/MarkdownRenderer';
 import { c } from './components/helpers';
@@ -462,6 +463,15 @@ export class KanbanView extends TextFileView implements HoverParent {
     ) {
       this.actionButtons['show-archive-all'].remove();
       delete this.actionButtons['show-archive-all'];
+    }
+
+    if (!this.actionButtons['manage-categories']) {
+      const catBtn = this.addAction('lucide-tag', t('Manage categories'), () => {
+        const sm = this.plugin.stateManagers.get(this.file);
+        if (sm) new CategoryModal(sm).open();
+      });
+      catBtn.addClass(c('ignore-click-outside'));
+      this.actionButtons['manage-categories'] = catBtn;
     }
 
     if (stateManager.getSetting('show-add-list') && !this.actionButtons['show-add-list']) {

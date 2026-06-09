@@ -68,6 +68,21 @@ function getExtensions(stateManager: StateManager) {
     genericWrappedExtension('date', `${stateManager.getSetting('date-trigger')}{`, '}'),
     genericWrappedExtension('dateLink', `${stateManager.getSetting('date-trigger')}[[`, ']]'),
     genericWrappedExtension('time', `${stateManager.getSetting('time-trigger')}{`, '}'),
+    genericWrappedExtension(
+      'storyPoints',
+      `${stateManager.getSetting('story-points-trigger')}{`,
+      '}'
+    ),
+    genericWrappedExtension(
+      'priority',
+      `${stateManager.getSetting('priority-trigger')}{`,
+      '}'
+    ),
+    genericWrappedExtension(
+      'category',
+      `${stateManager.getSetting('category-trigger')}{`,
+      '}'
+    ),
     genericWrappedExtension('embedWikilink', '![[', ']]'),
     genericWrappedExtension('wikilink', '[[', ']]'),
     tagExtension(),
@@ -89,6 +104,18 @@ function getMdastExtensions(stateManager: StateManager) {
     genericWrappedFromMarkdown('time', (text, node) => {
       if (!text) return;
       node.time = text;
+    }),
+    genericWrappedFromMarkdown('storyPoints', (text, node) => {
+      if (!text) return;
+      node.storyPoints = text;
+    }),
+    genericWrappedFromMarkdown('priority', (text, node) => {
+      if (!text) return;
+      node.priority = text;
+    }),
+    genericWrappedFromMarkdown('category', (text, node) => {
+      if (!text) return;
+      node.category = text;
     }),
     genericWrappedFromMarkdown('embedWikilink', (text, node) => {
       if (!text) return;

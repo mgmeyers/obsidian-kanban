@@ -7,6 +7,7 @@ import { getEntityFromPath } from 'src/dnd/util/data';
 import { Op } from 'src/helpers/patch';
 
 import { getSearchValue } from '../common';
+import { tasksDateFormat } from './taskMetadataStorage';
 
 export function hydrateLane(stateManager: StateManager, lane: Lane) {
   return lane;
@@ -19,6 +20,10 @@ export function preprocessTitle(stateManager: StateManager, title: string) {
   const dateDisplayFormat = stateManager.getSetting('date-display-format');
   const timeTrigger = stateManager.getSetting('time-trigger');
   const timeFormat = stateManager.getSetting('time-format');
+  const storyPointsTrigger = stateManager.getSetting('story-points-trigger');
+  const priorityTrigger = stateManager.getSetting('priority-trigger');
+  const moveDates = stateManager.getSetting('move-dates');
+  const categoryTrigger = stateManager.getSetting('category-trigger');
 
   const { app } = stateManager;
 
@@ -74,6 +79,19 @@ export function preprocessTitle(stateManager: StateManager, title: string) {
   );
 
   title = title.replace(
+    /(^|\s)([📅📆🗓]\uFE0F? *)(\d{4}-\d{2}-\d{2})/gu,
+    (match, space, _symbol, content) => {
+      const parsed = moment(content, tasksDateFormat);
+      if (!parsed.isValid()) return match;
+      date = parsed;
+      if (moveDates) return '';
+      if (!dateColor) dateColor = getDateColor(parsed);
+      const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-date-wrapper'));
+      return `${space}<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')}"${wrapperStyle}><span class="${c('preview-date')} ${c('item-metadata-date')}">${parsed.format(dateDisplayFormat)}</span></span>`;
+    }
+  );
+
+  title = title.replace(
     new RegExp(`(^|\\s)${escapeRegExpStr(timeTrigger)}{([^}]+)}`, 'g'),
     (match, space, content) => {
       const parsed = moment(content, timeFormat);
@@ -93,6 +111,23 @@ export function preprocessTitle(stateManager: StateManager, title: string) {
     }
   );
 
+  title = title.replace(
+    new RegExp(`(^|\\s)${escapeRegExpStr(storyPointsTrigger)}{([^}]+)}`, 'g'),
+    ''
+  );
+
+  title = title.replace(
+    new RegExp(`(^|\\s)${escapeRegExpStr(priorityTrigger)}{([^}]+)}`, 'g'),
+    ''
+  );
+
+  title = title.replace(/(^|\s)([🔺⏫🔼🔽⏬]\uFE0F?)/gu, '');
+
+  title = title.replace(
+    new RegExp(`(^|\\s)${escapeRegExpStr(categoryTrigger)}{([^}]+)}`, 'g'),
+    ''
+  );
+
   return title;
 }
 
@@ -100,7 +135,8 @@ export function hydrateItem(stateManager: StateManager, item: Item) {
   const { dateStr, timeStr, fileAccessor } = item.data.metadata;
 
   if (dateStr) {
-    item.data.metadata.date = moment(dateStr, stateManager.getSetting('date-format'));
+    const date = moment(dateStr, stateManager.getSetting('date-format'));
+    item.data.metadata.date = date.isValid() ? date : moment(dateStr, tasksDateFormat);
   }
 
   if (timeStr) {
