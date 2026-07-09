@@ -329,6 +329,13 @@ export default class KanbanPlugin extends Plugin {
   }
 
   async setKanbanView(leaf: WorkspaceLeaf) {
+    // Clear any stale 'markdown' mode entry so setViewState monkey-patch and
+    // setViewData both see a clean kanban-mode state on re-entry.
+    const leafId = (leaf as any).id;
+    const filePath = (leaf.view as any).file?.path;
+    delete this.kanbanFileModes[leafId];
+    if (filePath) delete this.kanbanFileModes[filePath];
+
     await leaf.setViewState({
       type: kanbanViewType,
       state: leaf.view.getState(),
