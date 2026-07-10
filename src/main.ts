@@ -210,8 +210,16 @@ export default class KanbanPlugin extends Plugin {
   }
 
   addView(view: KanbanView, data: string, shouldParseData: boolean) {
-    const win = view.getWindow();
-    const reg = this.windowRegistry.get(win);
+    let win = view.getWindow();
+    let reg = this.windowRegistry.get(win);
+
+    // If the view's current window isn't registered yet (e.g. containerEl not
+    // yet attached during a view-switch), fall back to the main window so the
+    // React portal can still mount instead of silently no-oping.
+    if (!reg) {
+      win = window;
+      reg = this.windowRegistry.get(win);
+    }
 
     if (!reg) return;
     if (!reg.viewMap.has(view.id)) {
@@ -734,6 +742,10 @@ export default class KanbanPlugin extends Plugin {
     const self = this;
 
     this.app.workspace.onLayoutReady(() => {
+      // Mark plugin fully loaded so the setViewState monkey-patch can redirect
+      // markdown opens to kanban view for files with the kanban frontmatter key.
+      self._loaded = true;
+
       this.register(
         around((app as any).commands, {
           executeCommand(next) {
