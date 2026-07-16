@@ -56,11 +56,28 @@ export function useItemMenu({
             .setTitle(t('New note from card'))
             .onClick(async () => {
               const prevTitle = item.data.titleRaw.split('\n')[0].trim();
+              const dateTrigger = stateManager.getSetting('date-trigger') as string;
+              const timeTrigger = stateManager.getSetting('time-trigger') as string;
+              const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
+              const dateContentMatch = shouldLinkDates
+                ? '(?:\\[[^\\]]+\\]\\([^\\)]+\\)|\\[\\[[^\\]]+\\]\\])'
+                : '{[^}]+}';
+              const noteDateRegEx = new RegExp(
+                `(^|\\s)${escapeRegExpStr(dateTrigger)}${dateContentMatch}`,
+                'g'
+              );
+              const noteTimeRegEx = new RegExp(
+                `(^|\\s)${escapeRegExpStr(timeTrigger)}{[^}]+}`,
+                'g'
+              );
+
               const sanitizedTitle = prevTitle
                 .replace(embedRegEx, '$1')
                 .replace(wikilinkRegEx, '$1')
                 .replace(mdLinkRegEx, '$1')
                 .replace(tagRegEx, '$1')
+                .replace(noteDateRegEx, '$1')
+                .replace(noteTimeRegEx, '$1')
                 .replace(illegalCharsRegEx, ' ')
                 .trim()
                 .replace(condenceWhiteSpaceRE, ' ');
@@ -85,8 +102,14 @@ export function useItemMenu({
 
               await applyTemplate(stateManager, newNoteTemplatePath as string | undefined);
 
+              const matchTarget = prevTitle
+                .replace(noteDateRegEx, '$1')
+                .replace(noteTimeRegEx, '$1')
+                .trim()
+                .replace(condenceWhiteSpaceRE, ' ') || prevTitle;
+
               const newTitleRaw = item.data.titleRaw.replace(
-                prevTitle,
+                matchTarget,
                 stateManager.app.fileManager.generateMarkdownLink(newFile, stateManager.file.path)
               );
 
