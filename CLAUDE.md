@@ -15,12 +15,19 @@ finish.
 ## Branching
 
 - `main` mirrors upstream exactly — never commit here directly.
-- All personal work happens on `custom`, kept rebased onto `main`.
+- **`custom` is the primary development branch** — all personal work happens here,
+  kept rebased onto `main`.
 - Before editing, confirm the current branch: `git branch --show-current`.
   If it isn't `custom`, switch before making changes.
 - This file, `CHANGELOG-personal.md`, `docs/ARCHITECTURE-NOTES.md`, and
   `.claude/commands/sync-upstream.md` exist only on `custom` — they're
   fork-specific and don't belong on `main`.
+
+## Pull Requests
+
+- **Always create PRs targeting the `custom` branch**, not `main`.
+- `main` is reserved for upstream synchronization only.
+- The `custom` branch is where all personal work and fixes are merged.
 
 ## When asked to add or change a feature
 
