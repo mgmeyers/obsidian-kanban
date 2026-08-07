@@ -16,12 +16,14 @@ import {
 
 import { generateInstanceId } from '../components/helpers';
 import { Board, DataTypes, Item, Lane } from '../components/types';
+import { DEFAULT_DONE_LANE_NAME, autoMoveDoneItem } from './completeItem';
 
 export interface BoardModifiers {
   appendItems: (path: Path, items: Item[]) => void;
   prependItems: (path: Path, items: Item[]) => void;
   insertItems: (path: Path, items: Item[]) => void;
   replaceItem: (path: Path, items: Item[]) => void;
+  completeItem: (path: Path, items: Item[], completedIndex: number) => void;
   splitItem: (path: Path, items: Item[]) => void;
   moveItemToTop: (path: Path) => void;
   moveItemToBottom: (path: Path) => void;
@@ -70,6 +72,16 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
     replaceItem: (path: Path, items: Item[]) => {
       stateManager.setState((boardData) =>
         insertEntity(removeEntity(boardData, path), path, items)
+      );
+    },
+
+    completeItem: (path: Path, items: Item[], completedIndex: number) => {
+      stateManager.setState((boardData) =>
+        autoMoveDoneItem(boardData, path, items, completedIndex, {
+          enabled: !!stateManager.getSetting('auto-move-done-to-lane'),
+          laneName: stateManager.getSetting('done-lane-name') || DEFAULT_DONE_LANE_NAME,
+          insertionMethod: stateManager.getSetting('new-card-insertion-method'),
+        })
       );
     },
 

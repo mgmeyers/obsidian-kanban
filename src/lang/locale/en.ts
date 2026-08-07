@@ -76,6 +76,12 @@ const en = {
   'Display card checkbox': 'Display card checkbox',
   'When toggled, a checkbox will be displayed with each card':
     'When toggled, a checkbox will be displayed with each card',
+  'Move completed cards to a list': 'Move completed cards to a list',
+  "When toggled, checking a card's checkbox moves that card to the list named below. Recurring tasks leave their next occurrence behind.":
+    "When toggled, checking a card's checkbox moves that card to the list named below. Recurring tasks leave their next occurrence behind.",
+  'Completed card list': 'Completed card list',
+  'The name of the list completed cards are moved to. Matched case-insensitively; cards stay put when no list matches.':
+    'The name of the list completed cards are moved to. Matched case-insensitively; cards stay put when no list matches.',
   'Reset to default': 'Reset to default',
   'Date & Time': 'Date & Time',
   'Date trigger': 'Date trigger',
