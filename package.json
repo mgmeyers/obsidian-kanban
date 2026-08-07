@@ -1,5 +1,5 @@
 {
-  "name": "obsidian-kanban",
+  "name": "kanban-custom",
   "version": "2.0.51",
   "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
   "main": "main.js",
