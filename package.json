@@ -38,7 +38,7 @@
     "esbuild-plugin-less": "^1.3.1",
     "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.33.2",
-    "jsdom": "^30.0.1",
+    "jsdom": "^26.1.0",
     "magic-string": "^0.30.10",
     "obsidian": "^1.5.7-1",
     "obsidian-dataview": "^0.5.66",
