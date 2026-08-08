@@ -9,6 +9,8 @@
     "test:watch": "vitest",
     "dev": "node esbuild.config.mjs",
     "build": "node esbuild.config.mjs production",
+    "build:demo": "node esbuild.config.mjs production demo",
+    "dev:demo": "node esbuild.config.mjs demo",
     "lint": "eslint ./src/**/*.{ts,tsx}",
     "lint:fix": "eslint ./src/**/*.{ts,tsx} --fix",
     "prettier": "prettier --write \"./src/**/*.{ts,tsx}\"",

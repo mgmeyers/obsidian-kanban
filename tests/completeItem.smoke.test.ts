@@ -309,8 +309,8 @@ describe('completing a card, end to end', () => {
   });
 });
 
-describe('the example board in the test vault', () => {
-  const examplePath = resolve(__dirname, '../docs/Examples/Auto-move completed cards.md');
+describe('the example board in the demo vault', () => {
+  const examplePath = resolve(__dirname, '../demo_vault/Auto-move completed cards.md');
 
   it('parses, and ticking its first card sends it to Done', async () => {
     withTasksPlugin();

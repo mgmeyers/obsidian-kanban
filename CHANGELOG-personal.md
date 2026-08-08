@@ -31,8 +31,10 @@ scheduled one stays put. Completion dates keep coming from the Tasks plugin,
 unchanged. The checkbox handler moved out of `ItemCheckbox` into
 `src/helpers/completeItem.ts` so it can be tested, and the repo gained a
 vitest setup (`yarn test`) with unit tests plus markdown-in/markdown-out
-smoke tests over the real parser and state manager. Example board for the
-test vault lives in `docs/Examples/`.
+smoke tests over the real parser and state manager. A `demo_vault/` at the
+repo root holds an example board, and `yarn build:demo` builds the plugin
+straight into it so the board can be opened in Obsidian against the current
+source.
 
 ## 2026-08-07 - Rename plugin id/name to avoid clashing with upstream
 
