@@ -157,7 +157,7 @@
 
 "@codemirror/language@^6.0.0":
   version "6.12.3"
-  resolved "git+ssh://git@github.com/lishid/cm-language.git#b817e72a9861b3f8a50a92a2ea53cbafc4f88eb3"
+  resolved "git+https://github.com/lishid/cm-language.git#b817e72a9861b3f8a50a92a2ea53cbafc4f88eb3"
   dependencies:
     "@codemirror/state" "^6.0.0"
     "@codemirror/view" "^6.23.0"

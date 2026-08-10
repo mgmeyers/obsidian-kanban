@@ -21,3 +21,4 @@ architecture/demo-vault.md: demo_vault/ as a real Obsidian vault, yarn build:dem
 changelog/CLAUDE.md: format rules for changelog entries.
 changelog/2026-08-07-name-to-avoid-clashing-with-upstream.md: plugin id obsidian-kanban -> kanban-custom, display name Kanban -> Kanban (custom), so the fork can run beside upstream.
 changelog/2026-08-07-auto-move-a-card-to-the-done-list-when-its-checkbox-is-ticked.md: auto-move-done-to-lane + done-lane-name settings, checkbox handler extracted to completeItem.ts, vitest setup and demo_vault added.
+changelog/2026-08-10-pin-cm-language-over-https-instead-of-ssh.md: yarn.lock resolves the cm-language git dep over https so yarn install works without a GitHub SSH key.
