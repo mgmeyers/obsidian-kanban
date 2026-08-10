@@ -27,6 +27,9 @@ See [board-state.md](board-state.md) for the model and the write path, [parsing.
 
 ## Gotchas
 
+- Several modules (`main.ts`, `parsers/helpers/inlineMetadata.ts`, `parsers/helpers/parser.ts`) read a bare global `app`.
+  Obsidian sets it up at runtime but its published typings don't declare it, so `src/types.d.ts` carries `declare const app: import('obsidian').App`.
+  Without that declaration `yarn typecheck` fails with `Cannot find name 'app'`.
 - One `StateManager` serves many views of the same file; per-view state belongs in `KanbanViewSettings`, not in `BoardData`.
   See [settings.md](settings.md).
 - `main.ts` debounces external file/metadata/dataview changes (2000ms, leading) into `onFileMetadataChange()` on the other boards, so cross-board metadata updates are not instant.

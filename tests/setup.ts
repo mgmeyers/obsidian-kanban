@@ -7,7 +7,10 @@
 if (typeof (globalThis as any).window === 'undefined') {
   (globalThis as any).window = globalThis;
 }
-if (!(globalThis as any).window.localStorage) {
+// jsdom leaves an unusable `localStorage` behind on an opaque origin: the
+// property is set but has no Storage methods, so check for one rather than
+// for the property.
+if (typeof (globalThis as any).window.localStorage?.getItem !== 'function') {
   (globalThis as any).window.localStorage = {
     getItem: () => null,
     setItem: () => {},

@@ -3,6 +3,9 @@ type HTMLAttributes<T extends EventTarget> = import('preact/compat').HTMLAttribu
 
 declare const Fragment: import('preact').FunctionComponent<Record<string, never>>;
 
+/** Obsidian sets this up at runtime, but its published typings don't declare it. */
+declare const app: import('obsidian').App;
+
 declare function h(
   type: string,
   props:
