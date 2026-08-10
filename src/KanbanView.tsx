@@ -428,6 +428,25 @@ export class KanbanView extends TextFileView implements HoverParent {
     }
 
     if (
+      stateManager.getSetting('show-field-filter') &&
+      !this.actionButtons['field-filter']
+    ) {
+      this.actionButtons['field-filter'] = this.addAction(
+        'lucide-filter',
+        t('Filter by...'),
+        () => {
+          this.emitter.emit('hotkey', { commandId: 'kanban:toggle-field-filter' });
+        }
+      );
+    } else if (
+      !stateManager.getSetting('show-field-filter') &&
+      this.actionButtons['field-filter']
+    ) {
+      this.actionButtons['field-filter'].remove();
+      delete this.actionButtons['field-filter'];
+    }
+
+    if (
       stateManager.getSetting('show-view-as-markdown') &&
       !this.actionButtons['show-view-as-markdown']
     ) {

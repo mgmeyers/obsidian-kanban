@@ -80,6 +80,7 @@ export interface KanbanSettings {
   'show-archive-all'?: boolean;
   'show-board-settings'?: boolean;
   'show-checkboxes'?: boolean;
+  'show-field-filter'?: boolean;
   'show-relative-date'?: boolean;
   'show-search'?: boolean;
   'show-set-view'?: boolean;
@@ -128,6 +129,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'show-archive-all',
   'show-board-settings',
   'show-checkboxes',
+  'show-field-filter',
   'show-relative-date',
   'show-search',
   'show-set-view',
@@ -1486,6 +1488,46 @@ export class SettingsManager {
 
               this.applySettingsUpdate({
                 $unset: ['show-search'],
+              });
+            });
+        });
+    });
+
+    new Setting(contentEl).setName(t('Filter by...')).then((setting) => {
+      let toggleComponent: ToggleComponent;
+
+      setting
+        .addToggle((toggle) => {
+          toggleComponent = toggle;
+
+          const [value, globalValue] = this.getSetting('show-field-filter', local);
+
+          if (value !== undefined && value !== null) {
+            toggle.setValue(value as boolean);
+          } else if (globalValue !== undefined && globalValue !== null) {
+            toggle.setValue(globalValue as boolean);
+          } else {
+            // default
+            toggle.setValue(true);
+          }
+
+          toggle.onChange((newValue) => {
+            this.applySettingsUpdate({
+              'show-field-filter': {
+                $set: newValue,
+              },
+            });
+          });
+        })
+        .addExtraButton((b) => {
+          b.setIcon('lucide-rotate-ccw')
+            .setTooltip(t('Reset to default'))
+            .onClick(() => {
+              const [, globalValue] = this.getSetting('show-field-filter', local);
+              toggleComponent.setValue(!!globalValue);
+
+              this.applySettingsUpdate({
+                $unset: ['show-field-filter'],
               });
             });
         });

@@ -195,7 +195,7 @@ export const Items = memo(function Items({ isStatic, items, shouldMarkItemsCompl
   return (
     <>
       {items.map((item, i) => {
-        return search?.query && !search.items.has(item) ? null : (
+        return (search?.query || search?.isFiltering) && !search.items.has(item) ? null : (
           <DraggableItem
             key={boardView + item.id}
             item={item}
