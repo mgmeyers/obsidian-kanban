@@ -23,3 +23,4 @@ changelog/2026-08-07-name-to-avoid-clashing-with-upstream.md: plugin id obsidian
 changelog/2026-08-07-auto-move-a-card-to-the-done-list-when-its-checkbox-is-ticked.md: auto-move-done-to-lane + done-lane-name settings, checkbox handler extracted to completeItem.ts, vitest setup and demo_vault added.
 changelog/2026-08-10-pin-cm-language-over-https-instead-of-ssh.md: yarn.lock resolves the cm-language git dep over https so yarn install works without a GitHub SSH key.
 changelog/2026-08-10-get-yarn-test-and-typecheck-passing-again.md: declare the global app, type ViewState.state.file, fix the localStorage guard, and stub obsidian-daily-notes-interface.
+changelog/2026-08-10-fetch-the-obsidian-api-dep-over-git-instead-of-a-codeload-tarball.md: yarn.lock resolves the obsidian dep over git+https instead of a codeload.github.com tarball, which the sandbox egress proxy blocks with a 403.

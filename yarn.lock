@@ -3691,7 +3691,7 @@ obsidian-utils@^0.10.2:
 
 obsidian@^1.5.7-1, obsidian@obsidianmd/obsidian-api#master:
   version "1.13.2"
-  resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/cc1744324150c632416857c98964f87b1574a5fc"
+  resolved "git+https://github.com/obsidianmd/obsidian-api.git#cc1744324150c632416857c98964f87b1574a5fc"
   dependencies:
     "@types/codemirror" "5.60.8"
     moment "2.30.1"
