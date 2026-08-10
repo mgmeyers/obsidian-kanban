@@ -354,6 +354,66 @@ export function useOnMount(refs: RefObject<HTMLElement>[], cb: () => void, onUnm
   }, []);
 }
 
+export interface FieldFilterState {
+  key: string;
+  value: string;
+}
+
+/**
+ * Collects the distinct inline-field keys/values present on the board (e.g. `[porteur:: Gwénolé]`),
+ * for building the "Filter by" menu. Excludes Tasks-plugin emoji shorthand fields (due dates,
+ * priority, etc.) since those aren't meaningful as a board-wide filter axis.
+ */
+export function collectInlineFieldOptions(board: Board): Map<string, Set<string>> {
+  const options = new Map<string, Set<string>>();
+
+  board.children.forEach((lane) => {
+    lane.children.forEach((item) => {
+      item.data.metadata.inlineMetadata?.forEach((field) => {
+        if (field.wrapping === 'emoji-shorthand') return;
+        if (!field.key || !field.value) return;
+
+        if (!options.has(field.key)) {
+          options.set(field.key, new Set());
+        }
+
+        options.get(field.key).add(field.value);
+      });
+    });
+  });
+
+  return options;
+}
+
+export function useFieldFilterMatches(
+  board: Board,
+  filter: FieldFilterState | null
+): { lanes: Set<Lane>; items: Set<Item> } {
+  return useMemo(() => {
+    const lanes = new Set<Lane>();
+    const items = new Set<Item>();
+
+    if (filter) {
+      board.children.forEach((lane) => {
+        let laneMatched = false;
+        lane.children.forEach((item) => {
+          const isMatch = item.data.metadata.inlineMetadata?.some(
+            (field) => field.key === filter.key && field.value === filter.value
+          );
+
+          if (isMatch) {
+            laneMatched = true;
+            items.add(item);
+          }
+        });
+        if (laneMatched) lanes.add(lane);
+      });
+    }
+
+    return { lanes, items };
+  }, [board, filter?.key, filter?.value]);
+}
+
 export function useSearchValue(
   board: Board,
   query: string,

@@ -19,8 +19,20 @@ import { Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
 import { TableView } from './Table/Table';
 import { KanbanContext, SearchContext } from './context';
-import { baseClassName, c, useSearchValue } from './helpers';
+import {
+  FieldFilterState,
+  baseClassName,
+  c,
+  collectInlineFieldOptions,
+  useFieldFilterMatches,
+  useSearchValue,
+} from './helpers';
 import { DataTypes } from './types';
+
+// Fields with more distinct values than this aren't offered in the filter dropdown (e.g. a
+// due-date field is usually near-unique per card, so it isn't a meaningful filter axis and
+// would just make the dropdown unusably long).
+const maxFilterableValues = 12;
 
 const boardScrollTiggers = [DataTypes.Item, DataTypes.Lane];
 const boardAccepts = [DataTypes.Lane];
@@ -55,6 +67,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [fieldFilter, setFieldFilter] = useState<FieldFilterState | null>(null);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState<boolean>(false);
 
   const [isLaneFormVisible, setIsLaneFormVisible] = useState<boolean>(
     boardData?.children.length === 0
@@ -105,6 +119,8 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
         } else {
           setIsSearching((val) => !val);
         }
+      } else if (data.commandId === 'kanban:toggle-field-filter') {
+        setIsFilterPanelOpen((val) => !val);
       }
     };
 
@@ -209,11 +225,41 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     setDebouncedSearchQuery,
     setIsSearching
   );
+  const fieldFilterMatches = useFieldFilterMatches(boardData, fieldFilter);
+  const fieldFilterOptions = useMemo(() => collectInlineFieldOptions(boardData), [boardData]);
+  const filterableFieldKeys = useMemo(
+    () =>
+      Array.from(fieldFilterOptions.keys())
+        .filter((key) => fieldFilterOptions.get(key).size <= maxFilterableValues)
+        .sort((a, b) => a.localeCompare(b)),
+    [fieldFilterOptions]
+  );
+
+  // Merges the field filter into the existing text-search result set: with both active, a
+  // card must match the search query AND the field filter to stay visible. Reuses
+  // SearchContext's lanes/items sets so Lane/Item don't need a second, parallel hide path.
+  const combinedSearchValue = useMemo(() => {
+    if (!fieldFilter) return searchValue;
+
+    const lanes = searchValue.query
+      ? new Set([...searchValue.lanes].filter((lane) => fieldFilterMatches.lanes.has(lane)))
+      : fieldFilterMatches.lanes;
+    const items = searchValue.query
+      ? new Set([...searchValue.items].filter((item) => fieldFilterMatches.items.has(item)))
+      : fieldFilterMatches.items;
+
+    return {
+      ...searchValue,
+      lanes,
+      items,
+      isFiltering: true,
+    };
+  }, [searchValue, fieldFilterMatches, fieldFilter]);
 
   return (
     <DndScope id={view.id}>
       <KanbanContext.Provider value={kanbanContext}>
-        <SearchContext.Provider value={searchValue}>
+        <SearchContext.Provider value={combinedSearchValue}>
           <div
             ref={rootRef}
             className={classcat([
@@ -260,6 +306,82 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
                   <Icon name="lucide-x" />
                 </a>
               </div>
+            )}
+            {isFilterPanelOpen ? (
+              <div className={c('search-wrapper')}>
+                <select
+                  className={c('field-filter-select')}
+                  value={fieldFilter?.key ?? ''}
+                  onChange={(e) => {
+                    const key = (e.target as HTMLSelectElement).value;
+                    if (!key) {
+                      setFieldFilter(null);
+                      return;
+                    }
+                    const values = fieldFilterOptions.get(key);
+                    const firstValue = values ? Array.from(values).sort()[0] : undefined;
+                    setFieldFilter(firstValue ? { key, value: firstValue } : null);
+                  }}
+                >
+                  <option value="">{t('Choose a field')}</option>
+                  {filterableFieldKeys.map((key) => (
+                    <option key={key} value={key}>
+                      {key}
+                    </option>
+                  ))}
+                </select>
+                {fieldFilter?.key && (
+                  <select
+                    className={c('field-filter-select')}
+                    value={fieldFilter.value}
+                    onChange={(e) => {
+                      setFieldFilter({
+                        key: fieldFilter.key,
+                        value: (e.target as HTMLSelectElement).value,
+                      });
+                    }}
+                  >
+                    {Array.from(fieldFilterOptions.get(fieldFilter.key) ?? [])
+                      .sort((a, b) => a.localeCompare(b))
+                      .map((value) => (
+                        <option key={value} value={value}>
+                          {value}
+                        </option>
+                      ))}
+                  </select>
+                )}
+                <a
+                  className={`${c('search-cancel-button')} clickable-icon`}
+                  onClick={() => {
+                    setFieldFilter(null);
+                    setIsFilterPanelOpen(false);
+                  }}
+                  aria-label={t('Clear filter')}
+                >
+                  <Icon name="lucide-x" />
+                </a>
+              </div>
+            ) : (
+              fieldFilter && (
+                <div className={c('search-wrapper')}>
+                  <div
+                    className={c('field-filter-label')}
+                    onClick={() => setIsFilterPanelOpen(true)}
+                  >
+                    <Icon name="lucide-filter" />
+                    <span>
+                      {fieldFilter.key}: {fieldFilter.value}
+                    </span>
+                  </div>
+                  <a
+                    className={`${c('search-cancel-button')} clickable-icon`}
+                    onClick={() => setFieldFilter(null)}
+                    aria-label={t('Clear filter')}
+                  >
+                    <Icon name="lucide-x" />
+                  </a>
+                </div>
+              )
             )}
             {boardView === 'table' ? (
               <TableView boardData={boardData} stateManager={stateManager} />

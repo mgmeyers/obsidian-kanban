@@ -20,6 +20,8 @@ export interface SearchContextProps {
   items: Set<Item>;
   lanes: Set<Lane>;
   search: (query: string, immediate?: boolean) => void;
+  /** True when a field filter (not just a text search) should hide non-matching lanes/items. */
+  isFiltering?: boolean;
 }
 
 export const SearchContext = createContext<SearchContextProps | null>(null);

@@ -252,6 +252,7 @@ export class StateManager {
       'show-view-as-markdown':
         this.getSettingRaw('show-view-as-markdown', suppliedSettings) ?? true,
       'show-board-settings': this.getSettingRaw('show-board-settings', suppliedSettings) ?? true,
+      'show-field-filter': this.getSettingRaw('show-field-filter', suppliedSettings) ?? true,
       'show-search': this.getSettingRaw('show-search', suppliedSettings) ?? true,
       'show-set-view': this.getSettingRaw('show-set-view', suppliedSettings) ?? true,
       'tag-colors': this.getSettingRaw('tag-colors', suppliedSettings) ?? [],
