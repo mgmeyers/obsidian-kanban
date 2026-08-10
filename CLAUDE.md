@@ -5,52 +5,44 @@ Personal fork of `community-archive/obsidian-kanban`
 for one user's own Obsidian setup. Optimize for "does it work for me," not
 general-purpose robustness or upstream-mergeability.
 
-## Before touching source
 
-Read `docs/ARCHITECTURE-NOTES.md` — board state, parsing, and settings
-are documented there so you don't need to re-explore each session. If a
-task teaches you something that file doesn't cover, add it before you
-finish.
+## Agent notes
+The codebase is complex and can be unintuitive (for llms).
+So before touching source, search the notes in `.agent_notes` to build up a faster context and you don't have to re-discover the same things each session.
+The main topics are:
+- `.agent_notes/changelog/*.md`: changes made on `custom` that diverge from upstream.
+- `.agent_notes/architecture/*.md`: notes on the architecture of the plugin.
 
-## Branching
+`.agent_notes/index.md` should help you find the right notes quickly.
+It has a grep-friendly structure where each line has the following structure: `<filepath>: <short summary of the note>`.
+You must keep this index file up to date as you added, update, remove notes.
 
-- `main` mirrors upstream exactly — never commit here directly.
-- **`custom` is the primary development branch** — all personal work happens here,
-  kept rebased onto `main`.
-- Before editing, confirm the current branch: `git branch --show-current`.
-  If it isn't `custom`, switch before making changes.
-- This file, `CHANGELOG-personal.md`, `docs/ARCHITECTURE-NOTES.md`, and
-  `.claude/commands/sync-upstream.md` exist only on `custom` — they're
-  fork-specific and don't belong on `main`.
+## Fork and Branching
+- Our goal is to add personal feature while keeping the ability to merge upstream changes easily.
+- `main` mirrors upstream exactly never commit here directly.
+- **`custom` is the primary development branch** — all personal work happens here, kept rebased onto `main`.
+- Before editing, confirm the current branch: `git branch --show-current`.  If it isn't `custom`, switch before making changes.
+- Fork-specific files should never be merged into `main`.
 
 ## Pull Requests
-
 - **Always create PRs targeting the `custom` branch**, not `main`.
-- `main` is reserved for upstream synchronization only.
-- The `custom` branch is where all personal work and fixes are merged.
-
-## When asked to add or change a feature
-
-1. Check `docs/ARCHITECTURE-NOTES.md` before editing `src/`.
-2. Prefer a toggle-able setting over hardcoded behavior.
-3. Build (`yarn build`) and confirm existing kanban markdown files still
-   parse — that must never regress.
-4. Add an entry to `CHANGELOG-personal.md` before committing — format is
-   at the top of that file. State the motivation ("why"), not just the
-   change ("what"); the diff already shows the what.
-5. Commit on `custom`, referencing the changelog entry.
-6. Once the feature is confirmed working (test vault), bump the version
-   and tag it so the release workflow runs and BRAT can update the real
-   install — see `.claude/commands/sync-upstream.md` for the version-bump
-   mechanism used.
-
-## Upstream sync
-
-Nightly task: `.claude/commands/sync-upstream.md`.
+- Keep PRs small and focused on a single change. If changes are large, there is scope creep or you encounter new issues, either break it into multiple PRs, push back to the user and discuss it, or create issues to tackle later.  Don't let PRs grow too large and keep them easy to review.
 
 ## Constraints
+- Make sure the feature does not prevent future upstream merges.  If it does, discuss with the user and consider alternative approaches.
+- Prefer a toggle-able setting over hardcoded behavior.
+- Never change the on-disk markdown format in a way that breaks existing boards without a migration path.
+- Don't build settings/UI for anything not actually used — this is a fork of one user, not a public plugin.
 
-- Never change the on-disk markdown format in a way that breaks existing
-  boards without a migration path.
-- Don't build settings/UI for anything not actually used — this is a fork
-  of one user, not a public plugin.
+## Project commands
+- `yarn install`: install dependencies.
+- `yarn test`: run the vitest suite, `yarn test:watch` to watch.
+- `yarn typecheck`: `tsc --noemit`.
+- `yarn lint` / `yarn lint:fix`: eslint over `src/`.
+- `yarn clean`: prettier then `lint:fix` over `src/`.
+- `yarn build`: production build, writes `main.js` + `styles.css` to the repo root.
+- `yarn dev`: same but in watch mode.
+- `yarn build:demo` / `yarn dev:demo`: build into `demo_vault/.obsidian/plugins/<manifest.id>` so the change can be opened in Obsidian.  See `.agent_notes/architecture/demo-vault.md`.
+
+Before finishing a change run `yarn test` and `yarn typecheck`.
+Release commands (`yarn bump`, `yarn release`) are run by the user, not by agents.
