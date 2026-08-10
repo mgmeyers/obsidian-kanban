@@ -13,17 +13,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version-file: .nvmrc
+          cache: yarn
 
+      # yarn.lock is the only lockfile in the repo, so `npm install` would
+      # resolve its own dependency set and release a build CI never checked.
       - name: Build plugin
         run: |
-          npm install
-          npm run build
+          yarn install --frozen-lockfile
+          yarn build
 
       - name: Create release
         env:

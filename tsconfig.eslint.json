@@ -1,0 +1,8 @@
+// tsconfig.json only includes `src/*.ts(x)` plus whatever those files import, so
+// type-aware eslint rules blow up on every file the app never imports (locales,
+// flatpickr plugins, ambient .d.ts). This project exists purely to give eslint a
+// program that covers everything it lints. It is never used to emit.
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts"]
+}

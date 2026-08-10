@@ -38,11 +38,15 @@ You must keep this index file up to date as you added, update, remove notes.
 - `yarn install`: install dependencies.
 - `yarn test`: run the vitest suite, `yarn test:watch` to watch.
 - `yarn typecheck`: `tsc --noemit`.
-- `yarn lint` / `yarn lint:fix`: eslint over `src/`.
-- `yarn clean`: prettier then `lint:fix` over `src/`.
+- `yarn lint` / `yarn lint:fix`: eslint over `src/` and `tests/`.
+- `yarn format:check`: prettier in check mode over `src/` and `tests/`.
+- `yarn check:lock`: verify every `yarn.lock` entry resolves over a transport that works here.
+- `yarn clean`: prettier then `lint:fix` over `src/` and `tests/`.
+- `yarn ci`: every check the CI workflow runs, in the same order.
 - `yarn build`: production build, writes `main.js` + `styles.css` to the repo root.
 - `yarn dev`: same but in watch mode.
 - `yarn build:demo` / `yarn dev:demo`: build into `demo_vault/.obsidian/plugins/<manifest.id>` so the change can be opened in Obsidian.  See `.agent_notes/architecture/demo-vault.md`.
 
-Before finishing a change run `yarn test` and `yarn typecheck`.
+Before finishing a change run `yarn ci` (or at least `yarn test` and `yarn typecheck`).
+See `.agent_notes/architecture/ci.md` for what CI enforces and why.
 Release commands (`yarn bump`, `yarn release`) are run by the user, not by agents.
