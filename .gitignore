@@ -15,3 +15,7 @@ dist
 test-vault/
 main.js
 styles.css
+# demo vault: plugin build output and per-machine workspace state
+demo_vault/.obsidian/plugins/
+demo_vault/.obsidian/workspace.json
+demo_vault/.obsidian/workspace-mobile.json

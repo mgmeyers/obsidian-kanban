@@ -98,7 +98,28 @@ const replace = (options = {}) => {
   };
 };
 
-const isProd = process.argv[2] === 'production';
+const args = process.argv.slice(2);
+const isProd = args.includes('production');
+
+// `demo` builds straight into the demo vault's plugin folder, so the board in
+// demo_vault/ can be opened in Obsidian against the current source.
+const isDemo = args.includes('demo');
+const manifest = JSON.parse(fs.readFileSync('./manifest.json', 'utf8'));
+const demoPluginDir = path.join('demo_vault', '.obsidian', 'plugins', manifest.id);
+const outdir = isDemo ? demoPluginDir : './';
+
+// Obsidian needs the manifest next to main.js to see the plugin at all
+const copyManifestPlugin = {
+  name: 'copy-manifest',
+  setup(build) {
+    build.onEnd(() => {
+      fs.mkdirSync(demoPluginDir, { recursive: true });
+      fs.copyFileSync('./manifest.json', path.join(demoPluginDir, 'manifest.json'));
+      console.log('Built into', demoPluginDir);
+    });
+  },
+};
+
 const renamePlugin = {
   name: 'rename-styles',
   setup(build) {
@@ -218,6 +239,7 @@ const context = await esbuild.context({
         cancelAnimationFrame: 'activeWindow.cancelAnimationFrame',
       },
     }),
+    ...(isDemo ? [copyManifestPlugin] : []),
   ],
   external: [
     'obsidian',
@@ -251,7 +273,7 @@ const context = await esbuild.context({
   logLevel: 'info',
   sourcemap: isProd ? false : 'inline',
   treeShaking: true,
-  outdir: './',
+  outdir,
   minify: isProd,
 });
 

@@ -30,6 +30,7 @@ import {
   TagSortSettingTemplate,
 } from './components/types';
 import { getParentWindow } from './dnd/util/getWindow';
+import { DEFAULT_DONE_LANE_NAME } from './helpers/completeItem';
 import { t } from './lang/helpers';
 import KanbanPlugin from './main';
 import { frontmatterKey } from './parsers/common';
@@ -55,12 +56,14 @@ export interface KanbanSettings {
   'archive-date-format'?: string;
   'archive-date-separator'?: string;
   'archive-with-date'?: boolean;
+  'auto-move-done-to-lane'?: boolean;
   'date-colors'?: DateColor[];
   'date-display-format'?: string;
   'date-format'?: string;
   'date-picker-week-start'?: number;
   'date-time-display-format'?: string;
   'date-trigger'?: string;
+  'done-lane-name'?: string;
   'full-list-lane-width'?: boolean;
   'hide-card-count'?: boolean;
   'inline-metadata-position'?: 'body' | 'footer' | 'metadata-table';
@@ -103,12 +106,14 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'archive-date-format',
   'archive-date-separator',
   'archive-with-date',
+  'auto-move-done-to-lane',
   'date-colors',
   'date-display-format',
   'date-format',
   'date-picker-week-start',
   'date-time-display-format',
   'date-trigger',
+  'done-lane-name',
   'full-list-lane-width',
   'hide-card-count',
   'inline-metadata-position',
@@ -245,6 +250,80 @@ export class SettingsManager {
                 });
               });
           });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Move completed cards to a list'))
+      .setDesc(
+        t(
+          "When toggled, checking a card's checkbox moves that card to the list named below. Recurring tasks leave their next occurrence behind."
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('auto-move-done-to-lane', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'auto-move-done-to-lane': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('auto-move-done-to-lane', local);
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ['auto-move-done-to-lane'],
+                });
+              });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Completed card list'))
+      .setDesc(
+        t(
+          'The name of the list completed cards are moved to. Matched case-insensitively; cards stay put when no list matches.'
+        )
+      )
+      .addText((text) => {
+        const [value, globalValue] = this.getSetting('done-lane-name', local);
+
+        text.inputEl.placeholder = `${globalValue || DEFAULT_DONE_LANE_NAME} (default)`;
+        text.inputEl.value = (value as string) || '';
+
+        text.onChange((val) => {
+          if (val.trim()) {
+            this.applySettingsUpdate({
+              'done-lane-name': {
+                $set: val.trim(),
+              },
+            });
+
+            return;
+          }
+
+          this.applySettingsUpdate({
+            $unset: ['done-lane-name'],
+          });
+        });
       });
 
     new Setting(contentEl)
