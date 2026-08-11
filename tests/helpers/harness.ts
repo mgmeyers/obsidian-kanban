@@ -1,8 +1,12 @@
-import { TFile } from 'obsidian';
 import { KanbanSettings } from 'src/Settings';
 import { StateManager } from 'src/StateManager';
 import { Board } from 'src/components/types';
 import { BoardModifiers, getBoardModifiers } from 'src/helpers/boardModifiers';
+
+// Imported from the stub rather than from `obsidian`: that is what the alias in
+// vitest.config.ts resolves to at runtime, and the stub's `TFile` takes a path,
+// where the published typings declare a zero-argument constructor.
+import { TFile } from '../mocks/obsidian';
 
 /**
  * Enough of `KanbanView` for `StateManager` to drive. The board's markdown ends

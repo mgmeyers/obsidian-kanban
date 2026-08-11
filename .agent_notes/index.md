@@ -15,7 +15,7 @@ architecture/drag-and-drop.md: custom DnD in src/dnd, the handleDrop branches, m
 architecture/card-completion.md: checkbox handling in src/helpers/completeItem.ts, Tasks-plugin recurring tasks, and the auto-move-to-done settings.
 architecture/testing.md: vitest setup, obsidian module stubs, the real-StateManager harness, and the markdown round-trip guard.
 architecture/demo-vault.md: demo_vault/ as a real Obsidian vault, yarn build:demo / dev:demo, and what is gitignored.
-architecture/ci.md: the GitHub Actions gate and yarn ci — install/lockfile/typecheck/lint/format/test/build, tsconfig.eslint.json, and the lockfile transport check.
+architecture/ci.md: the GitHub Actions gate and yarn ci — install/lockfile/typecheck/lint/format/test/build, the three tsconfig programs (json / tests / eslint), and the lockfile transport check.
 
 ## Changelog
 
@@ -26,3 +26,4 @@ changelog/2026-08-10-pin-cm-language-over-https-instead-of-ssh.md: yarn.lock res
 changelog/2026-08-10-get-yarn-test-and-typecheck-passing-again.md: declare the global app, type ViewState.state.file, fix the localStorage guard, and stub obsidian-daily-notes-interface.
 changelog/2026-08-10-fetch-the-obsidian-api-dep-over-git-instead-of-a-codeload-tarball.md: yarn.lock resolves the obsidian dep over git+https instead of a codeload.github.com tarball, which the sandbox egress proxy blocks with a 403.
 changelog/2026-08-10-add-a-ci-workflow-and-make-lint-enforceable.md: ci.yml gate on custom, scripts/check-lockfile.mjs, tsconfig.eslint.json so lint passes, .nvmrc, and release.yml building from the lockfile.
+changelog/2026-08-11-typecheck-tests-in-ci.md: tsconfig.tests.json + yarn typecheck:tests as its own CI step, es2022 lib for tests only, and the TFile-stub and TS7011 fixes it forced.
