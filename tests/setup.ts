@@ -2,6 +2,7 @@
  * Obsidian patches a handful of prototypes and exposes a global `app`. The
  * plugin leans on both, so tests need them before any source module loads.
  */
+import type { CachedMetadata, TAbstractFile, TFile } from 'obsidian';
 
 // `src/lang/helpers.ts` reads localStorage at import time
 if (typeof (globalThis as any).window === 'undefined') {
@@ -12,7 +13,7 @@ if (typeof (globalThis as any).window === 'undefined') {
 // for the property.
 if (typeof (globalThis as any).window.localStorage?.getItem !== 'function') {
   (globalThis as any).window.localStorage = {
-    getItem: () => null,
+    getItem: (): string => null,
     setItem: () => {},
     removeItem: () => {},
   };
@@ -84,12 +85,12 @@ export function stubApp(options: AppStubOptions = {}) {
       },
     },
     metadataCache: {
-      getFirstLinkpathDest: () => null,
-      getFileCache: () => null,
+      getFirstLinkpathDest: (): TFile => null,
+      getFileCache: (): CachedMetadata => null,
     },
     vault: {
-      getAbstractFileByPath: () => null,
-      getMarkdownFiles: () => [],
+      getAbstractFileByPath: (): TAbstractFile => null,
+      getMarkdownFiles: (): TFile[] => [],
       getConfig: (key: string) => (key === 'useTab' ? false : undefined),
     },
   };

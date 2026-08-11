@@ -22,4 +22,9 @@
 - `src/lang/helpers.ts` reads `window.localStorage` at **import** time, so every test file needs it before any source module loads.
   Under jsdom `window === globalThis` and `localStorage` is present but is a null-prototype object with no `Storage` methods, so a `if (!window.localStorage)` guard silently skips the stub.
   `tests/setup.ts` checks for `typeof localStorage?.getItem === 'function'` instead.
-- Only `src/*.ts` and `src/*.tsx` are in `tsconfig.json`'s `include`; subdirectories are pulled in through imports, and `tests/` is not typechecked at all.
+- Only `src/*.ts` and `src/*.tsx` are in `tsconfig.json`'s `include`; subdirectories are pulled in through imports.
+  `tests/` has its own program, `tsconfig.tests.json`, run by `yarn typecheck:tests` — see [ci.md](ci.md).
+- `harness.ts` imports `TFile` from `../mocks/obsidian`, not from `obsidian`.
+  The alias means the stub is what runs, and its constructor takes a path where the published typings declare a zero-argument one.
+- `setup.ts` annotates the return type of every stub that returns `null` or `[]`.
+  `strictNullChecks` is off, so `null` widens to `any` and `noImplicitAny` rejects the function (TS7011).

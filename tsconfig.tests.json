@@ -1,0 +1,16 @@
+// Typechecks `tests/` — which `tsconfig.json` never sees, because its `include`
+// is the app's entry files plus whatever they import. `include` here is only
+// `tests/`, so the src modules the tests actually use come in through imports
+// (the same way `tsconfig.json` picks up `src/` subdirectories) and the upstream
+// files the app never imports stay out of the program.
+//
+// `lib` is bumped to es2022: tests run under node via vitest, not in Obsidian's
+// es2018 bundle target, so they may use `Array.prototype.at` and friends. `src/`
+// is still held to es2018 by `tsconfig.json`.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["dom", "es2022", "scripthost"]
+  },
+  "include": ["tests/**/*.ts", "src/types.d.ts"]
+}

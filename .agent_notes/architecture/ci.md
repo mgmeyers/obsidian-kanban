@@ -32,6 +32,7 @@ output nobody wants from a red tree.
 | Lockfile untouched | `git diff --exit-code -- yarn.lock package.json` | the install did not rewrite either file |
 | Lockfile transports | `yarn check:lock` | every dep resolves over npm or `git+https` |
 | Typecheck | `yarn typecheck` | `tsc --noemit` over `tsconfig.json` |
+| Typecheck tests | `yarn typecheck:tests` | `tsc --noemit` over `tsconfig.tests.json` |
 | Lint | `yarn lint` | eslint over `src/` + `tests/`, `--max-warnings 0` |
 | Format | `yarn format:check` | prettier check over `src/` + `tests/` |
 | Test | `yarn test` | the vitest suite, see [testing.md](testing.md) |
@@ -47,6 +48,32 @@ which the lockfile makes reproducible, or a tagged release through
 
 `yarn ci` chains the same commands locally, in the same order, and takes about
 25s on a warm `node_modules`.
+
+## The three TS programs
+
+`tsc` is pointed at a different project for each job, because no single one
+covers all three:
+
+| Project | Include | Used by |
+| --- | --- | --- |
+| `tsconfig.json` | `src/*.ts(x)` + imports | `yarn typecheck`, esbuild |
+| `tsconfig.tests.json` | `tests/**/*.ts` + `src/types.d.ts` + imports | `yarn typecheck:tests` |
+| `tsconfig.eslint.json` | all of `src/` + `tests/` | eslint's parser only |
+
+`tsconfig.tests.json` includes `tests/` and lets the `src/` modules the tests
+use arrive through imports, the same way `tsconfig.json` reaches `src/`
+subdirectories. Pointing `tsc` at `tsconfig.eslint.json` instead would not work:
+it includes upstream files the app never imports (the flatpickr plugins), which
+have implicit-any errors nobody here intends to fix.
+
+It has to name `src/types.d.ts` explicitly. That file declares the globals
+Obsidian injects (`app`, `HTMLAttributes`, `h`, `Fragment`); `tsconfig.json`
+picks it up through its `src/*.ts` glob, but nothing imports it, so a program
+without it fails in `src/` with `Cannot find name 'app'`.
+
+Its `lib` is `es2022`, where `tsconfig.json` is `es2018`. Tests run under node
+via vitest, not in the bundle esbuild targets, so they may use `Array.prototype
+.at` and friends — `src/` stays held to es2018.
 
 ## Lockfile checking
 
@@ -71,7 +98,7 @@ lockfile is perfectly in sync, it just points at something unreachable.
   type-aware eslint rules used to die with "TSConfig does not include this file"
   on 13 files (locales, flatpickr plugins, ambient `.d.ts`). Lint therefore runs
   against **`tsconfig.eslint.json`**, which includes all of `src/` and `tests/`.
-  Typecheck still uses `tsconfig.json`, so `tests/` is not typechecked.
+  `tsc` never uses it — `tests/` is typechecked through `tsconfig.tests.json`.
 - Lint runs with `--max-warnings 0`. Name a deliberately unused argument `_foo`;
   `@typescript-eslint/no-unused-vars` is configured with
   `argsIgnorePattern: '^_'`.

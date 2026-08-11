@@ -53,6 +53,12 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: yarn typecheck
 
+      # Its own step, not folded into `Typecheck`: it is a separate tsc program
+      # (tsconfig.tests.json) and the two fail for unrelated reasons.
+      - name: Typecheck tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: yarn typecheck:tests
+
       - name: Lint
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: yarn lint
