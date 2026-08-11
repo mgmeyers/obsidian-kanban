@@ -18,7 +18,8 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
     parser: '@typescript-eslint/parser',
-    project: './tsconfig.json',
+    // Not tsconfig.json — that one only covers the files the app imports.
+    project: './tsconfig.eslint.json',
     ecmaFeatures: {
       jsx: true,
     },
@@ -37,6 +38,9 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-this-alias': 'off',
     '@typescript-eslint/no-inferrable-types': 'off',
+    // CI lints with --max-warnings 0, so a deliberately unused argument needs a
+    // way to say so. Prefix it with an underscore.
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'react/no-unescaped-entities': 'off',
     'react/prop-types': 'off',
     'react/react-in-jsx-scope': 'off',

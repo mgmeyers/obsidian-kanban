@@ -1,0 +1,74 @@
+name: CI
+
+# `custom` only. `main` mirrors upstream and carries none of this fork's
+# tooling — no tests/, no vitest config — so a run there would fail for
+# reasons nobody is allowed to fix on that branch.
+on:
+  push:
+    branches: [custom]
+  pull_request:
+    branches: [custom]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A new push to the same branch makes the previous run pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      # --frozen-lockfile fails when yarn.lock disagrees with package.json,
+      # which is the lockfile check that matters most: it makes the install
+      # below reproduce exactly what was reviewed.
+      - name: Install
+        id: install
+        run: yarn install --frozen-lockfile
+
+      # Everything past this point runs even after an earlier failure, so one
+      # run reports every problem instead of one problem per round trip.
+      # Nothing runs at all if the install failed — the noise would be useless.
+      - name: Lockfile untouched by the install
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: git diff --exit-code -- yarn.lock package.json
+
+      - name: Lockfile transports
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: yarn check:lock
+
+      - name: Typecheck
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: yarn typecheck
+
+      - name: Lint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: yarn lint
+
+      - name: Format
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: yarn format:check
+
+      - name: Test
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: yarn test
+
+      # No `if:` on purpose. The default is success(), so the build only runs
+      # once every check above has passed — a bundle built from code that does
+      # not typecheck or pass its tests is not worth the runner time, and the
+      # only thing this step adds over `yarn typecheck` is that esbuild and the
+      # less pipeline still work.
+      - name: Build
+        run: yarn build
