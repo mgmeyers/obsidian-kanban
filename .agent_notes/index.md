@@ -16,6 +16,7 @@ architecture/card-completion.md: checkbox handling in src/helpers/completeItem.t
 architecture/testing.md: vitest setup, obsidian module stubs, the real-StateManager harness, and the markdown round-trip guard.
 architecture/demo-vault.md: demo_vault/ as a real Obsidian vault, yarn build:demo / dev:demo, and what is gitignored.
 architecture/ci.md: the GitHub Actions gate and yarn ci — install/lockfile/typecheck/lint/format/test/build, the three tsconfig programs (json / tests / eslint), and the lockfile transport check.
+architecture/init-script.md: yarn initialization commands, the yarn ci full pipeline, individual dev/build/test/lint commands, and why git+https deps work in sandboxed environments.
 
 ## Changelog
 
