@@ -16,11 +16,15 @@ What GitHub Actions runs, and the local equivalent (`yarn ci`).
 
 ## The gate
 
-One job, one runner, checks as steps. Every step after `Install` carries
-`if: ${{ !cancelled() && steps.install.outcome == 'success' }}`, so a failing
-typecheck still lets lint, tests and the build report — one run shows every
-problem instead of one problem per round trip. Nothing runs if the install
+One job, one runner, checks as steps. The checks between `Install` and `Build`
+carry `if: ${{ !cancelled() && steps.install.outcome == 'success' }}`, so a
+failing typecheck still lets lint, format and the tests report — one run shows
+every problem instead of one problem per round trip. Nothing runs if the install
 itself failed.
+
+`Build` is the exception and has no `if:`, leaving it on the default `success()`
+so it runs only when everything before it passed. It is the one step whose
+output nobody wants from a red tree.
 
 | Step | Command | Guards |
 | --- | --- | --- |
@@ -33,9 +37,13 @@ itself failed.
 | Test | `yarn test` | the vitest suite, see [testing.md](testing.md) |
 | Build | `yarn build` | esbuild + less actually produce a bundle |
 
-The build's `main.js`, `styles.css` and `manifest.json` are uploaded as an
-artifact (14 days). CI cannot open Obsidian, so that download is how a change
-gets checked in a real vault before merge.
+CI does not publish the build anywhere. An Actions artifact would not help: BRAT
+installs a beta plugin by downloading `manifest.json`, `main.js` and
+`styles.css` **from GitHub release assets**, and an Actions artifact is a zip
+behind an authenticated API call, so BRAT cannot read one. Testing a change in a
+real vault means `yarn build:demo` locally (see [demo-vault.md](demo-vault.md)),
+which the lockfile makes reproducible, or a tagged release through
+`release.yml`.
 
 `yarn ci` chains the same commands locally, in the same order, and takes about
 25s on a warm `node_modules`.

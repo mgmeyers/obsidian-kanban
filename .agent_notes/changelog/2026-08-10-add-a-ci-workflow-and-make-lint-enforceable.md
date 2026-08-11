@@ -16,9 +16,14 @@ globbing.
 **What:** Added `.github/workflows/ci.yml` — one job on pushes to and PRs
 against `custom` (never `main`, which mirrors upstream and has no test setup),
 running install with `--frozen-lockfile`, a lockfile transport check, typecheck,
-lint, format check, tests and a build, then uploading the built plugin as an
-artifact for manual testing in a vault. Post-install steps report even after an
-earlier one fails, so a run surfaces every problem at once.
+lint, format check, tests and a build. The checks report even after an earlier
+one fails, so a run surfaces every problem at once; the build is left on the
+default `success()`, because a bundle from a red tree is worth nothing.
+
+Nothing is published from CI. An artifact would not have been installable
+anyway — BRAT reads `manifest.json` / `main.js` / `styles.css` from GitHub
+release assets, and an Actions artifact is a zip behind an authenticated API
+call. Local `yarn build:demo` is reproducible enough via the lockfile.
 
 Added `scripts/check-lockfile.mjs`, which allowlists the transports `yarn.lock`
 may resolve over. `--frozen-lockfile` proves the lockfile matches

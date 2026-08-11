@@ -65,20 +65,10 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: yarn test
 
+      # No `if:` on purpose. The default is success(), so the build only runs
+      # once every check above has passed — a bundle built from code that does
+      # not typecheck or pass its tests is not worth the runner time, and the
+      # only thing this step adds over `yarn typecheck` is that esbuild and the
+      # less pipeline still work.
       - name: Build
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: yarn build
-
-      # CI cannot open Obsidian, so the last check is a human one: download
-      # this, drop it in a vault's plugin folder, and see if the board works.
-      - name: Upload plugin build
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: kanban-custom-${{ github.sha }}
-          path: |
-            main.js
-            styles.css
-            manifest.json
-          if-no-files-found: error
-          retention-days: 14
