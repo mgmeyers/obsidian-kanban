@@ -336,6 +336,39 @@ export default class KanbanPlugin extends Plugin {
     } as ViewState);
   }
 
+  navigateKanbanSubpath(view: KanbanView, subpath: string): Promise<void> {
+    let heading = subpath.replace(/^#/, '');
+
+    try {
+      heading = decodeURIComponent(heading);
+    } catch {
+      // Obsidian can pass an unescaped heading, which is already usable as-is.
+    }
+
+    const normalizeHeading = (value: string) => value.normalize('NFKC').trim().replace(/\s+/g, ' ');
+    const targetHeading = normalizeHeading(heading);
+    const laneTitles = Array.from(
+      view.contentEl.querySelectorAll<HTMLElement>('.kanban-plugin__lane-title-text')
+    );
+    const laneTitle = laneTitles.find(
+      (element) => normalizeHeading(element.textContent || '') === targetHeading
+    );
+    const lane = laneTitle?.closest<HTMLElement>('.kanban-plugin__lane-wrapper');
+
+    view.getWindow().requestAnimationFrame(() => {
+      if (lane) {
+        lane.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      } else {
+        const firstLane = view.contentEl.querySelector<HTMLElement>(
+          '.kanban-plugin__lane-wrapper'
+        );
+        firstLane?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+      }
+    });
+
+    return Promise.resolve();
+  }
+
   async newKanban(folder?: TFolder) {
     const targetFolder = folder
       ? folder
@@ -779,6 +812,33 @@ export default class KanbanPlugin extends Plugin {
 
         setViewState(next) {
           return function (state: ViewState, ...rest: any[]) {
+            const currentView = this.view;
+            const subpath = (state as ViewState & { eState?: { subpath?: string } }).eState
+              ?.subpath;
+            const line = rest.find(
+              (value) => typeof value?.line === 'number'
+            )?.line as number | undefined;
+
+            if (
+              currentView instanceof KanbanView &&
+              state.type === 'markdown' &&
+              state.state?.file === currentView.file?.path
+            ) {
+              if (subpath?.startsWith('#')) {
+                return self.navigateKanbanSubpath(currentView, subpath);
+              }
+
+              if (line !== undefined) {
+                const heading = self.app.metadataCache
+                  .getFileCache(currentView.file)
+                  ?.headings?.find((entry) => entry.position.start.line === line)?.heading;
+
+                if (heading) {
+                  return self.navigateKanbanSubpath(currentView, `#${heading}`);
+                }
+              }
+            }
+
             if (
               // Don't force kanban mode during shutdown
               self._loaded &&
