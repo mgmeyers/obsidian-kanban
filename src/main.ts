@@ -51,6 +51,7 @@ export default class KanbanPlugin extends Plugin {
 
   // leafid => view mode
   kanbanFileModes: Record<string, string> = {};
+  kanbanMarkdownModes: Record<string, ReturnType<MarkdownView['getMode']>> = {};
   stateManagers: Map<TFile, StateManager> = new Map();
 
   windowRegistry: Map<Window, WindowRegistry> = new Map();
@@ -68,13 +69,12 @@ export default class KanbanPlugin extends Plugin {
   }
 
   unload(): void {
-    super.unload();
     Promise.all(
       this.app.workspace.getLeavesOfType(kanbanViewType).map((leaf) => {
         this.kanbanFileModes[(leaf as any).id] = 'markdown';
         return this.setMarkdownView(leaf);
       })
-    );
+    ).finally(() => super.unload());
   }
 
   onunload() {
@@ -89,6 +89,7 @@ export default class KanbanPlugin extends Plugin {
     this.stateManagers.clear();
     this.windowRegistry.clear();
     this.kanbanFileModes = {};
+    this.kanbanMarkdownModes = {};
 
     (this.app.workspace as any).unregisterHoverLinkSource(frontmatterKey);
   }
@@ -317,11 +318,31 @@ export default class KanbanPlugin extends Plugin {
     this.windowRegistry.delete(win);
   }
 
+  rememberMarkdownMode(
+    leaf: WorkspaceLeaf,
+    fallbackFile?: string,
+    requestedMode?: ReturnType<MarkdownView['getMode']>
+  ) {
+    const mode =
+      requestedMode || (leaf.view instanceof MarkdownView ? leaf.view.getMode() : undefined);
+    const leafKey = (leaf as any).id || fallbackFile || leaf.view.getState()?.file;
+
+    if (mode && leafKey) {
+      this.kanbanMarkdownModes[leafKey] = mode;
+    }
+  }
+
   async setMarkdownView(leaf: WorkspaceLeaf, focus: boolean = true) {
+    const state = leaf.view.getState();
+    const mode = this.kanbanMarkdownModes[(leaf as any).id || state.file];
+
     await leaf.setViewState(
       {
         type: 'markdown',
-        state: leaf.view.getState(),
+        state: {
+          ...state,
+          ...(mode ? { mode } : {}),
+        },
         popstate: true,
       } as ViewState,
       { focus }
@@ -329,9 +350,13 @@ export default class KanbanPlugin extends Plugin {
   }
 
   async setKanbanView(leaf: WorkspaceLeaf) {
+    const state = leaf.view.getState();
+
+    this.rememberMarkdownMode(leaf, state.file);
+
     await leaf.setViewState({
       type: kanbanViewType,
-      state: leaf.view.getState(),
+      state,
       popstate: true,
     } as ViewState);
   }
@@ -348,7 +373,11 @@ export default class KanbanPlugin extends Plugin {
       );
 
       await this.app.vault.modify(kanban, basicFrontmatter);
-      await this.app.workspace.getLeaf().setViewState({
+
+      const leaf = this.app.workspace.getLeaf();
+      this.rememberMarkdownMode(leaf, kanban.path);
+
+      await leaf.setViewState({
         type: kanbanViewType,
         state: { file: kanban.path },
       });
@@ -768,9 +797,11 @@ export default class KanbanPlugin extends Plugin {
         detach(next) {
           return function () {
             const state = this.view?.getState();
+            const leafKey = this.id || state?.file;
 
-            if (state?.file && self.kanbanFileModes[this.id || state.file]) {
-              delete self.kanbanFileModes[this.id || state.file];
+            if (leafKey) {
+              delete self.kanbanFileModes[leafKey];
+              delete self.kanbanMarkdownModes[leafKey];
             }
 
             return next.apply(this);
@@ -779,32 +810,61 @@ export default class KanbanPlugin extends Plugin {
 
         setViewState(next) {
           return function (state: ViewState, ...rest: any[]) {
+            const currentView = this.view;
+            const leafKey =
+              this.id ||
+              (currentView instanceof KanbanView ? currentView.file?.path : state.state?.file);
+            let nextState = state;
+
+            if (
+              currentView instanceof KanbanView &&
+              state.type === 'markdown' &&
+              state.state?.file &&
+              state.state.mode === undefined &&
+              leafKey &&
+              self.kanbanMarkdownModes[leafKey]
+            ) {
+              nextState = {
+                ...state,
+                state: {
+                  ...state.state,
+                  mode: self.kanbanMarkdownModes[leafKey],
+                },
+              };
+            }
+
             if (
               // Don't force kanban mode during shutdown
               self._loaded &&
               // If we have a markdown file
-              state.type === 'markdown' &&
-              state.state?.file &&
+              nextState.type === 'markdown' &&
+              nextState.state?.file &&
               // And the current mode of the file is not set to markdown
-              self.kanbanFileModes[this.id || state.state.file] !== 'markdown'
+              self.kanbanFileModes[this.id || nextState.state.file] !== 'markdown'
             ) {
               // Then check for the kanban frontMatterKey
-              const cache = self.app.metadataCache.getCache(state.state.file);
+              const cache = self.app.metadataCache.getCache(nextState.state.file);
 
               if (cache?.frontmatter && cache.frontmatter[frontmatterKey]) {
+                const requestedMode =
+                  nextState.state.mode === 'source' || nextState.state.mode === 'preview'
+                    ? nextState.state.mode
+                    : undefined;
+                self.rememberMarkdownMode(this, nextState.state.file, requestedMode);
+
                 // If we have it, force the view type to kanban
                 const newState = {
-                  ...state,
+                  ...nextState,
                   type: kanbanViewType,
                 };
 
-                self.kanbanFileModes[state.state.file] = kanbanViewType;
+                self.kanbanFileModes[this.id || nextState.state.file] = kanbanViewType;
 
                 return next.apply(this, [newState, ...rest]);
               }
             }
 
-            return next.apply(this, [state, ...rest]);
+            return next.apply(this, [nextState, ...rest]);
           };
         },
       })
