@@ -68,9 +68,15 @@ export function useItemMenu({
               const newNoteFolder = stateManager.getSetting('new-note-folder');
               const newNoteTemplatePath = stateManager.getSetting('new-note-template');
 
-              const targetFolder = newNoteFolder
-                ? (stateManager.app.vault.getAbstractFileByPath(newNoteFolder as string) as TFolder)
-                : stateManager.app.fileManager.getNewFileParent(stateManager.file.path);
+              const getNoteFolder = (path?: string | null) => {
+                const file = path ? stateManager.app.vault.getAbstractFileByPath(path) : null;
+
+                return file instanceof TFolder ? file : null;
+              };
+              const targetFolder =
+                getNoteFolder(newNoteFolder) ??
+                getNoteFolder(stateManager.getGlobalSetting('new-note-folder')) ??
+                stateManager.app.fileManager.getNewFileParent(stateManager.file.path);
 
               const newFile = (await (stateManager.app.fileManager as any).createNewMarkdownFile(
                 targetFolder,
