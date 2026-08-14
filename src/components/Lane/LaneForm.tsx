@@ -30,6 +30,8 @@ export function LaneForm({ onNewLane, closeLaneForm }: LaneFormProps) {
 
   const createLane = useCallback(
     (cm: EditorView, title: string) => {
+      if (!title.trim()) return;
+
       boardModifiers.addLane({
         ...LaneTemplate,
         id: generateInstanceId(),
