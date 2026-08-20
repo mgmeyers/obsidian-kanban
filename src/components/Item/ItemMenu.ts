@@ -68,9 +68,21 @@ export function useItemMenu({
               const newNoteFolder = stateManager.getSetting('new-note-folder');
               const newNoteTemplatePath = stateManager.getSetting('new-note-template');
 
-              const targetFolder = newNoteFolder
-                ? (stateManager.app.vault.getAbstractFileByPath(newNoteFolder as string) as TFolder)
-                : stateManager.app.fileManager.getNewFileParent(stateManager.file.path);
+              // Resolve the target folder, validating that a configured path
+              // actually points to an existing TFolder. Falls back to the board's
+              // default parent when the configured folder is missing, stale, or
+              // accidentally points to a file (see upstream issue #996 / PR #1228).
+              let targetFolder: TFolder;
+              if (newNoteFolder) {
+                const resolved = stateManager.app.vault.getAbstractFileByPath(newNoteFolder as string);
+                if (resolved instanceof TFolder) {
+                  targetFolder = resolved;
+                } else {
+                  targetFolder = stateManager.app.fileManager.getNewFileParent(stateManager.file.path);
+                }
+              } else {
+                targetFolder = stateManager.app.fileManager.getNewFileParent(stateManager.file.path);
+              }
 
               const newFile = (await (stateManager.app.fileManager as any).createNewMarkdownFile(
                 targetFolder,

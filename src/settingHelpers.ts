@@ -143,6 +143,134 @@ export function createSearchSelect({
           choices: list,
         }).setChoiceByValue('');
 
+        // [Kanban-DIAG] diagnostic logging — gated behind the "debug-logging" setting.
+        // Surfaces Choices.js / popout-window interactions that otherwise fail silently.
+        const debugOn = !!manager.getSetting('debug-logging', local)[0];
+        if (debugOn) {
+          const tag = '[Kanban-DIAG]';
+          const win = el.win as any;
+          const doc = (win as any).document ?? (manager as any).activeDocument ?? (globalThis as any).activeDocument;
+          const log = (...args: any[]) => {
+            try { (console as any).log(tag, ...args); } catch (_) {}
+          };
+
+          try {
+            const snapshot: Record<string, unknown> = {
+              key: String(key),
+              local,
+              listLen: list.length,
+              searchEnabled: list.length > 10,
+              value,
+              globalValue,
+              choicesApi: typeof c,
+              hasShowDropdown: typeof (c as any).showDropdown === 'function',
+              hasHideDropdown: typeof (c as any).hideDropdown === 'function',
+              hasDestroy: typeof (c as any).destroy === 'function',
+              isActiveWindow: typeof (win as any).activeDocument === 'object',
+              docIsWinDoc: doc === (win as any).document,
+              docIsGlobalDoc: doc === (globalThis as any).document,
+              docIsActiveDoc: doc === (globalThis as any).activeDocument,
+              containerInitial: !!(c as any).containerOuter,
+              inputInitial: !!(c as any).containerOuter?.input,
+            };
+            log('snapshot', snapshot);
+          } catch (e) {
+            log('snapshot-error', e);
+          }
+
+          // Intercept showDropdown / hideDropdown to log when they fire and what state they observe.
+          try {
+            const origShow = (c as any).showDropdown?.bind(c);
+            if (typeof origShow === 'function') {
+              (c as any).showDropdown = (...args: any[]) => {
+                let outer: any = null;
+                try { outer = (c as any).containerOuter?.element ?? null; } catch (_) {}
+                log('showDropdown() CALLED', {
+                  isOpenBefore: !!(c as any).currentState?.isOpen,
+                  containerInDom: outer ? !!(outer.getRootNode?.() as any) : false,
+                  outerClass: outer?.className ?? null,
+                });
+                return origShow(...args);
+              };
+            }
+            const origHide = (c as any).hideDropdown?.bind(c);
+            if (typeof origHide === 'function') {
+              (c as any).hideDropdown = (...args: any[]) => {
+                log('hideDropdown() CALLED');
+                return origHide(...args);
+              };
+            }
+          } catch (e) {
+            log('intercept-error', e);
+          }
+
+          // Poll the DOM a few times right after init — confirms container lands in the right document.
+          try {
+            const outerEl = (c as any).containerOuter?.element as HTMLElement | undefined;
+            let poll = 0;
+            const pollId = win.setInterval(() => {
+              poll += 1;
+              try {
+                log('poll', {
+                  n: poll,
+                  outerExists: !!outerEl,
+                  outerInDom: outerEl ? outerEl.isConnected : false,
+                  outerOwnerDocSameAsWin:
+                    outerEl && (win as any).document
+                      ? outerEl.ownerDocument === (win as any).document
+                      : null,
+                  hasChoicesOpen: !!doc?.querySelector?.('.choices.is-open'),
+                });
+              } catch (_) {}
+              if (poll >= 5) win.clearInterval(pollId);
+            }, 100);
+          } catch (e) {
+            log('poll-setup-error', e);
+          }
+
+          // Listen for click/show events directly on the choices container.
+          try {
+            const choicesContainer = (c as any).containerOuter?.element as HTMLElement | undefined;
+            if (choicesContainer) {
+              const evtNames = ['click', 'mousedown', 'keydown', 'focus'];
+              evtNames.forEach((evtName) => {
+                choicesContainer.addEventListener(evtName, (e: Event) => {
+                  log('container:' + evtName, {
+                    targetTag: (e.target as HTMLElement)?.tagName,
+                    targetClass: (e.target as HTMLElement)?.className,
+                  });
+                });
+              });
+              manager.cleanupFns.push(() => {
+                evtNames.forEach((evtName) => {
+                  choicesContainer.removeEventListener(evtName, null as any);
+                });
+              });
+            }
+          } catch (e) {
+            log('container-listener-error', e);
+          }
+
+          // Global click listener on the window's document — confirms which document
+          // receives the click when the dropdown is in a popout window.
+          try {
+            const onDocClick = (e: Event) => {
+              const outerEl = (c as any).containerOuter?.element as HTMLElement | undefined;
+              log('doc:click', {
+                targetTag: (e.target as HTMLElement)?.tagName,
+                containsOuter: outerEl ? outerEl.contains(e.target as Node) : 'no-outer',
+                activeElTag: (doc as any)?.activeElement?.tagName,
+              });
+            };
+            doc?.addEventListener?.('click', onDocClick, true);
+            manager.cleanupFns.push(() => {
+              doc?.removeEventListener?.('click', onDocClick, true);
+            });
+          } catch (e) {
+            log('doc-listener-error', e);
+          }
+        }
+
         if (value && typeof value === 'string' && list.findIndex((f) => f.value === value) > -1) {
           c.setChoiceByValue(value);
         }
