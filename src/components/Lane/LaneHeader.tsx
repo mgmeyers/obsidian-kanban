@@ -179,6 +179,9 @@ export const LaneHeader = memo(function LaneHeader({
               case 'archive-items':
                 boardModifiers.archiveLaneItems(lanePath);
                 break;
+              case 'archive-completed-items':
+                boardModifiers.archiveCompletedLaneItems(lanePath);
+                break;
               case 'delete':
                 boardModifiers.deleteEntity(lanePath);
                 break;

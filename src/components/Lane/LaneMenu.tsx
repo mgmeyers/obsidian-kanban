@@ -11,7 +11,12 @@ import { KanbanContext } from '../context';
 import { c, generateInstanceId } from '../helpers';
 import { EditState, Lane, LaneSort, LaneTemplate } from '../types';
 
-export type LaneAction = 'delete' | 'archive' | 'archive-items' | null;
+export type LaneAction =
+  | 'delete'
+  | 'archive'
+  | 'archive-items'
+  | 'archive-completed-items'
+  | null;
 
 const actionLabels = {
   delete: {
@@ -25,6 +30,10 @@ const actionLabels = {
   'archive-items': {
     description: t('Are you sure you want to archive all cards in this list?'),
     confirm: t('Yes, archive cards'),
+  },
+  'archive-completed-items': {
+    description: t('Are you sure you want to archive all completed cards in this list?'),
+    confirm: t('Yes, archive completed cards'),
   },
 };
 
@@ -100,6 +109,12 @@ export function useSettingsMenu({ setEditState, path, lane }: UseSettingsMenuPar
           .setIcon('lucide-archive')
           .setTitle(t('Archive cards'))
           .onClick(() => setConfirmAction('archive-items'));
+      })
+      .addItem((item) => {
+        item
+          .setIcon('lucide-archive')
+          .setTitle(t('Archive completed cards'))
+          .onClick(() => setConfirmAction('archive-completed-items'));
       })
       .addSeparator()
       .addItem((i) => {

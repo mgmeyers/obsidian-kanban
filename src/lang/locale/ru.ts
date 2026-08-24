@@ -262,6 +262,9 @@ const lang: Partial<Lang> = {
   'Are you sure you want to archive all cards in this list?':
     'Вы уверены, что хотите архивировать все карточки в этом списке?',
   'Yes, archive cards': 'Да, архивировать карточки',
+  'Are you sure you want to archive all completed cards in this list?':
+    'Вы уверены, что хотите архивировать все завершённые карточки в этом списке?',
+  'Yes, archive completed cards': 'Да, архивировать завершённые карточки',
   'Edit list': 'Редактировать список',
   'Archive cards': 'Архивировать карточки',
   'Archive list': 'Архивировать список',

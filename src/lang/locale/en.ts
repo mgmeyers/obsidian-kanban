@@ -263,6 +263,9 @@ const en = {
   'Are you sure you want to archive all cards in this list?':
     'Are you sure you want to archive all cards in this list?',
   'Yes, archive cards': 'Yes, archive cards',
+  'Are you sure you want to archive all completed cards in this list?':
+    'Are you sure you want to archive all completed cards in this list?',
+  'Yes, archive completed cards': 'Yes, archive completed cards',
   'Edit list': 'Edit list',
   'Archive cards': 'Archive cards',
   'Archive list': 'Archive list',
