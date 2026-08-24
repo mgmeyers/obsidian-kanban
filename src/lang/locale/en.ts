@@ -18,6 +18,12 @@ const en = {
   'View as table': 'View as table',
   'Board view': 'Board view',
 
+  // Debug
+  'Debug': 'Debug',
+  'Debug logging': 'Debug logging',
+  'When toggled, the plugin will print detailed diagnostic logs to the developer console (Ctrl+Shift+I). Useful for troubleshooting the Note folder dropdown and other Choices.js-related issues. Off by default.':
+    'When toggled, the plugin will print detailed diagnostic logs to the developer console (Ctrl+Shift+I). Useful for troubleshooting the Note folder dropdown and other Choices.js-related issues. Off by default.',
+
   // KanbanView.tsx
   'Open as markdown': 'Open as markdown',
   'Open board settings': 'Open board settings',

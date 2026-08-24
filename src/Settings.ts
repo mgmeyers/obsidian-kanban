@@ -90,6 +90,7 @@ export interface KanbanSettings {
   'tag-sort'?: TagSort[];
   'time-format'?: string;
   'time-trigger'?: string;
+  'debug-logging'?: boolean;
 }
 
 export interface KanbanViewSettings {
@@ -138,6 +139,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'tag-sort',
   'time-format',
   'time-trigger',
+  'debug-logging',
 ]);
 
 export type SettingRetriever = <K extends keyof KanbanSettings>(
@@ -1530,6 +1532,56 @@ export class SettingsManager {
             });
         });
     });
+
+    contentEl.createEl('br');
+    contentEl.createEl('h4', { text: t('Debug') });
+
+    new Setting(contentEl)
+      .setName(t('Debug logging'))
+      .setDesc(
+        t(
+          'When toggled, the plugin will print detailed diagnostic logs to the developer console (Ctrl+Shift+I). Useful for troubleshooting the Note folder dropdown and other Choices.js-related issues. Off by default.'
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('debug-logging', local);
+
+            if (value !== undefined && value !== null) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined && globalValue !== null) {
+              toggle.setValue(globalValue as boolean);
+            } else {
+              // default off
+              toggle.setValue(false);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'debug-logging': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('debug-logging', local);
+                toggleComponent.setValue(!!globalValue);
+
+                this.applySettingsUpdate({
+                  $unset: ['debug-logging'],
+                });
+              });
+          });
+      });
   }
 
   cleanUp() {
