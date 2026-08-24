@@ -218,6 +218,13 @@ const context = await esbuild.context({
         cancelAnimationFrame: 'activeWindow.cancelAnimationFrame',
       },
     }),
+    replace({
+      include: /choices\.js/,
+      values: {
+        document: 'activeDocument',
+        window: 'activeWindow',
+      },
+    }),
   ],
   external: [
     'obsidian',

@@ -18,6 +18,12 @@ const en = {
   'View as table': 'View as table',
   'Board view': 'Board view',
 
+  // Debug
+  'Debug': 'Debug',
+  'Debug logging': 'Debug logging',
+  'When toggled, the plugin will print detailed diagnostic logs to the developer console (Ctrl+Shift+I). Useful for troubleshooting the Note folder dropdown and other Choices.js-related issues. Off by default.':
+    'When toggled, the plugin will print detailed diagnostic logs to the developer console (Ctrl+Shift+I). Useful for troubleshooting the Note folder dropdown and other Choices.js-related issues. Off by default.',
+
   // KanbanView.tsx
   'Open as markdown': 'Open as markdown',
   'Open board settings': 'Open board settings',
@@ -257,6 +263,9 @@ const en = {
   'Are you sure you want to archive all cards in this list?':
     'Are you sure you want to archive all cards in this list?',
   'Yes, archive cards': 'Yes, archive cards',
+  'Are you sure you want to archive all completed cards in this list?':
+    'Are you sure you want to archive all completed cards in this list?',
+  'Yes, archive completed cards': 'Yes, archive completed cards',
   'Edit list': 'Edit list',
   'Archive cards': 'Archive cards',
   'Archive list': 'Archive list',

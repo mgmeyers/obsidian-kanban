@@ -3,6 +3,7 @@ import { moment } from 'obsidian';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
+import { getTaskStatusDone } from 'src/parsers/helpers/inlineMetadata';
 import {
   appendEntities,
   getEntityFromPath,
@@ -30,6 +31,7 @@ export interface BoardModifiers {
   updateLane: (path: Path, lane: Lane) => void;
   archiveLane: (path: Path) => void;
   archiveLaneItems: (path: Path) => void;
+  archiveCompletedLaneItems: (path: Path) => void;
   deleteEntity: (path: Path) => void;
   updateItem: (path: Path, item: Item) => void;
   archiveItem: (path: Path) => void;
@@ -185,6 +187,45 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
                   $unshift: stateManager.getSetting('archive-with-date')
                     ? items.map(appendArchiveDate)
                     : items,
+                },
+              },
+            }
+          );
+        } catch (e) {
+          stateManager.setError(e);
+          return boardData;
+        }
+      });
+    },
+
+    archiveCompletedLaneItems: (path: Path) => {
+      stateManager.setState((boardData) => {
+        const lane = getEntityFromPath(boardData, path);
+        const items = lane.children;
+
+        try {
+          const isComplete = (item: Item) =>
+            item.data.checked && item.data.checkChar === getTaskStatusDone();
+
+          const completed = items.filter(
+            (item) => lane.data.shouldMarkItemsComplete || isComplete(item)
+          );
+          const remaining = lane.data.shouldMarkItemsComplete
+            ? []
+            : items.filter((item) => !isComplete(item));
+
+          return update(
+            updateEntity(boardData, path, {
+              children: {
+                $set: remaining,
+              },
+            }),
+            {
+              data: {
+                archive: {
+                  $unshift: stateManager.getSetting('archive-with-date')
+                    ? completed.map(appendArchiveDate)
+                    : completed,
                 },
               },
             }

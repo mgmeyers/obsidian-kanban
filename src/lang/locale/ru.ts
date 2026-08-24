@@ -14,6 +14,17 @@ const lang: Partial<Lang> = {
   'Untitled Kanban': 'Безымянная Kanban-доска',
   'Toggle between Kanban and markdown mode': 'Переключиться между Kanban и markdown режимами',
 
+  'View as board': 'Показать как доску',
+  'View as list': 'Показать как список',
+  'View as table': 'Показать как таблицу',
+  'Board view': 'Вид доски',
+
+  // Debug
+  'Debug': 'Отладка',
+  'Debug logging': 'Диагностическое логирование',
+  'When toggled, the plugin will print detailed diagnostic logs to the developer console (Ctrl+Shift+I). Useful for troubleshooting the Note folder dropdown and other Choices.js-related issues. Off by default.':
+    'Если включено, плагин выводит подробные диагностические логи в консоль разработчика (Ctrl+Shift+I). Полезно для отладки выпадающего списка «Папка для заметок» и других проблем, связанных с Choices.js. По умолчанию выключено.',
+
   // KanbanView.tsx
   'Open as markdown': 'Открыть как markdown',
   'Open board settings': 'Открыть настройки доски',
@@ -22,7 +33,7 @@ const lang: Partial<Lang> = {
   'You may wish to open as markdown and inspect or edit the file.':
     'Вы можете открыть файл как markdown и проверить или отредактировать его.',
   'Are you sure you want to archive all completed cards on this board?':
-    'Вы уверены, что хотите архивировать все завершёённые карточки в этой доске?',
+    'Вы уверены, что хотите архивировать все завершённые карточки в этой доске?',
 
   // parser.ts
   Complete: 'Выполнено',
@@ -62,6 +73,7 @@ const lang: Partial<Lang> = {
   'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.':
     'В эту папку будут помещены заметки, созданные из карточек Kanban. Если поле пустое, они будут помещены в папку по умолчанию для этого хранилища.',
   'Default folder': 'Директория по умолчанию',
+  'Expand lists to full width in list view': 'Раскрывать списки на полную ширину в режиме списка',
   'List width': 'Ширина списка',
   'Enter a number to set the list width in pixels.':
     'Введите число, чтобы установить ширину списка в пикселях.',
@@ -88,6 +100,25 @@ const lang: Partial<Lang> = {
   'This format will be used when displaying dates in Kanban cards.':
     'Этот формат будет использован при показе дат в Kanban-карточках.',
   'Show relative date': 'Показывать относительную дату',
+  "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'. Relative dates will not be shown for dates from the Tasks and Dataview plugins.":
+    "Когда включено, карточки показывают расстояние между сегодняшним днём и датой карточки — например «Через 3 дня», «Месяц назад». Относительные даты не показываются для дат из плагинов Tasks и Dataview.",
+
+  'Move dates to card footer': 'Переместить даты в подвал карточки',
+  "When toggled, dates will be displayed in the card's footer instead of the card's body.":
+    'Когда включено, даты отображаются в подвале карточки, а не в её теле.',
+  'Move tags to card footer': 'Переместить метки в подвал карточки',
+  "When toggled, tags will be displayed in the card's footer instead of the card's body.":
+    'Когда включено, метки отображаются в подвале карточки, а не в её теле.',
+  'Move task data to card footer': 'Переместить данные задач в подвал карточки',
+  "When toggled, task data (from the Tasks plugin) will be displayed in the card's footer instead of the card's body.":
+    'Когда включено, данные задач (из плагина Tasks) отображаются в подвале карточки, а не в её теле.',
+  'Inline metadata position': 'Расположение встроенных метаданных',
+  'Controls where the inline metadata (from the Dataview plugin) will be displayed.':
+    'Определяет, где отображаются встроенные метаданные (из плагина Dataview).',
+  'Card body': 'Тело карточки',
+  'Card footer': 'Подвал карточки',
+  'Merge with linked page metadata': 'Объединить с метаданными связанной страницы',
+
   'Hide card counts in list titles': 'Скрыть счётчики карточек в заголовках списка',
   'When toggled, card counts are hidden from the list title':
     'Когда включено, счётчики карточек скрыты в заголовках списка',
@@ -106,9 +137,15 @@ const lang: Partial<Lang> = {
     'Будет использоваться для отделения даты/времени архивирования от заголовка',
   'Archive date/time format': 'Формат даты/времени архивирования',
   'Kanban Plugin': 'Плагин Kanban',
+  'Tag click action': 'Действие по клику на метку',
+  'Search Kanban Board': 'Искать по Kanban-доске',
+  'Search Obsidian Vault': 'Искать по хранилищу Obsidian',
+  'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.':
+    'Эта настройка определяет, открывает ли клик по меткам под заголовком карточки поиск Obsidian или поиск по Kanban-доске.',
   'Tag colors': 'Показывать цвета меток',
   'Set colors for tags displayed in cards.': 'Установить цвета для меток под заголовками карточек.',
   'Linked Page Metadata': 'Метаданные связанных страниц',
+  'Inline Metadata': 'Встроенные метаданные',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
     'Отображение метаданных для первой заметки, связанной с карточкой. Ниже укажите, какие ключи метаданных отображать. Можно указать дополнительную метку, либо скрыть метки полностью.',
   'Board Header Buttons': 'Кнопки заголовка доски',
@@ -137,19 +174,40 @@ const lang: Partial<Lang> = {
 
   // MetadataSettings.tsx
   'Metadata key': 'Ключ метаданных',
-  'Display label': 'Показать ярылк',
+  'Display label': 'Показать ярлык',
   'Hide label': 'Спрятать ярлык',
   'Drag to rearrange': 'Потяните, чтобы переупорядочить',
   Delete: 'Удалить',
   'Add key': 'Добавить ключ',
+  'Add tag': 'Добавить метку',
   'Field contains markdown': 'Поле содержит markdown',
+  'Tag sort order': 'Порядок сортировки меток',
+  'Set an explicit sort order for the specified tags.':
+    'Задать явный порядок сортировки для указанных меток.',
 
   // TagColorSettings.tsx
   'Add tag color': 'Добавить цвет метки',
 
+  // components/Table.tsx
+  List: 'Список',
+  Card: 'Карточка',
+  Date: 'Дата',
+  Tags: 'Метки',
+  Priority: 'Приоритет',
+  Start: 'Начало',
+  Created: 'Создано',
+  Scheduled: 'Запланировано',
+  Due: 'Срок',
+  Cancelled: 'Отменено',
+  Recurrence: 'Повторение',
+  'Depends on': 'Зависит от',
+  ID: 'ID',
+
   // components/Item/Item.tsx
   'More options': 'Больше настроек',
   Cancel: 'Отмена',
+  Done: 'Готово',
+  Save: 'Сохранить',
 
   // components/Item/ItemContent.tsx
   today: 'сегодня',
@@ -182,6 +240,7 @@ const lang: Partial<Lang> = {
   'Add label': 'Добавить ярлык',
   'Move to top': 'Переместить вверх',
   'Move to bottom': 'Переместить вниз',
+  'Move to list': 'Переместить в список',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Введите заголовок списка...',
@@ -203,6 +262,9 @@ const lang: Partial<Lang> = {
   'Are you sure you want to archive all cards in this list?':
     'Вы уверены, что хотите архивировать все карточки в этом списке?',
   'Yes, archive cards': 'Да, архивировать карточки',
+  'Are you sure you want to archive all completed cards in this list?':
+    'Вы уверены, что хотите архивировать все завершённые карточки в этом списке?',
+  'Yes, archive completed cards': 'Да, архивировать завершённые карточки',
   'Edit list': 'Редактировать список',
   'Archive cards': 'Архивировать карточки',
   'Archive list': 'Архивировать список',
@@ -211,6 +273,8 @@ const lang: Partial<Lang> = {
   'Insert list after': 'Вставить список после',
   'Sort by card text': 'Сортировать по тексту карточки',
   'Sort by date': 'Сортировать по дате',
+  'Sort by tags': 'Сортировать по меткам',
+  'Sort by': 'Сортировать по',
 
   // components/helpers/renderMarkdown.ts
   'Unable to find': 'Невозможно найти',
