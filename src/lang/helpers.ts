@@ -1,3 +1,6 @@
+import { moment } from 'obsidian';
+
+import { buildLangNormalizer } from './normalizeLang';
 import ar from './locale/ar';
 import cz from './locale/cz';
 import da from './locale/da';
@@ -19,7 +22,7 @@ import ro from './locale/ro';
 import ru from './locale/ru';
 import sq from './locale/sq';
 import tr from './locale/tr';
-import uk from './locale/tr';
+import uk from './locale/uk';
 import zhCN from './locale/zh-cn';
 import zhTW from './locale/zh-tw';
 
@@ -50,8 +53,15 @@ const localeMap: { [k: string]: Partial<Lang> } = {
   zh: zhCN,
 };
 
-const lang = window.localStorage.getItem('language');
-const locale = localeMap[lang || 'en'];
+// 界面语言检测：moment.locale() 是 Obsidian 官方提供的入口，始终反映
+// 当前界面语言；localStorage 'language' 是旧版 Obsidian 的实现细节，
+// 仅部分版本写入，作为兜底保留。
+const normalizeLang = buildLangNormalizer(Object.keys(localeMap));
+const lang =
+  normalizeLang(moment.locale()) ??
+  normalizeLang(window.localStorage.getItem('language')) ??
+  'en';
+const locale = localeMap[lang];
 
 export function t(str: keyof typeof en): string {
   if (!locale) {
