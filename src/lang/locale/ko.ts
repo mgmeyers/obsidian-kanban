@@ -1,4 +1,5 @@
 // 한국어
+import ko from 'src/components/Editor/flatpickr/l10n/ko';
 import { Lang } from './en';
 
 const lang: Partial<Lang> = {
@@ -13,6 +14,11 @@ const lang: Partial<Lang> = {
   'New kanban board': '새 보드 만들기',
   'Untitled Kanban': '이름 없는 보드',
   'Toggle between Kanban and markdown mode': '칸반 모드와 마크다운 모드 전환',
+
+  'View as board': '보드로 보기',
+  'View as list': '목록으로 보기',
+  'View as table': '테이블로 보기',
+  'Board view': '보드 뷰',
 
   // KanbanView.tsx
   'Open as markdown': '마크다운으로 열기',
@@ -63,6 +69,7 @@ const lang: Partial<Lang> = {
     '카드에서 만든 노트는 이 폴더에 저장됩니다. 만약 비어있다면, 기본 위치에 저장됩니다.',
   'Default folder': '기본 폴더',
   'List width': '목록 너비',
+  'Expand lists to full width in list view': '목록 뷰에서 목록을 전체 너비로 확장',
   'Enter a number to set the list width in pixels.': '픽셀 단위로 목록의 너비를 설정합니다.',
   'Maximum number of archived cards': '보관된 카드의 최대 수',
   "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
@@ -89,6 +96,26 @@ const lang: Partial<Lang> = {
   'This format will be used when displaying dates in Kanban cards.':
     '이 형식은 카반 보드에서 날짜를 표시할때 사용됩니다.',
   'Show relative date': '날짜를 상대적으로 표시',
+
+  "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'. Relative dates will not be shown for dates from the Tasks and Dataview plugins.":
+    "활성화하면 카드에 오늘과 카드 날짜 사이의 기간이 표시됩니다. 예: '3일 후', '한 달 전'. 상대적인 날짜는 Tasks 및 Dataview 플러그인의 날짜에는 표시되지 않습니다.",
+
+  'Move dates to card footer': '카드 하단으로 날짜 이동',
+  "When toggled, dates will be displayed in the card's footer instead of the card's body.":
+    "활성화하면 카드의 날짜가 카드 본문 대신 카드 하단에 표시됩니다.",
+  'Move tags to card footer': '카드 하단으로 태그 이동',
+  "When toggled, tags will be displayed in the card's footer instead of the card's body.":
+    "활성화하면 카드의 태그가 카드 본문 대신 카드 하단에 표시됩니다.",
+  'Move task data to card footer': '카드 하단으로 작업 데이터 이동',
+  "When toggled, task data (from the Tasks plugin) will be displayed in the card's footer instead of the card's body.":
+    "활성화하면 카드의 작업 데이터(Tasks 플러그인에서 가져옴)가 카드 본문 대신 카드 하단에 표시됩니다.",
+  'Inline metadata position': '인라인 메타데이터 위치',
+  'Controls where the inline metadata (from the Dataview plugin) will be displayed.':
+    '인라인 메타데이터(Dataview 플러그인에서 가져옴)가 표시될 위치를 제어합니다.',
+  'Card body': '카드 본문',
+  'Card footer': '카드 하단',
+  'Merge with linked page metadata': '연결된 페이지 메타데이터와 병합',
+
   'Hide card counts in list titles': '목록 제목에 카드 수 표시 숨기기',
   'When toggled, card counts are hidden from the list title':
     '활성화하면 목록 제목에 총 카드 수가 표시되지 않습니다.',
@@ -106,6 +133,13 @@ const lang: Partial<Lang> = {
     '이 구분자는 카드 제목과 보관된 날짜/시간을 구분하는데 사용됩니다.',
   'Archive date/time format': '보관된 카드의 날짜/시간 형식',
   'Kanban Plugin': '칸반 플러그인',
+
+  'Tag click action': '태그 클릭 동작',
+  'Search Kanban Board': '칸반 보드 검색',
+  'Search Obsidian Vault': '옵시디언 보관함 검색',
+  'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.':
+    '이 설정은 카드 제목 아래에 표시되는 태그를 클릭할 때 옵시디언 검색 또는 칸반 보드 검색을 열지 여부를에 대한 여부를 제어합니다.',
+
   'Tag colors': '태그 색상 표시',
   'Set colors for tags displayed in cards.': '카드 제목 아래에 표시되는 태그의 색상을 설정합니다.',
   'Linked Page Metadata': '링크된 페이지 메타데이터',
@@ -142,15 +176,33 @@ const lang: Partial<Lang> = {
   'Drag to rearrange': '드래그하여 재정렬',
   Delete: '삭제',
   'Add key': '키 추가',
+  'Add tag': '태그 추가',
   'Field contains markdown': '필드에 마크다운이 포함되어 있습니다.',
-
+  'Tag sort order': '태그 정렬 순서',
+  'Set an explicit sort order for the specified tags.':
+    '지정된 태그에 대한 명시적인 정렬 순서를 설정합니다.',
   // TagColorSettings.tsx
   'Add tag color': '태그 색상 추가',
+  // components/Table.tsx
+  List: 'List',
+  Card: 'Card',
+  Date: 'Date',
+  Tags: 'Tags',
 
+  Priority: 'Priority',
+  Start: 'Start',
+  Created: 'Created',
+  Scheduled: 'Scheduled',
+  Due: 'Due',
+  Cancelled: 'Cancelled',
+  Recurrence: 'Recurrence',
+  'Depends on': 'Depends on',
+  ID: 'ID',
   // components/Item/Item.tsx
   'More options': '더 많은 옵션',
   Cancel: '취소',
-
+  Done: '완료',
+  Save: '저장',
   // components/Item/ItemContent.tsx
   today: '오늘',
   yesterday: '어제',
@@ -182,7 +234,7 @@ const lang: Partial<Lang> = {
   'Add label': '라벨 추가',
   'Move to top': '맨 위로 이동',
   'Move to bottom': '맨 아래로 이동',
-
+  'Move to list': '목록으로 이동',
   // components/Lane/LaneForm.tsx
   'Enter list title...': '목록 제목 입력...',
   'Mark cards in this list as complete': '이 목록의 카드를 완료됨으로 표시',
@@ -211,7 +263,8 @@ const lang: Partial<Lang> = {
   'Insert list after': '목록을 오른쪽에 생성',
   'Sort by card text': '내용으로 정렬',
   'Sort by date': '날짜순으로 정렬',
-
+  'Sort by tags': '태그순으로 정렬',
+  'Sort by': '정렬 기준',
   // components/helpers/renderMarkdown.ts
   'Unable to find': '찾을 수 없습니다.',
   'Open in default app': '기본 앱으로 열기',
