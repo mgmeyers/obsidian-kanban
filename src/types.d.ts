@@ -1,3 +1,43 @@
+/**
+ * ============================================================================
+ * [실행 순서 #3] src/types.d.ts — Preact를 React처럼 사용하기 위한 전역 타입 보강 선언
+ * ----------------------------------------------------------------------------
+ * 단계: 실행-초기화
+ * 이 파일은 `.d.ts`(타입 선언 전용 파일)로, 런타임에 실행되는 JS 코드를 전혀
+ * 생성하지 않는다. 대신 TypeScript 컴파일러에게 "이런 전역 타입/전역 함수가
+ * 존재한다"고 알려주는 역할만 한다. 파일 안에 최상위 import/export 문이 없기
+ * 때문에 TypeScript가 이 파일을 모듈이 아닌 "전역 스크립트"로 취급하며, 여기서
+ * declare(선언)한 것들(Fragment, h, 그리고 HTMLAttributes/Booleanish/
+ * AriaAttributes 같은 타입들)은 프로젝트의 다른 모든 .ts/.tsx 파일에서 별도의
+ * import 없이 곧바로 사용할 수 있게 된다. 즉 어떤 특정 파일이 이 파일을
+ * import하는 것이 아니라, tsconfig에 포함되는 것만으로 프로젝트 전체 타입체크에
+ * 암묵적으로 관여한다.
+ *
+ * 이 플러그인은 React 대신 더 가벼운 Preact를 사용하면서도, JSX 코드와 각종
+ * 라이브러리 타입은 React의 관례(HTMLAttributes, ARIA 속성 등)를 그대로
+ * 따르고 싶어한다. 그래서 아래 `declare function h(...)` 오버로드 2개는 JSX가
+ * 컴파일될 때 호출되는 Preact의 `h(type, props, ...children)` "hyperscript"
+ * 팩토리 함수(엘리먼트를 실제로 생성하는 함수, React의 `createElement`에 대응)에
+ * 대해, 태그 이름 문자열로 호출하는 경우와 컴포넌트 함수/클래스로 호출하는 경우
+ * 두 가지 타입 시그니처를 각각 정의해 IDE의 타입 추론과 자동완성이 정확히
+ * 동작하도록 돕는다. `declare const Fragment`는 `<>...</>` 문법(여러 자식을
+ * 감싸는 실체 없는 래퍼)이 참조하는 Preact의 Fragment 컴포넌트를 전역 타입으로
+ * 알려주는 선언이다.
+ *
+ * `Booleanish` 타입은 `boolean | 'true' | 'false'`의 별칭으로, HTML의 ARIA
+ * 속성들이 실제 DOM에서는 문자열 `"true"`/`"false"`로 표현되지만 JSX 코드를
+ * 작성할 때는 boolean 리터럴(`true`/`false`)로도 자연스럽게 쓸 수 있도록
+ * 허용 범위를 넓혀주는 타입이다. 아래 `AriaAttributes` 인터페이스는 HTML의
+ * 모든 `aria-*` 속성(스크린 리더 등 접근성 보조기술이 참조하는 속성들)을
+ * 타입으로 정의해 두어, JSX에서 `<div aria-hidden={true} .../>`처럼 쓸 때
+ * 자동완성과 타입 검사가 되게 해준다. 이 인터페이스의 각 속성에는 이미 원본
+ * JSDoc 주석이 달려 있으므로 이번 작업에서는 그대로 두었고, 개별 속성 줄에는
+ * 추가로 주석을 달지 않았다. `HTMLAttributes<T>`는 Preact 자체의
+ * HTMLAttributes 타입에 위 AriaAttributes를 합쳐(intersection, `&`) 만든
+ * 타입으로, 모든 HTML 태그의 표준 속성 + ARIA 속성을 한 번에 다루기 위한
+ * 편의 타입이다.
+ * ============================================================================
+ */
 type HTMLAttributes<T extends EventTarget> = import('preact/compat').HTMLAttributes<T> &
   AriaAttributes;
 

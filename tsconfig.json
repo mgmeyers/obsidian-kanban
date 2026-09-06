@@ -1,25 +1,92 @@
+// ============================================================================
+// [단계: 빌드설정] tsconfig.json — TypeScript 컴파일러(tsc) 설정 파일
+// ----------------------------------------------------------------------------
+// 이 파일은 "설치→빌드설정→실행" 흐름 중 두 번째 단계인 "빌드설정"에 속합니다.
+// tsc는 실제로 이 프로젝트의 번들(main.js)을 만들지 않습니다(그건 esbuild.config.mjs가 함).
+// 대신 (1) `yarn typecheck`(tsc --noemit) 실행 시 타입 오류만 검사하고,
+// (2) 에디터(VSCode 등)가 자동완성/타입힌트를 보여줄 때 이 설정을 참고합니다.
+// TypeScript의 tsconfig.json은 JSON5/JSONC 방식으로 파싱되어 이렇게 `//` 주석을 써도 안전합니다
+// (반면 package.json, manifest.json 같은 "순수 JSON"은 주석을 넣으면 파싱 에러가 납니다).
+// ============================================================================
 {
   "compilerOptions": {
+    // .js/.jsx 파일도 컴파일 대상에 포함할지 여부. 이 프로젝트는 vendoring된 일부 라이브러리 코드
+    // 등에서 .js 파일도 섞여 있을 수 있어 true로 켜둡니다.
     "allowJs": true,
+    // `import foo from 'bar'` 처럼 default export가 없는 CommonJS 모듈도 default import 문법으로
+    // 가져올 수 있게 허용합니다(esbuild가 실제 번들링 시 CommonJS/ESM을 상호운용해주는 것과 짝을
+    // 이루는 타입 체크 쪽 설정).
     "allowSyntheticDefaultImports": true,
+    // 아래 "paths" 옵션에서 사용할 경로 별칭(alias)의 기준이 되는 루트 디렉터리. "."은 이 tsconfig.json
+    // 파일이 있는 위치(프로젝트 루트)를 의미합니다.
     "baseUrl": ".",
+    // TypeScript가 헬퍼 함수(예: 클래스 상속을 위한 __extends, 스프레드 연산자를 위한 __spreadArray
+    // 등)를 매 파일마다 중복 삽입하지 않고, tslib 패키지에서 한 번만 가져와 재사용하게 합니다.
+    // package.json의 devDependencies에 있는 "tslib"가 이 옵션과 짝을 이룹니다.
     "importHelpers": true,
+    // 소스맵(디버깅 시 컴파일된 코드를 원본 코드 위치로 매핑해주는 정보)을 별도 .map 파일이 아니라
+    // 컴파일된 파일 안에 base64로 인라인 삽입합니다.
     "inlineSourceMap": true,
+    // 소스맵에 원본 소스코드 내용 자체도 함께 인라인으로 포함시켜, 소스맵만으로도 디버거에서 원본
+    // 코드를 볼 수 있게 합니다.
     "inlineSources": true,
+    // 각 파일이 파일 하나만 보고도 독립적으로 컴파일 가능한지(다른 파일의 타입 정보 없이도 트랜스파일
+    // 가능한지)를 강제합니다. esbuild처럼 "파일 단위로 병렬 변환"하는 번들러와 함께 쓸 때 필요한 제약
+    // 조건이며, 이 옵션이 켜지면 예를 들어 `export { Foo }` 처럼 타입인지 값인지 애매한 재수출 구문에
+    // 제약이 생깁니다.
     "isolatedModules": true,
+    // JSX를 어떻게 컴파일할지 지정. "react-jsx"는 React 17+ 방식의 "자동 JSX 런타임"으로, 파일마다
+    // `import React from 'react'`를 직접 쓰지 않아도 JSX가 자동으로 `jsx()`/`jsxs()` 호출로 변환되게
+    // 해줍니다.
     "jsx": "react-jsx",
+    // 위 "react-jsx" 자동 런타임이 실제로 어떤 패키지의 jsx()/jsxs()/Fragment를 사용할지 지정합니다.
+    // 여기서는 "preact"를 지정했으므로, 코드에서 React 문법(JSX)을 그대로 쓰더라도 실제로는 Preact가
+    // DOM을 그립니다. package.json에서 "react"/"react-dom" 패키지 자체를 npm:@preact/compat 으로
+    // alias 처리한 것과 함께, 이 프로젝트가 "React인 척하는 Preact" 위에서 동작하게 만드는 두 축 중
+    // 하나입니다.
     "jsxImportSource": "preact",
+    // 타입 체크 시 어떤 내장 타입 라이브러리(lib)를 포함할지 지정합니다. "dom"은 window/document 등
+    // 브라우저 API 타입, "es6"/"es2018"은 해당 버전 JS 문법(Promise, 구조분해 등)의 내장 타입,
+    // "scripthost"는 Windows Script Host 관련(레거시, Obsidian 플러그인 환경엔 거의 영향 없음) 타입.
     "lib": ["dom", "es6", "scripthost", "es2018"],
+    // 컴파일된 JS의 모듈 시스템 형식. "ESNext"는 최신 ECMAScript의 import/export 구문을 그대로
+    // 유지한다는 뜻이며(변환하지 않음), 실제 CommonJS(require)로의 변환은 esbuild.config.mjs의
+    // `format: 'cjs'` 설정이 번들링 단계에서 담당합니다. 즉 tsc는 타입만 검사하고, 실제 모듈 형식
+    // 변환/번들링은 esbuild가 수행하는 역할 분담 구조입니다.
     "module": "ESNext",
+    // import 경로를 실제 파일로 찾아낼 때 Node.js와 동일한 방식(예: node_modules 탐색, index.ts
+    // 자동 인식 등)을 사용하도록 지정합니다.
     "moduleResolution": "node",
+    // 타입을 명시하지 않은 변수/매개변수가 암묵적으로 `any` 타입이 되는 것을 에러로 처리합니다.
+    // 즉 함수 매개변수 등에는 반드시 타입을 명시해야 하며, 이는 코드 전체의 타입 안전성을 높입니다.
     "noImplicitAny": true,
+    // import 경로를 다른 실제 경로로 치환(alias)하는 매핑 테이블. baseUrl(".")을 기준으로 동작합니다.
     "paths": {
+      // 코드에서 `import { useState } from 'react'` 라고 쓰면, 실제로는 이 아래 경로의 Preact
+      // 호환 레이어(node_modules/preact/compat)를 가리키도록 타입 체크 시 alias 처리합니다.
+      // (실제 런타임 번들링 시의 alias는 package.json의 "react": "npm:@preact/compat" 설정이
+      // 담당하며, 여기 tsconfig의 paths는 "타입 체크"용 alias입니다 — 즉 런타임 번들러(esbuild)와
+      // 타입체커(tsc) 양쪽에 각각 같은 취지의 alias를 따로 설정해줘야 합니다.)
       "react": ["./node_modules/preact/compat/"],
+      // "react-dom" 역시 마찬가지로 Preact 호환 레이어를 가리킵니다. 즉 `import ReactDOM from
+      // 'react-dom'` 같은 코드도 실제로는 Preact를 사용합니다.
       "react-dom": ["./node_modules/preact/compat/"],
+      // 순수 React의 타입 정의(예: 이벤트 타입 등 Preact가 아직 제공하지 않는 세부 타입)가 필요할
+      // 때 참조할 수 있도록 @types/react 패키지 경로를 별도로 열어둔 것입니다.
       "react-types": ["./node_modules/@types/react/"]
     },
+    // node_modules 안에 있는 .d.ts(타입 선언) 파일들의 타입 검사를 건너뜁니다. 서드파티 라이브러리
+    // 타입 선언까지 전부 엄격하게 검사하면 컴파일이 느려지고, 라이브러리 자체의 타입 오류 때문에
+    // 우리 프로젝트 빌드가 막히는 경우가 많아 이를 방지합니다.
     "skipLibCheck": true,
+    // 컴파일된 JavaScript가 목표로 하는 ECMAScript 버전. "es2018"은 async/await, 객체 스프레드
+    // (`{...obj}`) 등을 네이티브로 지원하는 비교적 최신 버전이며, esbuild.config.mjs의
+    // `target: 'es2018'` 설정과 동일하게 맞춰져 있어 타입 체크와 실제 번들링의 목표 버전이
+    // 일치합니다.
     "target": "es2018"
   },
+  // tsc(또는 에디터)가 타입 검사 대상으로 삼을 파일 패턴. src 최상위 폴더의 .ts/.tsx 파일만
+  // 명시되어 있지만, 실제로는 이 파일들이 import하는 하위 폴더(components, dnd, parsers 등)의
+  // 파일들도 의존성을 따라가며 함께 타입 검사됩니다(TypeScript는 import 그래프를 따라가므로).
   "include": ["src/*.ts", "src/*.tsx"]
 }
