@@ -1,6 +1,31 @@
+/*
+ * ============================================================================
+ * [실행 순서 #89] styles.less — 플러그인 전체 스타일시트 (마지막 빌드 산출물)
+ * ----------------------------------------------------------------------------
+ * 단계: 실행-렌더링(스타일)
+ * esbuild.config.mjs는 src/main.ts(플러그인 로직) 빌드와 별도로, 이 파일을 Less
+ * 컴파일러(esbuild의 less 플러그인 또는 별도 스크립트)를 통해 순수 CSS로 변환한 뒤
+ * 저장소 루트의 styles.css로 출력한다. Obsidian은 플러그인이 로드될 때 manifest.json
+ * 옆의 styles.css를 자동으로 <head>에 주입하므로, 이 파일 자체는 런타임에 직접
+ * 로드되지 않고 반드시 빌드를 거쳐야 반영된다. 클래스명은 src/components/helpers.ts의
+ * c() 헬퍼가 'kanban-plugin__' 접두사를 붙여 생성하는 BEM 스타일 이름을 그대로
+ * 따르며(예: .kanban-plugin__board, .kanban-plugin__lane), 이렇게 하면 Obsidian의
+ * 다른 테마/플러그인 클래스와 충돌하지 않는다. Less 문법으로는 &를 이용한 중첩 셀렉터
+ * (부모 참조·상태 modifier 결합)를 광범위하게 사용하고, 값 재사용에는 Less의 @변수
+ * 대신 Obsidian 테마가 제공하는 네이티브 CSS 커스텀 프로퍼티(--background-primary 등)
+ * 와 var()를 사용한다. 이 파일에는 별도의 .mixin()이나 when() 가드는 정의되어 있지
+ * 않다.
+ * ============================================================================
+ */
+
+// 외부 라이브러리 CSS 가져오기: choices.js(태그/선택 드롭다운)와 flatpickr(날짜 선택기)의
+// 기본 스타일을 먼저 로드한 뒤, 아래에서 Obsidian 테마에 맞게 세부 오버라이드한다.
 @import 'choices.js/public/assets/styles/choices.css';
 @import './components/Editor/flatpickr/flatpickr.min.css';
 
+// Obsidian이 칸반 뷰 리프(leaf)에 부여하는 data-type='kanban' 컨테이너.
+// 기본 view-content 패딩을 제거하고(칸반 보드가 여백 없이 꽉 차게), 뷰 헤더는
+// 항상 flex로 보이도록 강제한다(Obsidian 기본 스타일 우선순위를 !important로 이김).
 .workspace-leaf-content[data-type='kanban'] {
   .view-content {
     padding: 0;
@@ -11,10 +36,15 @@
   }
 }
 
+// 레인(컬럼) 너비를 결정하는 CSS 커스텀 프로퍼티. Less @변수가 아니라 실제 CSS
+// 변수로 선언해 자식 요소들이 var(--lane-width)로 참조할 수 있게 한다.
 .kanban-plugin {
   --lane-width: 272px;
 }
 
+// 플러그인 루트 컨테이너: 보드 전체를 감싸는 최상위 박스. 부모(뷰) 영역을 꽉 채우고
+// 세로 방향 flex 컨테이너로 동작한다. contain: content로 렌더링/레이아웃 범위를
+// 이 서브트리로 제한해 성능을 최적화한다.
 .kanban-plugin {
   contain: content;
   height: 100%;
@@ -24,6 +54,9 @@
   flex-direction: column;
 }
 
+// 인라인 태그(#tag)의 좌우/상하 패딩. 보드 본체와, 드래그 중인 카드가 떠 있는
+// 별도의 드래그 오버레이 컨테이너(.kanban-plugin__drag-container) 양쪽 모두에
+// 동일하게 적용되도록 셀렉터를 콤마로 묶었다.
 .kanban-plugin,
 .kanban-plugin__drag-container {
   a.tag {
@@ -32,12 +65,18 @@
   }
 }
 
+// ============================================================================
+// 테이블(리스트) 보기: 보드를 칸반 카드 대신 표 형태로 렌더링하는 뷰 모드의 스타일.
+// 하나의 최상위 셀렉터(.kanban-plugin__table-wrapper) 안에 표/셀/헤더/열 크기
+// 조절 핸들까지 Less 중첩(&, 하위 셀렉터)으로 모두 묶여 있다.
+// ============================================================================
 .kanban-plugin__table-wrapper {
   height: 100%;
   width: 100%;
   overflow: auto;
   padding-block-end: 40px;
 
+  // 표 자체는 내용 크기만큼만 차지하고 가운데 정렬, 바깥 테두리는 box-shadow로 표현
   table {
     width: fit-content;
     margin-block: 0;
@@ -49,10 +88,12 @@
     width: fit-content;
   }
 
+  // 첫/마지막 열·행의 테두리를 0으로 만들어 바깥쪽 이중 테두리를 방지하는 지역 변수
   --table-column-first-border-width: 0;
   --table-column-last-border-width: 0;
   --table-row-last-border-width: 0;
 
+  // 모든 셀(th/td) 공통 스타일 + 상태별 하위 규칙
   th,
   td {
     text-align: start;
@@ -61,10 +102,12 @@
     padding: 0 !important;
     height: 1px;
 
+    // 아이콘이 있는 헤더 셀은 셀 내부 우측 여백을 살짝 더 준다
     &.mod-has-icon .kanban-plugin__table-cell-wrapper {
       padding-inline-end: var(--size-2-2);
     }
 
+    // 셀 내부 콘텐츠 래퍼: 셀 전체 높이를 채우고 자체 패딩을 담당
     .kanban-plugin__table-cell-wrapper {
       height: 100%;
       padding-inline: var(--size-4-2);
@@ -75,6 +118,8 @@
       margin-block: 2px;
     }
 
+    // 셀 안에서 인라인 에디터(markdown-source-view)가 열려 편집 중일 때: 배경을
+    // alt 배경으로 바꾸고 포커스 아웃라인을 표시해 편집 중인 셀임을 시각적으로 강조
     &:has(.markdown-source-view) {
       --background-primary: var(--background-primary-alt);
       background: var(--background-primary);
@@ -82,6 +127,7 @@
     }
   }
 
+  // 표 헤더 행: 스크롤해도 상단에 붙어있는 sticky 헤더
   thead tr > th {
     height: 1px;
     background-color: var(--background-primary);
@@ -102,6 +148,7 @@
     }
   }
 
+  // 열 너비 조절(리사이즈) 핸들: 열 경계에 겹쳐지는 얇은 드래그 바
   .resizer {
     position: absolute;
     top: 0;
@@ -113,6 +160,7 @@
     touch-action: none;
   }
 
+  // 텍스트 방향(LTR/RTL)에 따라 핸들이 열의 오른쪽 또는 왼쪽에 붙도록 분기
   .resizer.ltr {
     right: 0;
   }
@@ -121,10 +169,13 @@
     left: 0;
   }
 
+  // 리사이즈 중에는 항상 보이도록 강제
   .resizer.isResizing {
     opacity: 1;
   }
 
+  // 마우스 호버가 가능한 환경(데스크톱)에서만 평소엔 숨기고 호버 시에만 핸들을 노출
+  // (터치 전용 기기에서는 항상 손쉽게 잡을 수 있도록 opacity 규칙을 건너뜀)
   @media (hover: hover) {
     .resizer {
       opacity: 0;
@@ -135,6 +186,7 @@
     }
   }
 
+  // 표 안에서는 카드 뷰와 다른 여백 규칙이 필요한 하위 요소들 미세 조정
   .kanban-plugin__item-tags:not(:empty) {
     margin-block-start: -5px;
   }
@@ -143,6 +195,7 @@
     display: block;
   }
 
+  // 표 셀 안에서 제목/내용/편집기 관련 요소들이 셀 높이를 그대로 채우도록 강제
   .kanban-plugin__item-input-wrapper,
   .cm-table-widget,
   .kanban-plugin__item-title,
@@ -156,6 +209,8 @@
   }
 }
 
+// 인라인 편집 중(CodeMirror6 소스 뷰)일 때의 크기/스크롤 보정. 카드 안에서 열리는
+// 에디터가 부모 레이아웃과 충돌하지 않도록 스크롤 가능 영역과 상하 패딩을 조정한다.
 .kanban-plugin {
   .markdown-source-view.mod-cm6 {
     display: block;
@@ -171,6 +226,7 @@
   }
 }
 
+// 테이블 보기 상단의 헤더 바(제목 + 정렬/설정 아이콘들을 양 끝으로 배치)
 .kanban-plugin__table-header {
   display: flex;
   gap: var(--size-4-2);
@@ -178,6 +234,9 @@
   justify-content: space-between;
 }
 
+// 테이블 헤더의 정렬 아이콘. `div:hover > &` 는 Less의 부모 선택자(&) 참조 문법으로,
+// "이 요소의 조상 div에 마우스가 올라가면" 배경을 강조하는 규칙을 이 블록 안에서
+// 함께 정의할 수 있게 해준다(별도 상위 셀렉터로 안 빠지고 응집도를 유지).
 .kanban-plugin__table-header-sort {
   line-height: 1;
   color: var(--text-faint);
@@ -193,6 +252,7 @@
   }
 }
 
+// 표 셀 내부에서 콘텐츠와 아이콘 버튼을 양 끝 정렬하는 범용 flex 래퍼
 .kanban-plugin__cell-flex-wrapper {
   display: flex;
   gap: 8px;
@@ -204,6 +264,7 @@
   }
 }
 
+// 아이콘 하나를 감싸는 범용 래퍼(정렬/line-height 보정용)
 .kanban-plugin__icon-wrapper {
   display: flex;
   line-height: 1;
@@ -212,6 +273,8 @@
   }
 }
 
+// 드래그 앤 드롭이 진행 중인 동안 전역적으로 커서를 grabbing으로 바꾸고, 자식 전체의
+// pointer-events를 꺼서 드래그 중 다른 요소가 마우스 이벤트를 가로채지 않게 한다
 .kanban-plugin.something-is-dragging {
   cursor: grabbing;
   cursor: -webkit-grabbing;
@@ -221,6 +284,8 @@
   }
 }
 
+// 카드/레인/보드 전역에서 쓰이는 <button> 요소의 공통 리셋(줄간격, 여백)과
+// hover 시 색상/배경 전환 애니메이션
 .kanban-plugin__item button,
 .kanban-plugin__lane button,
 .kanban-plugin button {
@@ -231,6 +296,7 @@
     100ms background-color;
 }
 
+// 보드 상단에 고정(sticky)되는 검색창 바
 .kanban-plugin__search-wrapper {
   width: 100%;
   position: sticky;
@@ -245,6 +311,7 @@
   background-color: var(--background-primary);
 }
 
+// 검색 취소(X) 버튼
 button.kanban-plugin__search-cancel-button {
   display: flex;
   line-height: 1;
@@ -261,12 +328,18 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   display: flex;
 }
 
+// 플러그인 전역에서 쓰는 아이콘의 기본 크기(폰트 크기 기준 1em) 및 표시 방식
 .kanban-plugin__icon {
   display: inline-block;
   line-height: 1;
   --icon-size: 1em;
 }
 
+// ============================================================================
+// 보드 레이아웃: 전체 레인들을 담는 최상위 컨테이너. 가로 스크롤형(기본, 레인이
+// 옆으로 나열)과 세로형(.kanban-plugin__vertical modifier, 레인이 위아래로 쌓임)
+// 두 모드를 하나의 셀렉터 안에서 & 중첩으로 함께 표현한다.
+// ============================================================================
 .kanban-plugin__board {
   display: flex;
   width: 100%;
@@ -281,6 +354,8 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
     height: 100%;
   }
 
+  // 세로 보기 모드일 때는 내부 div가 컬럼 방향(flex-direction: column)으로 쌓이고
+  // 가로 폭을 100%로 채우도록 전환
   &.kanban-plugin__vertical {
     > div {
       height: fit-content;
@@ -290,14 +365,24 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   }
 }
 
+// 모바일에서 편집 중이 아닐 때, 하단 내비게이션 바에 콘텐츠가 가리지 않도록
+// 여백(safe area)을 추가로 확보
 .is-mobile .view-content:not(.is-mobile-editing) .kanban-plugin__board > div {
   padding-bottom: calc(1rem + var(--mobile-navbar-height));
 }
 
+// "레인 추가" 입력 폼이 우측에 떠 있는 동안, 보드 콘텐츠가 그 폼 뒤로 가려지지
+// 않도록 우측 여백을 폼 너비(250px)만큼 미리 확보
 .kanban-plugin__board.is-adding-lane > div {
   padding-inline-end: calc(250px + 1rem);
 }
 
+// ----------------------------------------------------------------------------
+// 레인(컬럼) 영역 시작
+// ----------------------------------------------------------------------------
+// 레인 하나를 감싸는 래퍼: 레인 사이 간격과 최대 높이를 담당. 가로 모드에서는
+// 오른쪽 마진, 세로 모드(`.kanban-plugin__vertical &` — Less에서 조상 셀렉터를
+// 참조하는 중첩 패턴)에서는 아래쪽 마진으로 전환된다.
 .kanban-plugin__lane-wrapper {
   display: flex;
   flex-shrink: 0;
@@ -311,6 +396,8 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   }
 }
 
+// 레인 자체의 카드형 배경/테두리. 다른 레인의 카드를 이 레인 위로 드래그해 올렸을
+// 때(.is-dropping) 강조색 배경과 아웃라인으로 드롭 가능 상태를 시각적으로 알려준다.
 .kanban-plugin__lane {
   width: 100%;
   display: flex;
@@ -326,12 +413,14 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
   }
 }
 
+// 레인을 드래그하는 동안 원래 위치에 남는 자리표시자(placeholder)
 .kanban-plugin__placeholder.kanban-plugin__lane-placeholder {
   height: 100%;
   flex-grow: 1;
   margin-inline-end: 5px;
 }
 
+// 검색/필터 등으로 숨겨진 레인
 .kanban-plugin__lane.is-hidden {
   display: none;
 }
