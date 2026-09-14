@@ -1,7 +1,6 @@
 import animateScrollTo from 'animated-scroll-to';
 import classcat from 'classcat';
 import update from 'immutability-helper';
-import { TFile } from 'obsidian';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
@@ -11,9 +10,7 @@ import { SortPlaceholder } from 'src/dnd/components/SortPlaceholder';
 import { Sortable } from 'src/dnd/components/Sortable';
 import { createHTMLDndHandlers } from 'src/dnd/managers/DragManager';
 import { t } from 'src/lang/helpers';
-import { PendingTransfer } from 'src/main';
 
-import { removeEntity } from '../dnd/util/data';
 import { DndScope } from '../dnd/components/Scope';
 import { getBoardModifiers } from '../helpers/boardModifiers';
 import { frontmatterKey } from '../parsers/common';
@@ -183,159 +180,6 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
 
   const html5DragHandlers = createHTMLDndHandlers(stateManager);
 
-  // Placement mode: card transferred from another board, user clicks a lane to place it
-  const [placingTransfer, setPlacingTransfer] = useState<PendingTransfer | null>(null);
-  const [placingPos, setPlacingPos] = useState({ x: 0, y: 0 });
-
-  // Consume pendingTransfer and enter placement mode
-  useEffect(() => {
-    const transfer = view.plugin.pendingTransfer;
-    if (!transfer) {
-      return;
-    }
-    if (!boardData?.children?.length) {
-      return;
-    }
-    if (transfer.sourceFilePath === filePath) {
-      return;
-    }
-
-    view.plugin.pendingTransfer = null;
-    setPlacingTransfer(transfer);
-    setPlacingPos({ x: transfer.mouseX, y: transfer.mouseY });
-  }, [view, stateManager, boardData, filePath]);
-
-  // Cancel placement and go back to source board
-  const cancelPlacement = useCallback(
-    (transfer: PendingTransfer) => {
-      setPlacingTransfer(null);
-      if (transfer.returnFilePath) {
-        const returnFile = view.app.vault.getAbstractFileByPath(transfer.returnFilePath);
-        if (returnFile && returnFile instanceof TFile) {
-          view.leaf.openFile(returnFile);
-        }
-      }
-    },
-    [view]
-  );
-
-  // Track cursor during placement mode
-  useEffect(() => {
-    if (!placingTransfer) return;
-    const win = view.getWindow();
-    const onMove = (e: MouseEvent) => {
-      setPlacingPos({ x: e.clientX, y: e.clientY });
-    };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') cancelPlacement(placingTransfer);
-    };
-    const onContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-      cancelPlacement(placingTransfer);
-    };
-    win.addEventListener('mousemove', onMove);
-    win.addEventListener('keydown', onKeyDown);
-    win.addEventListener('contextmenu', onContextMenu, true);
-    return () => {
-      win.removeEventListener('mousemove', onMove);
-      win.removeEventListener('keydown', onKeyDown);
-      win.removeEventListener('contextmenu', onContextMenu, true);
-    };
-  }, [placingTransfer, view, cancelPlacement]);
-
-  // Placement handler: use pointerdown (not click) so residual pointerup/mouseup/click
-  // events from the cancelled drag never trigger placement. Only a fresh press does.
-  useEffect(() => {
-    if (!placingTransfer || !rootRef.current) return;
-    const root = rootRef.current;
-    let placed = false;
-
-    const onPointerDown = (e: PointerEvent) => {
-      if (placed || !e.isPrimary) return;
-
-      const target = root.ownerDocument.elementFromPoint(e.clientX, e.clientY);
-      const laneEl = target?.closest(`.${c('lane')}`);
-      if (!laneEl) return;
-
-      // Find lane index by position among lane siblings
-      const laneWrappers = root.getElementsByClassName(c('lane-wrapper'));
-      let laneIndex = -1;
-      for (let i = 0; i < laneWrappers.length; i++) {
-        if (laneWrappers[i].contains(laneEl)) {
-          laneIndex = i;
-          break;
-        }
-      }
-      if (laneIndex < 0) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      placed = true;
-
-      const newItem = stateManager.getNewItem(
-        placingTransfer.itemTitleRaw,
-        placingTransfer.itemCheckChar
-      );
-      stateManager.setState((board) => {
-        if (!board?.children?.[laneIndex]) return board;
-        return update(board, {
-          children: {
-            [laneIndex]: {
-              children: { $unshift: [newItem] },
-            },
-          },
-        });
-      });
-
-      // Remove from source board via direct file edit
-      const transfer = placingTransfer;
-      setPlacingTransfer(null);
-      const sourceFile = view.app.vault.getAbstractFileByPath(transfer.sourceFilePath);
-      if (sourceFile && sourceFile instanceof TFile) {
-        // If source StateManager still exists, use it directly
-        const sourceSM = view.plugin.stateManagers.get(sourceFile);
-        if (sourceSM) {
-          sourceSM.setState((board) => removeEntity(board, transfer.dragPath));
-        } else {
-          // StateManager gone — edit the file directly
-          view.app.vault.read(sourceFile).then((content) => {
-            const checkChar = transfer.itemCheckChar;
-            const titleRaw = transfer.itemTitleRaw;
-            // Match the item line: - [checkChar] titleRaw (possibly with block id)
-            const escapedTitle = titleRaw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const pattern = new RegExp(
-              `^- \\[${checkChar.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\] ${escapedTitle}(?: \\^[a-zA-Z0-9-]+)?\\s*$`,
-              'm'
-            );
-            const newContent = content.replace(pattern, '').replace(/\n\n\n+/g, '\n\n');
-            if (newContent !== content) {
-              view.app.vault.modify(sourceFile, newContent);
-            }
-          });
-        }
-      }
-    };
-
-    // Swallow all clicks/mousedowns during placement to prevent lane child interactions
-    const swallow = (e: Event) => {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-    };
-
-    // Capture phase to intercept before any child handlers
-    root.addEventListener('pointerdown', onPointerDown, true);
-    root.addEventListener('click', swallow, true);
-    root.addEventListener('mousedown', swallow, true);
-
-    return () => {
-      root.removeEventListener('pointerdown', onPointerDown, true);
-      root.removeEventListener('click', swallow, true);
-      root.removeEventListener('mousedown', swallow, true);
-    };
-  }, [placingTransfer, stateManager, view]);
-
   if (boardData === null || boardData === undefined)
     return (
       <div className={c('loading')}>
@@ -378,25 +222,11 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
               baseClassName,
               {
                 'something-is-dragging': isAnythingDragging,
-                [c('placing-mode')]: !!placingTransfer,
               },
               ...getCSSClass(boardData.data.frontmatter),
             ])}
             {...html5DragHandlers}
           >
-            {placingTransfer && (
-              <div
-                className={c('placing-card')}
-                style={{
-                  left: `${placingPos.x}px`,
-                  top: `${placingPos.y}px`,
-                }}
-              >
-                <div className={c('placing-card-content')}>
-                  {placingTransfer.itemTitleRaw}
-                </div>
-              </div>
-            )}
             {showBoardSwitcher && <BoardSwitcher view={view} />}
             <div className={c('board-main')}>
               {(isLaneFormVisible || boardData.children.length === 0) && (

@@ -3,11 +3,16 @@ import { Menu, Platform, TFile, TFolder } from 'obsidian';
 import { Dispatch, StateUpdater, useCallback } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
-import { moveEntity, removeEntity } from 'src/dnd/util/data';
+import { moveEntity } from 'src/dnd/util/data';
 import { t } from 'src/lang/helpers';
-import { frontmatterKey } from 'src/parsers/common';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
+import {
+  getBoardLabel,
+  getKanbanFiles,
+  getLaneNames,
+  sendItemToBoard,
+} from '../../helpers/crossBoard';
 import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
 import { EditState, Item } from '../types';
 import {
@@ -298,93 +303,41 @@ export function useItemMenu({
         });
       }
 
-      // "Send to board" submenu — other kanban boards → their columns
+      // "Send to board" submenu: other kanban boards, then their lanes
       if (stateManager.getSetting('show-send-to-board')) {
-      const app = stateManager.app;
-      const currentFilePath = stateManager.file.path;
-      const allFiles = app.vault.getMarkdownFiles();
-      const kanbanFiles = allFiles.filter((f) => {
-        if (f.path === currentFilePath) return false;
-        const cache = app.metadataCache.getFileCache(f);
-        return cache?.frontmatter && cache.frontmatter[frontmatterKey];
-      });
+        const app = stateManager.app;
+        const plugin = stateManager.getAView().plugin;
+        const kanbanFiles = getKanbanFiles(app, stateManager.file.path);
 
-      if (kanbanFiles.length > 0) {
-        const labels = stateManager.getAView()?.plugin?.settings?.['board-switcher-labels'] || {};
+        if (kanbanFiles.length > 0) {
+          menu.addItem((menuItem) => {
+            const boardsSubmenu = (menuItem as any)
+              .setTitle('Send to board')
+              .setIcon('lucide-send')
+              .setSubmenu();
 
-        menu.addItem((menuItem) => {
-          const boardsSubmenu = (menuItem as any)
-            .setTitle('Send to board')
-            .setIcon('lucide-send')
-            .setSubmenu();
-
-          kanbanFiles
-            .sort((a, b) => a.basename.localeCompare(b.basename))
-            .forEach((targetFile) => {
-              const boardLabel = labels[targetFile.path] || targetFile.basename;
-
-              // Get lane names synchronously from metadata cache
-              const cache = app.metadataCache.getFileCache(targetFile);
-              const laneNames = (cache?.headings || [])
-                .filter((h: any) => h.level === 2 && h.heading !== t('Archive'))
-                .map((h: any) => h.heading as string);
-
+            kanbanFiles.forEach((targetFile) => {
+              const laneNames = getLaneNames(app, targetFile);
               if (laneNames.length === 0) return;
 
               boardsSubmenu.addItem((bi: any) => {
-                const colSubmenu = bi
-                  .setTitle(boardLabel)
+                const laneSubmenu = bi
+                  .setTitle(getBoardLabel(plugin, targetFile))
                   .setIcon('lucide-layout-list')
                   .setSubmenu();
 
-                laneNames.forEach((laneName: string, laneIdx: number) => {
-                  colSubmenu.addItem((ci: any) =>
+                laneNames.forEach((laneName, laneIdx) => {
+                  laneSubmenu.addItem((ci: any) =>
                     ci
                       .setTitle(laneName)
                       .setIcon('lucide-columns-2')
-                      .onClick(() => {
-                        const titleRaw = item.data.titleRaw;
-                        const checkChar = item.data.checkChar;
-                        const newLine = `- [${checkChar}] ${titleRaw}`;
-
-                        // Insert into target file under the correct lane heading
-                        app.vault.read(targetFile).then((fileContent: string) => {
-                          const lines = fileContent.split('\n');
-                          let currentLane = -1;
-                          let insertIdx = -1;
-
-                          for (let li = 0; li < lines.length; li++) {
-                            const hm = lines[li].match(/^## (.+)$/);
-                            if (hm) {
-                              currentLane++;
-                              if (currentLane === laneIdx) {
-                                // Find first non-empty line after heading (skip blank + **Complete**)
-                                let ins = li + 1;
-                                while (ins < lines.length && lines[ins].trim() === '') ins++;
-                                if (ins < lines.length && lines[ins].match(/^\*\*.*\*\*$/)) ins++;
-                                insertIdx = ins;
-                                break;
-                              }
-                            }
-                          }
-
-                          if (insertIdx >= 0) {
-                            lines.splice(insertIdx, 0, newLine);
-                            app.vault.modify(targetFile, lines.join('\n'));
-                          }
-                        });
-
-                        // Remove from current board
-                        stateManager.setState((boardData) =>
-                          removeEntity(boardData, path)
-                        );
-                      })
+                      .onClick(() => sendItemToBoard(stateManager, path, item, targetFile, laneIdx))
                   );
                 });
               });
             });
-        });
-      }
+          });
+        }
       }
 
       menu.showAtPosition(coordinates);

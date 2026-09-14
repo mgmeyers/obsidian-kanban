@@ -45,17 +45,6 @@ function getEditorClass(app: any) {
   return MarkdownEditor;
 }
 
-export interface PendingTransfer {
-  itemTitleRaw: string;
-  itemCheckChar: string;
-  itemChecked: boolean;
-  sourceFilePath: string;
-  returnFilePath: string;
-  mouseX: number;
-  mouseY: number;
-  dragPath: number[];
-}
-
 export default class KanbanPlugin extends Plugin {
   settingsTab: KanbanSettingsTab;
   settings: KanbanSettings = {};
@@ -70,7 +59,8 @@ export default class KanbanPlugin extends Plugin {
 
   isShiftPressed: boolean = false;
 
-  pendingTransfer: PendingTransfer | null = null;
+  // Board a dragged card came from, kept while the leaf shows another board.
+  dragSource: { file: TFile; stateManager: StateManager } | null = null;
 
   async loadSettings() {
     this.settings = Object.assign({}, await this.loadData());

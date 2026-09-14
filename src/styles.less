@@ -11,6 +11,12 @@
   }
 }
 
+// The header stays for the board buttons. The back/forward arrows follow
+// the "Show tab title bar" setting.
+body:not(.show-view-header) .workspace-leaf-content[data-type='kanban'] .view-header-nav-buttons {
+  display: none;
+}
+
 .kanban-plugin {
   --lane-width: 272px;
 }
@@ -402,13 +408,22 @@ button.kanban-plugin__lane-action-add {
 
 .kanban-plugin__lane-header-wrapper {
   padding-block: 8px;
-  padding-inline: 8px 12px;
+  padding-inline: 12px 8px;
   display: flex;
   align-items: center;
   gap: var(--size-4-1);
   flex-shrink: 0;
   flex-grow: 0;
   border-bottom: 1px solid var(--background-modifier-border);
+
+  // Collapse chevron and grip sit at the right end, after the buttons.
+  // The grip is the last element.
+  .kanban-plugin__lane-collapse {
+    order: 1;
+  }
+  .kanban-plugin__lane-grip {
+    order: 2;
+  }
 
   .collapse-horizontal &,
   .collapse-vertical & {
@@ -491,6 +506,7 @@ button.kanban-plugin__lane-action-add {
 
 .kanban-plugin__lane-title-text {
   flex-grow: 1;
+  padding: 1px;
 }
 
 div.kanban-plugin__lane-title-count {
@@ -730,6 +746,7 @@ button.kanban-plugin__new-item-button {
   width: 100%;
   line-height: var(--line-height-tight);
   margin-block-start: 1px;
+  padding-inline-start: 1px;
 }
 
 .kanban-plugin__meta-value,
@@ -1819,12 +1836,13 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   background-color: var(--background-secondary);
   border-right: 1px solid var(--background-modifier-border);
   flex-shrink: 0;
-  padding-top: 4px;
 }
 
-.kanban-plugin__board-switcher-header {
+// The toggle sits at the bottom. It is faint until the mouse is over it.
+.kanban-plugin__board-switcher-footer {
   display: flex;
   justify-content: center;
+  margin-top: auto;
   padding: 4px 0;
   flex-shrink: 0;
 }
@@ -1832,7 +1850,9 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
 .kanban-plugin__board-switcher-toggle {
   background: none;
   border: none;
-  color: var(--text-muted);
+  box-shadow: none;
+  color: var(--text-faint);
+  opacity: 0.5;
   cursor: var(--cursor);
   padding: 2px;
   border-radius: var(--radius-s);
@@ -1841,7 +1861,8 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   justify-content: center;
 
   &:hover {
-    color: var(--text-normal);
+    opacity: 1;
+    color: var(--text-muted);
     background-color: var(--background-modifier-hover);
   }
 }
@@ -1916,35 +1937,4 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   color: var(--text-normal);
   padding: 2px;
   outline: none;
-}
-
-// Placement mode: floating card follows cursor, click lane to place
-.kanban-plugin__placing-card {
-  position: fixed;
-  z-index: 10000;
-  pointer-events: none;
-  transform: translate(12px, 12px);
-  max-width: 250px;
-}
-
-.kanban-plugin__placing-card-content {
-  background: var(--background-primary);
-  border: 1px solid var(--interactive-accent);
-  border-radius: var(--radius-s);
-  padding: 6px 10px;
-  font-size: var(--font-ui-small);
-  color: var(--text-normal);
-  box-shadow: var(--shadow-s), 0 0 0 2px hsla(var(--interactive-accent-hsl), 0.5);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.kanban-plugin__placing-mode .kanban-plugin__lane-wrapper {
-  cursor: crosshair;
-}
-
-.kanban-plugin__placing-mode .kanban-plugin__lane:hover {
-  outline: 2px solid var(--interactive-accent);
-  outline-offset: -2px;
 }

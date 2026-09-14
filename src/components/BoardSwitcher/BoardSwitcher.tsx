@@ -1,13 +1,12 @@
+import classcat from 'classcat';
 import { TFile } from 'obsidian';
 import { useCallback, useContext, useEffect, useRef, useState } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { DndManagerContext } from 'src/dnd/components/context';
 import { DragEventData } from 'src/dnd/managers/DragManager';
-import { getEntityFromPath, removeEntity } from 'src/dnd/util/data';
-import { frontmatterKey } from 'src/parsers/common';
+import { getBoardLabel, getKanbanFiles } from 'src/helpers/crossBoard';
 
 import { c } from '../helpers';
-import { Item } from '../types';
 
 interface BoardTile {
   file: TFile;
@@ -16,19 +15,6 @@ interface BoardTile {
 
 interface BoardSwitcherProps {
   view: KanbanView;
-}
-
-function getAllKanbanFiles(view: KanbanView): TFile[] {
-  const app = view.app;
-  const files = app.vault.getMarkdownFiles();
-  return files.filter((f) => {
-    const cache = app.metadataCache.getFileCache(f);
-    return cache?.frontmatter && cache.frontmatter[frontmatterKey];
-  });
-}
-
-function getStoredLabels(view: KanbanView): Record<string, string> {
-  return view.plugin?.settings?.['board-switcher-labels'] || {};
 }
 
 function saveLabel(view: KanbanView, filePath: string, label: string) {
@@ -41,41 +27,34 @@ function saveLabel(view: KanbanView, filePath: string, label: string) {
   plugin.saveSettings();
 }
 
+function contains(rect: DOMRect, x: number, y: number) {
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+}
+
 export function BoardSwitcher({ view }: BoardSwitcherProps) {
   const [tiles, setTiles] = useState<BoardTile[]>([]);
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [collapsed, setCollapsed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [hoverTilePath, setHoverTilePath] = useState<string | null>(null);
+  const [hoverPath, setHoverPath] = useState<string | null>(null);
   const editRef = useRef<HTMLInputElement>(null);
   const tileRefs = useRef<Map<string, HTMLElement>>(new Map());
   const dndManager = useContext(DndManagerContext);
 
-  // Transfer state tracked via ref so dragEnd callback always sees latest
-  const pendingTargetRef = useRef<string | null>(null);
-  const dragEntityRef = useRef<DragEventData | null>(null);
-
   const currentFilePath = view.file?.path;
 
   const refreshTiles = useCallback(() => {
-    const files = getAllKanbanFiles(view);
-    const labels = getStoredLabels(view);
-    const newTiles = files
-      .sort((a, b) => a.basename.localeCompare(b.basename))
-      .map((f) => ({
-        file: f,
-        label: labels[f.path] || f.basename,
-      }));
-    setTiles(newTiles);
+    setTiles(
+      getKanbanFiles(view.app).map((file) => ({ file, label: getBoardLabel(view.plugin, file) }))
+    );
   }, [view]);
 
   useEffect(() => {
     refreshTiles();
-    const onModify = () => refreshTiles();
-    view.app.metadataCache.on('resolved', onModify);
+    view.app.metadataCache.on('resolved', refreshTiles);
     return () => {
-      view.app.metadataCache.off('resolved', onModify);
+      view.app.metadataCache.off('resolved', refreshTiles);
     };
   }, [view, refreshTiles]);
 
@@ -86,103 +65,61 @@ export function BoardSwitcher({ view }: BoardSwitcherProps) {
     }
   }, [editingPath]);
 
-  // DnD: hover over a tile while dragging → switch board after delay
+  // DnD: hold a dragged card over a tile and the leaf switches to that
+  // board. The drag goes on; the card is dropped on the new board like any
+  // other card. The source board's state is kept on the plugin so the drop
+  // can still remove the card from it.
   useEffect(() => {
     if (!dndManager) return;
-
     const emitter = dndManager.dragManager.emitter;
-    let lastHoveredPath: string | null = null;
-    let hoverTimer = 0;
     const win = view.getWindow();
+    let hovered: string | null = null;
+    let timer = 0;
 
-    const doTransfer = (targetPath: string, dragEntity: DragEventData['dragEntity']) => {
-      if (!dragEntity) return;
+    const switchBoard = (targetPath: string) => {
+      const entity = dndManager.dragManager.dragEntity;
+      if (entity?.getData().type !== 'item') return;
 
-      const dragData = dragEntity.getData();
-      if (dragData.type !== 'item') return;
-
-      const [, sourceFilePath] = dragEntity.scopeId.split(':::');
-      const sourceFile = view.app.vault.getAbstractFileByPath(sourceFilePath);
-      if (!sourceFile || !(sourceFile instanceof TFile)) return;
-
-      const sourceStateManager = view.plugin.stateManagers.get(sourceFile);
-      if (!sourceStateManager) return;
-
-      const dragPathArr = dragEntity.getPath();
-      const item = getEntityFromPath(sourceStateManager.state, dragPathArr) as Item;
-      if (!item || item.type !== 'item') return;
-
-      // Store transfer data including current mouse position
-      const mousePos = dndManager.dragManager.dragPosition;
-      view.plugin.pendingTransfer = {
-        itemTitleRaw: item.data.titleRaw,
-        itemCheckChar: item.data.checkChar,
-        itemChecked: item.data.checked,
-        sourceFilePath: sourceFilePath,
-        returnFilePath: currentFilePath,
-        mouseX: mousePos?.x ?? 0,
-        mouseY: mousePos?.y ?? 0,
-        dragPath: [...dragPathArr],
-      };
-
-      // Cancel the active drag cleanly: clear primaryIntersection so no drop
-      // occurs, then call dragEnd which emits the event with remaining state
-      // intact so the SortManager takes the normal cleanup path
-      const dm = dndManager.dragManager;
-      dm.primaryIntersection = undefined;
-      dm.scrollIntersection = undefined;
-      dm.dragEnd(new PointerEvent('pointerup'));
-
-      // Open target board - remove view first so the old StateManager
-      // is properly cleaned up, then open the file which re-adds the view
+      const [, sourcePath] = entity.scopeId.split(':::');
+      const sourceFile = view.app.vault.getAbstractFileByPath(sourcePath);
       const targetFile = view.app.vault.getAbstractFileByPath(targetPath);
-      if (targetFile && targetFile instanceof TFile) {
-        win.setTimeout(() => {
-          view.plugin.removeView(view);
-          view.leaf.openFile(targetFile);
-        }, 50);
-      }
+      if (!(sourceFile instanceof TFile) || !(targetFile instanceof TFile)) return;
+
+      const stateManager = view.plugin.stateManagers.get(sourceFile);
+      if (!stateManager) return;
+
+      view.plugin.dragSource = { file: sourceFile, stateManager };
+      view.leaf.openFile(targetFile);
+    };
+
+    const setHover = (path: string | null) => {
+      if (path === hovered) return;
+      hovered = path;
+      setHoverPath(path);
+      win.clearTimeout(timer);
+      if (path) timer = win.setTimeout(() => switchBoard(path), 300);
     };
 
     const onDragStart = () => {
+      view.plugin.dragSource = null;
       setIsDragging(true);
-      lastHoveredPath = null;
+      setHover(null);
     };
 
-    const onDragMove = (data: DragEventData) => {
-      if (!data.dragPosition) return;
-      const { x, y } = data.dragPosition;
-
-      let found: string | null = null;
-      tileRefs.current.forEach((el, path) => {
-        if (path === currentFilePath) return;
-        const rect = el.getBoundingClientRect();
-        if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-          found = path;
-        }
-      });
-
-      setHoverTilePath(found);
-
-      if (found !== lastHoveredPath) {
-        win.clearTimeout(hoverTimer);
-        lastHoveredPath = found;
-
-        if (found && data.dragEntity) {
-          const target = found;
-          const entity = data.dragEntity;
-          hoverTimer = win.setTimeout(() => {
-            doTransfer(target, entity);
-          }, 400);
+    const onDragMove = ({ dragPosition, dragEntity }: DragEventData) => {
+      if (!dragPosition || dragEntity?.getData().type !== 'item') return;
+      const { x, y } = dragPosition;
+      for (const [path, el] of tileRefs.current) {
+        if (path !== currentFilePath && contains(el.getBoundingClientRect(), x, y)) {
+          return setHover(path);
         }
       }
+      setHover(null);
     };
 
     const onDragEnd = () => {
-      win.clearTimeout(hoverTimer);
-      lastHoveredPath = null;
       setIsDragging(false);
-      setHoverTilePath(null);
+      setHover(null);
     };
 
     emitter.on('dragStart', onDragStart);
@@ -193,7 +130,7 @@ export function BoardSwitcher({ view }: BoardSwitcherProps) {
       emitter.off('dragStart', onDragStart);
       emitter.off('dragMove', onDragMove);
       emitter.off('dragEnd', onDragEnd);
-      win.clearTimeout(hoverTimer);
+      win.clearTimeout(timer);
     };
   }, [dndManager, view, currentFilePath]);
 
@@ -236,45 +173,40 @@ export function BoardSwitcher({ view }: BoardSwitcherProps) {
   if (collapsed) {
     return (
       <div className={c('board-switcher-collapsed')}>
-        <button
-          className={c('board-switcher-toggle')}
-          onClick={() => setCollapsed(false)}
-          aria-label="Expand board switcher"
-        >
-          <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
-            <path d="M6 3l5 5-5 5V3z" />
-          </svg>
-        </button>
+        <div className={c('board-switcher-footer')}>
+          <button
+            className={c('board-switcher-toggle')}
+            onClick={() => setCollapsed(false)}
+            aria-label="Expand board switcher"
+          >
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+              <path d="M6 3l5 5-5 5V3z" />
+            </svg>
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className={c('board-switcher')}>
-      <div className={c('board-switcher-header')}>
-        <button
-          className={c('board-switcher-toggle')}
-          onClick={() => setCollapsed(true)}
-          aria-label="Collapse board switcher"
-        >
-          <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
-            <path d="M10 3l-5 5 5 5V3z" />
-          </svg>
-        </button>
-      </div>
       <div className={c('board-switcher-tiles')}>
         {tiles.map((tile) => {
           const isActive = tile.file.path === currentFilePath;
           const isEditing = editingPath === tile.file.path;
-          const isDropTarget =
-            isDragging && hoverTilePath === tile.file.path && tile.file.path !== currentFilePath;
+          const isDropTarget = hoverPath === tile.file.path;
 
           return (
             <div
               key={tile.file.path}
               ref={(el) => setTileRef(tile.file.path, el)}
-              className={`${c('board-switcher-tile')} ${isActive ? c('board-switcher-tile-active') : ''} ${isDropTarget ? c('board-switcher-tile-drop') : ''}`}
+              className={classcat([
+                c('board-switcher-tile'),
+                { [c('board-switcher-tile-active')]: isActive },
+                { [c('board-switcher-tile-drop')]: isDropTarget },
+              ])}
               onClick={() => handleTileClick(tile.file)}
+              // eslint-disable-next-line react/no-unknown-property
               onDblClick={(e) => handleDblClick(tile, e)}
               title={tile.file.path}
             >
@@ -297,6 +229,17 @@ export function BoardSwitcher({ view }: BoardSwitcherProps) {
             </div>
           );
         })}
+      </div>
+      <div className={c('board-switcher-footer')}>
+        <button
+          className={c('board-switcher-toggle')}
+          onClick={() => setCollapsed(true)}
+          aria-label="Collapse board switcher"
+        >
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+            <path d="M10 3l-5 5 5 5V3z" />
+          </svg>
+        </button>
       </div>
     </div>
   );

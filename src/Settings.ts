@@ -80,6 +80,7 @@ export interface KanbanSettings {
   'show-archive-all'?: boolean;
   'show-board-settings'?: boolean;
   'show-board-switcher'?: boolean;
+  'board-switcher-labels'?: Record<string, string>;
   'show-checkboxes'?: boolean;
   'show-relative-date'?: boolean;
   'show-search'?: boolean;
