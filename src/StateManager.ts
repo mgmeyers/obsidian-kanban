@@ -249,6 +249,8 @@ export class StateManager {
       'archive-date-format': archiveDateFormat,
       'show-add-list': this.getSettingRaw('show-add-list', suppliedSettings) ?? true,
       'show-archive-all': this.getSettingRaw('show-archive-all', suppliedSettings) ?? true,
+      'show-board-switcher': this.getSettingRaw('show-board-switcher', suppliedSettings) ?? false,
+      'show-send-to-board': this.getSettingRaw('show-send-to-board', suppliedSettings) ?? false,
       'show-view-as-markdown':
         this.getSettingRaw('show-view-as-markdown', suppliedSettings) ?? true,
       'show-board-settings': this.getSettingRaw('show-board-settings', suppliedSettings) ?? true,

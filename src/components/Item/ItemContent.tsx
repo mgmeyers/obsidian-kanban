@@ -9,6 +9,7 @@ import {
   useMemo,
   useRef,
 } from 'preact/hooks';
+import useOnclickOutside from 'react-cool-onclickoutside';
 import { StateManager } from 'src/StateManager';
 import { useNestedEntityPath } from 'src/dnd/components/Droppable';
 import { Path } from 'src/dnd/types';
@@ -191,19 +192,34 @@ export const ItemContent = memo(function ItemContent({
   const { stateManager, filePath, boardModifiers } = useContext(KanbanContext);
   const getDateColor = useGetDateColorFn(stateManager);
   const titleRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (editState === EditingState.complete) {
-      if (titleRef.current !== null) {
-        boardModifiers.updateItem(path, stateManager.updateItemContent(item, titleRef.current));
-      }
-      titleRef.current = null;
-    } else if (editState === EditingState.cancel) {
-      titleRef.current = null;
-    }
-  }, [editState, stateManager, item]);
+  const itemRef = useRef(item);
+  const saveTimer = useRef<number | null>(null);
+  itemRef.current = item;
 
   const path = useNestedEntityPath();
+
+  // Write the unsaved title to the board. Edit mode stays open.
+  const flush = useCallback(() => {
+    if (saveTimer.current !== null) {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+    if (titleRef.current === null) return;
+    const title = titleRef.current;
+    titleRef.current = null;
+    boardModifiers.updateItem(path, stateManager.updateItemContent(itemRef.current, title));
+  }, [path, boardModifiers, stateManager]);
+
+  // Any exit from edit mode saves what is left.
+  useEffect(() => {
+    if (!isEditing(editState)) flush();
+  }, [editState, flush]);
+
+  useEffect(() => flush, [flush]);
+
+  const clickOutsideRef = useOnclickOutside(() => setEditState(EditingState.complete), {
+    ignoreClass: [c('ignore-click-outside'), 'mobile-toolbar', 'suggestion-container'],
+  });
   const { onEditDate, onEditTime } = useDatePickers(item);
   const onEnter = useCallback(
     (cm: EditorView, mod: boolean, shift: boolean) => {
@@ -256,7 +272,7 @@ export const ItemContent = memo(function ItemContent({
 
   if (!isStatic && isEditing(editState)) {
     return (
-      <div className={c('item-input-wrapper')}>
+      <div className={c('item-input-wrapper')} ref={clickOutsideRef}>
         <MarkdownEditor
           editState={editState}
           className={c('item-input')}
@@ -267,6 +283,8 @@ export const ItemContent = memo(function ItemContent({
           onChange={(update) => {
             if (update.docChanged) {
               titleRef.current = update.state.doc.toString().trim();
+              if (saveTimer.current !== null) clearTimeout(saveTimer.current);
+              saveTimer.current = update.view.dom.win.setTimeout(flush, 400);
             }
           }}
         />

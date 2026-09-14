@@ -14,6 +14,7 @@ import { t } from 'src/lang/helpers';
 import { DndScope } from '../dnd/components/Scope';
 import { getBoardModifiers } from '../helpers/boardModifiers';
 import { frontmatterKey } from '../parsers/common';
+import { BoardSwitcher } from './BoardSwitcher/BoardSwitcher';
 import { Icon } from './Icon/Icon';
 import { Lanes } from './Lane/Lane';
 import { LaneForm } from './Lane/LaneForm';
@@ -64,6 +65,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const maxArchiveLength = stateManager.useSetting('max-archive-size');
   const dateColors = stateManager.useSetting('date-colors');
   const tagColors = stateManager.useSetting('tag-colors');
+  const showBoardSwitcher = stateManager.useSetting('show-board-switcher');
   const boardView = view.useViewState(frontmatterKey);
 
   const closeLaneForm = useCallback(() => {
@@ -225,69 +227,72 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
             ])}
             {...html5DragHandlers}
           >
-            {(isLaneFormVisible || boardData.children.length === 0) && (
-              <LaneForm onNewLane={onNewLane} closeLaneForm={closeLaneForm} />
-            )}
-            {isSearching && (
-              <div className={c('search-wrapper')}>
-                <input
-                  ref={searchRef}
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery((e.target as HTMLInputElement).value);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape') {
+            {showBoardSwitcher && <BoardSwitcher view={view} />}
+            <div className={c('board-main')}>
+              {(isLaneFormVisible || boardData.children.length === 0) && (
+                <LaneForm onNewLane={onNewLane} closeLaneForm={closeLaneForm} />
+              )}
+              {isSearching && (
+                <div className={c('search-wrapper')}>
+                  <input
+                    ref={searchRef}
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery((e.target as HTMLInputElement).value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        setSearchQuery('');
+                        setDebouncedSearchQuery('');
+                        (e.target as HTMLInputElement).blur();
+                        setIsSearching(false);
+                      }
+                    }}
+                    type="text"
+                    className={c('filter-input')}
+                    placeholder={t('Search...')}
+                  />
+                  <a
+                    className={`${c('search-cancel-button')} clickable-icon`}
+                    onClick={() => {
                       setSearchQuery('');
                       setDebouncedSearchQuery('');
-                      (e.target as HTMLInputElement).blur();
                       setIsSearching(false);
-                    }
-                  }}
-                  type="text"
-                  className={c('filter-input')}
-                  placeholder={t('Search...')}
-                />
-                <a
-                  className={`${c('search-cancel-button')} clickable-icon`}
-                  onClick={() => {
-                    setSearchQuery('');
-                    setDebouncedSearchQuery('');
-                    setIsSearching(false);
-                  }}
-                  aria-label={t('Cancel')}
-                >
-                  <Icon name="lucide-x" />
-                </a>
-              </div>
-            )}
-            {boardView === 'table' ? (
-              <TableView boardData={boardData} stateManager={stateManager} />
-            ) : (
-              <ScrollContainer
-                id={view.id}
-                className={classcat([
-                  c('board'),
-                  {
-                    [c('horizontal')]: boardView !== 'list',
-                    [c('vertical')]: boardView === 'list',
-                    'is-adding-lane': isLaneFormVisible,
-                  },
-                ])}
-                triggerTypes={boardScrollTiggers}
-              >
-                <div>
-                  <Sortable axis={axis}>
-                    <Lanes lanes={boardData.children} collapseDir={axis} />
-                    <SortPlaceholder
-                      accepts={boardAccepts}
-                      className={c('lane-placeholder')}
-                      index={boardData.children.length}
-                    />
-                  </Sortable>
+                    }}
+                    aria-label={t('Cancel')}
+                  >
+                    <Icon name="lucide-x" />
+                  </a>
                 </div>
-              </ScrollContainer>
-            )}
+              )}
+              {boardView === 'table' ? (
+                <TableView boardData={boardData} stateManager={stateManager} />
+              ) : (
+                <ScrollContainer
+                  id={view.id}
+                  className={classcat([
+                    c('board'),
+                    {
+                      [c('horizontal')]: boardView !== 'list',
+                      [c('vertical')]: boardView === 'list',
+                      'is-adding-lane': isLaneFormVisible,
+                    },
+                  ])}
+                  triggerTypes={boardScrollTiggers}
+                >
+                  <div>
+                    <Sortable axis={axis}>
+                      <Lanes lanes={boardData.children} collapseDir={axis} />
+                      <SortPlaceholder
+                        accepts={boardAccepts}
+                        className={c('lane-placeholder')}
+                        index={boardData.children.length}
+                      />
+                    </Sortable>
+                  </div>
+                </ScrollContainer>
+              )}
+            </div>
           </div>
         </SearchContext.Provider>
       </KanbanContext.Provider>

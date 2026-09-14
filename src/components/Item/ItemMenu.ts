@@ -7,6 +7,12 @@ import { moveEntity } from 'src/dnd/util/data';
 import { t } from 'src/lang/helpers';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
+import {
+  getBoardLabel,
+  getKanbanFiles,
+  getLaneNames,
+  sendItemToBoard,
+} from '../../helpers/crossBoard';
 import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
 import { EditState, Item } from '../types';
 import {
@@ -295,6 +301,43 @@ export function useItemMenu({
 
           addMoveToOptions(submenu);
         });
+      }
+
+      // "Send to board" submenu: other kanban boards, then their lanes
+      if (stateManager.getSetting('show-send-to-board')) {
+        const app = stateManager.app;
+        const plugin = stateManager.getAView().plugin;
+        const kanbanFiles = getKanbanFiles(app, stateManager.file.path);
+
+        if (kanbanFiles.length > 0) {
+          menu.addItem((menuItem) => {
+            const boardsSubmenu = (menuItem as any)
+              .setTitle('Send to board')
+              .setIcon('lucide-send')
+              .setSubmenu();
+
+            kanbanFiles.forEach((targetFile) => {
+              const laneNames = getLaneNames(app, targetFile);
+              if (laneNames.length === 0) return;
+
+              boardsSubmenu.addItem((bi: any) => {
+                const laneSubmenu = bi
+                  .setTitle(getBoardLabel(plugin, targetFile))
+                  .setIcon('lucide-layout-list')
+                  .setSubmenu();
+
+                laneNames.forEach((laneName, laneIdx) => {
+                  laneSubmenu.addItem((ci: any) =>
+                    ci
+                      .setTitle(laneName)
+                      .setIcon('lucide-columns-2')
+                      .onClick(() => sendItemToBoard(stateManager, path, item, targetFile, laneIdx))
+                  );
+                });
+              });
+            });
+          });
+        }
       }
 
       menu.showAtPosition(coordinates);

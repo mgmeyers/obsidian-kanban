@@ -11,6 +11,12 @@
   }
 }
 
+// The header stays for the board buttons. The back/forward arrows follow
+// the "Show tab title bar" setting.
+body:not(.show-view-header) .workspace-leaf-content[data-type='kanban'] .view-header-nav-buttons {
+  display: none;
+}
+
 .kanban-plugin {
   --lane-width: 272px;
 }
@@ -21,7 +27,16 @@
   width: 100%;
   position: relative;
   display: flex;
+  flex-direction: row;
+}
+
+.kanban-plugin__board-main {
+  display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  position: relative;
 }
 
 .kanban-plugin,
@@ -393,13 +408,22 @@ button.kanban-plugin__lane-action-add {
 
 .kanban-plugin__lane-header-wrapper {
   padding-block: 8px;
-  padding-inline: 8px 12px;
+  padding-inline: 12px 8px;
   display: flex;
   align-items: center;
   gap: var(--size-4-1);
   flex-shrink: 0;
   flex-grow: 0;
   border-bottom: 1px solid var(--background-modifier-border);
+
+  // Collapse chevron and grip sit at the right end, after the buttons.
+  // The grip is the last element.
+  .kanban-plugin__lane-collapse {
+    order: 1;
+  }
+  .kanban-plugin__lane-grip {
+    order: 2;
+  }
 
   .collapse-horizontal &,
   .collapse-vertical & {
@@ -482,6 +506,7 @@ button.kanban-plugin__lane-action-add {
 
 .kanban-plugin__lane-title-text {
   flex-grow: 1;
+  padding: 1px;
 }
 
 div.kanban-plugin__lane-title-count {
@@ -721,6 +746,7 @@ button.kanban-plugin__new-item-button {
   width: 100%;
   line-height: var(--line-height-tight);
   margin-block-start: 1px;
+  padding-inline-start: 1px;
 }
 
 .kanban-plugin__meta-value,
@@ -1785,4 +1811,130 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
   .kanban-plugin__date:hover {
     background-color: var(--date-background-color, rgba(var(--mono-rgb-100), 0.05));
   }
+}
+
+// Board Switcher Sidebar
+
+.kanban-plugin__board-switcher {
+  display: flex;
+  flex-direction: column;
+  width: 52px;
+  min-width: 52px;
+  background-color: var(--background-secondary);
+  border-right: 1px solid var(--background-modifier-border);
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+}
+
+.kanban-plugin__board-switcher-collapsed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 20px;
+  min-width: 20px;
+  background-color: var(--background-secondary);
+  border-right: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+// The toggle sits at the bottom. It is faint until the mouse is over it.
+.kanban-plugin__board-switcher-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  padding: 4px 0;
+  flex-shrink: 0;
+}
+
+.kanban-plugin__board-switcher-toggle {
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: var(--text-faint);
+  opacity: 0.5;
+  cursor: var(--cursor);
+  padding: 2px;
+  border-radius: var(--radius-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    opacity: 1;
+    color: var(--text-muted);
+    background-color: var(--background-modifier-hover);
+  }
+}
+
+.kanban-plugin__board-switcher-tiles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+}
+
+.kanban-plugin__board-switcher-tile {
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  border-radius: var(--radius-s);
+  background-color: var(--background-primary-alt);
+  border: 2px solid transparent;
+  cursor: var(--cursor);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--background-modifier-hover);
+    border-color: var(--background-modifier-border);
+  }
+}
+
+.kanban-plugin__board-switcher-tile-active {
+  border-color: var(--interactive-accent) !important;
+  background-color: hsla(var(--interactive-accent-hsl), 0.1);
+}
+
+.kanban-plugin__board-switcher-tile-drop {
+  border-color: var(--text-accent) !important;
+  background-color: hsla(var(--interactive-accent-hsl), 0.25);
+  transform: scale(1.1);
+  box-shadow: 0 0 8px hsla(var(--interactive-accent-hsl), 0.4);
+}
+
+.kanban-plugin__board-switcher-tile-label {
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.1;
+  text-align: center;
+  word-break: break-word;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  padding: 2px;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.kanban-plugin__board-switcher-tile-active .kanban-plugin__board-switcher-tile-label {
+  color: var(--text-normal);
+}
+
+.kanban-plugin__board-switcher-tile-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font-size: 9px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-normal);
+  padding: 2px;
+  outline: none;
 }

@@ -59,6 +59,9 @@ export default class KanbanPlugin extends Plugin {
 
   isShiftPressed: boolean = false;
 
+  // Board a dragged card came from, kept while the leaf shows another board.
+  dragSource: { file: TFile; stateManager: StateManager } | null = null;
+
   async loadSettings() {
     this.settings = Object.assign({}, await this.loadData());
   }
