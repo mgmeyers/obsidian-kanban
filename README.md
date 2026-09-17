@@ -16,3 +16,7 @@ Create markdown-backed Kanban boards in [Obsidian](https://obsidian.md/)
 ## Documentation
 
 Find the plugin documentation here: [Obsidian Kanban Plugin Documentation](https://publish.obsidian.md/kanban/)
+
+## Command line
+
+Boards can also be edited from the shell, without running Obsidian: [Kanban CLI](src/cli/README.md). Coding agents can drive it through the skill in [`skills/kanban`](skills/kanban/SKILL.md).

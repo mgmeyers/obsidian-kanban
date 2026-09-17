@@ -3,10 +3,15 @@
   "version": "2.0.51",
   "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
   "main": "main.js",
+  "bin": {
+    "kanban": "bin/kanban-cli.js"
+  },
   "scripts": {
     "typecheck": "tsc --noemit",
     "dev": "node esbuild.config.mjs",
     "build": "node esbuild.config.mjs production",
+    "build:cli": "node esbuild.cli.mjs",
+    "test": "vitest run",
     "lint": "eslint ./src/**/*.{ts,tsx}",
     "lint:fix": "eslint ./src/**/*.{ts,tsx} --fix",
     "prettier": "prettier --write \"./src/**/*.{ts,tsx}\"",
@@ -24,6 +29,7 @@
     "@codemirror/view": "^6.0.0",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/box-intersect": "^1.0.0",
+    "@types/js-yaml": "^4.0.9",
     "@types/mark.js": "^8.11.5",
     "@types/node": "^14.14.37",
     "@types/raf-schd": "^4.0.1",
@@ -41,7 +47,9 @@
     "prettier": "^3.1.1",
     "replace": "^1.2.2",
     "tslib": "^2.6.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.0"
   },
   "dependencies": {
     "@tanstack/match-sorter-utils": "^8.15.1",
@@ -58,6 +66,7 @@
     "immutability-helper": "^3.1.1",
     "immutable-json-patch": "^1.1.2",
     "is-plain-object": "^5.0.0",
+    "js-yaml": "^4.1.0",
     "mark.js": "^8.11.1",
     "mdast": "^3.0.0",
     "mdast-util-from-markdown": "^1.0.2",
@@ -66,6 +75,7 @@
     "mdast-util-to-string": "^3.1.0",
     "micromark-util-character": "^1.1.0",
     "micromark-util-types": "^1.0.1",
+    "moment": "^2.30.1",
     "monkey-around": "^2.1.0",
     "obsidian-daily-notes-interface": "^0.9.4",
     "preact": "^10.8.2",
