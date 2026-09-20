@@ -128,6 +128,38 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   }, [isSearching]);
 
   useEffect(() => {
+    const board = rootRef.current?.querySelector<HTMLElement>(`.${c('board')}`);
+    const boardContent = board?.firstElementChild as HTMLElement | null;
+
+    if (!board || !boardContent || !board.classList.contains(c('horizontal'))) {
+      return;
+    }
+
+    const updateLaneMaxHeight = () => {
+      const win = board.ownerDocument.defaultView;
+      const styles = win?.getComputedStyle(boardContent);
+      const paddingTop = Number.parseFloat(styles?.paddingTop ?? '') || 0;
+      const paddingBottom = Number.parseFloat(styles?.paddingBottom ?? '') || 0;
+      const paneBottom = view.contentEl.getBoundingClientRect().bottom;
+      const laneTop = boardContent.getBoundingClientRect().top + paddingTop;
+      const availableHeight = Math.max(0, paneBottom - laneTop - paddingBottom);
+
+      board.style.setProperty('--kanban-lane-max-height', `${availableHeight}px`);
+    };
+
+    updateLaneMaxHeight();
+
+    const observer = new ResizeObserver(updateLaneMaxHeight);
+    observer.observe(board);
+    observer.observe(view.contentEl);
+
+    return () => {
+      observer.disconnect();
+      board.style.removeProperty('--kanban-lane-max-height');
+    };
+  }, [boardData?.id, boardView, view]);
+
+  useEffect(() => {
     const win = view.getWindow();
     const trimmed = searchQuery.trim();
     let id: number;
