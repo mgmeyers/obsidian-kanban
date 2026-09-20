@@ -385,7 +385,7 @@ button.kanban-plugin__search-cancel-button .kanban-plugin__icon {
 button.kanban-plugin__item-action-add,
 button.kanban-plugin__lane-action-add {
   background-color: var(--interactive-accent);
-  color: var(--text-on-accent);
+  color: #fff;
   &:hover {
     background-color: var(--interactive-accent-hover);
   }
@@ -495,7 +495,7 @@ div.kanban-plugin__lane-title-count {
 
 div.kanban-plugin__lane-title-count.wip-exceeded {
   font-weight: bold;
-  color: var(--text-normal);
+  color: var(--text-on-accent);
   background-color: rgba(var(--background-modifier-error-rgb), 0.25);
 }
 
@@ -1784,5 +1784,100 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
 .kanban-plugin__meta-value {
   .kanban-plugin__date:hover {
     background-color: var(--date-background-color, rgba(var(--mono-rgb-100), 0.05));
+  }
+}
+
+.notice-container:has(.kanban-plugin__undo-notice) {
+  top: unset;
+  right: var(--size-4-4);
+  bottom: var(--size-4-4);
+  left: unset;
+  align-items: flex-end;
+}
+
+.kanban-plugin__undo-notice {
+  display: flex;
+  justify-content: flex-end;
+  align-self: flex-end;
+  min-width: 0;
+  max-width: max-content;
+  width: auto;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  animation: kanban-plugin-undo-notice-in 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 360ms ease, transform 360ms ease;
+
+  > div {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+.kanban-plugin__undo-notice.kanban-plugin__undo-notice-dismissing {
+  opacity: 0;
+  transform: translateY(-12px);
+}
+
+@keyframes kanban-plugin-undo-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kanban-plugin__undo-notice-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  width: max-content;
+  min-height: 0;
+  padding: 5px 6px 5px 10px;
+  border-radius: 18px;
+  color: var(--text-normal);
+  background: var(--background-primary);
+  box-shadow: 0 1px 8px rgba(var(--mono-rgb-100), 0.18);
+
+  .kanban-plugin__undo-notice-label {
+    max-width: 160px;
+    overflow: hidden;
+    font-size: var(--font-ui-smaller);
+    line-height: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #fff;
+  }
+
+  .kanban-plugin__undo-notice-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    background: var(--interactive-accent);
+    box-shadow: none;
+
+    &:hover {
+      background: var(--interactive-accent-hover);
+    }
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
   }
 }

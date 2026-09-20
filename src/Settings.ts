@@ -61,6 +61,7 @@ export interface KanbanSettings {
   'date-picker-week-start'?: number;
   'date-time-display-format'?: string;
   'date-trigger'?: string;
+  'enable-undo'?: boolean;
   'full-list-lane-width'?: boolean;
   'hide-card-count'?: boolean;
   'inline-metadata-position'?: 'body' | 'footer' | 'metadata-table';
@@ -80,6 +81,7 @@ export interface KanbanSettings {
   'show-archive-all'?: boolean;
   'show-board-settings'?: boolean;
   'show-checkboxes'?: boolean;
+  'show-undo-notice'?: boolean;
   'show-relative-date'?: boolean;
   'show-search'?: boolean;
   'show-set-view'?: boolean;
@@ -109,6 +111,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'date-picker-week-start',
   'date-time-display-format',
   'date-trigger',
+  'enable-undo',
   'full-list-lane-width',
   'hide-card-count',
   'inline-metadata-position',
@@ -128,6 +131,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'show-archive-all',
   'show-board-settings',
   'show-checkboxes',
+  'show-undo-notice',
   'show-relative-date',
   'show-search',
   'show-set-view',
@@ -268,6 +272,94 @@ export class SettingsManager {
             },
           });
         });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Enable undo'))
+      .setDesc(t('When toggled, archive, move, and delete actions can be undone from Kanban.'))
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('enable-undo', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            } else {
+              toggle.setValue(true);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'enable-undo': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('enable-undo', local);
+                toggleComponent.setValue((globalValue as boolean | undefined) ?? true);
+
+                this.applySettingsUpdate({
+                  $unset: ['enable-undo'],
+                });
+              });
+          });
+      });
+
+    new Setting(contentEl)
+      .setName(t('Show undo notice'))
+      .setDesc(
+        t(
+          'Shows a small undo chip after undoable actions. This can be convenient, but it may get in the way; undo is still available from the command palette and keyboard shortcut when this is off.'
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('show-undo-notice', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            } else {
+              toggle.setValue(false);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'show-undo-notice': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('show-undo-notice', local);
+                toggleComponent.setValue((globalValue as boolean | undefined) ?? false);
+
+                this.applySettingsUpdate({
+                  $unset: ['show-undo-notice'],
+                });
+              });
+          });
       });
 
     new Setting(contentEl)

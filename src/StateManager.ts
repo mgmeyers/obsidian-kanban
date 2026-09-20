@@ -4,8 +4,10 @@ import { useEffect, useState } from 'preact/compat';
 
 import { KanbanView } from './KanbanView';
 import { KanbanSettings, SettingRetrievers } from './Settings';
+import type { KanbanUndoManager } from './UndoManager';
 import { getDefaultDateFormat, getDefaultTimeFormat } from './components/helpers';
 import { Board, BoardTemplate, Item } from './components/types';
+import { t } from './lang/helpers';
 import { ListFormat } from './parsers/List';
 import { BaseFormat, frontmatterKey, shouldRefreshBoard } from './parsers/common';
 import { getTaskStatusDone } from './parsers/helpers/inlineMetadata';
@@ -32,7 +34,8 @@ export class StateManager {
     initialView: KanbanView,
     initialData: string,
     onEmpty: () => void,
-    getGlobalSettings: () => KanbanSettings
+    getGlobalSettings: () => KanbanSettings,
+    public undoManager?: KanbanUndoManager
   ) {
     this.app = app;
     this.file = initialView.file;
@@ -236,6 +239,7 @@ export class StateManager {
       'date-display-format': dateDisplayFormat,
       'date-time-display-format': dateDisplayFormat + ' ' + timeFormat,
       'date-trigger': this.getSettingRaw('date-trigger', suppliedSettings) || defaultDateTrigger,
+      'enable-undo': this.getSettingRaw('enable-undo', suppliedSettings) ?? true,
       'inline-metadata-position':
         this.getSettingRaw('inline-metadata-position', suppliedSettings) || defaultMetadataPosition,
       'time-format': timeFormat,
@@ -254,6 +258,7 @@ export class StateManager {
       'show-board-settings': this.getSettingRaw('show-board-settings', suppliedSettings) ?? true,
       'show-search': this.getSettingRaw('show-search', suppliedSettings) ?? true,
       'show-set-view': this.getSettingRaw('show-set-view', suppliedSettings) ?? true,
+      'show-undo-notice': this.getSettingRaw('show-undo-notice', suppliedSettings) ?? false,
       'tag-colors': this.getSettingRaw('tag-colors', suppliedSettings) ?? [],
       'tag-sort': this.getSettingRaw('tag-sort', suppliedSettings) ?? [],
       'date-colors': this.getSettingRaw('date-colors', suppliedSettings) ?? [],
@@ -364,6 +369,7 @@ export class StateManager {
 
   async archiveCompletedCards() {
     const board = this.state;
+    const before = this.undoManager?.capture(this);
 
     const archived: Item[] = [];
     const shouldAppendArchiveDate = !!this.getSetting('archive-with-date');
@@ -415,6 +421,9 @@ export class StateManager {
           },
         })
       );
+      if (before) {
+        this.undoManager?.record(t('Archive completed cards'), [before]);
+      }
     } catch (e) {
       this.setError(e);
     }

@@ -3,7 +3,6 @@ import { Menu, Platform, TFile, TFolder } from 'obsidian';
 import { Dispatch, StateUpdater, useCallback } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
-import { moveEntity } from 'src/dnd/util/data';
 import { t } from 'src/lang/helpers';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
@@ -276,9 +275,7 @@ export function useItemMenu({
               .setTitle(lanes[i].data.title)
               .onClick(() => {
                 if (path[0] === i) return;
-                stateManager.setState((boardData) => {
-                  return moveEntity(boardData, path, [i, 0]);
-                });
+                boardModifiers.moveItemToLane(path, i);
               })
           );
         }

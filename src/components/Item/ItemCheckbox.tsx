@@ -2,6 +2,7 @@ import update from 'immutability-helper';
 import { memo, useCallback, useEffect, useState } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
+import { t } from 'src/lang/helpers';
 import { getTaskStatusDone, toggleTask } from 'src/parsers/helpers/inlineMetadata';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
@@ -30,6 +31,8 @@ export const ItemCheckbox = memo(function ItemCheckbox({
   const [isHoveringCheckbox, setIsHoveringCheckbox] = useState(false);
 
   const onCheckboxChange = useCallback(() => {
+    const before = stateManager.undoManager?.capture(stateManager);
+    const label = item.data.checked ? t('Uncheck card') : t('Complete card');
     const updates = toggleTask(item, stateManager.file);
     if (updates) {
       const [itemStrings, checkChars, thisIndex] = updates;
@@ -54,6 +57,10 @@ export const ItemCheckbox = memo(function ItemCheckbox({
           },
         })
       );
+    }
+
+    if (before) {
+      stateManager.undoManager?.record(label, [before]);
     }
   }, [item, stateManager, boardModifiers, ...path]);
 
