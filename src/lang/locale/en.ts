@@ -215,6 +215,10 @@ const en = {
   'Card title...': 'Card title...',
   'Add card': 'Add card',
   'Add a card': 'Add a card',
+  'Discard card draft?': 'Discard card draft?',
+  'This card has text that has not been saved.': 'This card has text that has not been saved.',
+  'Keep editing': 'Keep editing',
+  'Discard draft': 'Discard draft',
 
   // components/Item/ItemMenu.ts
   'Edit card': 'Edit card',
