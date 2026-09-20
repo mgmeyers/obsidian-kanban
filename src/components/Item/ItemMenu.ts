@@ -21,6 +21,8 @@ const embedRegEx = /!?\[\[([^\]]*)\.[^\]]+\]\]/g;
 const wikilinkRegEx = /!?\[\[([^\]]*)\]\]/g;
 const mdLinkRegEx = /!?\[([^\]]*)\]\([^)]*\)/g;
 const tagRegEx = /#([^\u2000-\u206F\u2E00-\u2E7F'!"#$%&()*+,.:;<=>?@^`{|}~[\]\\\s\n\r]+)/g;
+const leadingTagsRegEx = new RegExp(`^(?:\\s*${tagRegEx.source})+\\s*`);
+const trailingTagsRegEx = new RegExp(`\\s*(?:${tagRegEx.source}\\s*)+$`);
 const condenceWhiteSpaceRE = /\s+/g;
 
 interface UseItemMenuParams {
@@ -29,6 +31,50 @@ interface UseItemMenuParams {
   path: Path;
   boardModifiers: BoardModifiers;
   stateManager: StateManager;
+}
+
+function sanitizeNoteTitle(title: string) {
+  return title.replace(illegalCharsRegEx, ' ').trim().replace(condenceWhiteSpaceRE, ' ');
+}
+
+function getUniqueTags(title: string) {
+  const tags: string[] = [];
+
+  title.replace(tagRegEx, (tag) => {
+    if (!tags.includes(tag)) {
+      tags.push(tag);
+    }
+
+    return tag;
+  });
+
+  return tags;
+}
+
+function getNewNoteTitleFromCard(title: string, cleanTags: boolean) {
+  const normalizedTitle = title
+    .replace(embedRegEx, '$1')
+    .replace(wikilinkRegEx, '$1')
+    .replace(mdLinkRegEx, '$1');
+
+  if (!cleanTags) {
+    return {
+      title: sanitizeNoteTitle(normalizedTitle.replace(tagRegEx, '$1')),
+      tags: '',
+    };
+  }
+
+  const tags = getUniqueTags(normalizedTitle);
+  const titleWithoutEdgeTags = normalizedTitle
+    .replace(leadingTagsRegEx, '')
+    .replace(trailingTagsRegEx, '');
+  const titleWithPlainMiddleTags = titleWithoutEdgeTags.replace(tagRegEx, '$1');
+  const fallbackTitle = normalizedTitle.replace(tagRegEx, '$1');
+
+  return {
+    title: sanitizeNoteTitle(titleWithPlainMiddleTags) || sanitizeNoteTitle(fallbackTitle),
+    tags: tags.join(' '),
+  };
 }
 
 export function useItemMenu({
@@ -56,14 +102,10 @@ export function useItemMenu({
             .setTitle(t('New note from card'))
             .onClick(async () => {
               const prevTitle = item.data.titleRaw.split('\n')[0].trim();
-              const sanitizedTitle = prevTitle
-                .replace(embedRegEx, '$1')
-                .replace(wikilinkRegEx, '$1')
-                .replace(mdLinkRegEx, '$1')
-                .replace(tagRegEx, '$1')
-                .replace(illegalCharsRegEx, ' ')
-                .trim()
-                .replace(condenceWhiteSpaceRE, ' ');
+              const { title: sanitizedTitle, tags } = getNewNoteTitleFromCard(
+                prevTitle,
+                !!stateManager.getSetting('clean-tags-in-new-note-title')
+              );
 
               const newNoteFolder = stateManager.getSetting('new-note-folder');
               const newNoteTemplatePath = stateManager.getSetting('new-note-template');
@@ -85,9 +127,14 @@ export function useItemMenu({
 
               await applyTemplate(stateManager, newNoteTemplatePath as string | undefined);
 
+              const newNoteLink = stateManager.app.fileManager.generateMarkdownLink(
+                newFile,
+                stateManager.file.path
+              );
+              const newTitle = tags ? `${newNoteLink} ${tags}` : newNoteLink;
               const newTitleRaw = item.data.titleRaw.replace(
                 prevTitle,
-                stateManager.app.fileManager.generateMarkdownLink(newFile, stateManager.file.path)
+                newTitle
               );
 
               boardModifiers.updateItem(path, stateManager.updateItemContent(item, newTitleRaw));

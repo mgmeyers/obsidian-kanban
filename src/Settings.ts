@@ -61,6 +61,7 @@ export interface KanbanSettings {
   'date-picker-week-start'?: number;
   'date-time-display-format'?: string;
   'date-trigger'?: string;
+  'clean-tags-in-new-note-title'?: boolean;
   'full-list-lane-width'?: boolean;
   'hide-card-count'?: boolean;
   'inline-metadata-position'?: 'body' | 'footer' | 'metadata-table';
@@ -109,6 +110,7 @@ export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   'date-picker-week-start',
   'date-time-display-format',
   'date-trigger',
+  'clean-tags-in-new-note-title',
   'full-list-lane-width',
   'hide-card-count',
   'inline-metadata-position',
@@ -469,6 +471,52 @@ export class SettingsManager {
           manager: this,
         })
       );
+
+    new Setting(contentEl)
+      .setName(t('Clean tags from new note titles'))
+      .setDesc(
+        t(
+          'When creating a note from a card, leading and trailing tags are removed from the note title and card tags are kept after the generated link.'
+        )
+      )
+      .then((setting) => {
+        let toggleComponent: ToggleComponent;
+
+        setting
+          .addToggle((toggle) => {
+            toggleComponent = toggle;
+
+            const [value, globalValue] = this.getSetting('clean-tags-in-new-note-title', local);
+
+            if (value !== undefined) {
+              toggle.setValue(value as boolean);
+            } else if (globalValue !== undefined) {
+              toggle.setValue(globalValue as boolean);
+            } else {
+              toggle.setValue(false);
+            }
+
+            toggle.onChange((newValue) => {
+              this.applySettingsUpdate({
+                'clean-tags-in-new-note-title': {
+                  $set: newValue,
+                },
+              });
+            });
+          })
+          .addExtraButton((b) => {
+            b.setIcon('lucide-rotate-ccw')
+              .setTooltip(t('Reset to default'))
+              .onClick(() => {
+                const [, globalValue] = this.getSetting('clean-tags-in-new-note-title', local);
+                toggleComponent.setValue((globalValue as boolean | undefined) ?? false);
+
+                this.applySettingsUpdate({
+                  $unset: ['clean-tags-in-new-note-title'],
+                });
+              });
+          });
+      });
 
     contentEl.createEl('h4', { text: t('Tags') });
 
